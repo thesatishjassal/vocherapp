@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "../public/assets/css/soft-ui-dashboard.css";
 import "../public/assets/css/nucleo-icons.css";
 import "./globals.css";
-import Footer from "./components/Footer";
+// import Footer from "./components/Footer";
 import Header from "./components/Header";
 
 export const metadata: Metadata = {
