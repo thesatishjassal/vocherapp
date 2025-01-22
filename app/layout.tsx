@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "../public/assets/css/soft-ui-dashboard.css";
 import "../public/assets/css/nucleo-icons.css";
 import "./globals.css";
-import Sidebar from "./components/Sidebar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,7 +25,6 @@ export default function RootLayout({
         />
       </head>
       <body className="g-sidenav-show  bg-gray-100">
-        {/* <Sidebar /> */}
         <main className="main-content container position-relative max-height-vh-100 h-100 border-radius-lg p-0">
           <nav className="navbar sticky-top bg-body-tertiary">
             <div className="container">
