@@ -1,116 +1,119 @@
-import TableUI from "./table";
-import Dashboard from "./dashboard";
-import AddClientForm from "./components/AddClientForm ";
-
 export default function Home() {
   return (
     <>
- 
       <div className="row">
-  {/* Add Clients */}
-  <div className="col-lg-3 col-md-3 col-12">
-    <div className="card">
-      <span className="mask bg-primary opacity-10 border-radius-lg"></span>
-      <div className="card-body p-3 position-relative">
-        <div className="row">
-          <div className="col-8 text-start">
-            <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-              <i className="fas fa-user-plus text-dark text-gradient text-lg opacity-10"></i>
+        {/* Add Clients */}
+        <div className="col-lg-3 col-md-3 col-12">
+          <div className="card">
+            <span className="mask bg-primary opacity-10 border-radius-lg"></span>
+            <div className="card-body p-3 position-relative">
+              <div className="row">
+                <div className="col-8 text-start">
+                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
+                    <i className="fas fa-user-plus text-dark text-gradient text-lg opacity-10"></i>
+                  </div>
+                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
+                    1600
+                  </h5>
+                  <span className="text-white text-sm">Add Clients</span>
+                </div>
+                <div className="col-4 text-end">
+                  <a
+                    href="/addclient"
+                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
+                  >
+                    <i className="fas fa-angle-right text-white"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-            <h5 className="text-white font-weight-bolder mb-0 mt-3">1600</h5>
-            <span className="text-white text-sm">Add Clients</span>
-          </div>
-          <div className="col-4 text-end">
-            <a
-              href="/addclient"
-              className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-            >
-              <i className="fas fa-angle-right text-white"></i>
-            </a>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  {/* Add Invoice */}
-  <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
-    <div className="card">
-      <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-      <div className="card-body p-3 position-relative">
-        <div className="row">
-          <div className="col-8 text-start">
-            <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-              <i className="fas fa-file-invoice text-dark text-gradient text-lg opacity-10"></i>
+        {/* Add Invoice */}
+        <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
+          <div className="card">
+            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
+            <div className="card-body p-3 position-relative">
+              <div className="row">
+                <div className="col-8 text-start">
+                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
+                    <i className="fas fa-file-invoice text-dark text-gradient text-lg opacity-10"></i>
+                  </div>
+                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
+                    357
+                  </h5>
+                  <span className="text-white text-sm">Add Invoice</span>
+                </div>
+                <div className="col-4 text-end">
+                  <a
+                    href="/add-invoice"
+                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
+                  >
+                    <i className="fas fa-angle-right text-white"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-            <h5 className="text-white font-weight-bolder mb-0 mt-3">357</h5>
-            <span className="text-white text-sm">Add Invoice</span>
-          </div>
-          <div className="col-4 text-end">
-            <a
-              href="/add-invoice"
-              className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-            >
-              <i className="fas fa-angle-right text-white"></i>
-            </a>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  {/* Add Outinvoice */}
-  <div className="col-lg-3 col-md-3 col-12">
-    <div className="card">
-      <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-      <div className="card-body p-3 position-relative">
-        <div className="row">
-          <div className="col-8 text-start">
-            <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-              <i className="fas fa-file-export text-dark text-gradient text-lg opacity-10"></i>
+        {/* Add Outinvoice */}
+        <div className="col-lg-3 col-md-3 col-12">
+          <div className="card">
+            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
+            <div className="card-body p-3 position-relative">
+              <div className="row">
+                <div className="col-8 text-start">
+                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
+                    <i className="fas fa-file-export text-dark text-gradient text-lg opacity-10"></i>
+                  </div>
+                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
+                    2300
+                  </h5>
+                  <span className="text-white text-sm">Add Outinvoice</span>
+                </div>
+                <div className="col-4 text-end">
+                  <a
+                    href="/add-outinvoice"
+                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
+                  >
+                    <i className="fas fa-angle-right text-white"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-            <h5 className="text-white font-weight-bolder mb-0 mt-3">2300</h5>
-            <span className="text-white text-sm">Add Outinvoice</span>
-          </div>
-          <div className="col-4 text-end">
-            <a
-              href="/add-outinvoice"
-              className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-            >
-              <i className="fas fa-angle-right text-white"></i>
-            </a>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  {/* Add Warehouse */}
-  <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
-    <div className="card">
-      <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-      <div className="card-body p-3 position-relative">
-        <div className="row">
-          <div className="col-8 text-start">
-            <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-              <i className="fas fa-warehouse text-dark text-gradient text-lg opacity-10"></i>
+        {/* Add Warehouse */}
+        <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
+          <div className="card">
+            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
+            <div className="card-body p-3 position-relative">
+              <div className="row">
+                <div className="col-8 text-start">
+                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
+                    <i className="fas fa-warehouse text-dark text-gradient text-lg opacity-10"></i>
+                  </div>
+                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
+                    940
+                  </h5>
+                  <span className="text-white text-sm">Add Warehouse</span>
+                </div>
+                <div className="col-4 text-end">
+                  <a
+                    href="/add-warehouse"
+                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
+                  >
+                    <i className="fas fa-angle-right text-white"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-            <h5 className="text-white font-weight-bolder mb-0 mt-3">940</h5>
-            <span className="text-white text-sm">Add Warehouse</span>
-          </div>
-          <div className="col-4 text-end">
-            <a
-              href="/add-warehouse"
-              className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-            >
-              <i className="fas fa-angle-right text-white"></i>
-            </a>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
       <div className="row my-4 ">
         <div className="col-lg-8 col-md-6 mb-md-0 mb-4">
