@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "../public/assets/css/soft-ui-dashboard.css";
 import "../public/assets/css/nucleo-icons.css";
 import "./globals.css";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,45 +27,10 @@ export default function RootLayout({
         />
       </head>
       <body className="g-sidenav-show  bg-gray-100">
-        <main className="main-content container position-relative max-height-vh-100 h-100 border-radius-lg p-0">
-          <nav className="navbar sticky-top bg-body-tertiary">
-            <div className="container">
-              <a className="navbar-brand" href="#">
-                <img
-                  src="/docs/5.3/assets/brand/bootstrap-logo.svg"
-                  alt="Bootstrap"
-                  width="30"
-                  height="24"
-                />
-              </a>
-              <ul className=" d-flex navbar-nav  justify-content-end">
-                <li className="nav-item d-flex align-items-center">
-                  <a
-                    href="javascript:;"
-                    className="nav-link text-body font-weight-bold px-0"
-                  >
-                    <i className="fa fa-user me-sm-1"></i>
-                    <span className="d-sm-inline d-none">Sign In</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-          {children}
-          <div className="container-fluid py-4">
-            <footer className="footer py-3 bg-dark">
-              <div className="container-fluid">
-                <div className="row align-items-center justify-content-lg-between">
-                  <div className="col-lg-12 mb-lg-0 mb-4">
-                    <div className="copyright text-center text-whie ">
-                      Copyright © 2025 Panvik Ligthing.
-                    </div>
-                  </div>
-                 
-                </div>
-              </div>
-            </footer>
-          </div>
+        <Header />
+        <main className="main-content container p-0">
+          <div className="conatiner p-4">{children}</div>
+          {/* <Footer /> */}
         </main>
       </body>
     </html>
