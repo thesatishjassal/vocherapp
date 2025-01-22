@@ -13,7 +13,7 @@ const Header = () => {
         <ul className=" d-flex navbar-nav  justify-content-end">
           <li className="nav-item d-flex align-items-center">
             <a
-              href="javascript:;"
+              href="/login"
               className="nav-link text-body font-weight-bold px-0"
             >
               <i className="fa fa-user me-sm-1"></i>
