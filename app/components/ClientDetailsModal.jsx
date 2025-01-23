@@ -16,7 +16,7 @@ const ClientDetailsModal = ({client, onClose }) => {
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <div className="modal-header clinetdeatails_header">
-            <h5 className="modal-title clinettitle">Client Invoice Details</h5>
+            <h5 className="modal-title clinettitle">Client Details</h5>
             <button
               type="button"
               className="close"

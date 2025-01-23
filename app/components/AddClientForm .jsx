@@ -19,7 +19,7 @@ const AddClientForm = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortField, setSortField] = useState("");
@@ -91,8 +91,10 @@ const AddClientForm = () => {
     .filter(
       (invoice) =>
         // Check if invoice.name and invoice.project are defined before calling toLowerCase
-        ((invoice.name &&
-          invoice.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        ((invoice.clientName &&
+          invoice.clientName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
           (invoice.project &&
             invoice.project
               .toLowerCase()
@@ -137,10 +139,9 @@ const AddClientForm = () => {
   };
 
   return (
-    <div className="container mt-4">
-      {/* Table Section */}
-      <div className="row container mx-auto my-3">
-        <div className="col-12">
+    <div className="container mt-2 px-0">
+      <div className="row container mx-auto my-3 p-0">
+        <div className="col-12 p-0">
           <div className="d-flex justify-content-between align-items-center mb-3">
             {/* Search Input */}
             <input
@@ -150,22 +151,12 @@ const AddClientForm = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            {/* Filter Dropdown */}
-            <select
-              className="form-select w-25"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Paid">Paid</option>
-              <option value="Overdue">Overdue</option>
-            </select>{" "}
+ 
             <button
-              className="btn btn-primary my-3 addclients"
+              className="btn add_warehouse btn-primary"
               onClick={() => setShowModal(true)}
             >
-              <i className="fas fa-plus-circle me-2"></i>
+              Add New
             </button>
           </div>
 
@@ -176,7 +167,8 @@ const AddClientForm = () => {
             <div className="card-body py-0 pt-0 pb-2">
               {showModalClientDetails && selectedClient && (
                 <ClientDetailsModal
-                  client={selectedClient} onClose={closeModal}
+                  client={selectedClient}
+                  onClose={closeModal}
                 />
               )}
               {showModal && (
@@ -191,7 +183,7 @@ const AddClientForm = () => {
                     backgroundColor: "rgba(0, 0, 0, 0.5)",
                   }}
                 >
-                  <div className="modal-dialog">
+                  <div className="modal-dialog addclientform">
                     <div className="modal-content">
                       <div className="modal-header">
                         <h1
@@ -323,15 +315,15 @@ const AddClientForm = () => {
                           </div>
                           <div className="modal-footer">
                             <div className="col-12 text-end">
-                              <button type="submit" className="btn btn-success">
-                                Add Client
-                              </button>
                               <button
                                 type="button"
                                 className="btn btn-secondary ms-2"
                                 onClick={() => setShowModal(false)}
                               >
                                 Cancel
+                              </button>
+                              <button type="submit" className="btn btn-success">
+                                Add Client
                               </button>
                             </div>
                           </div>

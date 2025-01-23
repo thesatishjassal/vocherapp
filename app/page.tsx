@@ -1,11 +1,17 @@
 export default function Home() {
   return (
     <>
+      <div className="row welcome">
+        <h6>🌞 Good Morning!</h6>
+        <p className="text-sm mb-0">
+       Let’s make today amazing! 🚀
+        </p>
+      </div>
       <div className="row">
         {/* Add Clients */}
         <div className="col-lg-3 col-md-3 col-12">
           <div className="card">
-            <span className="mask bg-primary opacity-10 border-radius-lg"></span>
+            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
             <div className="card-body p-3 position-relative">
               <div className="row">
                 <div className="col-8 text-start">
@@ -47,7 +53,7 @@ export default function Home() {
                 </div>
                 <div className="col-4 text-end">
                   <a
-                    href="/add-invoice"
+                    href="/addinvoice"
                     className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
                   >
                     <i className="fas fa-angle-right text-white"></i>
@@ -75,7 +81,7 @@ export default function Home() {
                 </div>
                 <div className="col-4 text-end">
                   <a
-                    href="/add-outinvoice"
+                    href="/addoutinvoice"
                     className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
                   >
                     <i className="fas fa-angle-right text-white"></i>
@@ -103,7 +109,7 @@ export default function Home() {
                 </div>
                 <div className="col-4 text-end">
                   <a
-                    href="/add-warehouse"
+                    href="/addwarehouse"
                     className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
                   >
                     <i className="fas fa-angle-right text-white"></i>
@@ -594,7 +600,7 @@ export default function Home() {
               <div className="timeline timeline-one-side">
                 <div className="timeline-block mb-3">
                   <span className="timeline-step">
-                    <i className="ni ni-bell-55 text-success text-gradient"></i>
+                    <i className="fa fa-bell text-success text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
@@ -607,7 +613,7 @@ export default function Home() {
                 </div>
                 <div className="timeline-block mb-3">
                   <span className="timeline-step">
-                    <i className="ni ni-html5 text-danger text-gradient"></i>
+                    <i className="fa fa-code text-danger text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
@@ -620,7 +626,7 @@ export default function Home() {
                 </div>
                 <div className="timeline-block mb-3">
                   <span className="timeline-step">
-                    <i className="ni ni-cart text-info text-gradient"></i>
+                    <i className="fa fa-shopping-cart text-info text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
@@ -633,7 +639,7 @@ export default function Home() {
                 </div>
                 <div className="timeline-block mb-3">
                   <span className="timeline-step">
-                    <i className="ni ni-credit-card text-warning text-gradient"></i>
+                    <i className="fa fa-credit-card text-warning text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
@@ -646,7 +652,7 @@ export default function Home() {
                 </div>
                 <div className="timeline-block mb-3">
                   <span className="timeline-step">
-                    <i className="ni ni-key-25 text-primary text-gradient"></i>
+                    <i className="fa fa-key text-primary text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
@@ -659,7 +665,7 @@ export default function Home() {
                 </div>
                 <div className="timeline-block">
                   <span className="timeline-step">
-                    <i className="ni ni-money-coins text-dark text-gradient"></i>
+                    <i className="fa fa-coins text-dark text-gradient"></i>
                   </span>
                   <div className="timeline-content">
                     <h6 className="text-dark text-sm font-weight-bold mb-0">

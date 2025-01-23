@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 :root {
   --background: #ffffff;
   --foreground: #171717;
+ 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,8 +16,24 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  font-family: "Open Sans", serif !important;
 }
-
+.btn-primary {
+  --bs-btn-color: #000;
+  --bs-btn-bg: #4285f4;
+  --bs-btn-border-color: #4285f4;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #4285f4;
+  --bs-btn-hover-border-color: #4285f4;
+  --bs-btn-focus-shadow-rgb: 212, 98, 19;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #4285f4;
+  --bs-btn-active-border-color: #4285f4;
+  --bs-btn-active-shadow: none;
+  --bs-btn-disabled-color: #000;
+  --bs-btn-disabled-bg: #4285f4;
+  --bs-btn-disabled-border-color: #4285f4;
+}
 body {
   color: var(--foreground);
   background: var(--background);
@@ -113,4 +131,89 @@ ul.list-unstyled i {
   background-color: #fff !important;
 }.copyright.text-center.text-whie {
   color: #fff;
+}
+.row.welcome {
+  padding: 14px 0;
+  margin-bottom: 18px;
+}
+.row.welcome h6 {
+  font-size: 25px;
+  font-weight: 600;
+}
+.row.welcome p {
+  font-size: 16px !important;
+  font-weight: 400;
+  color: #747474;
+  margin: 0;
+  line-height: 0.8;
+}
+button.btn.btn-secondary.ms-2 {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: #000;
+  padding: 0 10px;
+}
+.addclientform .modal-footer .col-12.text-end {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+button.btn-close {
+  background: #f3f3f3;
+}
+.mini_banner {
+  display: flex;
+  height: 181px;
+  align-items: center;
+  justify-content: flex-start;
+  border: 4px solid #fff;
+  margin-top: 10px;
+  background-position: center center;
+  background-size: cover;
+}
+.mini_banner.warehouse {
+  background-image: url("https://images.pexels.com/photos/4487365/pexels-photo-4487365.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+.mini_banner.clientsbg{
+  background-image: url("https://images.pexels.com/photos/4344860/pexels-photo-4344860.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+.mini_banner.warehouserack{
+  background-image: url("https://images.pexels.com/photos/7019259/pexels-photo-7019259.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+}
+.mini_banner .title {
+  color: #fff;
+  font-size: 30px;
+  margin: 0;
+}
+.mini_banner .description {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 400;
+  margin: 0;
+}
+.mini_banner .content_box {
+  height: 100%;
+  width: 100%;
+  background: #1c1c1c38;
+  padding: 20px 20px;
+}
+.mini_banner .content_box {
+  height: 100%;
+  width: 100%;
+  background: #1c1c1c8c;
+  padding: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card.filterbar {
+    padding: 20px 20px;
+    border-radius: 0;
+}
+.card.filterbar .row {
+  align-items: center;
+}
+button.btn.add_warehouse {
+  margin: 0;
 }

@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className="g-sidenav-show  bg-gray-100">
         <Header />
         <main className="main-content container p-0">
-          <div className="conatiner p-4">{children}</div>
+          <div className="conatiner">{children}</div>
           {/* <Footer /> */}
         </main>
       </body>
