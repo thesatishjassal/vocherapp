@@ -117,7 +117,7 @@ const WarehouseTable = () => {
               <td>{warehouse.warehouseName}</td>
               <td>{warehouse.address}</td>
               <td>
-                <div className="d-flex justify-content-around">
+                <div className="d-flex ">
                   <button
                     className="btn action_icons"
                     onClick={() => handleViewClick(warehouse)}

@@ -151,7 +151,7 @@ const RackTable = () => {
               <td>{rack.rackCodes.join(", ")}</td>
               <td>{rack.warehouseName}</td>
               <td>
-                <div className="d-flex justify-content-around">
+                <div className="d-flex ">
                   <button
                     className="btn action_icons"
                     onClick={() => handleViewClick(rack)}

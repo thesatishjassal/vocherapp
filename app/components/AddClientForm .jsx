@@ -437,7 +437,7 @@ const AddClientForm = () => {
                         <td>{invoice.state}</td>
                         <td>{invoice.gstNo}</td>
                         <td>
-                          <div className="d-flex justify-content-around">
+                          <div className="d-flex ">
                             <button
                               className="btn action_icons"
                               onClick={() => handleViewClick(invoice)}
