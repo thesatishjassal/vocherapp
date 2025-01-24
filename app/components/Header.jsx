@@ -1,4 +1,4 @@
-import ProfileMenu from "../components/ProfileMenu"
+import ProfileMenu from "../components/ProfileMenu";
 
 const Header = () => {
   return (
@@ -22,7 +22,10 @@ const Header = () => {
               </a>
             </div>
           </li> */}
-          <li className="nav-item d-flex align-items-center">        <ProfileMenu />
+
+          <li className="nav-item d-flex align-items-center">
+            {" "}
+            <ProfileMenu />
           </li>
         </ul>
       </div>

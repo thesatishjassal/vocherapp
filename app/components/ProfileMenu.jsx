@@ -39,7 +39,7 @@ const ProfileMenu = () => {
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="/warehouse">
                 <i className="ph-bold ph-gear-six"></i> Warehouse
               </a>
             </li>

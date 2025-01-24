@@ -15,9 +15,15 @@ export default function Home() {
                 <div className="row">
                   <div className="col-12 text-center">
                     <div className="icon_wrapper">
-                      <img src="https://freedesignfile.com/upload/2023/09/Businessman-3D-professions-icon-vector.jpg" alt="" className="client_img"/>
+                      <img
+                        src="https://freedesignfile.com/upload/2023/09/Businessman-3D-professions-icon-vector.jpg"
+                        alt=""
+                        className="client_img"
+                      />
                     </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">Add Clients</h5>
+                    <h5 className="font-weight-bolder mb-0 mt-3">
+                      Add Clients
+                    </h5>
                     <span className="count text-sm">1600</span>
                   </div>
                 </div>
@@ -35,8 +41,12 @@ export default function Home() {
               <div className="card-body p-3 position-relative">
                 <div className="row">
                   <div className="col-12 text-center">
-                  <div className="icon_wrapper">
-                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/product-3d-icon-download-in-png-blend-fbx-gltf-file-formats--tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png?f=webp" alt="" className="client_img"/>
+                    <div className="icon_wrapper">
+                      <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/product-3d-icon-download-in-png-blend-fbx-gltf-file-formats--tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png?f=webp"
+                        alt=""
+                        className="client_img"
+                      />
                     </div>
                     <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
                     <span className="count text-sm">100</span>
@@ -50,17 +60,23 @@ export default function Home() {
 
         {/* Add Outinvoice */}
         <div className="col-lg-2 col-md-2 col-12">
-          <a href=".">
+          <a href="/addinvoice">
             {" "}
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>
               <div className="card-body p-3 position-relative">
                 <div className="row">
                   <div className="col-12 text-center">
-                  <div className="icon_wrapper">
-                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/receipt-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png?f=webp" alt="" className="client_img"/>
+                    <div className="icon_wrapper">
+                      <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/receipt-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png?f=webp"
+                        alt=""
+                        className="client_img"
+                      />
                     </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">Add In Vocher</h5>
+                    <h5 className="font-weight-bolder mb-0 mt-3">
+                      Add In Vocher
+                    </h5>
                     <span className="count text-sm">100</span>
                   </div>
                 </div>
@@ -78,10 +94,16 @@ export default function Home() {
               <div className="card-body p-3 position-relative">
                 <div className="row">
                   <div className="col-12 text-center">
-                  <div className="icon_wrapper">
-                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/order-list-3d-icon-download-in-png-blend-fbx-gltf-file-formats--logistic-checklist-currier-product-pack-e-commerce-shopping-icons-6159358.png" alt="" className="client_img"/>
+                    <div className="icon_wrapper">
+                      <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/order-list-3d-icon-download-in-png-blend-fbx-gltf-file-formats--logistic-checklist-currier-product-pack-e-commerce-shopping-icons-6159358.png"
+                        alt=""
+                        className="client_img"
+                      />
                     </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">Out Voucher</h5>
+                    <h5 className="font-weight-bolder mb-0 mt-3">
+                      Out Voucher
+                    </h5>
                     <span className="count text-sm">100</span>
                   </div>
                 </div>
@@ -99,9 +121,15 @@ export default function Home() {
                 <div className="row">
                   <div className="col-12 text-center">
                     <div className="icon_wrapper">
-                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/business-report-3d-icon-download-in-png-blend-fbx-gltf-file-formats--document-clipboard-data-pack-icons-9291057.png?f=webp" alt="" className="client_img"/>
+                      <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/business-report-3d-icon-download-in-png-blend-fbx-gltf-file-formats--document-clipboard-data-pack-icons-9291057.png?f=webp"
+                        alt=""
+                        className="client_img"
+                      />
                     </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">Make Reports</h5>
+                    <h5 className="font-weight-bolder mb-0 mt-3">
+                      Make Reports
+                    </h5>
                     <span className="count text-sm">100</span>
                   </div>
                 </div>
@@ -117,456 +145,115 @@ export default function Home() {
             <div className="card-header pb-0">
               <div className="row">
                 <div className="col-lg-6 col-7">
-                  <h6>Projects</h6>
-                  <p className="text-sm mb-0">
-                    <i className="fa fa-check text-info" aria-hidden="true"></i>
-                    <span className="font-weight-bold ms-1">30 done</span> this
-                    month
-                  </p>
-                </div>
-                <div className="col-lg-6 col-5 my-auto text-end">
-                  <div className="dropdown float-lg-end pe-4">
-                    <a
-                      className="cursor-pointer"
-                      id="dropdownTable"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <i className="fa fa-ellipsis-v text-secondary"></i>
-                    </a>
-                    <ul
-                      className="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5"
-                      aria-labelledby="dropdownTable"
-                    >
-                      <li>
-                        <a
-                          className="dropdown-item border-radius-md"
-                          href="javascript:;"
-                        >
-                          Action
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          className="dropdown-item border-radius-md"
-                          href="javascript:;"
-                        >
-                          Another action
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          className="dropdown-item border-radius-md"
-                          href="javascript:;"
-                        >
-                          Something else here
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
+                  <h6>Stocks</h6>
                 </div>
               </div>
-            </div>
-            <div className="card-body px-0 pb-2">
+            </div> 
+            <div className="card-body pb-2">
               <div className="table-responsive">
-                <table className="table align-items-center mb-0">
+                <table className="table align-items-center justify-content-center mb-0  ">
                   <thead>
                     <tr>
-                      <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Companies
-                      </th>
-                      <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                        Members
-                      </th>
-                      <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Budget
-                      </th>
-                      <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Completion
-                      </th>
+                      <th scope="col">#</th>
+                      <th scope="col">Product Name</th>
+                      <th scope="col">Quantity</th>
+                      <th scope="col">Category</th>
+                      <th scope="col">Rack</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Fan Item */}
                     <tr>
+                      <td>1</td>
+                      <td>Fan</td>
+                      <td>15</td>
+                      <td>Electronics</td>
+                      <td>A1</td>
                       <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-xd.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="xd"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 count text-sm">Soft UI XD Version</h6>
-                          </div>
-                        </div>
+                        <span className="badge bg-success">Available</span>
                       </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Ryan Tompson"
-                          >
-                            <img src="../assets/img/team-1.jpg" alt="team1" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Romina Hadid"
-                          >
-                            <img src="../assets/img/team-2.jpg" alt="team2" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Alexander Smith"
-                          >
-                            <img src="../assets/img/team-3.jpg" alt="team3" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Jessica Doe"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="team4" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold">
-                          {" "}
-                          $14,000{" "}
-                        </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                60%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-info w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div> */}
-                          </div>
-                        </div>
-                      </td>
+                      <div className="d-flex ">
+                        <button className="btn action_icons">
+                          <i className="fa fa-eye"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-edit"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-trash"></i>
+                        </button>
+                      </div>
                     </tr>
+
+                    {/* Fancy Lights Item */}
                     <tr>
+                      <td>2</td>
+                      <td>Fancy Lights</td>
+                      <td>30</td>
+                      <td>Electronics</td>
+                      <td>A2</td>
                       <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-atlassian.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="atlassian"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 count text-sm">Add Progress Track</h6>
-                          </div>
-                        </div>
+                        <span className="badge bg-success">Available</span>
                       </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Romina Hadid"
-                          >
-                            <img src="../assets/img/team-2.jpg" alt="team5" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Jessica Doe"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="team6" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold">
-                          {" "}
-                          $3,000{" "}
-                        </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                10%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-info w-10" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div> */}
-                          </div>
-                        </div>
-                      </td>
+                      <div className="d-flex ">
+                        <button className="btn action_icons">
+                          <i className="fa fa-eye"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-edit"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-trash"></i>
+                        </button>
+                      </div>
                     </tr>
+
+                    {/* Geexer Item */}
                     <tr>
+                      <td>3</td>
+                      <td>Geexer</td>
+                      <td>10</td>
+                      <td>Electronics</td>
+                      <td>A3</td>
                       <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-slack.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="team7"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            ,
-                            <h6 className="mb-0 count text-sm">
-                              Fix Platform Errors
-                            </h6>
-                          </div>
-                        </div>
+                        <span className="badge bg-danger">Not Available</span>
                       </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Romina Hadid"
-                          >
-                            <img src="../assets/img/team-3.jpg" alt="team8" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Jessica Doe"
-                          >
-                            <img src="../assets/img/team-1.jpg" alt="team9" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold">
-                          {" "}
-                          Not set{" "}
-                        </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                100%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div> */}
-                          </div>
-                        </div>
-                      </td>
+                      <div className="d-flex ">
+                        <button className="btn action_icons">
+                          <i className="fa fa-eye"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-edit"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-trash"></i>
+                        </button>
+                      </div>
                     </tr>
+
+                    {/* Bolard Item */}
                     <tr>
+                      <td>4</td>
+                      <td>Bolard</td>
+                      <td>8</td>
+                      <td>Electronics</td>
+                      <td>A4</td>
                       <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-spotify.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="spotify"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 count text-sm">
-                              Launch our Mobile App
-                            </h6>
-                          </div>
-                        </div>
+                        <span className="badge bg-success">Available</span>
                       </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Ryan Tompson"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="user1" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Romina Hadid"
-                          >
-                            <img src="../assets/img/team-3.jpg" alt="user2" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Alexander Smith"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="user3" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Jessica Doe"
-                          >
-                            <img src="../assets/img/team-1.jpg" alt="user4" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold">
-                          {" "}
-                          $20,500{" "}
-                        </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                100%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div> */}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-jira.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="jira"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 count text-sm">
-                              Add the New Pricing Page
-                            </h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Ryan Tompson"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="user5" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold"> $500 </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                25%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-info w-25" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="25"></div> */}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex px-2 py-1">
-                          <div>
-                            <img
-                              src="../assets/img/small-logos/logo-invision.svg"
-                              className="avatar avatar-sm me-3"
-                              alt="invision"
-                            />
-                          </div>
-                          <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 count text-sm">
-                              Redesign New Online Shop
-                            </h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="avatar-group mt-2">
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Ryan Tompson"
-                          >
-                            <img src="../assets/img/team-1.jpg" alt="user6" />
-                          </a>
-                          <a
-                            href="javascript:;"
-                            className="avatar avatar-xs rounded-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Jessica Doe"
-                          >
-                            <img src="../assets/img/team-4.jpg" alt="user7" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="align-middle text-center count text-sm">
-                        <span className="text-xs font-weight-bold">
-                          {" "}
-                          $2,000{" "}
-                        </span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="progress-wrapper w-75 mx-auto">
-                          <div className="progress-info">
-                            <div className="progress-percentage">
-                              <span className="text-xs font-weight-bold">
-                                40%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="progress">
-                            {/* <div className="progress-bar bg-gradient-info w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="40"></div> */}
-                          </div>
-                        </div>
-                      </td>
+                      <div className="d-flex ">
+                        <button className="btn action_icons">
+                          <i className="fa fa-eye"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-edit"></i>
+                        </button>
+                        <button className="btn action_icons">
+                          <i className="fa fa-trash"></i>
+                        </button>
+                      </div>
                     </tr>
                   </tbody>
                 </table>

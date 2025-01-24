@@ -142,7 +142,14 @@ const AddClientForm = () => {
     <div className="container mt-2 px-0">
       <div className="row container mx-auto my-3 p-0">
         <div className="col-12 p-0">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+
+
+          <div className="card mb-4">
+            <div className="card-header pb-0">
+              <h6>Client Invoices</h6>
+            </div>
+            <div className="card-body py-0 pt-0 pb-2">
+            <div className="d-flex justify-content-between align-items-center mb-3">
             {/* Search Input */}
             <input
               type="text"
@@ -151,7 +158,7 @@ const AddClientForm = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
- 
+
             <button
               className="btn add_warehouse btn-primary"
               onClick={() => setShowModal(true)}
@@ -159,12 +166,6 @@ const AddClientForm = () => {
               Add New
             </button>
           </div>
-
-          <div className="card mb-4">
-            <div className="card-header pb-0">
-              <h6>Client Invoices</h6>
-            </div>
-            <div className="card-body py-0 pt-0 pb-2">
               {showModalClientDetails && selectedClient && (
                 <ClientDetailsModal
                   client={selectedClient}
@@ -190,7 +191,7 @@ const AddClientForm = () => {
                           className="modal-title fs-5"
                           id="staticBackdropLabel"
                         >
-                          Add Client
+                          Add New Client
                         </h1>
                         <button
                           type="button"
@@ -201,120 +202,141 @@ const AddClientForm = () => {
                       </div>
                       <div className="modal-body  py-3 ">
                         <form onSubmit={handleSubmit} className="row g-2">
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="clientName"
-                              placeholder="Client Name"
-                              value={formData.clientName}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="businessName" // New field for Business Name
-                              placeholder="Business Name"
-                              value={formData.businessName}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="address"
-                              placeholder="Address"
-                              value={formData.address}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="gstNumber"
-                              placeholder="GST Number"
-                              value={formData.gstNumber}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="tel"
-                              name="contactNumber"
-                              placeholder="Contact Number"
-                              value={formData.contactNumber}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="email"
-                              name="emailAddress"
-                              placeholder="Email Address"
-                              value={formData.emailAddress}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <select
-                              name="clientType"
-                              value={formData.clientType}
-                              onChange={handleChange}
-                              className="form-select"
-                              required
-                            >
-                              <option value="Retail">Retail</option>
-                              <option value="Wholesale">Wholesale</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="pincode" // New field for Pincode
-                              placeholder="Pincode"
-                              value={formData.pincode}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="city" // New field for City
-                              placeholder="City"
-                              value={formData.city}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <input
-                              type="text"
-                              name="state" // New field for State
-                              placeholder="State"
-                              value={formData.state}
-                              onChange={handleChange}
-                              className="form-control"
-                              required
-                            />
-                          </div>
-                          <div className="modal-footer">
-                            <div className="col-12 text-end">
+                          {/* Business Details Field Group */}
+                          <fieldset className="col-12">
+                            <legend className="fs-5 my-2">
+                              Business Details
+                            </legend>
+                            <div className="row">
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="businessName"
+                                  placeholder="Business Name"
+                                  value={formData.businessName}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="gstNumber"
+                                  placeholder="GST Number"
+                                  value={formData.gstNumber}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="address"
+                                  placeholder="Address"
+                                  value={formData.address}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="pincode"
+                                  placeholder="Pincode"
+                                  value={formData.pincode}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="city"
+                                  placeholder="City"
+                                  value={formData.city}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="state"
+                                  placeholder="State"
+                                  value={formData.state}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                            </div>
+                          </fieldset>
+
+                          {/* Contact Details Field Group */}
+                          
+                          <fieldset className="col-12">
+                            <legend className="fs-5 my-2">
+                              Contact Details
+                            </legend>
+                            <div className="row">
+                              <div className="col-md-6">
+                                <input
+                                  type="text"
+                                  name="clientName"
+                                  placeholder="Client Name"
+                                  value={formData.clientName}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="tel"
+                                  name="contactNumber"
+                                  placeholder="Contact Number"
+                                  value={formData.contactNumber}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <input
+                                  type="email"
+                                  name="emailAddress"
+                                  placeholder="Email Address"
+                                  value={formData.emailAddress}
+                                  onChange={handleChange}
+                                  className="form-control"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <select
+                                  name="clientType"
+                                  value={formData.clientType}
+                                  onChange={handleChange}
+                                  className="form-select"
+                                  required
+                                >
+                                  <option disabled>Select Client Type</option>
+                                  <option value="Retail">Vendor</option>
+                                  <option value="Wholesale">Customer</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                            </div>
+                          </fieldset>
+
+                          {/* Form Footer */}
+                          <div className="modal-footer col-12">
+                            <div className="text-end">
                               <button
                                 type="button"
                                 className="btn btn-secondary ms-2"
@@ -457,6 +479,7 @@ const AddClientForm = () => {
                               <i className="fa fa-trash"></i>
                             </button>
                           </div>
+                          x
                         </td>
                       </tr>
                     ))}

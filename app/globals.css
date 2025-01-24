@@ -167,8 +167,7 @@ button.btn-close {
   display: flex;
   height: 181px;
   align-items: center;
-  justify-content: flex-start;
-  border: 4px solid #fff;
+    /* border: 4px solid #fff; */
   margin-top: 10px;
   background-position: center center;
   background-size: cover;
@@ -368,4 +367,18 @@ p.bottom_lablel {
 .menu ul li a i {
   margin-right: 10px;
   font-size: 18px;
+}
+.navbar .navbar-brand {
+  padding: 0;
+}
+.menu {
+  position: absolute;
+  top: 70px;
+  background: #fff;
+  right: 130px;
+  width: 100%;
+  max-width: 200px;
+}
+.addclientform input.form-control {
+  margin-bottom: 4px;
 }
