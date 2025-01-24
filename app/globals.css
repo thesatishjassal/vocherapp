@@ -221,9 +221,9 @@ button.btn.add_warehouse {
 .tm_f50 {
   font-size: 25px !important;
 } 
-.tm_container {
+/* .tm_container {
   max-width: 100% !important;
-}
+} */
 img.logo {
   width: 100%;
   max-width: 120px;
@@ -231,6 +231,22 @@ img.logo {
 }
 .tm_invoice {
   background: #fff;
-  border-radius: 10px !important;  
-  padding: 20px;
-} 
+  padding: 0px 15px;
+  border-radius: 10px !important;
+}
+.table thead th {
+  /* border-left: 1px solid #e3e3e7 !important; */
+  /* border-right: 1px solid #e3e3e7 !important; */
+  text-align: center !important;
+}
+.tm_round_border td{
+  text-align: center !important;   border-left: 1px solid #e3e3e7 !important;
+  border-right: 1px solid #e3e3e7 !important;
+    word-break: break-all;
+  white-space: normal !important;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

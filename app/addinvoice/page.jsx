@@ -27,7 +27,8 @@ const AddInvoice = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
-                  Voucher Type: <b className="tm_primary_color">#LL93784</b>
+                  Transaction Types:{" "}
+                  <b className="tm_primary_color">Paid</b>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
@@ -50,14 +51,14 @@ const AddInvoice = () => {
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Supplier Details:</b>
                 </p>
-                <p style={{textAlign: "justify" }}>
+                <p style={{ textAlign: "justify" }}>
                   Name: <b>XYZ Ltd</b> <br />
-                  Invoice Number: <b>INV12345</b> <br />
-                  Invoice Date: <b>2025-01-24</b> <br />
-                  Mode of Transport: <b>Air Freight</b> <br />
-                  Number of Packages: <b>50</b> <br />
-                  Address: <b>123 ABC Street, XYZ City, Country</b> <br />
+                  Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
+                 
+                  State: <b>XYZ State</b>, <b>Country</b> <br />
+                  Pincode: <b>123456</b> <br />
                 </p>
+                Freight:<b> Paid </b>
               </div>
 
               {/* Right Column */}
@@ -68,19 +69,18 @@ const AddInvoice = () => {
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
                 </p>
-                Issue Slip No:<b> SLIP98765</b> <br />
-                Sale Order No:<b> SO123456 </b>
-                <br />
-                Rack Code:<b> R1234 </b>
-                <br />
-                Transaction Types:<b> Transfer </b>
-                <br />
-                Freight:<b> Paid </b>
+                Invoice Number: <b>INV12345</b> <br />
+                {/* Issue Slip No:<b> SLIP98765</b> <br /> */}
+                {/* Sale Order No:<b> SO123456 </b><br /> */}
+                Invoice Date: <b>2025-01-24</b> <br />
+                Mode of Transport: <b>Air Freight</b> <br />
+                Number of Packages: <b>50</b> <br />
+            
                 <br />
               </div>
             </div>
             <p className="tm_mb2">
-              <b className="tm_primary_color">Products info:</b>
+              <b className="tm_primary_color">Product info:</b>
             </p>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
@@ -88,79 +88,89 @@ const AddInvoice = () => {
                   <table className="table align-items-center justify-content-center mb-0">
                     <thead>
                       <tr>
-                        <th class="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th
+                          class="sr_col tm_semi_bold tm_primary_color tm_gray_bg"
+                          style={{ width: "50px" }}
+                        >
                           SR NO
                         </th>
-                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="sku_col tm_semi_bold tm_primary_color tm_gray_bg">
                           SKU
                         </th>
-                        <th class="tm_width_3 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
                           Item Name
                         </th>
-                        <th class="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="qty_col tm_semi_bold tm_primary_color tm_gray_bg">
                           Qty
                         </th>
-                        <th class="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="rack_col tm_semi_bold tm_primary_color tm_gray_bg">
+                          Rack Code
+                        </th>
+                        <th class="unit_col tm_semi_bold tm_primary_color tm_gray_bg">
                           Unit
                         </th>
-                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
                           Rate
                         </th>
-                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
                           Discount
                         </th>
-                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="amount_col tm_semi_bold tm_primary_color tm_gray_bg">
                           Amount
                         </th>
-                        <th class="tm_width_3 tm_semi_bold tm_primary_color tm_gray_bg">
+                        <th class="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
                           Remarks
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td class="tm_width_1">1</td>
-                        <td class="tm_width_2">SKU-FAN001</td>
-                        <td class="tm_width_3">Ceiling Fan</td>
-                        <td class="tm_width_1">1</td>
-                        <td class="tm_width_1">Product</td>
+                        <td class="sr_col">1</td>
+                        <td class="sku_col">SKU-FAN001</td>
+                        <td class="tm_width_2">Ceiling Fan</td>
+                        <td class="qty_col">1</td>
+                        <td class="rack_col">A1</td>
+                        <td class="unit_col">pcs</td>
                         <td class="tm_width_1">$50</td>
-                        <td class="tm_width_2">0%</td>
-                        <td class="tm_width_1">$50</td>
-                        <td class="tm_width_4">Energy-efficient fan</td>
+                        <td class="tm_width_1">0%</td>
+                        <td class="amount_col">$50</td>
+                        <td class="tm_width_2">Energy-efficient fan</td>
                       </tr>
                       <tr>
-                        <td class="tm_width_1">2</td>
-                        <td class="tm_width_2">SKU-LIGHT001</td>
-                        <td class="tm_width_3">Fancy Light Bollard</td>
-                        <td class="tm_width_1">2</td>
-                        <td class="tm_width_1">Product</td>
+                        <td class="sr_col">2</td>
+                        <td class="sku_col">SKU-LIGHT001</td>
+                        <td class="tm_width_2">Fancy Light Bollard</td>
+                        <td class="qty_col">2</td>
+                        <td class="rack_col">B2</td>
+                        <td class="unit_col">pcs</td>
                         <td class="tm_width_1">$150</td>
-                        <td class="tm_width_2">0%</td>
-                        <td class="tm_width_1">$300</td>
-                        <td class="tm_width_4">Outdoor decorative lighting</td>
+                        <td class="tm_width_1">0%</td>
+                        <td class="amount_col">$300</td>
+                        <td class="tm_width_2">Outdoor decorative lighting</td>
                       </tr>
                       <tr>
-                        <td class="tm_width_1">3</td>
-                        <td class="tm_width_2">SKU-BULB001</td>
-                        <td class="tm_width_3">LED Bulb</td>
-                        <td class="tm_width_1">5</td>
-                        <td class="tm_width_1">Product</td>
+                        <td class="sr_col">3</td>
+                        <td class="sku_col">SKU-BULB001</td>
+                        <td class="tm_width_2">LED Bulb</td>
+                        <td class="qty_col">5</td>
+                        <td class="rack_col">C3</td>
+                        <td class="unit_col">pcs</td>
                         <td class="tm_width_1">$10</td>
-                        <td class="tm_width_2">0%</td>
-                        <td class="tm_width_1">$50</td>
-                        <td class="tm_width_4">Energy-saving LED</td>
+                        <td class="tm_width_1">0%</td>
+                        <td class="amount_col">$50</td>
+                        <td class="tm_width_2">Energy-saving LED</td>
                       </tr>
                       <tr>
-                        <td class="tm_width_1">4</td>
-                        <td class="tm_width_2">SKU-STRIP001</td>
-                        <td class="tm_width_3">LED Strip Lights</td>
-                        <td class="tm_width_1">3</td>
-                        <td class="tm_width_1">Product</td>
+                        <td class="sr_col">4</td>
+                        <td class="sku_col">SKU-STRIP001</td>
+                        <td class="tm_width_2">LED Strip Lights</td>
+                        <td class="qty_col">3</td>
+                        <td class="rack_col">D4</td>
+                        <td class="unit_col">pcs</td>
                         <td class="tm_width_1">$30</td>
-                        <td class="tm_width_2">0%</td>
-                        <td class="tm_width_1">$90</td>
-                        <td class="tm_width_4">Flexible LED strips</td>
+                        <td class="tm_width_1">0%</td>
+                        <td class="amount_col">$90</td>
+                        <td class="tm_width_2">Flexible LED strips</td>
                       </tr>
                     </tbody>
                   </table>
@@ -183,10 +193,10 @@ const AddInvoice = () => {
                   <table>
                     <tbody>
                       <tr>
-                        <td class="tm_width_3 tm_primary_color tm_border_none tm_bold">
+                        <td class="tm_width_2 tm_primary_color tm_border_none tm_bold">
                           Total Amount Without GST
                         </td>
-                        <td class="tm_width_3 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        <td class="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
                           $1650
                         </td>
                       </tr>
