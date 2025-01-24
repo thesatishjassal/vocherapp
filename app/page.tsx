@@ -3,121 +3,111 @@ export default function Home() {
     <>
       <div className="row welcome">
         <h6>🌞 Good Morning!</h6>
-        <p className="text-sm mb-0">
-       Let’s make today amazing! 🚀
-        </p>
+        <p className="text-sm mb-0">Let’s make today amazing! 🚀</p>
       </div>
-      <div className="row">
+      <div className="row mb-4">
         {/* Add Clients */}
-        <div className="col-lg-3 col-md-3 col-12">
-          <div className="card">
-            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-            <div className="card-body p-3 position-relative">
-              <div className="row">
-                <div className="col-8 text-start">
-                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-                    <i className="fas fa-user-plus text-dark text-gradient text-lg opacity-10"></i>
+        <div className="col-lg-2 col-md-3 col-12">
+          <a href="/addclient">
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                    <div className="icon_wrapper">
+                      <img src="https://freedesignfile.com/upload/2023/09/Businessman-3D-professions-icon-vector.jpg" alt="" className="client_img"/>
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">Add Clients</h5>
+                    <span className="count text-sm">1600</span>
                   </div>
-                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
-                    1600
-                  </h5>
-                  <span className="text-white text-sm">Add Clients</span>
-                </div>
-                <div className="col-4 text-end">
-                  <a
-                    href="/addclient"
-                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-                  >
-                    <i className="fas fa-angle-right text-white"></i>
-                  </a>
                 </div>
               </div>
+              <p className="bottom_lablel">Master Head</p>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Add Invoice */}
-        <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
-          <div className="card">
-            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-            <div className="card-body p-3 position-relative">
-              <div className="row">
-                <div className="col-8 text-start">
-                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-                    <i className="fas fa-file-invoice text-dark text-gradient text-lg opacity-10"></i>
+        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
+          <a href=".">
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                  <div className="icon_wrapper">
+                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/product-3d-icon-download-in-png-blend-fbx-gltf-file-formats--tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png?f=webp" alt="" className="client_img"/>
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
+                    <span className="count text-sm">100</span>
                   </div>
-                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
-                    357
-                  </h5>
-                  <span className="text-white text-sm">Add Invoice</span>
-                </div>
-                <div className="col-4 text-end">
-                  <a
-                    href="/addinvoice"
-                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-                  >
-                    <i className="fas fa-angle-right text-white"></i>
-                  </a>
                 </div>
               </div>
+              <p className="bottom_lablel">Master Head</p>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Add Outinvoice */}
-        <div className="col-lg-3 col-md-3 col-12">
-          <div className="card">
-            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-            <div className="card-body p-3 position-relative">
-              <div className="row">
-                <div className="col-8 text-start">
-                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-                    <i className="fas fa-file-export text-dark text-gradient text-lg opacity-10"></i>
+        <div className="col-lg-2 col-md-2 col-12">
+          <a href=".">
+            {" "}
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                  <div className="icon_wrapper">
+                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/receipt-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png?f=webp" alt="" className="client_img"/>
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">Add In Vocher</h5>
+                    <span className="count text-sm">100</span>
                   </div>
-                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
-                    2300
-                  </h5>
-                  <span className="text-white text-sm">Add Outinvoice</span>
-                </div>
-                <div className="col-4 text-end">
-                  <a
-                    href="/addoutinvoice"
-                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-                  >
-                    <i className="fas fa-angle-right text-white"></i>
-                  </a>
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Add Warehouse */}
-        <div className="col-lg-3 col-md-3 col-12 mt-4 mt-md-0">
-          <div className="card">
-            <span className="mask bg-dark opacity-10 border-radius-lg"></span>
-            <div className="card-body p-3 position-relative">
-              <div className="row">
-                <div className="col-8 text-start">
-                  <div className="icon icon-shape bg-white shadow text-center border-radius-2xl">
-                    <i className="fas fa-warehouse text-dark text-gradient text-lg opacity-10"></i>
+        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
+          <a href=".">
+            {" "}
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                  <div className="icon_wrapper">
+                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/order-list-3d-icon-download-in-png-blend-fbx-gltf-file-formats--logistic-checklist-currier-product-pack-e-commerce-shopping-icons-6159358.png" alt="" className="client_img"/>
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">Out Voucher</h5>
+                    <span className="count text-sm">100</span>
                   </div>
-                  <h5 className="text-white font-weight-bolder mb-0 mt-3">
-                    940
-                  </h5>
-                  <span className="text-white text-sm">Add Warehouse</span>
-                </div>
-                <div className="col-4 text-end">
-                  <a
-                    href="/warehouse"
-                    className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
-                  >
-                    <i className="fas fa-angle-right text-white"></i>
-                  </a>
                 </div>
               </div>
             </div>
-          </div>
+          </a>
+        </div>
+        {/* Add Warehouse */}
+        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
+          <a href=".">
+            {" "}
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                    <div className="icon_wrapper">
+                      <img src="https://cdn3d.iconscout.com/3d/premium/thumb/business-report-3d-icon-download-in-png-blend-fbx-gltf-file-formats--document-clipboard-data-pack-icons-9291057.png?f=webp" alt="" className="client_img"/>
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">Make Reports</h5>
+                    <span className="count text-sm">100</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
 
@@ -208,7 +198,7 @@ export default function Home() {
                             />
                           </div>
                           <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 text-sm">Soft UI XD Version</h6>
+                            <h6 className="mb-0 count text-sm">Soft UI XD Version</h6>
                           </div>
                         </div>
                       </td>
@@ -252,7 +242,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold">
                           {" "}
                           $14,000{" "}
@@ -284,7 +274,7 @@ export default function Home() {
                             />
                           </div>
                           <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 text-sm">Add Progress Track</h6>
+                            <h6 className="mb-0 count text-sm">Add Progress Track</h6>
                           </div>
                         </div>
                       </td>
@@ -310,7 +300,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold">
                           {" "}
                           $3,000{" "}
@@ -343,7 +333,7 @@ export default function Home() {
                           </div>
                           <div className="d-flex flex-column justify-content-center">
                             ,
-                            <h6 className="mb-0 text-sm">
+                            <h6 className="mb-0 count text-sm">
                               Fix Platform Errors
                             </h6>
                           </div>
@@ -371,7 +361,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold">
                           {" "}
                           Not set{" "}
@@ -403,7 +393,7 @@ export default function Home() {
                             />
                           </div>
                           <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 text-sm">
+                            <h6 className="mb-0 count text-sm">
                               Launch our Mobile App
                             </h6>
                           </div>
@@ -449,7 +439,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold">
                           {" "}
                           $20,500{" "}
@@ -481,7 +471,7 @@ export default function Home() {
                             />
                           </div>
                           <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 text-sm">
+                            <h6 className="mb-0 count text-sm">
                               Add the New Pricing Page
                             </h6>
                           </div>
@@ -500,7 +490,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold"> $500 </span>
                       </td>
                       <td className="align-middle">
@@ -529,7 +519,7 @@ export default function Home() {
                             />
                           </div>
                           <div className="d-flex flex-column justify-content-center">
-                            <h6 className="mb-0 text-sm">
+                            <h6 className="mb-0 count text-sm">
                               Redesign New Online Shop
                             </h6>
                           </div>
@@ -557,7 +547,7 @@ export default function Home() {
                           </a>
                         </div>
                       </td>
-                      <td className="align-middle text-center text-sm">
+                      <td className="align-middle text-center count text-sm">
                         <span className="text-xs font-weight-bold">
                           {" "}
                           $2,000{" "}
@@ -588,7 +578,7 @@ export default function Home() {
           <div className="card h-100">
             <div className="card-header pb-0">
               <h6>Orders overview</h6>
-              <p className="text-sm">
+              <p className="count text-sm">
                 <i
                   className="fa fa-arrow-up text-success"
                   aria-hidden="true"
