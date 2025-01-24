@@ -4,10 +4,8 @@ const Header = () => {
       <div className="container">
         <a className="navbar-brand" href="#">
           <img
-            src="/docs/5.3/assets/brand/bootstrap-logo.svg"
-            alt="Bootstrap"
-            width="30"
-            height="24"
+            src="https://panvic-com.preview-domain.com/wp-content/uploads/2025/01/logo-removebg-preview.png"
+            alt="Bootstrap" className="logo"
           />
         </a>
         <ul className=" d-flex navbar-nav  justify-content-end">

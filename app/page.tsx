@@ -109,7 +109,7 @@ export default function Home() {
                 </div>
                 <div className="col-4 text-end">
                   <a
-                    href="/addwarehouse"
+                    href="/warehouse"
                     className="text-white text-sm font-weight-bolder d-flex align-items-center justify-content-end"
                   >
                     <i className="fas fa-angle-right text-white"></i>

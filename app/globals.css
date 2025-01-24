@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import url("https://invoma.vercel.app/assets/css/style.css");
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -217,3 +218,19 @@ button.btn-close {
 button.btn.add_warehouse {
   margin: 0;
 }
+.tm_f50 {
+  font-size: 25px !important;
+} 
+.tm_container {
+  max-width: 100% !important;
+}
+img.logo {
+  width: 100%;
+  max-width: 120px;
+  margin: 0;
+}
+.tm_invoice {
+  background: #fff;
+  border-radius: 10px !important;  
+  padding: 20px;
+} 
