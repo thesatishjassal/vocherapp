@@ -220,9 +220,10 @@ button.btn.add_warehouse {
 .tm_f50 {
   font-size: 25px !important;
 } 
-/* .tm_container {
-  max-width: 100% !important;
-} */
+.tm_container {
+  border: 1px solid #0000001f !important;
+  box-shadow: none !important;
+}
 img.logo {
   width: 100%;
   max-width: 120px;
@@ -381,4 +382,29 @@ p.bottom_lablel {
 }
 .addclientform input.form-control {
   margin-bottom: 4px;
+}
+.text-right {
+  text-align: right;
+}
+button.btn.btn-primary{
+  margin: 0 !important;
+}
+button.addrow {
+  width: 100%;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: #eaf9ee !important;
+  color: #34c759;
+  border: 1px dashed #34c78e !important;
+}
+button.addrow:hover {
+  color: #34c759;
+}
+.btn-close {
+  color: #000 !important;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }

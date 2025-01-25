@@ -479,7 +479,7 @@ const AddClientForm = () => {
                               <i className="fa fa-trash"></i>
                             </button>
                           </div>
-                          x
+                          
                         </td>
                       </tr>
                     ))}

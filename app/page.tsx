@@ -87,7 +87,7 @@ export default function Home() {
 
         {/* Add Warehouse */}
         <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href=".">
+          <a href="/addoutinvoice">
             {" "}
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>
@@ -148,7 +148,7 @@ export default function Home() {
                   <h6>Stocks</h6>
                 </div>
               </div>
-            </div> 
+            </div>
             <div className="card-body pb-2">
               <div className="table-responsive">
                 <table className="table align-items-center justify-content-center mb-0  ">
@@ -264,92 +264,66 @@ export default function Home() {
         <div className="col-lg-4 col-md-6">
           <div className="card h-100">
             <div className="card-header pb-0">
-              <h6>Orders overview</h6>
-              <p className="count text-sm">
-                <i
-                  className="fa fa-arrow-up text-success"
-                  aria-hidden="true"
-                ></i>
-                <span className="font-weight-bold">24%</span> this month
+              <h6>Daily Activity</h6>
+              <p className="text-sm">
+                <span className="font-weight-bold">By</span> Users
               </p>
             </div>
             <div className="card-body p-3">
-              <div className="timeline timeline-one-side">
-                <div className="timeline-block mb-3">
+              <div className="timeline timeline-one-side mb-4">
+                <div className="timeline-block">
                   <span className="timeline-step">
-                    <i className="fa fa-bell text-success text-gradient"></i>
+                    <i className="fa fa-file-invoice text-success"></i>
                   </span>
                   <div className="timeline-content">
+                  <h6 className="text-primary text-sm mb-1">Voucher</h6>
+
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
                       $2400, Design changes
                     </h6>
                     <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      22 DEC 7:20 PM
+                      Added by: <span className="text-dark">John Doe</span> |
+                       <span className="text-dark">22 DEC 2024</span> |
+                       <span className="text-dark">7:20 PM</span>
                     </p>
                   </div>
                 </div>
-                <div className="timeline-block mb-3">
-                  <span className="timeline-step">
-                    <i className="fa fa-code text-danger text-gradient"></i>
-                  </span>
-                  <div className="timeline-content">
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      New order #1832412
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      21 DEC 11 PM
-                    </p>
-                  </div>
-                </div>
-                <div className="timeline-block mb-3">
-                  <span className="timeline-step">
-                    <i className="fa fa-shopping-cart text-info text-gradient"></i>
-                  </span>
-                  <div className="timeline-content">
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      Server payments for April
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      21 DEC 9:34 PM
-                    </p>
-                  </div>
-                </div>
-                <div className="timeline-block mb-3">
-                  <span className="timeline-step">
-                    <i className="fa fa-credit-card text-warning text-gradient"></i>
-                  </span>
-                  <div className="timeline-content">
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      New card added for order #4395133
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      20 DEC 2:20 AM
-                    </p>
-                  </div>
-                </div>
-                <div className="timeline-block mb-3">
-                  <span className="timeline-step">
-                    <i className="fa fa-key text-primary text-gradient"></i>
-                  </span>
-                  <div className="timeline-content">
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      Unlock packages for development
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      18 DEC 4:54 AM
-                    </p>
-                  </div>
-                </div>
+              </div>
+
+              <div className="timeline timeline-one-side mb-4">
                 <div className="timeline-block">
                   <span className="timeline-step">
-                    <i className="fa fa-coins text-dark text-gradient"></i>
+                    <i className="fa fa-box-open text-info"></i>
                   </span>
                   <div className="timeline-content">
+                  <h6 className="text-primary text-sm mb-1">Stock Item</h6>
                     <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      New order #9583120
+                      Stock replenished
                     </h6>
                     <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      17 DEC
+                      Added by: <span className="text-dark">Jane Smith</span> |
+                       <span className="text-dark">21 DEC 2024</span> |
+                      Time: <span className="text-dark">9:34 PM</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+             
+              <div className="timeline timeline-one-side mb-4">
+                <div className="timeline-block">
+                  <span className="timeline-step">
+                    <i className="fa fa-user-plus text-primary"></i>
+                  </span>
+                  <div className="timeline-content">
+                  <h6 className="text-primary text-sm mb-1">Client</h6>
+                    <h6 className="text-dark text-sm font-weight-bold mb-0">
+                      New client added
+                    </h6>
+                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
+                      Added by: <span className="text-dark">Michael Brown</span>{" "}
+                      |  <span className="text-dark">18 DEC 2024</span> |
+                      Time: <span className="text-dark">4:54 AM</span>
                     </p>
                   </div>
                 </div>

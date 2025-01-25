@@ -57,8 +57,8 @@ const AddInvoice = () => {
                  
                   State: <b>XYZ State</b>, <b>Country</b> <br />
                   Pincode: <b>123456</b> <br />
-                  Email:<b>xyz@gmail.com</b> <br />
-                  Phone: <b>+91-1234567890</b>
+                  Email:xyz@gmail.com | Phone: +91-1234567890
+                  GST NO: JDKURE1525
                 </p>
                 Freight:<b> Paid </b>
               </div>
