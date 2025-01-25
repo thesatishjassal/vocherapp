@@ -3,13 +3,21 @@ import DynamicTable from "../components/DynamicTable";
 import BasicInfoModal from "../components/AddBasicInfo";
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const Addoutinvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
+
+  const handleIconClick = () => {
+    setOpen(!open); // Toggle the date picker visibility
+  };
 
   const closeModal = () => {
-    setShowModalClientDetails(false);  // Close the modal when this function is called
+    setShowModalClientDetails(false); // Close the modal when this function is called
   };
 
   return (
@@ -39,17 +47,30 @@ const Addoutinvoice = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
-                  Transaction Types:{" "}
-                  <b className="tm_primary_color">To Customer</b>
-                  <button type="button" className="btn modalaction_btn">
-                    <i className="fas fa-edit"></i>
-                  </button>
+                  Transaction Types: <b className="tm_primary_color"></b>
+                  <select id="transactionType" name="transactionType">
+                    <option value="Transfer">Transfer</option>
+                    <option value="Return">Return</option>
+                    <option value="ToCustomer">To Customer</option>
+                  </select>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
-                  <button type="button" className="btn modalaction_btn">
-                    <i className="fa-regular fa-calendar-days"></i>
+                  <button type="button" className="btn modalaction_btn"  onClick={handleIconClick} >
+                    <i class="fa-regular fa-calendar-days"></i>
                   </button>
+                  {open && (
+                      <div className="custom_datepciker">
+                        <DatePicker
+                      selected={startDate}
+                      onChange={(date) => {
+                        setStartDate(date); // Set the selected date
+                        setOpen(false); // Close the date picker
+                      }}
+                      inline
+                    />
+                      </div>
+                  )}
                 </p>
               </div>
             </div>
@@ -76,7 +97,7 @@ const Addoutinvoice = () => {
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
-                  {showModalClientDetails && (  // Conditionally render the modal
+                  {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
                       onClose={closeModal} // Pass the closeModal function to the modal
                       client={showModalClientDetails}
@@ -132,7 +153,9 @@ const Addoutinvoice = () => {
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <p className="tm_mb2">
-                    <b className="tm_primary_color">Remarks/Notes (Optional):</b>
+                    <b className="tm_primary_color">
+                      Remarks/Notes (Optional):
+                    </b>
                   </p>
                   <textarea
                     className="form-control tm_remarks_box"
