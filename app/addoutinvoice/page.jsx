@@ -21,7 +21,7 @@ const Addoutinvoice = () => {
   };
 
   return (
-    <div className="card tm_container my-4">
+    <div className="card tm_container my-4 print-container ">
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
@@ -61,7 +61,8 @@ const Addoutinvoice = () => {
                   </button>
                   {open && (
                       <div className="custom_datepciker">
-                        <DatePicker
+                        {open && (
+                    <DatePicker
                       selected={startDate}
                       onChange={(date) => {
                         setStartDate(date); // Set the selected date
@@ -69,6 +70,7 @@ const Addoutinvoice = () => {
                       }}
                       inline
                     />
+                  )}
                       </div>
                   )}
                 </p>
@@ -109,7 +111,8 @@ const Addoutinvoice = () => {
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
                   State: <b>XYZ State</b>, <b>Country</b> <br />
                   Pincode: <b>123456</b> <br />
-                  Email:<b>xyz@gmail.com</b> | Phone: <b>+91-1234567890</b>
+                  Email:<b>xyz@gmail.com</b>  <br /> 
+                  Phone: <b>+91-1234567890</b>
                   <br />
                   GST NO: <b>JDKURE1525</b>
                 </p>
@@ -136,6 +139,8 @@ const Addoutinvoice = () => {
                 Sale Order No:<b> SO123456 </b>
                 <br />
                 Transport: <b>DHL</b> <br />
+                Vehicle No: <b>PB 08: 1014</b> <br />
+                Package <b>2 Box</b> <br />
                 Order BY: <b>johny</b> <br />
                 Sale Person: <b>John</b> <br />
                 Freight Amount: <b>200</b> <br />
@@ -160,24 +165,9 @@ const Addoutinvoice = () => {
                   <textarea
                     className="form-control tm_remarks_box"
                     placeholder="Add any additional details or instructions"
-                    rows="4"
+                    rows="2"
                     cols="50"
                   ></textarea>
-                </div>
-
-                <div className="tm_right_footer">
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td className="tm_width_2 tm_primary_color tm_border_none tm_bold">
-                          Total Amount Without GST
-                        </td>
-                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          <i className="fa-solid fa-indian-rupee-sign"></i> 1650
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>

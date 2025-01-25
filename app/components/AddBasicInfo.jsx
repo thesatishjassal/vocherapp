@@ -139,6 +139,28 @@ const BasicInfoModal = ({setInfoModal }) => {
                           required
                         />
                       </div>
+                      <div className="col-md-6">
+                        <input
+                          type="text"
+                          name=" Vehicle No"
+                          placeholder=" Vehicle No"
+                          value={formData.SalePerson}
+                          onChange={handleChange}
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <input
+                          type="text"
+                          name=" Packages"
+                          placeholder=" Packages"
+                          value={formData.SalePerson}
+                          onChange={handleChange}
+                          className="form-control"
+                          required
+                        />
+                      </div>
                     </div>
                   </fieldset>
                  
