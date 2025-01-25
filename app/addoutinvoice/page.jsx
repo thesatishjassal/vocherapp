@@ -57,7 +57,7 @@ const Addoutinvoice = () => {
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
                   <button type="button" className="btn modalaction_btn"  onClick={handleIconClick} >
-                    <i class="fa-regular fa-calendar-days"></i>
+                    <i className="fa-regular fa-calendar-days"></i>
                   </button>
                   {open && (
                       <div className="custom_datepciker">

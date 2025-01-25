@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import FindProduct from "../components/FindPropduct";  // Import FindProduct component
 
 const DynamicTable = () => {
   const [rows, setRows] = useState([]);
@@ -10,7 +11,10 @@ const DynamicTable = () => {
     comments: "",
   });
 
-  // Refs for all input fields
+  const [showModal, setShowModal] = useState(false);
+  const [productList, setProductList] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState("");
+
   const inputRefs = {
     itemCode: useRef(null),
     itemName: useRef(null),
@@ -19,13 +23,12 @@ const DynamicTable = () => {
     comments: useRef(null),
   };
 
-  // Handle adding a new row
   const handleAddRow = () => {
     if (newRow.itemCode && newRow.itemName && newRow.qty && newRow.unit) {
       setRows([
         ...rows,
         {
-          id: rows.length + 1, // Auto-increment ID
+          id: rows.length + 1,
           itemCode: newRow.itemCode,
           itemName: newRow.itemName,
           qty: newRow.qty,
@@ -39,20 +42,46 @@ const DynamicTable = () => {
     }
   };
 
-  // Handle "Enter" key press to move focus to next input field or add a new row
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Prevent default Enter behavior
+      e.preventDefault(); 
       if (nextField && inputRefs[nextField]) {
-        inputRefs[nextField].current.focus(); // Move focus to the next field
+        inputRefs[nextField].current.focus(); 
       } else {
-        handleAddRow(); // Add a new row if it's the last field
+        handleAddRow(); 
         setTimeout(() => {
-          // Focus the first field of the new row after it's added
           inputRefs.itemCode.current.focus();
         }, 100);
       }
     }
+  };
+
+  // Trigger modal when typing in itemCode or itemName
+  const handleItemCodeChange = (e) => {
+    setNewRow({ ...newRow, itemCode: e.target.value });
+    if (e.target.value.trim()) {
+      setShowModal(true); // Show modal if input is not empty
+      filterProducts(e.target.value);
+    }
+  };
+
+  const handleItemNameChange = (e) => {
+    setNewRow({ ...newRow, itemName: e.target.value });
+    if (e.target.value.trim()) {
+      setShowModal(true); // Show modal if input is not empty
+      filterProducts(e.target.value);
+    }
+  };
+
+  // Filter product list based on item code or name
+  const filterProducts = (query) => {
+    const filtered = items.filter((item) => item.toLowerCase().includes(query.toLowerCase()));
+    setProductList(filtered);
+  };
+
+  const handleProductSelect = (product) => {
+    setNewRow({ ...newRow, itemName: product });
+    setShowModal(false);
   };
 
   return (
@@ -71,15 +100,14 @@ const DynamicTable = () => {
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.id}>
-              <td>{index + 1}</td> {/* Dynamically generated SR NO */}
-              <td>{row.itemCode}</td> {/* Displaying Item Code */}
-              <td>{row.itemName}</td> {/* Displaying Item Name */}
+              <td>{index + 1}</td>
+              <td>{row.itemCode}</td>
+              <td>{row.itemName}</td>
               <td>{row.qty}</td>
               <td>{row.unit}</td>
               <td>{row.comments}</td>
             </tr>
           ))}
-          {/* Input Row for new entry */}
           <tr>
             <td>#</td>
             <td>
@@ -87,9 +115,7 @@ const DynamicTable = () => {
                 type="text"
                 name="itemCode"
                 value={newRow.itemCode}
-                onChange={(e) =>
-                  setNewRow({ ...newRow, itemCode: e.target.value })
-                }
+                onChange={handleItemCodeChange}
                 onKeyDown={(e) => handleKeyDown(e, "itemName")}
                 placeholder="Enter item code"
                 className="form-control"
@@ -101,9 +127,7 @@ const DynamicTable = () => {
                 type="text"
                 name="itemName"
                 value={newRow.itemName}
-                onChange={(e) =>
-                  setNewRow({ ...newRow, itemName: e.target.value })
-                }
+                onChange={handleItemNameChange}
                 onKeyDown={(e) => handleKeyDown(e, "qty")}
                 placeholder="Enter item name"
                 className="form-control"
@@ -115,9 +139,7 @@ const DynamicTable = () => {
                 type="number"
                 name="qty"
                 value={newRow.qty}
-                onChange={(e) =>
-                  setNewRow({ ...newRow, qty: e.target.value })
-                }
+                onChange={(e) => setNewRow({ ...newRow, qty: e.target.value })}
                 onKeyDown={(e) => handleKeyDown(e, "unit")}
                 placeholder="Qty"
                 className="form-control"
@@ -129,9 +151,7 @@ const DynamicTable = () => {
                 type="text"
                 name="unit"
                 value={newRow.unit}
-                onChange={(e) =>
-                  setNewRow({ ...newRow, unit: e.target.value })
-                }
+                onChange={(e) => setNewRow({ ...newRow, unit: e.target.value })}
                 onKeyDown={(e) => handleKeyDown(e, "comments")}
                 placeholder="Enter unit"
                 className="form-control"
@@ -143,10 +163,8 @@ const DynamicTable = () => {
                 type="text"
                 name="comments"
                 value={newRow.comments}
-                onChange={(e) =>
-                  setNewRow({ ...newRow, comments: e.target.value })
-                }
-                onKeyDown={(e) => handleKeyDown(e, null)} // No next field, just add row
+                onChange={(e) => setNewRow({ ...newRow, comments: e.target.value })}
+                onKeyDown={(e) => handleKeyDown(e, null)}
                 placeholder="Comments"
                 className="form-control"
                 ref={inputRefs.comments}
@@ -155,6 +173,14 @@ const DynamicTable = () => {
           </tr>
         </tbody>
       </table>
+
+      {/* FindProduct Modal */}
+      <FindProduct
+        showModal={showModal}
+        setShowModal={setShowModal}
+        productList={productList}
+        handleProductSelect={handleProductSelect}
+      />
     </div>
   );
 };
