@@ -169,7 +169,7 @@ const DynamicTable = () => {
               backgroundColor: "rgba(0, 0, 0, 0.5)",
             }}
           >
-            <div className="modal-dialog addclientform">
+            <div className="modal-dialog modal-dialog-centered addclientform">
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="modal-title fs-5" id="staticBackdropLabel">
@@ -195,7 +195,7 @@ const DynamicTable = () => {
                           value={formData.sku || ""}
                           onChange={(e) =>
                             setFormData({ ...formData, sku: e.target.value })
-                          }
+                          } 
                         />
                       </div>
                       <div className="col-md-6">
