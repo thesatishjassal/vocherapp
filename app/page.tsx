@@ -137,6 +137,31 @@ export default function Home() {
             </div>
           </a>
         </div>
+        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
+          <a href=".">
+            {" "}
+            <div className="card">
+              <span className="mask opacity-10 border-radius-lg"></span>
+              <div className="card-body p-3 position-relative">
+                <div className="row">
+                  <div className="col-12 text-center">
+                    <div className="icon_wrapper">
+                      <img
+                        src="https://cdn3d.iconscout.com/3d/premium/thumb/invoice-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--bill-transaction-payment-purchase-business-pack-illustrations-3928170.png"
+                        alt=""
+                        className="client_img"
+                      />
+                    </div>
+                    <h5 className="font-weight-bolder mb-0 mt-3">
+                      Add Quotation
+                    </h5>
+                    <span className="count text-sm">100</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
 
       <div className="row my-4 ">

@@ -13,11 +13,11 @@ const Header = () => {
         </a>
         <ul className=" d-flex navbar-nav  justify-content-end">
           {/* <li className="nav-item d-flex align-items-center">
-            <div class="btn-group" role="group" aria-label="Login and Signup">
-              <a href="/login" class="btn btn-primary">
+            <div className="btn-group" role="group" aria-label="Login and Signup">
+              <a href="/login" className="btn btn-primary">
                 Login
               </a>
-              <a href="/signup" class="btn btn-success">
+              <a href="/signup" className="btn btn-success">
                 Signup
               </a>
             </div>

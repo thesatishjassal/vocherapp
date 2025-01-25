@@ -408,3 +408,13 @@ button.addrow:hover {
   justify-content: center;
   font-weight: 700;
 }
+.modalaction_btn {
+  box-shadow: none !important;
+  padding: 2px 3px;
+  background: #eaf9ee;
+  color: #34c759;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border-radius: 100%;
+}

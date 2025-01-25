@@ -1,7 +1,17 @@
 "use client";
 import DynamicTable from "../components/DynamicTable";
+import BasicInfoModal from "../components/AddBasicInfo";
+import { useState } from "react";
+import CustomerModal from "../components/customerModal";
 
 const Addoutinvoice = () => {
+  const [InfoModal, setInfoModal] = useState(false);
+  const [showModalClientDetails, setShowModalClientDetails] = useState(false);
+
+  const closeModal = () => {
+    setShowModalClientDetails(false);  // Close the modal when this function is called
+  };
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -30,10 +40,16 @@ const Addoutinvoice = () => {
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
                   Transaction Types:{" "}
-                  <b className="tm_primary_color">To Custoner</b>
+                  <b className="tm_primary_color">To Customer</b>
+                  <button type="button" className="btn modalaction_btn">
+                    <i className="fas fa-edit"></i>
+                  </button>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
+                  <button type="button" className="btn modalaction_btn">
+                    <i className="fa-regular fa-calendar-days"></i>
+                  </button>
                 </p>
               </div>
             </div>
@@ -51,7 +67,21 @@ const Addoutinvoice = () => {
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">To Custoner:</b>
+                  <b className="tm_primary_color">To Customer: </b>
+
+                  <button
+                    type="button"
+                    className="btn modalaction_btn "
+                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  {showModalClientDetails && (  // Conditionally render the modal
+                    <CustomerModal
+                      onClose={closeModal} // Pass the closeModal function to the modal
+                      client={showModalClientDetails}
+                    />
+                  )}
                 </p>
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>XYZ Ltd</b> <br />
@@ -62,7 +92,6 @@ const Addoutinvoice = () => {
                   <br />
                   GST NO: <b>JDKURE1525</b>
                 </p>
-                Freight:<b> Paid </b>
               </div>
 
               {/* Right Column */}
@@ -71,7 +100,15 @@ const Addoutinvoice = () => {
                 style={{ flex: 1, textAlign: "right" }}
               >
                 <p className="tm_mb2">
+                  {InfoModal && <BasicInfoModal setInfoModal={setInfoModal} />}
                   <b className="tm_primary_color">Basic Details:</b>
+                  <button
+                    type="button"
+                    className="btn modalaction_btn"
+                    onClick={() => setInfoModal(true)}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
                 {/* Invoice Number: <b>INV12345</b> <br /> */}
                 Issue Slip No:<b> SLIP98765</b> <br />
@@ -80,6 +117,7 @@ const Addoutinvoice = () => {
                 Transport: <b>DHL</b> <br />
                 Order BY: <b>johny</b> <br />
                 Sale Person: <b>John</b> <br />
+                Freight Amount: <b>200</b> <br />
               </div>
             </div>
             <p className="tm_mb2">
@@ -88,17 +126,17 @@ const Addoutinvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                <DynamicTable />
+                  <DynamicTable />
                 </div>
               </div>
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <p className="tm_mb2">
-                    <b className="tm_primary_color">Remarks If any:</b>
+                    <b className="tm_primary_color">Remarks/Notes (Optional):</b>
                   </p>
                   <textarea
                     className="form-control tm_remarks_box"
-                    placeholder="Enter remarks here..."
+                    placeholder="Add any additional details or instructions"
                     rows="4"
                     cols="50"
                   ></textarea>
@@ -112,7 +150,7 @@ const Addoutinvoice = () => {
                           Total Amount Without GST
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          $1650
+                          <i className="fa-solid fa-indian-rupee-sign"></i> 1650
                         </td>
                       </tr>
                     </tbody>
@@ -138,7 +176,7 @@ const Addoutinvoice = () => {
                   />
                 </div>
                 <div className="col-6  ">
-                  <p className="tm_mb2 ">
+                  <p className="tm_mb2 text-right">
                     <b className="tm_primary_color text-right">
                       Store Manager:
                     </b>
@@ -195,22 +233,9 @@ const Addoutinvoice = () => {
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  d="M320 336h76c55 0 100-21.21 100-75.6s-53-73.47-96-75.6C391.11 99.74 329 48 256 48c-69 0-113.44 45.79-128 91.2-60 5.7-112 35.88-112 98.4S70 336 136 336h56M192 400.1l64 63.9 64-63.9M256 224v224.03"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-              </svg>
+              <i className="fa-solid fa-upload"></i>
             </span>
-            <span className="tm_btn_text">Download</span>
+            <span className="tm_btn_text">Publish</span>
           </button>
         </div>
       </div>

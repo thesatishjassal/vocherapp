@@ -130,9 +130,9 @@ const DynamicTable = () => {
               <td>{row.qty}</td>
               <td>{row.rackCode}</td>
               <td>{row.unit}</td>
-              <td>${row.rate.toFixed(2)}</td>
+              <td><i className="fa-solid fa-indian-rupee-sign"></i> {row.rate.toFixed(2)}</td>
               <td>{row.discount}</td>
-              <td>${row.amount.toFixed(2)}</td>
+              <td><i className="fa-solid fa-indian-rupee-sign"></i> {row.amount.toFixed(2)}</td>
               <td>{row.comments}</td>
               <td>
                 <i
