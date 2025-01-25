@@ -10,6 +10,7 @@ const DynamicTable = () => {
     comments: "",
   });
 
+  // Refs for all input fields
   const inputRefs = {
     itemCode: useRef(null),
     itemName: useRef(null),
@@ -18,6 +19,7 @@ const DynamicTable = () => {
     comments: useRef(null),
   };
 
+  // Handle adding a new row
   const handleAddRow = () => {
     if (newRow.itemCode && newRow.itemName && newRow.qty && newRow.unit) {
       setRows([
@@ -37,13 +39,18 @@ const DynamicTable = () => {
     }
   };
 
+  // Handle "Enter" key press to move focus to next input field or add a new row
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
-      e.preventDefault();
+      e.preventDefault(); // Prevent default Enter behavior
       if (nextField && inputRefs[nextField]) {
-        inputRefs[nextField].current.focus();
+        inputRefs[nextField].current.focus(); // Move focus to the next field
       } else {
-        handleAddRow();
+        handleAddRow(); // Add a new row if it's the last field
+        setTimeout(() => {
+          // Focus the first field of the new row after it's added
+          inputRefs.itemCode.current.focus();
+        }, 100);
       }
     }
   };
@@ -73,7 +80,7 @@ const DynamicTable = () => {
             </tr>
           ))}
           {/* Input Row for new entry */}
-          <tr className="no-print">
+          <tr>
             <td>#</td>
             <td>
               <input
@@ -84,8 +91,8 @@ const DynamicTable = () => {
                   setNewRow({ ...newRow, itemCode: e.target.value })
                 }
                 onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                placeholder="item code"
-                className="form-control input-small"
+                placeholder="Enter item code"
+                className="form-control"
                 ref={inputRefs.itemCode}
               />
             </td>
@@ -99,7 +106,7 @@ const DynamicTable = () => {
                 }
                 onKeyDown={(e) => handleKeyDown(e, "qty")}
                 placeholder="Enter item name"
-                className="form-control input-large"
+                className="form-control"
                 ref={inputRefs.itemName}
               />
             </td>
@@ -113,7 +120,7 @@ const DynamicTable = () => {
                 }
                 onKeyDown={(e) => handleKeyDown(e, "unit")}
                 placeholder="Qty"
-                className="form-control input-small"
+                className="form-control"
                 ref={inputRefs.qty}
               />
             </td>
@@ -126,8 +133,8 @@ const DynamicTable = () => {
                   setNewRow({ ...newRow, unit: e.target.value })
                 }
                 onKeyDown={(e) => handleKeyDown(e, "comments")}
-                placeholder="unit"
-                className="form-control input-small"
+                placeholder="Enter unit"
+                className="form-control"
                 ref={inputRefs.unit}
               />
             </td>
@@ -139,9 +146,9 @@ const DynamicTable = () => {
                 onChange={(e) =>
                   setNewRow({ ...newRow, comments: e.target.value })
                 }
-                onKeyDown={handleKeyDown}
+                onKeyDown={(e) => handleKeyDown(e, null)} // No next field, just add row
                 placeholder="Comments"
-                className="form-control input-small"
+                className="form-control"
                 ref={inputRefs.comments}
               />
             </td>
