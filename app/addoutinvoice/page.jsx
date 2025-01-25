@@ -56,22 +56,26 @@ const Addoutinvoice = () => {
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
-                  <button type="button" className="btn modalaction_btn"  onClick={handleIconClick} >
+                  <button
+                    type="button"
+                    className="btn modalaction_btn"
+                    onClick={handleIconClick}
+                  >
                     <i className="fa-regular fa-calendar-days"></i>
                   </button>
                   {open && (
-                      <div className="custom_datepciker">
-                        {open && (
-                    <DatePicker
-                      selected={startDate}
-                      onChange={(date) => {
-                        setStartDate(date); // Set the selected date
-                        setOpen(false); // Close the date picker
-                      }}
-                      inline
-                    />
-                  )}
-                      </div>
+                    <div className="custom_datepciker">
+                      {open && (
+                        <DatePicker
+                          selected={startDate}
+                          onChange={(date) => {
+                            setStartDate(date); // Set the selected date
+                            setOpen(false); // Close the date picker
+                          }}
+                          inline
+                        />
+                      )}
+                    </div>
                   )}
                 </p>
               </div>
@@ -109,11 +113,10 @@ const Addoutinvoice = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>XYZ Ltd</b> <br />
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
-                  State: <b>XYZ State</b>, <b>Country</b> <br />
-                  Pincode: <b>123456</b> <br />
-                  Email:<b>xyz@gmail.com</b>  <br /> 
-                  Phone: <b>+91-1234567890</b>
+                  State: <b>XYZ State</b>, <b>Country</b> Pincode: <b>123456</b>{" "}
                   <br />
+                  {/* Email:<b>xyz@gmail.com</b>  <br />  */}
+                  {/* Phone: <b>+91-1234567890</b> */}
                   GST NO: <b>JDKURE1525</b>
                 </p>
               </div>
@@ -140,12 +143,14 @@ const Addoutinvoice = () => {
                 <br />
                 Transport: <b>DHL</b> <br />
                 Vehicle No: <b>PB 08: 1014</b> <br />
-                Package <b>2 Box</b> <br />
-                Order BY: <b>johny</b> <br />
-                Sale Person: <b>John</b> <br />
-                Freight Amount: <b>200</b> <br />
               </div>
             </div>
+            <tr className="d-flex py-2 px-0">
+            <td className="py-0">Package <b>2 Box</b></td>
+            <td className="py-0">Order BY: <b>johny</b></td>
+            <td className="py-0">Sale Person: <b>John</b></td>
+            <td className="py-0">Freight Amount: <b>200</b></td>
+          </tr>
             <p className="tm_mb2">
               <b className="tm_primary_color">Product info:</b>
             </p>
@@ -162,12 +167,11 @@ const Addoutinvoice = () => {
                       Remarks/Notes (Optional):
                     </b>
                   </p>
-                  <textarea
+                  <input
+                    type="text"
                     className="form-control tm_remarks_box"
                     placeholder="Add any additional details or instructions"
-                    rows="2"
-                    cols="50"
-                  ></textarea>
+                  />
                 </div>
               </div>
             </div>

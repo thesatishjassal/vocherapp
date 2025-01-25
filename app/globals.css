@@ -426,7 +426,9 @@ button.addrow:hover {
 }   
 /* Define custom sizes for the inputs */
 .input-small {
-  width: 100px;
+  width: 70px;
+  display: block;
+  margin: 0 auto !important;
 }
 .input-large {
   width: 250px; /* Larger input field for Item Name */

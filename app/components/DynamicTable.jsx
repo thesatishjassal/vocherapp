@@ -118,11 +118,11 @@ const DynamicTable = () => {
                 onChange={handleItemCodeChange}
                 onKeyDown={(e) => handleKeyDown(e, "itemName")}
                 placeholder="Enter item code"
-                className="form-control"
+                className="form-control input-small"
                 ref={inputRefs.itemCode}
               />
             </td>
-            <td>
+            <td className="px-">
               <input
                 type="text"
                 name="itemName"
@@ -142,7 +142,7 @@ const DynamicTable = () => {
                 onChange={(e) => setNewRow({ ...newRow, qty: e.target.value })}
                 onKeyDown={(e) => handleKeyDown(e, "unit")}
                 placeholder="Qty"
-                className="form-control"
+                className="form-control input-small"
                 ref={inputRefs.qty}
               />
             </td>
@@ -154,7 +154,7 @@ const DynamicTable = () => {
                 onChange={(e) => setNewRow({ ...newRow, unit: e.target.value })}
                 onKeyDown={(e) => handleKeyDown(e, "comments")}
                 placeholder="Enter unit"
-                className="form-control"
+                className="form-control input-small"
                 ref={inputRefs.unit}
               />
             </td>
@@ -166,7 +166,7 @@ const DynamicTable = () => {
                 onChange={(e) => setNewRow({ ...newRow, comments: e.target.value })}
                 onKeyDown={(e) => handleKeyDown(e, null)}
                 placeholder="Comments"
-                className="form-control"
+                className="form-control input-small"
                 ref={inputRefs.comments}
               />
             </td>
