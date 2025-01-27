@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Select from "react-select";
 
-const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
+const FindProduct = ({ showModal, setShowModal, handleProductSelect , productList }) => {
+  console.log(productList)
   const [selectedCode, setSelectedCode] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
 

@@ -58,7 +58,7 @@ const Addoutinvoice = () => {
                   Date: <b className="tm_primary_color">01.07.2022</b>
                   <button
                     type="button"
-                    className="btn modalaction_btn"
+                    className="btn modalaction_btn no-print"
                     onClick={handleIconClick}
                   >
                     <i className="fa-regular fa-calendar-days"></i>
@@ -98,7 +98,7 @@ const Addoutinvoice = () => {
 
                   <button
                     type="button"
-                    className="btn modalaction_btn "
+                    className="btn modalaction_btn no-print "
                     onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
@@ -131,7 +131,7 @@ const Addoutinvoice = () => {
                   <b className="tm_primary_color">Basic Details:</b>
                   <button
                     type="button"
-                    className="btn modalaction_btn"
+                    className="btn modalaction_btn no-print"
                     onClick={() => setInfoModal(true)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
