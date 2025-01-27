@@ -449,7 +449,7 @@ button.addrow:hover {
 
   /* Ensure the page is in landscape orientation */
   @page {
-    size: A4 landscape; /* Set to landscape orientation */
+    size: A4 ; /* Set to landscape orientation */
     margin: 0;
   }
 
@@ -480,8 +480,8 @@ select#transactionType {
   width: 95%;
 }
 .no-top-border {
-  border-top: 0px !important;
+  border-top: 0px !important; 
 }
 tr.no-print {
-  background-color: #eaf9ee;
+    background-color: #eaf9ee;
 }

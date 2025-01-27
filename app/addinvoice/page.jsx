@@ -1,5 +1,21 @@
 "use client";
+import InvoucherTable  from "../components/InvoucherTable";
+import BasicInfoModal from "../components/AddBasicInfo"
+import { useState } from "react";
+import CustomerModal from "../components/customerModal";
+
 const AddInvoice = () => {
+    const [InfoModal, setInfoModal] = useState(false);
+    const [showModalClientDetails, setShowModalClientDetails] = useState(false);
+    const [totalAmount, setTotalAmount] = useState(0);
+
+    const closeModal = () => {
+      setShowModalClientDetails(false); // Close the modal when this function is called
+    };
+      // Callback to receive the updated totalAmount from the child
+  const handleTotalAmountChange = (newTotalAmount) => {
+    setTotalAmount(newTotalAmount);
+  };
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -28,7 +44,11 @@ const AddInvoice = () => {
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
                   Transaction Types:{" "}
-                  <b className="tm_primary_color">Paid</b>
+                  <select id="transactionType" name="transactionType">
+                    <option value="Transfer">Transfer</option>
+                    <option value="Return">Return</option>
+                    <option value="ToCustomer">To Customer</option>
+                  </select>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
@@ -49,7 +69,13 @@ const AddInvoice = () => {
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">Supplier Details:</b>
+                  <b className="tm_primary_color">Supplier Details:</b> <button
+                    type="button"
+                    className="btn modalaction_btn no-print "
+                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>XYZ Ltd</b> <br />
@@ -60,7 +86,10 @@ const AddInvoice = () => {
                   Email:xyz@gmail.com | Phone: +91-1234567890
                   GST NO: JDKURE1525
                 </p>
-                Freight:<b> Paid </b>
+                Freight: <select id="transactionType" name="transactionType">
+                    <option value="Transfer">Paid</option>
+                    <option value="Return">To Pay</option>
+                  </select>
               </div>
 
               {/* Right Column */}
@@ -70,6 +99,14 @@ const AddInvoice = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
+                  {InfoModal && <BasicInfoModal setInfoModal={setInfoModal} />}
+                  <button
+                    type="button"
+                    className="btn modalaction_btn no-print"
+                    onClick={() => setInfoModal(true)}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
                 Invoice Number: <b>INV12345</b> <br />
                 {/* Issue Slip No:<b> SLIP98765</b> <br /> */}
@@ -87,95 +124,13 @@ const AddInvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <table className="table align-items-center justify-content-center mb-0">
-                    <thead>
-                      <tr>
-                        <th
-                          className="sr_col tm_semi_bold tm_primary_color tm_gray_bg"
-                          style={{ width: "50px" }}
-                        >
-                          SR NO
-                        </th>
-                        <th className="sku_col tm_semi_bold tm_primary_color tm_gray_bg">
-                          SKU
-                        </th>
-                        <th className="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
-                          Item Name
-                        </th>
-                        <th className="qty_col tm_semi_bold tm_primary_color tm_gray_bg">
-                          Qty
-                        </th>
-                        <th className="rack_col tm_semi_bold tm_primary_color tm_gray_bg">
-                          Rack Code
-                        </th>
-                        <th className="unit_col tm_semi_bold tm_primary_color tm_gray_bg">
-                          Unit
-                        </th>
-                        <th className="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
-                          Rate
-                        </th>
-                        <th className="tm_width_1 tm_semi_bold tm_primary_color tm_gray_bg">
-                          Discount
-                        </th>
-                        <th className="amount_col tm_semi_bold tm_primary_color tm_gray_bg">
-                          Amount
-                        </th>
-                        <th className="tm_width_2 tm_semi_bold tm_primary_color tm_gray_bg">
-                          Remarks
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="sr_col">1</td>
-                        <td className="sku_col">SKU-FAN001</td>
-                        <td className="tm_width_2">Ceiling Fan</td>
-                        <td className="qty_col">1</td>
-                        <td className="rack_col">A1</td>
-                        <td className="unit_col">pcs</td>
-                        <td className="tm_width_1">$50</td>
-                        <td className="tm_width_1">0%</td>
-                        <td className="amount_col">$50</td>
-                        <td className="tm_width_2">Energy-efficient fan</td>
-                      </tr>
-                      <tr>
-                        <td className="sr_col">2</td>
-                        <td className="sku_col">SKU-LIGHT001</td>
-                        <td className="tm_width_2">Fancy Light Bollard</td>
-                        <td className="qty_col">2</td>
-                        <td className="rack_col">B2</td>
-                        <td className="unit_col">pcs</td>
-                        <td className="tm_width_1">$150</td>
-                        <td className="tm_width_1">0%</td>
-                        <td className="amount_col">$300</td>
-                        <td className="tm_width_2">Outdoor decorative lighting</td>
-                      </tr>
-                      <tr>
-                        <td className="sr_col">3</td>
-                        <td className="sku_col">SKU-BULB001</td>
-                        <td className="tm_width_2">LED Bulb</td>
-                        <td className="qty_col">5</td>
-                        <td className="rack_col">C3</td>
-                        <td className="unit_col">pcs</td>
-                        <td className="tm_width_1">$10</td>
-                        <td className="tm_width_1">0%</td>
-                        <td className="amount_col">$50</td>
-                        <td className="tm_width_2">Energy-saving LED</td>
-                      </tr>
-                      <tr>
-                        <td className="sr_col">4</td>
-                        <td className="sku_col">SKU-STRIP001</td>
-                        <td className="tm_width_2">LED Strip Lights</td>
-                        <td className="qty_col">3</td>
-                        <td className="rack_col">D4</td>
-                        <td className="unit_col">pcs</td>
-                        <td className="tm_width_1">$30</td>
-                        <td className="tm_width_1">0%</td>
-                        <td className="amount_col">$90</td>
-                        <td className="tm_width_2">Flexible LED strips</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <InvoucherTable onTotalAmountChange={handleTotalAmountChange} />
+                  {showModalClientDetails && ( // Conditionally render the modal
+                    <CustomerModal
+                      onClose={closeModal} // Pass the closeModal function to the modal
+                      client={showModalClientDetails}
+                    />
+                  )}
                 </div>
               </div>
               <div className="tm_invoice_footer my-2">
@@ -199,7 +154,7 @@ const AddInvoice = () => {
                           Total Amount Without GST
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          $1650
+                        {totalAmount.toFixed(2)}
                         </td>
                       </tr>
                     </tbody>

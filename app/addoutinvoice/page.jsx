@@ -21,7 +21,7 @@ const Addoutinvoice = () => {
   };
 
   return (
-    <div className="card tm_container my-4 print-container ">
+    <div className="card tm_container my-4 print-container landscape">
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">

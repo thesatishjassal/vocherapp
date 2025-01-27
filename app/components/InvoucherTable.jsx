@@ -1,7 +1,7 @@
-import React, { useState, useRef, useMemo } from "react";
-import FindProduct from "../components/FindPropduct"; // Import FindProduct component
+import React, { useState, useRef, useEffect } from "react";
+import FindProduct from "../components/FindPropduct";
 
-const DynamicTable = ({ items = [] }) => {
+const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
     itemCode: "",
@@ -9,8 +9,12 @@ const DynamicTable = ({ items = [] }) => {
     qty: "",
     unit: "",
     rackCode: "",
+    rate: "",
+    discount: "",
+    amount: "",
     comments: "",
   });
+  const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const inputRefs = {
@@ -19,24 +23,46 @@ const DynamicTable = ({ items = [] }) => {
     qty: useRef(null),
     unit: useRef(null),
     rackCode: useRef(null),
+    rate: useRef(null),
+    discount: useRef(null),
     comments: useRef(null),
   };
 
-  // Add new row to the table
+  const calculateAmount = (qty, rate, discount) => {
+    const discountAmount = (rate * qty * (discount || 0)) / 100;
+    return qty * rate - discountAmount;
+  };
+
   const handleAddRow = () => {
-    if (newRow.itemCode && newRow.itemName && newRow.qty && newRow.unit) {
+    const { qty, rate, discount } = newRow;
+
+    if (newRow.itemCode && newRow.itemName && qty && rate) {
+      const amount = calculateAmount(qty, rate, discount);
+
       setRows((prevRows) => [
         ...prevRows,
         {
           id: prevRows.length + 1,
           ...newRow,
+          amount,
         },
       ]);
+
+      setTotalAmount((prevTotal) => {
+        const updatedTotal = prevTotal + amount;
+        if (onTotalAmountChange) onTotalAmountChange(updatedTotal); // Pass updated total to the parent
+        return updatedTotal;
+      });
+
       setNewRow({
         itemCode: "",
         itemName: "",
         qty: "",
         unit: "",
+        rackCode: "",
+        rate: "",
+        discount: "",
+        amount: "",
         comments: "",
       });
       inputRefs.itemCode.current.focus();
@@ -45,7 +71,6 @@ const DynamicTable = ({ items = [] }) => {
     }
   };
 
-  // Handle Enter key for navigation between inputs
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -57,7 +82,6 @@ const DynamicTable = ({ items = [] }) => {
     }
   };
 
-  // Handle field changes dynamically
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
     if (["itemCode", "itemName"].includes(field) && value.trim()) {
@@ -66,44 +90,19 @@ const DynamicTable = ({ items = [] }) => {
     }
   };
 
-  // Filter product list based on query
-  const filterProducts = (query, field) => {
-    const filtered = items.filter((item) => {
-      if (field === "itemCode") {
-        return item.code.toLowerCase().includes(query.toLowerCase());
-      } else if (field === "itemName") {
-        return item.name.toLowerCase().includes(query.toLowerCase());
-      }
-      return false;
-    });
-    setProductList(filtered);
-  };
-  // Handle product selection from modal
   const handleProductSelect = (product) => {
-    console.log(product);
-setNewRow((prev) => ({
-  ...prev,
-  itemCode: product.value,
-  itemName: product.name,
-  unit: product.unit,
-  rackCode: product.rackCode,
-}));
-
+    setNewRow((prev) => ({
+      ...prev,
+      itemCode: product.value,
+      itemName: product.name,
+      unit: product.unit,
+      rackCode: product.rackCode,
+    }));
     setShowModal(false);
-    // Focus on the 'qty' input field
     setTimeout(() => {
       inputRefs.qty.current?.focus();
     }, 0);
   };
-
-  // Memoize filtered products
-  const filteredProducts = useMemo(() => {
-    return items.filter(
-      (item) =>
-        item.code.toLowerCase().includes(newRow.itemCode.toLowerCase()) ||
-        item.name.toLowerCase().includes(newRow.itemName.toLowerCase())
-    );
-  }, [items, newRow.itemCode, newRow.itemName]);
 
   return (
     <div>
@@ -114,8 +113,11 @@ setNewRow((prev) => ({
             <th>Item Code</th>
             <th>Item Name</th>
             <th>Unit</th>
-            <th>Rackcode</th>
+            <th>Rack Code</th>
             <th>Qty</th>
+            <th>Rate</th>
+            <th>Discount (%)</th>
+            <th>Amount</th>
             <th>Comments</th>
           </tr>
         </thead>
@@ -128,6 +130,9 @@ setNewRow((prev) => ({
               <td>{row.unit}</td>
               <td>{row.rackCode}</td>
               <td>{row.qty}</td>
+              <td>{row.rate}</td>
+              <td>{row.discount}</td>
+              <td>{row.amount.toFixed(2)}</td>
               <td>{row.comments}</td>
             </tr>
           ))}
@@ -172,10 +177,10 @@ setNewRow((prev) => ({
             <td>
               <input
                 type="text"
-                name="rackcode"
+                name="rackCode"
                 value={newRow.rackCode}
-                onChange={(e) => handleFieldChange("rackcode", e.target.value)}
-                placeholder="Rackcode"
+                onChange={(e) => handleFieldChange("rackCode", e.target.value)}
+                placeholder="Rack Code"
                 className="form-control input-small"
                 ref={inputRefs.rackCode}
                 disabled
@@ -187,13 +192,46 @@ setNewRow((prev) => ({
                 name="qty"
                 value={newRow.qty}
                 onChange={(e) => handleFieldChange("qty", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "comments")}
+                onKeyDown={(e) => handleKeyDown(e, "rate")}
                 placeholder="Qty"
                 className="form-control input-small"
                 ref={inputRefs.qty}
               />
             </td>
-
+            <td>
+              <input
+                type="number"
+                name="rate"
+                value={newRow.rate}
+                onChange={(e) => handleFieldChange("rate", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "discount")}
+                placeholder="Rate"
+                className="form-control input-small"
+                ref={inputRefs.rate}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="discount"
+                value={newRow.discount}
+                onChange={(e) => handleFieldChange("discount", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "comments")}
+                placeholder="Discount (%)"
+                className="form-control input-small"
+                ref={inputRefs.discount}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="amount"
+                value={newRow.amount}
+                disabled
+                placeholder="Amount"
+                className="form-control input-small"
+              />
+            </td>
             <td>
               <input
                 type="text"
@@ -210,7 +248,6 @@ setNewRow((prev) => ({
         </tbody>
       </table>
 
-      {/* FindProduct Modal */}
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
@@ -224,4 +261,4 @@ setNewRow((prev) => ({
   );
 };
 
-export default DynamicTable;
+export default InvoucherTable;
