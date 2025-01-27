@@ -21,7 +21,7 @@ const AddInvoice = () => {
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
-            <div className="tm_invoice_head tm_align_center tm_mb20">
+            <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
                   <img
@@ -39,7 +39,7 @@ const AddInvoice = () => {
                 </p>
               </div>
             </div>
-            <div className="tm_invoice_info tm_mb20">
+            <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
@@ -65,7 +65,7 @@ const AddInvoice = () => {
             >
               {/* Left Column */}
               <div
-                className="tm_invoice_left"
+                className="tm_invoice_left mt-0"
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
@@ -81,10 +81,9 @@ const AddInvoice = () => {
                   Name: <b>XYZ Ltd</b> <br />
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
                  
-                  State: <b>XYZ State</b>, <b>Country</b> <br />
-                  Pincode: <b>123456</b> <br />
-                  Email:xyz@gmail.com | Phone: +91-1234567890<br />
-                  GST NO: JDKURE1525
+                  State: <b>XYZ State</b>, <b>Country</b> | Pincode: <b>123456</b> <br />
+                  Email:<b>xyz@gmail.com</b> | Phone: <b>+91-1234567890</b><br />
+                  GST NO: <b>JDKURE1525</b>
                 </p>
                 Freight: <select id="transactionType" name="transactionType">
                     <option value="Transfer">Paid</option>
