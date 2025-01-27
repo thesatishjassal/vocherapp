@@ -25,7 +25,7 @@ const Addoutinvoice = () => {
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
-            <div className="tm_invoice_head tm_align_center tm_mb20">
+            <div className="tm_invoice_head tm_align_center tm_mb20 mb-2">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
                   <img
@@ -43,7 +43,7 @@ const Addoutinvoice = () => {
                 </p>
               </div>
             </div>
-            <div className="tm_invoice_info tm_mb20">
+            <div className="tm_invoice_info tm_mb20 mb-2">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
