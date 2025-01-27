@@ -479,3 +479,6 @@ select#transactionType {
 .tm_table_responsive .form-control {
   width: 95%;
 }
+.no-top-border {
+  border-top: 0px !important;
+}
