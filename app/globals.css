@@ -482,3 +482,6 @@ select#transactionType {
 .no-top-border {
   border-top: 0px !important;
 }
+tr.no-print {
+  background-color: #eaf9ee;
+}

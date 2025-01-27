@@ -11,7 +11,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect , productLis
   };
 
   const items = [
-    { code: "P001", name: "ORIENT 1200MM AEROQUIET FAN CHECKED FINISH", unit: "pcs", rackCode: "A1" },
+    { code: "P001", name: "ORIENT 1200MM AEROQUIET FAN CHECKED FINISH", unit: "pcs", rackCode: "A1, A2" },
     { code: "P002", name: "ORIENT 1200MM AEROQUIET FAN ROASTED COFFE", unit: "pcs", rackCode: "A2" },
     { code: "P003", name: "ORIENT 200MM 3-1DE VENTILATION FAN GREY-3110810417110", unit: "box", rackCode: "A3" },
     { code: "P004", name: "ORIENT 450MM TORNADO WALL", unit: "pcs", rackCode: "A4" },
