@@ -91,7 +91,7 @@ const Addoutinvoice = () => {
               {/* Left Column */}
               <div
                 className="tm_invoice_left"
-                style={{ flex: 1, textAlign: "left" }}
+                style={{ flex: 1, textAlign: "left", marginTop: "-10px" }}
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">To Customer: </b>
@@ -146,11 +146,19 @@ const Addoutinvoice = () => {
               </div>
             </div>
             <tr className="d-flex py-2 px-0 no-top-border">
-            <td className="py-0 pl-0 no-top-border">Package <b>2 Box</b></td>
-            <td className="py-0 no-top-border">Order BY: <b>johny</b></td>
-            <td className="py-0 no-top-border">Sale Person: <b>John</b></td>
-            <td className="py-0 no-top-border">Freight Amount: <b>200</b></td>
-          </tr>
+              <td className="py-0 pl-0 no-top-border">
+                Package <b>2 Box</b>
+              </td>
+              <td className="py-0 no-top-border">
+                Order BY: <b>johny</b>
+              </td>
+              <td className="py-0 no-top-border">
+                Sale Person: <b>John</b>
+              </td>
+              <td className="py-0 no-top-border">
+                Freight Amount: <b>200</b>
+              </td>
+            </tr>
             <p className="tm_mb2">
               <b className="tm_primary_color">Product info:</b>
             </p>
