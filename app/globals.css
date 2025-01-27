@@ -240,7 +240,7 @@ img.logo {
   text-align: center !important;
 }
 .tm_round_border td{
-  text-align: center !important;   border-left: 1px solid #e3e3e7 !important;
+  text-align: center !important;   
   border-right: 1px solid #e3e3e7 !important;
     word-break: break-word;
   white-space: normal !important;
@@ -472,4 +472,10 @@ button.addrow:hover {
 }
 select#transactionType {
   border: 1px solid #e3e3e7;
+}
+.pl-0 {
+  padding-left: 0 !important;
+}
+.tm_table_responsive .form-control {
+  width: 95%;
 }

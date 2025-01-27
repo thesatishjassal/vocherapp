@@ -81,7 +81,7 @@ const Addoutinvoice = () => {
               </div>
             </div>
             <div
-              className="tm_invoice_head tm_mb10"
+              className="tm_invoice_head txm_mb10 m-0"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -110,7 +110,7 @@ const Addoutinvoice = () => {
                     />
                   )}
                 </p>
-                <p style={{ textAlign: "justify" }}>
+                <p style={{ textAlign: "justify" }} className="m-0">
                   Name: <b>XYZ Ltd</b> <br />
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
                   State: <b>XYZ State</b>, <b>Country</b> Pincode: <b>123456</b>{" "}
@@ -146,7 +146,7 @@ const Addoutinvoice = () => {
               </div>
             </div>
             <tr className="d-flex py-2 px-0">
-            <td className="py-0">Package <b>2 Box</b></td>
+            <td className="py-0 pl-0">Package <b>2 Box</b></td>
             <td className="py-0">Order BY: <b>johny</b></td>
             <td className="py-0">Sale Person: <b>John</b></td>
             <td className="py-0">Freight Amount: <b>200</b></td>

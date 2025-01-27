@@ -1,88 +1,94 @@
-import React, { useState, useRef } from "react";
-import FindProduct from "../components/FindPropduct";  // Import FindProduct component
+import React, { useState, useRef, useMemo } from "react";
+import FindProduct from "../components/FindPropduct"; // Import FindProduct component
 
-const DynamicTable = () => {
+const DynamicTable = ({ items = [] }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
     itemCode: "",
     itemName: "",
     qty: "",
     unit: "",
+    rackCode: "",
     comments: "",
   });
 
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-
   const inputRefs = {
     itemCode: useRef(null),
     itemName: useRef(null),
     qty: useRef(null),
     unit: useRef(null),
+    rackCode: useRef(null),
     comments: useRef(null),
   };
 
+  // Add new row to the table
   const handleAddRow = () => {
     if (newRow.itemCode && newRow.itemName && newRow.qty && newRow.unit) {
-      setRows([
-        ...rows,
+      setRows((prevRows) => [
+        ...prevRows,
         {
-          id: rows.length + 1,
-          itemCode: newRow.itemCode,
-          itemName: newRow.itemName,
-          qty: newRow.qty,
-          unit: newRow.unit,
-          comments: newRow.comments,
+          id: prevRows.length + 1,
+          ...newRow,
         },
       ]);
       setNewRow({ itemCode: "", itemName: "", qty: "", unit: "", comments: "" });
+      inputRefs.itemCode.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
   };
 
+  // Handle Enter key for navigation between inputs
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
-      e.preventDefault(); 
-      if (nextField && inputRefs[nextField]) {
-        inputRefs[nextField].current.focus(); 
+      e.preventDefault();
+      if (nextField && inputRefs[nextField]?.current) {
+        inputRefs[nextField].current.focus();
       } else {
-        handleAddRow(); 
-        setTimeout(() => {
-          inputRefs.itemCode.current.focus();
-        }, 100);
+        handleAddRow();
       }
     }
   };
 
-  // Trigger modal when typing in itemCode or itemName
-  const handleItemCodeChange = (e) => {
-    setNewRow({ ...newRow, itemCode: e.target.value });
-    if (e.target.value.trim()) {
-      setShowModal(true); // Show modal if input is not empty
-      filterProducts(e.target.value);
+  // Handle field changes dynamically
+  const handleFieldChange = (field, value) => {
+    setNewRow((prev) => ({ ...prev, [field]: value }));
+    if (["itemCode", "itemName"].includes(field) && value.trim()) {
+      setShowModal(true);
+      filterProducts(value);
     }
   };
 
-  const handleItemNameChange = (e) => {
-    setNewRow({ ...newRow, itemName: e.target.value });
-    if (e.target.value.trim()) {
-      setShowModal(true); // Show modal if input is not empty
-      filterProducts(e.target.value);
-    }
-  };
-
-  // Filter product list based on item code or name
+  // Filter product list based on query
   const filterProducts = (query) => {
-    const filtered = items.filter((item) => item.toLowerCase().includes(query.toLowerCase()));
+    const filtered = items.filter((item) =>
+      item.toLowerCase().includes(query.toLowerCase())
+    );
     setProductList(filtered);
   };
 
+  // Handle product selection from modal
   const handleProductSelect = (product) => {
-    setNewRow({ ...newRow, itemName: product });
+    console.log(product)
+    setNewRow((prev) => ({ ...prev, itemCode: product.value }));
+    setNewRow((prev) => ({ ...prev, itemName: product.name }));
+    setNewRow((prev) => ({ ...prev, unit: product.unit }));
+    setNewRow((prev) => ({ ...prev, rackCode: product.rackCode }));
     setShowModal(false);
+     // Focus on the 'qty' input field
+  setTimeout(() => {
+    inputRefs.qty.current?.focus();
+  }, 0);
   };
+
+  // Memoize filtered products
+  const filteredProducts = useMemo(() => {
+    return items.filter((item) =>
+      item.toLowerCase().includes(newRow.itemCode.toLowerCase())
+    );
+  }, [items, newRow.itemCode]);
 
   return (
     <div>
@@ -92,10 +98,11 @@ const DynamicTable = () => {
             <th>SR NO</th>
             <th>Item Code</th>
             <th>Item Name</th>
-            <th>Qty</th>
             <th>Unit</th>
+            <th>Rackcode</th>
+            <th>Qty</th>
             <th>Comments</th>
-          </tr>
+          </tr> 
         </thead>
         <tbody>
           {rows.map((row, index) => (
@@ -103,31 +110,32 @@ const DynamicTable = () => {
               <td>{index + 1}</td>
               <td>{row.itemCode}</td>
               <td>{row.itemName}</td>
-              <td>{row.qty}</td>
               <td>{row.unit}</td>
+              <td>{row.rackCode}</td>
+              <td>{row.qty}</td>
               <td>{row.comments}</td>
             </tr>
           ))}
-          <tr>
+          <tr className="no-print">
             <td>#</td>
             <td>
               <input
                 type="text"
                 name="itemCode"
                 value={newRow.itemCode}
-                onChange={handleItemCodeChange}
+                onChange={(e) => handleFieldChange("itemCode", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "itemName")}
                 placeholder="Enter item code"
                 className="form-control input-small"
                 ref={inputRefs.itemCode}
               />
             </td>
-            <td className="px-">
+            <td>
               <input
                 type="text"
                 name="itemName"
                 value={newRow.itemName}
-                onChange={handleItemNameChange}
+                onChange={(e) => handleFieldChange("itemName", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "qty")}
                 placeholder="Enter item name"
                 className="form-control"
@@ -136,34 +144,47 @@ const DynamicTable = () => {
             </td>
             <td>
               <input
+                type="text"
+                name="unit"
+                value={newRow.unit}
+                onChange={(e) => handleFieldChange("unit", e.target.value)}
+                placeholder="Enter unit"
+                className="form-control input-small"
+                ref={inputRefs.unit}
+                disabled
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="rackcode"
+                value={newRow.rackCode}
+                onChange={(e) => handleFieldChange("rackcode", e.target.value)}
+                placeholder="Rackcode"
+                className="form-control input-small"
+                ref={inputRefs.rackCode}
+                disabled
+              />
+            </td>
+            <td>
+              <input
                 type="number"
                 name="qty"
                 value={newRow.qty}
-                onChange={(e) => setNewRow({ ...newRow, qty: e.target.value })}
-                onKeyDown={(e) => handleKeyDown(e, "unit")}
+                onChange={(e) => handleFieldChange("qty", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "comments")}
                 placeholder="Qty"
                 className="form-control input-small"
                 ref={inputRefs.qty}
               />
             </td>
-            <td>
-              <input
-                type="text"
-                name="unit"
-                value={newRow.unit}
-                onChange={(e) => setNewRow({ ...newRow, unit: e.target.value })}
-                onKeyDown={(e) => handleKeyDown(e, "comments")}
-                placeholder="Enter unit"
-                className="form-control input-small"
-                ref={inputRefs.unit}
-              />
-            </td>
+     
             <td>
               <input
                 type="text"
                 name="comments"
                 value={newRow.comments}
-                onChange={(e) => setNewRow({ ...newRow, comments: e.target.value })}
+                onChange={(e) => handleFieldChange("comments", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, null)}
                 placeholder="Comments"
                 className="form-control input-small"
@@ -178,7 +199,7 @@ const DynamicTable = () => {
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
-        productList={productList}
+        productList={productList.length > 0 ? productList : filteredProducts}
         handleProductSelect={handleProductSelect}
       />
     </div>
