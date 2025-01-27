@@ -1,6 +1,6 @@
 "use client";
 import InvoucherTable  from "../components/InvoucherTable";
-import BasicInfoModal from "../components/AddBasicInfo"
+import ReciverDetails from "../components/Reciverdeatails"
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
 
@@ -83,7 +83,7 @@ const AddInvoice = () => {
                  
                   State: <b>XYZ State</b>, <b>Country</b> <br />
                   Pincode: <b>123456</b> <br />
-                  Email:xyz@gmail.com | Phone: +91-1234567890
+                  Email:xyz@gmail.com | Phone: +91-1234567890<br />
                   GST NO: JDKURE1525
                 </p>
                 Freight: <select id="transactionType" name="transactionType">
@@ -99,7 +99,7 @@ const AddInvoice = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
-                  {InfoModal && <BasicInfoModal setInfoModal={setInfoModal} />}
+                  {InfoModal && <ReciverDetails setInfoModal={setInfoModal} />}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
