@@ -96,7 +96,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
         backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}
     >
-      <div className="modal-dialog addwarehouseform">
+      <div className="modal-dialog modal-dialog-centered addwarehouseform">
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5" id="staticBackdropLabel">
