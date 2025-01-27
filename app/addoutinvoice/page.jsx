@@ -145,20 +145,21 @@ const Addoutinvoice = () => {
                 Vehicle No: <b>PB 08: 1014</b> <br />
               </div>
             </div>
-            <tr className="d-flex py-2 px-0 no-top-border">
-              <td className="py-0 pl-0 no-top-border">
-                Package <b>2 Box</b>
-              </td>
-              <td className="py-0 no-top-border">
-                Order BY: <b>johny</b>
-              </td>
-              <td className="py-0 no-top-border">
-                Sale Person: <b>John</b>
-              </td>
-              <td className="py-0 no-top-border">
-                Freight Amount: <b>200</b>
-              </td>
-            </tr>
+            <div className="d-flex py-2 px-0 no-top-border">
+  <div className="flex-grow-1 py-0 pl-0 no-top-border">
+    Package <b>2 Box</b>
+  </div>
+  <div className="flex-grow-1 py-0 no-top-border">
+    Order BY: <b>Johny</b>
+  </div>
+  <div className="flex-grow-1 py-0 no-top-border">
+    Sale Person: <b>John</b>
+  </div>
+  <div className="flex-grow-1 py-0 no-top-border">
+    Freight Amount: <b>200</b>
+  </div>
+</div>
+
             <p className="tm_mb2">
               <b className="tm_primary_color">Product info:</b>
             </p>

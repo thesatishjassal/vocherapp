@@ -33,7 +33,13 @@ const DynamicTable = ({ items = [] }) => {
           ...newRow,
         },
       ]);
-      setNewRow({ itemCode: "", itemName: "", qty: "", unit: "", comments: "" });
+      setNewRow({
+        itemCode: "",
+        itemName: "",
+        qty: "",
+        unit: "",
+        comments: "",
+      });
       inputRefs.itemCode.current.focus();
     } else {
       alert("Please fill in all required fields.");
@@ -62,33 +68,43 @@ const DynamicTable = ({ items = [] }) => {
   };
 
   // Filter product list based on query
-  const filterProducts = (query) => {
-    const filtered = items.filter((item) =>
-      item.toLowerCase().includes(query.toLowerCase())
-    );
+  const filterProducts = (query, field) => {
+    const filtered = items.filter((item) => {
+      if (field === "itemCode") {
+        return item.code.toLowerCase().includes(query.toLowerCase());
+      } else if (field === "itemName") {
+        return item.name.toLowerCase().includes(query.toLowerCase());
+      }
+      return false;
+    });
     setProductList(filtered);
   };
-
   // Handle product selection from modal
   const handleProductSelect = (product) => {
-    console.log(product)
-    setNewRow((prev) => ({ ...prev, itemCode: product.value }));
-    setNewRow((prev) => ({ ...prev, itemName: product.name }));
-    setNewRow((prev) => ({ ...prev, unit: product.unit }));
-    setNewRow((prev) => ({ ...prev, rackCode: product.rackCode }));
+    console.log(product);
+setNewRow((prev) => ({
+  ...prev,
+  itemCode: product.value,
+  itemName: product.name,
+  unit: product.unit,
+  rackCode: product.rackCode,
+}));
+
     setShowModal(false);
-     // Focus on the 'qty' input field
-  setTimeout(() => {
-    inputRefs.qty.current?.focus();
-  }, 0);
+    // Focus on the 'qty' input field
+    setTimeout(() => {
+      inputRefs.qty.current?.focus();
+    }, 0);
   };
 
   // Memoize filtered products
   const filteredProducts = useMemo(() => {
-    return items.filter((item) =>
-      item.toLowerCase().includes(newRow.itemCode.toLowerCase())
+    return items.filter(
+      (item) =>
+        item.code.toLowerCase().includes(newRow.itemCode.toLowerCase()) ||
+        item.name.toLowerCase().includes(newRow.itemName.toLowerCase())
     );
-  }, [items, newRow.itemCode]);
+  }, [items, newRow.itemCode, newRow.itemName]);
 
   return (
     <div>
@@ -102,7 +118,7 @@ const DynamicTable = ({ items = [] }) => {
             <th>Rackcode</th>
             <th>Qty</th>
             <th>Comments</th>
-          </tr> 
+          </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
@@ -178,7 +194,7 @@ const DynamicTable = ({ items = [] }) => {
                 ref={inputRefs.qty}
               />
             </td>
-     
+
             <td>
               <input
                 type="text"
@@ -199,7 +215,10 @@ const DynamicTable = ({ items = [] }) => {
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
-        productList={productList.length > 0 ? productList : filteredProducts}
+        productList={{
+          PassItemCode: newRow.itemCode.toLowerCase(),
+          PassItemName: newRow.itemName.toLowerCase(),
+        }}
         handleProductSelect={handleProductSelect}
       />
     </div>
