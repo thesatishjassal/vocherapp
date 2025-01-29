@@ -234,11 +234,7 @@ img.logo {
   padding: 0px 15px;
   border-radius: 10px !important;
 }
-.table thead th {
-  /* border-left: 1px solid #e3e3e7 !important; */
-  /* border-right: 1px solid #e3e3e7 !important; */
-  text-align: center !important;
-}
+
 .tm_round_border td{
   text-align: center !important;   
   border-right: 1px solid #e3e3e7 !important;
@@ -450,7 +446,7 @@ button.addrow:hover {
   /* Ensure the page is in landscape orientation */
   @page {
     size: A4 ; /* Set to landscape orientation */
-    margin: 0;
+    /* margin: 0; */
   }
 
   /* Make the container occupy only the left half of the page */
@@ -467,7 +463,7 @@ button.addrow:hover {
 
   /* Optional: Adjust font size for better fit */
   .print-container * {
-    font-size: 12px; /* Adjust as needed */
+    font-size: 12px !important; /* Adjust as needed */
   }
 }
 select#transactionType {

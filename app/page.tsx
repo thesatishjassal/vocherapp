@@ -35,7 +35,7 @@ export default function Home() {
 
         {/* Add Invoice */}
         <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href=".">
+          <a href="/products">
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>
               <div className="card-body p-3 position-relative">
