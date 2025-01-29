@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import ClientDetailsModal from "../components/ClientDetailsModal";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+
 import * as yup from "yup";
 
-const productSchema = yup.object().shape({
+const productSchema  = yup.object().shape({
   itemCode: yup.string().required("Item Code is required"),
   productName: yup.string().required("Product Name is required"),
   description: yup.string().required("Description is required"),
@@ -30,7 +31,14 @@ const productSchema = yup.object().shape({
     .test("fileSize", "File size must be less than 2MB", (value) =>
       value && value[0] ? value[0].size <= 2 * 1024 * 1024 : false
     ),
+  
+  // New Validation for Dropdown Fields
+  size: yup.string().required("Size is required"),
+  color: yup.string().required("Color is required"),
+  model: yup.string().required("Model is required"),
+  brand: yup.string().required("Brand is required"),
 });
+
 const AddProductForm = () => {
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -236,85 +244,122 @@ const filteredProducts = products
                         ></button>
                       </div>
                       <div className="modal-body  py-3 ">
-                        <form
-                          onSubmit={handleSubmit(onSubmit)}
-                          className="row g-3"
-                        >
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="text"
-                              {...register("itemCode")}
-                              className="form-control"
-                              placeholder="Item Code"
-                            />
-                          </div>
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="text"
-                              {...register("productName")}
-                              className="form-control"
-                              placeholder="Product Name"
-                            />
-                          </div>
-                          <div className="col-md-12  m-0  ">
-                            <textarea
-                              {...register("description")}
-                              className="form-control"
-                              placeholder="Description"
-                            ></textarea>
-                          </div>
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="text"
-                              {...register("category")}
-                              className="form-control"
-                              placeholder="Category"
-                            />
-                          </div>
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="text"
-                              {...register("subcategory")}
-                              className="form-control"
-                              placeholder="Subcategory"
-                            />
-                          </div>
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="number"
-                              {...register("productPrice")}
-                              className="form-control"
-                              placeholder="Product Price"
-                            />
-                          </div>
+                      <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+  <div className="col-md-6 m-0">
+    <input
+      type="text"
+      {...register("itemCode")}
+      className="form-control"
+      placeholder="Item Code"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="text"
+      {...register("productName")}
+      className="form-control"
+      placeholder="Product Name"
+    />
+  </div>
+  <div className="col-md-12 m-0">
+    <textarea
+      {...register("description")}
+      className="form-control"
+      placeholder="Description"
+    ></textarea>
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="text"
+      {...register("category")}
+      className="form-control"
+      placeholder="Category"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="text"
+      {...register("subcategory")}
+      className="form-control"
+      placeholder="Subcategory"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="number"
+      {...register("productPrice")}
+      className="form-control"
+      placeholder="Product Price"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="number"
+      {...register("stockQuantity")}
+      className="form-control"
+      placeholder="Stock Quantity"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="text"
+      {...register("rackCode")}
+      className="form-control"
+      placeholder="Rack Code"
+    />
+  </div>
+  <div className="col-md-6 m-0">
+    <input
+      type="file"
+      {...register("productImage")}
+      className="form-control"
+    />
+  </div>
+  
+  {/* Dropdown for Size */}
+  <div className="col-md-6 m-0">
+    <select {...register("size")} className="form-control">
+      <option value="">Select Size</option>
+      <option value="Small">Small</option>
+      <option value="Medium">Medium</option>
+      <option value="Large">Large</option>
+      <option value="Extra Large">Extra Large</option>
+    </select>
+  </div>
 
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="number"
-                              {...register("stockQuantity")}
-                              className="form-control"
-                              placeholder="Stock Quantity"
-                            />
-                          </div>
+  {/* Dropdown for Color */}
+  <div className="col-md-6 m-0">
+    <select {...register("color")} className="form-control">
+      <option value="">Select Color</option>
+      <option value="Red">Red</option>
+      <option value="Blue">Blue</option>
+      <option value="Green">Green</option>
+      <option value="Black">Black</option>
+      <option value="White">White</option>
+    </select>
+  </div>
 
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="text"
-                              {...register("rackCode")}
-                              className="form-control"
-                              x
-                              placeholder="Rack Code"
-                            />
-                          </div>
+  {/* Dropdown for Model */}
+  <div className="col-md-6 m-0">
+    <select {...register("model")} className="form-control">
+      <option value="">Select Model</option>
+      <option value="Model A">Model A</option>
+      <option value="Model B">Model B</option>
+      <option value="Model C">Model C</option>
+    </select>
+  </div>
 
-                          <div className="col-md-6 m-0">
-                            <input
-                              type="file"
-                              {...register("productImage")}
-                              className="form-control"
-                            />
-                          </div>
-                        </form>
+  {/* Dropdown for Brand */}
+  <div className="col-md-6 m-0">
+    <select {...register("brand")} className="form-control">
+      <option value="">Select Brand</option>
+      <option value="Brand X">Brand X</option>
+      <option value="Brand Y">Brand Y</option>
+      <option value="Brand Z">Brand Z</option>
+    </select>
+  </div>
+</form>
+
                       </div>
                       <div className="modal-footer">
                         <button
