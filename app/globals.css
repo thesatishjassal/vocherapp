@@ -489,3 +489,7 @@ img.product_img {
   width: 100%;
   max-width: 100px !important;
 }
+.term_box p {
+  margin: 0;
+  font-size: 12px;
+}

@@ -1,20 +1,20 @@
 "use client";
-import InvoucherTable  from "../components/InvoucherTable";
-import ReciverDetails from "../components/Reciverdeatails"
+import InvoucherTable from "../components/InvoucherTable";
+import ReciverDetails from "../components/Reciverdeatails";
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
 import QuotationTable from "../components/QuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
 
 const Quotation = () => {
-    const [InfoModal, setInfoModal] = useState(false);
-    const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-    const [totalAmount, setTotalAmount] = useState(0);
+  const [InfoModal, setInfoModal] = useState(false);
+  const [showModalClientDetails, setShowModalClientDetails] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
 
-    const closeModal = () => {
-      setShowModalClientDetails(false); // Close the modal when this function is called
-    };
-      // Callback to receive the updated totalAmount from the child
+  const closeModal = () => {
+    setShowModalClientDetails(false); // Close the modal when this function is called
+  };
+  // Callback to receive the updated totalAmount from the child
   const handleTotalAmountChange = (newTotalAmount) => {
     setTotalAmount(newTotalAmount);
   };
@@ -63,7 +63,8 @@ const Quotation = () => {
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">Customer Details:</b> <button
+                  <b className="tm_primary_color">Customer Details:</b>{" "}
+                  <button
                     type="button"
                     className="btn modalaction_btn no-print "
                     onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
@@ -74,8 +75,9 @@ const Quotation = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>Rajesh Kumar</b> <br />
                   City: <b>Jalandhar City</b> <br />
-                  Phone: <b>+91-1234567890</b><br />
-                   {/* GST NO: <b>JDKURE1525</b> */}
+                  Phone: <b>+91-1234567890</b>
+                  <br />
+                  {/* GST NO: <b>JDKURE1525</b> */}
                 </p>
                 {/* Freight: <select id="transactionType" name="transactionType">
                     <option value="Transfer">Paid</option>
@@ -101,8 +103,12 @@ const Quotation = () => {
                 </p>
                 {/* Issue Slip No:<b> SLIP98765</b> <br /> */}
                 {/* Sale Order No:<b> SO123456 </b><br /> */}
-                Address: <b>Nakodar Road Beside Silver OAK Appartments
-                Jalandhar City, Punjab-144003</b> <br />
+                Address:{" "}
+                <b>
+                  Nakodar Road Beside Silver OAK Appartments Jalandhar City,
+                  Punjab-144003
+                </b>{" "}
+                <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Salesperson: <b>Amar</b> <br />
                 <br />
@@ -114,7 +120,9 @@ const Quotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <QuotationTable onTotalAmountChange={handleTotalAmountChange} />
+                  <QuotationTable
+                    onTotalAmountChange={handleTotalAmountChange}
+                  />
                   {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
                       onClose={closeModal} // Pass the closeModal function to the modal
@@ -137,9 +145,67 @@ const Quotation = () => {
                 </div>
 
                 <div className="tm_right_footer">
-                    <GSTCalculator totalAmount ={totalAmount} />
+                  <GSTCalculator totalAmount={totalAmount} />
                 </div>
               </div>
+            </div>
+            <hr />
+            <p>
+              <b><i>Thank You for considering us for your needs. Here is the purposal
+              as you requested.</i></b>
+            </p>
+            <div className="term_box">
+              <h6>Terms and Conditions:</h6>
+              <p>
+                GST : <b>Including in above prices as per applicable..</b>{" "}
+              </p>
+              <p>
+                Payment Terms : <b>100% in advance with order.</b>{" "}
+              </p>
+              <p>
+                Validity : <b>15 days from the date of quotation.</b>{" "}
+              </p>
+              <p>
+                Warranty/Guarantee :{" "}
+                <b>
+                  On LEDLUM products, warranty is 2 years as per company norms.
+                  No warranty is provided in case of LED burn when directly
+                  connected to AC current without driver, or in case of failure
+                  due to phase-to-phase issues or neutral supply failure.
+                </b>{" "}
+              </p>
+              <p>
+                Responsibility :{" "}
+                <b>
+                  Our responsibility for material counting ceases immediately
+                  after delivery.
+                </b>{" "}
+              </p>
+              <p>
+                Installation & Fixing :{" "}
+                <b>
+                  If required, for any electrical job, we will arrange a
+                  technician at extra cost. Installation will take 4-5 days from
+                  the date of dorder.
+                </b>{" "}
+              </p>
+              <p>
+                Freight Charges : <b>Extra as per actual.</b>{" "}
+              </p>
+              <p>
+                Bank Details :{" "}
+                <b>
+                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
+                  Code: ICIC0001510, Jalandhar. We hope you will find our offer
+                  in quotation and look forward to your positive response.
+                  Please feel free to contact us for any queries.
+                </b>{" "}
+              </p>
+              <hr />
+              <p>
+                For:- Panvik Lighting This is a computer generated
+                document,hence signature is not required.
+              </p>
             </div>
           </div>
         </div>
