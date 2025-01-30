@@ -21,7 +21,7 @@ const GSTCalculator = ({ totalAmount }) => {
             <select
         value={gstType}
         onChange={(e) => setGstType(e.target.value)}
-        className="form-select tm_input tm_border tm_width_2 m-0"
+        className="form-select m-0"
       >
         <option value="" disabled>Select GST type?</option>
         <option value="include">Include GST</option>
