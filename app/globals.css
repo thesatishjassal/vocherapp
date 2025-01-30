@@ -485,3 +485,7 @@ tr.no-print {
   box-shadow: none;
   border: 1px solid #cdcdcd;
 }
+img.product_img {
+  width: 100%;
+  max-width: 100px !important;
+}
