@@ -15,7 +15,7 @@ const GSTCalculator = ({ totalAmount }) => {
         placeholder="Enter GST%"
         value={gstPercentage}
         onChange={(e) => setGstPercentage(parseFloat(e.target.value) || 0)}
-        className="form-control tm_input tm_border tm_width_2 m-0"
+        className="form-control m-0"
       /></div>
         <div className="col-md-6">
             <select
