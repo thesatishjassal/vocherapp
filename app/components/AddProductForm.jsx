@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import ClientDetailsModal from "../components/ClientDetailsModal";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-
+import SubcategoryModal from "./SubcategoryModal";
 import * as yup from "yup";
+import CategoryModal from "./AddCategory";
 
-const productSchema  = yup.object().shape({
+const productSchema = yup.object().shape({
   itemCode: yup.string().required("Item Code is required"),
   productName: yup.string().required("Product Name is required"),
   description: yup.string().required("Description is required"),
@@ -31,7 +32,7 @@ const productSchema  = yup.object().shape({
     .test("fileSize", "File size must be less than 2MB", (value) =>
       value && value[0] ? value[0].size <= 2 * 1024 * 1024 : false
     ),
-  
+
   // New Validation for Dropdown Fields
   size: yup.string().required("Size is required"),
   color: yup.string().required("Color is required"),
@@ -55,8 +56,9 @@ const AddProductForm = () => {
     state: "", // New field for State
   });
   const [showModal, setShowModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-
+  const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortField, setSortField] = useState("");
@@ -131,37 +133,45 @@ const AddProductForm = () => {
       status: product.qty > 0 ? "In Stock" : "Out of Stock",
     };
   });
-  
-  console.log(updatedProducts);
-  
-  
+
+  const handleCategoryClose = () => {
+    setShowCategoryModal(false);
+  };
+
   const handleViewClick = (client) => {
     setSelectedClient(client);
     setShowModalClientDetails(true);
   };
 
-  // Filter, Search, and Sort Logic
-// Filter, Search, and Sort Logic
-const filteredProducts = products
-  .filter(
-    (product) =>
-      // Check if product.productName and product.category are defined before calling toLowerCase
-      ((product.productName &&
-        product.productName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (product.category &&
-          product.category.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-      // Check if filterStatus is "All" or matches the product status
-      (filterStatus === "All" || product.status === filterStatus)
-  )
-  .sort((a, b) => {
-    if (!sortField) return 0;
-    const isAscending = sortOrder === "asc" ? 1 : -1;
-    if (typeof a[sortField] === "string") {
-      return isAscending * a[sortField].localeCompare(b[sortField]);
-    }
-    return isAscending * (a[sortField] - b[sortField]);
-  });
+  const handleSubcategoryClose = () => {
+    setShowSubcategoryModal(false);
+  };
 
+  // Filter, Search, and Sort Logic
+  // Filter, Search, and Sort Logic
+  const filteredProducts = products
+    .filter(
+      (product) =>
+        // Check if product.productName and product.category are defined before calling toLowerCase
+        ((product.productName &&
+          product.productName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+          (product.category &&
+            product.category
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()))) &&
+        // Check if filterStatus is "All" or matches the product status
+        (filterStatus === "All" || product.status === filterStatus)
+    )
+    .sort((a, b) => {
+      if (!sortField) return 0;
+      const isAscending = sortOrder === "asc" ? 1 : -1;
+      if (typeof a[sortField] === "string") {
+        return isAscending * a[sortField].localeCompare(b[sortField]);
+      }
+      return isAscending * (a[sortField] - b[sortField]);
+    });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -207,14 +217,39 @@ const filteredProducts = products
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-
-                <button
-                  className="btn add_warehouse btn-primary"
-                  onClick={() => setShowModal(true)}
-                >
-                  Add New
-                </button>
+                <div className="add_product">
+                  <button
+                    className="btn  action_btn mx-2"
+                    onClick={() => setShowSubcategoryModal(true)}
+                  >
+                    Add SubCategory
+                  </button>
+                  <button
+                    className="btn  action_btn mx-2"
+                    onClick={() => setShowCategoryModal(true)}
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    className="btn  action_btn"
+                    onClick={() => setShowModal(true)}
+                  >
+                    Add New
+                  </button>
+                </div>
               </div>
+              {showCategoryModal && (
+                <CategoryModal
+                  show={showCategoryModal}
+                  onClose={handleCategoryClose}
+                />
+              )}
+              {showSubcategoryModal && (
+                <SubcategoryModal
+                  show={showSubcategoryModal}
+                  onClose={handleSubcategoryClose}
+                />
+              )}
               {showModal && (
                 <div
                   className="modal fade show"
@@ -244,132 +279,165 @@ const filteredProducts = products
                         ></button>
                       </div>
                       <div className="modal-body  py-3 ">
-                      <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-  <div className="col-md-6 m-0">
-    <input
-      type="text"
-      {...register("itemCode")}
-      className="form-control"
-      placeholder="Item Code"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="text"
-      {...register("productName")}
-      className="form-control"
-      placeholder="Product Name"
-    />
-  </div>
-  <div className="col-md-12 m-0">
-    <textarea
-      {...register("description")}
-      className="form-control"
-      placeholder="Description"
-    ></textarea>
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="text"
-      {...register("category")}
-      className="form-control"
-      placeholder="Category"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="text"
-      {...register("subcategory")}
-      className="form-control"
-      placeholder="Subcategory"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="number"
-      {...register("productPrice")}
-      className="form-control"
-      placeholder="Product Price"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="number"
-      {...register("stockQuantity")}
-      className="form-control"
-      placeholder="Stock Quantity"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="text"
-      {...register("rackCode")}
-      className="form-control"
-      placeholder="Rack Code"
-    />
-  </div>
-  <div className="col-md-6 m-0">
-    <input
-      type="file"
-      {...register("productImage")}
-      className="form-control"
-    />
-  </div>
-  
-  {/* Dropdown for Size */}
-  <div className="col-md-6 m-0">
-    <select {...register("size")} className="form-control">
-      <option value="">Select Size</option>
-      <option value="Small">Small</option>
-      <option value="Medium">Medium</option>
-      <option value="Large">Large</option>
-      <option value="Extra Large">Extra Large</option>
-    </select>
-  </div>
+                        <form
+                          onSubmit={handleSubmit(onSubmit)}
+                          className="row g-3"
+                        >
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="text"
+                              {...register("itemCode")}
+                              className="form-control"
+                              placeholder="Item Code"
+                            />
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="text"
+                              {...register("productName")}
+                              className="form-control"
+                              placeholder="Product Name"
+                            />
+                          </div>
+                          <div className="col-md-12 m-0">
+                            <textarea
+                              {...register("description")}
+                              className="form-control"
+                              placeholder="Description"
+                            ></textarea>
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <select
+                              {...register("category")}
+                              className="form-control"
+                            >
+                              <option value="" disabled selected>
+                                Select Category
+                              </option>
+                              <option value="Decorative">Decorative</option>
+                              <option value="Chandeliers">Chandeliers</option>
+                              <option value="Pendants">Pendants</option>
+                              <option value="Architectural">
+                                Architectural
+                              </option>
+                              <option value="Outdoor Lighting">
+                                Outdoor Lighting
+                              </option>
+                              <option value="Fan">Fan</option>
+                              <option value="Table Fans">Table Fans</option>
+                              <option value="Switches">Switches</option>
+                              <option value="Automation">Automation</option>
+                              <option value="Customization">
+                                Customization
+                              </option>
+                            </select>
+                          </div>
 
-  {/* Dropdown for Color */}
-  <div className="col-md-6 m-0">
-    <select {...register("color")} className="form-control">
-      <option value="">Select Color</option>
-      <option value="Red">Red</option>
-      <option value="Blue">Blue</option>
-      <option value="Green">Green</option>
-      <option value="Black">Black</option>
-      <option value="White">White</option>
-    </select>
-  </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="text"
+                              {...register("subcategory")}
+                              className="form-control"
+                              placeholder="Subcategory"
+                            />
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="number"
+                              {...register("productPrice")}
+                              className="form-control"
+                              placeholder="Product Price"
+                            />
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="number"
+                              {...register("stockQuantity")}
+                              className="form-control"
+                              placeholder="Stock Quantity"
+                            />
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="text"
+                              {...register("rackCode")}
+                              className="form-control"
+                              placeholder="Rack Code"
+                            />
+                          </div>
+                          <div className="col-md-6 m-0">
+                            <input
+                              type="file"
+                              {...register("productImage")}
+                              className="form-control"
+                            />
+                          </div>
 
-  {/* Dropdown for Model */}
-  <div className="col-md-6 m-0">
-    <select {...register("model")} className="form-control">
-      <option value="">Select Model</option>
-      <option value="Model A">Model A</option>
-      <option value="Model B">Model B</option>
-      <option value="Model C">Model C</option>
-    </select>
-  </div>
+                          {/* Dropdown for Size */}
+                          <div className="col-md-6 m-0">
+                            <select
+                              {...register("size")}
+                              className="form-control"
+                            >
+                              <option value="">Select Size</option>
+                              <option value="Small">Small</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Large">Large</option>
+                              <option value="Extra Large">Extra Large</option>
+                            </select>
+                          </div>
 
-  {/* Dropdown for Brand */}
-  <div className="col-md-6 m-0">
-    <select {...register("brand")} className="form-control">
-      <option value="">Select Brand</option>
-      <option value="Brand X">Brand X</option>
-      <option value="Brand Y">Brand Y</option>
-      <option value="Brand Z">Brand Z</option>
-    </select>
-  </div>
-</form>
+                          {/* Dropdown for Color */}
+                          <div className="col-md-6 m-0">
+                            <select
+                              {...register("color")}
+                              className="form-control"
+                            >
+                              <option value="">Select Color</option>
+                              <option value="Red">Red</option>
+                              <option value="Blue">Blue</option>
+                              <option value="Green">Green</option>
+                              <option value="Black">Black</option>
+                              <option value="White">White</option>
+                            </select>
+                          </div>
 
+                          {/* Dropdown for Model */}
+                          <div className="col-md-6 m-0">
+                            <select
+                              {...register("model")}
+                              className="form-control"
+                            >
+                              <option value="">Select Model</option>
+                              <option value="Model A">Model A</option>
+                              <option value="Model B">Model B</option>
+                              <option value="Model C">Model C</option>
+                            </select>
+                          </div>
+
+                          {/* Dropdown for Brand */}
+                          <div className="col-md-6 m-0">
+                            <select
+                              {...register("brand")}
+                              className="form-control"
+                            >
+                              <option value="">Select Brand</option>
+                              <option value="Brand X">Brand X</option>
+                              <option value="Brand Y">Brand Y</option>
+                              <option value="Brand Z">Brand Z</option>
+                            </select>
+                          </div>
+                        </form>
                       </div>
                       <div className="modal-footer">
                         <button
                           type="button"
-                          className="btn btn-secondary"
+                          className="btn btn-secondary ms-2"
                           onClick={() => setShowModal(false)}
                         >
                           Close
                         </button>
-                        <button type="button" className="btn btn-primary">
+                        <button type="button" className="btn btn-success">
                           Confirm & Add
                         </button>
                       </div>
@@ -392,7 +460,7 @@ const filteredProducts = products
                           setSortOrder(sortOrder === "asc" ? "desc" : "asc");
                         }}
                       >
-                        Client ID{" "}
+                        ITEM CODE{" "}
                         {sortField === "id"
                           ? sortOrder === "asc"
                             ? "↑"

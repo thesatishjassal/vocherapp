@@ -198,7 +198,7 @@ const AddClientForm = () => {
                           className="btn-close"
                           onClick={() => setShowModal(false)}
                           aria-label="Close"
-                        ></button>
+                        >×</button>
                       </div>
                       <div className="modal-body  py-3 ">
                         <form onSubmit={handleSubmit} className="row g-2">

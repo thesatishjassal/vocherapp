@@ -7,6 +7,8 @@ const Products = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
 
+ 
+
   return (
     <>
       <div className="mini_banner warehouse">

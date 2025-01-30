@@ -481,3 +481,7 @@ select#transactionType {
 tr.no-print {
     background-color: #eaf9ee;
 }
+.add_product button.btn.action_btn {
+  box-shadow: none;
+  border: 1px solid #cdcdcd;
+}

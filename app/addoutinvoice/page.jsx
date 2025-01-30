@@ -113,7 +113,7 @@ const Addoutinvoice = () => {
                 <p style={{ textAlign: "justify" }} className="m-0">
                   Name: <b>XYZ Ltd</b> <br />
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
-                  State: <b>XYZ State</b>, <b>Country</b> Pincode: <b>123456</b>{" "}
+                  State: <b>XYZ State</b>, <b>Country</b>,<b>123456</b>{" "}
                   <br />
                   {/* Email:<b>xyz@gmail.com</b>  <br />  */}
                   {/* Phone: <b>+91-1234567890</b> */}

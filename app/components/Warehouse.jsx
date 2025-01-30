@@ -110,7 +110,7 @@ const Warehouse = () => {
               />
             </div>
           </div>
-          <button className="btn btn-primary mt-3" onClick={addWarehouse}>
+          <button className="btn btn-success mt-3" onClick={addWarehouse}>
             Add Warehouse
           </button>
         </div>

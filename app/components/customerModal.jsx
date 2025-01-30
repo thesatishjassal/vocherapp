@@ -79,7 +79,7 @@ const CustomerModal = ({ client, onClose }) => {
           </div>
           <div className="modal-footer">
             <div className="col-12 text-end">
-              <button type="button" className="btn btn-primary">
+              <button type="button" className="btn btn-success">
                 Confirm & Add
               </button>
             </div>
