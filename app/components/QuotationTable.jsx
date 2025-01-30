@@ -145,7 +145,7 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.id}>
-              {columns.SR_NO && <td>{index + 1}</td>}
+              <td>{index + 1}</td>
               {columns.Image && (
                 <td>
                   <img
@@ -160,11 +160,11 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
                 </td>
               )}
               {columns["Item Code"] && <td>{row.itemCode}</td>}
-              {columns["Item Name"] && <td>{row.itemName}</td>}
+              <td>{row.itemName}</td>
               {columns.Brand && <td>{row.brand}</td>}
               {columns.Unit && <td>{row.unit}</td>}
               {columns.MRP && <td>{row.mrp}</td>}
-              {columns.Qty && <td>{row.qty}</td>}
+             <td>{row.qty}</td>
               {columns["Dist (%)"] && <td>{row.discount}</td>}
               {columns.Price && <td>{row.amount.toFixed(2)}</td>}
             </tr>
