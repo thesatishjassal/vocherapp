@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
 
 const QuotatTable = ({ items = [], onTotalAmountChange }) => {
@@ -17,6 +18,19 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
+  const [columns, setColumns] = useState({
+    // SR_NO: true,
+    Image: true,
+    "Item Code": true,
+    // "Item Name": true,
+    Brand: true,
+    // Unit: true,
+    MRP: true,
+    Qty: true,
+    "Dist (%)": true,
+    Price: true,
+  });
+
   const inputRefs = {
     itemCode: useRef(null),
     itemName: useRef(null),
@@ -106,46 +120,53 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
     }, 0);
   };
 
+  const handleColumnVisibilityChange = (updatedColumns) => {
+    setColumns(updatedColumns);
+  };
+
   return (
     <div>
+      <ShowHideFilter columns={columns} onChange={handleColumnVisibilityChange} />
       <table className="table align-items-center justify-content-center mb-0">
         <thead>
           <tr>
             <th>SR NO</th>
-            <th>Image</th>
-            <th>Item Code</th>
+            {columns.Image && <th>Image</th>}
+            {columns["Item Code"] && <th>Item Code</th>}
             <th>Item Name</th>
-            <th>Brand</th>
+            {columns.Brand && <th>Brand</th>}
             <th>Unit</th>
-            <th>MRP</th>
-            <th>Qty</th>
-            <th>Dist (%)</th>
-            <th>Price</th>
+            {columns.MRP && <th>MRP</th>}
+            {columns.Qty && <th>Qty</th>}
+            {columns["Dist (%)"] && <th>Dist (%)</th>}
+            {columns.Price && <th>Price</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.id}>
-              <td>{index + 1}</td>
-              <td>
-                <img
-                  src={
-                    row.image == ""
-                      ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
-                      : row.image
-                  }
-                  alt=""
-                  className="product_img"
-                />
-              </td>
-              <td>{row.itemCode}</td>
-              <td>{row.itemName}</td>
-              <td>{row.brand}</td>
-              <td>{row.unit}</td>
-              <td>{row.mrp}</td>
-              <td>{row.qty}</td>
-              <td>{row.discount}</td>
-              <td>{row.amount.toFixed(2)}</td>
+              {columns.SR_NO && <td>{index + 1}</td>}
+              {columns.Image && (
+                <td>
+                  <img
+                    src={
+                      row.image === ""
+                        ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
+                        : row.image
+                    }
+                    alt=""
+                    className="product_img"
+                  />
+                </td>
+              )}
+              {columns["Item Code"] && <td>{row.itemCode}</td>}
+              {columns["Item Name"] && <td>{row.itemName}</td>}
+              {columns.Brand && <td>{row.brand}</td>}
+              {columns.Unit && <td>{row.unit}</td>}
+              {columns.MRP && <td>{row.mrp}</td>}
+              {columns.Qty && <td>{row.qty}</td>}
+              {columns["Dist (%)"] && <td>{row.discount}</td>}
+              {columns.Price && <td>{row.amount.toFixed(2)}</td>}
             </tr>
           ))}
           <tr className="no-print">

@@ -493,3 +493,16 @@ img.product_img {
   margin: 0;
   font-size: 12px;
 }
+.column-toggle {
+  padding: 10px;
+  border: 1px solid #dddddd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.column-toggle label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
