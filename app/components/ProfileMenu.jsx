@@ -34,7 +34,7 @@ const ProfileMenu = () => {
         <div className="menu">
           <ul>
             <li>
-              <a href="#">
+              <a href="/profile">
                 <i className="ph-bold ph-user"></i> Profile
               </a>
             </li>

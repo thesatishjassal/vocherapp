@@ -11,21 +11,22 @@ const Header = () => {
             className="logo"
           />
         </a>
+
         <ul className=" d-flex navbar-nav  justify-content-end">
-          {/* <li className="nav-item d-flex align-items-center">
-            <div className="btn-group" role="group" aria-label="Login and Signup">
+          <li className="nav-item d-flex align-items-center">
+            <div
+              className="btn-group"
+              role="group"
+              aria-label="Login and Signup"
+            >
               <a href="/login" className="btn btn-success">
                 Login
               </a>
-              <a href="/signup" className="btn btn-success">
+              <a href="/signup" className="btn btn-primary">
                 Signup
               </a>
             </div>
-          </li> */}
-
-          <li className="nav-item d-flex align-items-center">
-            {" "}
-            <ProfileMenu />
+            {/* <ProfileMenu /> */}
           </li>
         </ul>
       </div>
