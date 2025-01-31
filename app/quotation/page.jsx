@@ -78,15 +78,7 @@ const Quotation = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>Rajesh Kumar</b> <br />
                   City: <b>Jalandhar City</b> <br />
-                  Phone: <b>+91-1234567890</b>
-                  <br />
-                  {/* GST: <b>03AFTG0246PTEF</b> */}
-                  GST NO: <b>JDKURE1525</b>
                 </p>
-                Freight: <select id="transactionType" name="transactionType">
-                    <option value="Transfer">Paid</option>
-                    <option value="Return">To Pay</option>
-                  </select>
               </div>
 
               {/* Right Column */}
@@ -188,13 +180,10 @@ const Quotation = () => {
               <p>
                 Validity : <b>15 days from the date of quotation.</b>{" "}
               </p>
-              <p>
+              <p className="m-0">
                 Warranty/Guarantee :{" "}
                 <b>
-                  On LEDLUM products, warranty is 2 years as per company norms.
-                  No warranty is provided in case of LED burn when directly
-                  connected to AC current without driver, or in case of failure
-                  due to phase-to-phase issues or neutral supply failure.
+                  as per company norms. <input type="text" placeholder="Warranty/Guarantee" className="form-control m-0" /> <br /> 
                 </b>{" "}
               </p>
               <p>
@@ -219,7 +208,7 @@ const Quotation = () => {
                 Bank Details :{" "}
                 <b>
                   PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
-                  Code: ICIC0001510, Jalandhar. We hope you will find our offer
+                  Code: ICIC0001510, Jalandhar.<br /> We hope you will find our offer
                   in quotation and look forward to your positive response.
                   Please feel free to contact us for any queries.
                 </b>{" "}
