@@ -190,12 +190,10 @@ const QuotatTable = ({
 
   return (
     <div>
-      {ShowHideFiltercolModal && (
         <ShowHideFilter
           columns={columns}
           onChange={handleColumnVisibilityChange}
         />
-      )}
 
       <table className="table align-items-center justify-content-center mb-0">
         <thead>
