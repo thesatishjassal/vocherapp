@@ -12,6 +12,8 @@ const QuotatTable = ({
   const [rows, setRows] = useState([]);
   const [FiltercolModal, setFiltercolModal] = useState(false);
   const [newRow, setNewRow] = useState({
+    customerCode: "",
+    customerDescription: "",
     itemCode: "",
     itemName: "",
     brand: "",
@@ -26,6 +28,8 @@ const QuotatTable = ({
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const [columns, setColumns] = useState({
+    customerCode: true,
+    customerDescription: true,
     Image: true,
     ItemCode: true,
     Brand: true,
@@ -37,6 +41,8 @@ const QuotatTable = ({
   const [editRowIndex, setEditRowIndex] = useState(null); // To track which row is being edited
 
   const inputRefs = {
+    customerCode: useRef(null),
+    customerDescription: useRef(null),
     itemCode: useRef(null),
     itemName: useRef(null),
     brand: useRef(null),
@@ -91,6 +97,8 @@ const QuotatTable = ({
       });
 
       setNewRow({
+        customerCode: "",
+        customerDescription: "",
         itemCode: "",
         itemName: "",
         brand: "",
@@ -149,6 +157,8 @@ const QuotatTable = ({
   const handleEditRow = (index) => {
     const row = rows[index];
     setNewRow({
+      customerCode: row.customerCode,
+      customerDescription: row.customerDescription,
       itemCode: row.itemCode,
       itemName: row.itemName,
       brand: row.brand,
@@ -222,6 +232,8 @@ const QuotatTable = ({
           <tr>
             <th>SR NO</th>
             {columns.Image && <th>Image</th>}
+            {columns.customerCode && <th>Cust Code</th>}
+            {columns.customerDescription && <th>Cust Desc</th>}
             {columns.ItemCode && <th>Item Code</th>}
             <th>Item Name</th>
             {columns.Brand && <th>Brand</th>}
@@ -230,7 +242,7 @@ const QuotatTable = ({
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
             {columns.Price && <th>Price</th>}
-            <th>Actions</th> {/* Add Actions column */}
+            <th className="no-print">Actions</th> {/* Add Actions column */}
           </tr>
         </thead>
         <tbody>
@@ -242,14 +254,16 @@ const QuotatTable = ({
                   <img
                     src={
                       row.image === ""
-                        ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
-                        : row.image
+                      ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
+                      : row.image
                     }
                     alt=""
                     className="product_img"
-                  />
+                    />
                 </td>
               )}
+              {columns.customerCode && <td>{row.customerCode}</td>}
+              {columns.customerDescription && <td>{row.customerDescription}</td>}
               {columns.ItemCode && <td>{row.itemCode}</td>}
               <td>{row.itemName}</td>
               {columns.Brand && <td>{row.brand}</td>}
@@ -278,6 +292,30 @@ const QuotatTable = ({
             <td>#</td>
             <td>
               <img src={newRow.image} alt="" className="product_img" />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="customerCode"
+                value={newRow.customerCode}
+                onChange={(e) => handleFieldChange("customerCode", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
+                placeholder="Cust Code"
+                className="form-control input-small"
+                ref={inputRefs.customerCode}
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="customerDescription"
+                value={newRow.customerDescription}
+                onChange={(e) => handleFieldChange("customerDescription", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "itemCode")}
+                placeholder="Cust Desc"
+                className="form-control input-small"
+                ref={inputRefs.customerDescription}
+              />
             </td>
             <td>
               <input
