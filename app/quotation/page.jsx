@@ -70,7 +70,7 @@ const Quotation = () => {
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
-                    onClick={() => setFiltercolModal(true)} // Open modal from child
+                    onClick={() => setShowModalClientDetails(true)} // Open modal from child
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -123,7 +123,7 @@ const Quotation = () => {
               </p>
               <div
                 className="filter_btn btn no-print"
-                onClick={() => setShowHideFilterModal(true)}
+                onClick={() => setShowModalClientDetails(true)}
               >
                 <i class="fa-solid fa-filter"></i> <span>Filter</span>
               </div>
