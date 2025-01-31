@@ -118,15 +118,12 @@ const Quotation = () => {
                 alignItems: "center",
               }}
             >
-              <p className="tm_mb2">
+              {/* <p className="tm_mb2">
                 <b className="tm_primary_color">Product info:</b>
-              </p>
-              <div
-                className="filter_btn btn no-print"
-                onClick={() => setShowHideFilterModal(true)}
-              >
-                <i class="fa-solid fa-filter"></i> <span>Filter</span>
-              </div>
+              </p> */}
+              <p className="tm_mb2">Subject: &nbsp;
+                <b className="tm_primary_color">Fans</b>
+              </p>  
             </div>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">

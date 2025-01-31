@@ -191,40 +191,10 @@ const QuotatTable = ({
   return (
     <div>
       {ShowHideFiltercolModal && (
-        <div
-          className="modal fade show"
-          id="staticBackdrop"
-          tabIndex="-1"
-          aria-labelledby="staticBackdropLabel"
-          aria-hidden="true"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header clinetdeatails_header">
-                <h5 className="modal-title clinettitle">Show/Hide Columns</h5>
-                <button
-                  type="button"
-                  className="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                  onClick={onClose}
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <ShowHideFilter
-                  columns={columns}
-                  onChange={handleColumnVisibilityChange}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ShowHideFilter
+          columns={columns}
+          onChange={handleColumnVisibilityChange}
+        />
       )}
 
       <table className="table align-items-center justify-content-center mb-0">
@@ -254,16 +224,18 @@ const QuotatTable = ({
                   <img
                     src={
                       row.image === ""
-                      ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
-                      : row.image
+                        ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
+                        : row.image
                     }
                     alt=""
                     className="product_img"
-                    />
+                  />
                 </td>
               )}
               {columns.customerCode && <td>{row.customerCode}</td>}
-              {columns.customerDescription && <td>{row.customerDescription}</td>}
+              {columns.customerDescription && (
+                <td>{row.customerDescription}</td>
+              )}
               {columns.ItemCode && <td>{row.itemCode}</td>}
               <td>{row.itemName}</td>
               {columns.Brand && <td>{row.brand}</td>}
@@ -298,7 +270,9 @@ const QuotatTable = ({
                 type="text"
                 name="customerCode"
                 value={newRow.customerCode}
-                onChange={(e) => handleFieldChange("customerCode", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("customerCode", e.target.value)
+                }
                 onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
                 placeholder="Cust Code"
                 className="form-control input-small"
@@ -310,7 +284,9 @@ const QuotatTable = ({
                 type="text"
                 name="customerDescription"
                 value={newRow.customerDescription}
-                onChange={(e) => handleFieldChange("customerDescription", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("customerDescription", e.target.value)
+                }
                 onKeyDown={(e) => handleKeyDown(e, "itemCode")}
                 placeholder="Cust Desc"
                 className="form-control input-small"
