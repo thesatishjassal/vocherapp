@@ -190,7 +190,7 @@ const QuotatTable = ({
 
   return (
     <div>
-        <ShowHideFilter
+        <ShowHideFilter className="no-print"
           columns={columns}
           onChange={handleColumnVisibilityChange}
         />
