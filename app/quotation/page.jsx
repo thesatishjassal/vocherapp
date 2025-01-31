@@ -10,9 +10,12 @@ const Quotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [FiltercolModal, setFiltercolModal] = useState(false);
+  const [ShowHideFiltercolModal, setShowHideFilterModal] = useState(false);
 
   const closeModal = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
+    setShowHideFilterModal(false); // Close the modal when this function is called
   };
   // Callback to receive the updated totalAmount from the child
   const handleTotalAmountChange = (newTotalAmount) => {
@@ -66,8 +69,8 @@ const Quotation = () => {
                   <b className="tm_primary_color">Customer Details:</b>{" "}
                   <button
                     type="button"
-                    className="btn modalaction_btn no-print "
-                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
+                    className="btn modalaction_btn no-print"
+                    onClick={() => setFiltercolModal(true)} // Open modal from child
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -77,12 +80,13 @@ const Quotation = () => {
                   City: <b>Jalandhar City</b> <br />
                   Phone: <b>+91-1234567890</b>
                   <br />
-                  {/* GST NO: <b>JDKURE1525</b> */}
+                  {/* GST: <b>03AFTG0246PTEF</b> */}
+                  GST NO: <b>JDKURE1525</b>
                 </p>
-                {/* Freight: <select id="transactionType" name="transactionType">
+                Freight: <select id="transactionType" name="transactionType">
                     <option value="Transfer">Paid</option>
                     <option value="Return">To Pay</option>
-                  </select> */}
+                  </select>
               </div>
 
               {/* Right Column */}
@@ -114,13 +118,31 @@ const Quotation = () => {
                 <br />
               </div>
             </div>
-            <p className="tm_mb2">
-              <b className="tm_primary_color">Product info:</b>
-            </p>
+            <div
+              className="d-flex mb-2"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <p className="tm_mb2">
+                <b className="tm_primary_color">Product info:</b>
+              </p>
+              <div
+                className="filter_btn btn no-print"
+                onClick={() => setShowHideFilterModal(true)}
+              >
+                <i class="fa-solid fa-filter"></i> <span>Filter</span>
+              </div>
+            </div>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <QuotationTable
+                    FiltercolModal={FiltercolModal}
+                    ShowHideFiltercolModal={ShowHideFiltercolModal}
+                    onClose={closeModal}
                     onTotalAmountChange={handleTotalAmountChange}
                   />
                   {showModalClientDetails && ( // Conditionally render the modal
@@ -133,9 +155,6 @@ const Quotation = () => {
               </div>
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
-                  <p className="tm_mb2">
-                    <b className="tm_primary_color">Remarks If any:</b>
-                  </p>
                   <textarea
                     className="form-control tm_remarks_box"
                     placeholder="Enter remarks here..."
@@ -151,8 +170,12 @@ const Quotation = () => {
             </div>
             <hr />
             <p>
-              <b><i>Thank You for considering us for your needs. Here is the purposal
-              as you requested.</i></b>
+              <b>
+                <i>
+                  Thank You for considering us for your needs. Here is the
+                  purposal as you requested.
+                </i>
+              </b>
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>

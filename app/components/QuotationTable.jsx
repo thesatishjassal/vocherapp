@@ -2,8 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
 
-const QuotatTable = ({ items = [], onTotalAmountChange }) => {
+const QuotatTable = ({
+  items = [],
+  onTotalAmountChange,
+  ShowHideFiltercolModal,
+  onClose,
+}) => {
+  console.log(onClose);
   const [rows, setRows] = useState([]);
+  const [FiltercolModal, setFiltercolModal] = useState(false);
   const [newRow, setNewRow] = useState({
     itemCode: "",
     itemName: "",
@@ -19,17 +26,15 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const [columns, setColumns] = useState({
-    // SR_NO: true,
     Image: true,
-    "Item Code": true,
-    // "Item Name": true,
+    ItemCode: true,
     Brand: true,
-    // Unit: true,
     MRP: true,
     Qty: true,
-    "Dist (%)": true,
+    Dist: true,
     Price: true,
   });
+  const [editRowIndex, setEditRowIndex] = useState(null); // To track which row is being edited
 
   const inputRefs = {
     itemCode: useRef(null),
@@ -53,18 +58,35 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
     if (newRow.itemCode && newRow.itemName && qty && mrp) {
       const amount = calculateAmount(qty, mrp, discount);
 
-      setRows((prevRows) => [
-        ...prevRows,
-        {
-          id: prevRows.length + 1,
-          ...newRow,
-          amount,
-        },
-      ]);
+      if (editRowIndex !== null) {
+        // Edit existing row
+        setRows((prevRows) =>
+          prevRows.map((row, index) =>
+            index === editRowIndex
+              ? {
+                  ...row,
+                  ...newRow,
+                  amount,
+                }
+              : row
+          )
+        );
+        setEditRowIndex(null); // Reset edit mode
+      } else {
+        // Add new row
+        setRows((prevRows) => [
+          ...prevRows,
+          {
+            id: prevRows.length + 1,
+            ...newRow,
+            amount,
+          },
+        ]);
+      }
 
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal + amount;
-        if (onTotalAmountChange) onTotalAmountChange(updatedTotal); // Pass updated total to the parent
+        if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
         return updatedTotal;
       });
 
@@ -124,22 +146,91 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
     setColumns(updatedColumns);
   };
 
+  const handleEditRow = (index) => {
+    const row = rows[index];
+    setNewRow({
+      itemCode: row.itemCode,
+      itemName: row.itemName,
+      brand: row.brand,
+      qty: row.qty,
+      unit: row.unit,
+      mrp: row.mrp,
+      discount: row.discount,
+      amount: row.amount,
+      image: row.image,
+    });
+    setEditRowIndex(index); // Set the index for the row being edited
+  };
+
+  const handleDeleteRow = (index) => {
+    const amountToSubtract = rows[index].amount;
+    setRows((prevRows) => prevRows.filter((_, i) => i !== index));
+    setTotalAmount((prevTotal) => {
+      const updatedTotal = prevTotal - amountToSubtract;
+      if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
+      return updatedTotal;
+    });
+  };
+
+  useEffect(() => {
+    const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
+    setTotalAmount(updatedTotal);
+    if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
+  }, [rows, onTotalAmountChange]);
+
   return (
     <div>
-      <ShowHideFilter columns={columns} onChange={handleColumnVisibilityChange} />
+      {ShowHideFiltercolModal && (
+        <div
+          className="modal fade show"
+          id="staticBackdrop"
+          tabIndex="-1"
+          aria-labelledby="staticBackdropLabel"
+          aria-hidden="true"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header clinetdeatails_header">
+                <h5 className="modal-title clinettitle">Show/Hide Columns</h5>
+                <button
+                  type="button"
+                  className="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                  onClick={onClose}
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <ShowHideFilter
+                  columns={columns}
+                  onChange={handleColumnVisibilityChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <table className="table align-items-center justify-content-center mb-0">
         <thead>
           <tr>
             <th>SR NO</th>
             {columns.Image && <th>Image</th>}
-            {columns["Item Code"] && <th>Item Code</th>}
+            {columns.ItemCode && <th>Item Code</th>}
             <th>Item Name</th>
             {columns.Brand && <th>Brand</th>}
             <th>Unit</th>
             {columns.MRP && <th>MRP</th>}
             {columns.Qty && <th>Qty</th>}
-            {columns["Dist (%)"] && <th>Dist (%)</th>}
+            {columns.Dist && <th>Dist (%)</th>}
             {columns.Price && <th>Price</th>}
+            <th>Actions</th> {/* Add Actions column */}
           </tr>
         </thead>
         <tbody>
@@ -159,14 +250,28 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
                   />
                 </td>
               )}
-              {columns["Item Code"] && <td>{row.itemCode}</td>}
+              {columns.ItemCode && <td>{row.itemCode}</td>}
               <td>{row.itemName}</td>
               {columns.Brand && <td>{row.brand}</td>}
-              {columns.Unit && <td>{row.unit}</td>}
+              <td>{row.unit}</td>
               {columns.MRP && <td>{row.mrp}</td>}
-             <td>{row.qty}</td>
-              {columns["Dist (%)"] && <td>{row.discount}</td>}
+              {columns.Qty && <td>{row.qty}</td>}
+              {columns.Dist && <td>{row.discount}</td>}
               {columns.Price && <td>{row.amount.toFixed(2)}</td>}
+              <td>
+                <button
+                  className="btn action_btn no-print btn-warning"
+                  onClick={() => handleEditRow(index)}
+                >
+                  <i className="fas fa-edit"></i> {/* Edit Icon */}
+                </button>
+                <button
+                  className="btn action_btn no-print btn-danger ml-2"
+                  onClick={() => handleDeleteRow(index)}
+                >
+                  <i className="fas fa-trash"></i> {/* Delete Icon */}
+                </button>
+              </td>
             </tr>
           ))}
           <tr className="no-print">
@@ -275,10 +380,6 @@ const QuotatTable = ({ items = [], onTotalAmountChange }) => {
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
-        productList={{
-          PassItemCode: newRow.itemCode.toLowerCase(),
-          PassItemName: newRow.itemName.toLowerCase(),
-        }}
         handleProductSelect={handleProductSelect}
       />
     </div>
