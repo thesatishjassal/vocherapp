@@ -109,7 +109,7 @@ const QuotatTable = ({
         amount: "",
         image: "",
       });
-      inputRefs.itemCode.current.focus();
+      inputRefs.customerCode.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
