@@ -123,7 +123,7 @@ const Quotation = () => {
               </p>
               <div
                 className="filter_btn btn no-print"
-                onClick={() => setShowModalClientDetails(true)}
+                onClick={() => setShowHideFilterModal(true)}
               >
                 <i class="fa-solid fa-filter"></i> <span>Filter</span>
               </div>
