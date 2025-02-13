@@ -60,7 +60,15 @@ const RegisterForm = () => {
       });
 
       if (error.response) {
-        console.error("Error submitting form:", error.response.data);
+        if(error.response.status === 400 && error.response.data.message === "Phone Number already exists!") {
+          console.error("Error submitting form:", error.response.data);
+          toast.update(loadingToastId, {
+            render: "Phone Number already exists!",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
       } else if (error.request) {
         console.error("No response received:", error.request);
       } else {
