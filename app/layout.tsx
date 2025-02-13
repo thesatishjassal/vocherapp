@@ -1,5 +1,4 @@
 "use client";
-import type { Metadata } from "next";
 import { usePathname } from "next/navigation";
 import "../public/assets/css/soft-ui-dashboard.css";
 import "../public/assets/css/nucleo-icons.css";
