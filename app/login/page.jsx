@@ -82,11 +82,11 @@ const LoginForm = () => {
   });
 
   return (
-    <div className="page-header min-vh-80 d-flex align-items-center justify-content-center">
+    <div className="page-header min-vh-100 d-flex align-items-center justify-content-center">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-xl-4 col-lg-5 col-md-8">
-            <div className="card shadow-lg p-4">
+            <div className="card p-4">
               <div className="card-header pb-2 text-center bg-transparent">
                 <h3 className="font-weight-bold text-info">Welcome Back</h3>
               </div>
@@ -140,7 +140,7 @@ const LoginForm = () => {
               <div className="card-footer text-center pt-3">
                 <p className="mb-0">
                   Don't have an account?
-                  <a href="javascript:;" className="text-info font-weight-bold">
+                  <a href="/signup" className="text-info font-weight-bold">
                     {" "}
                     Sign up
                   </a>

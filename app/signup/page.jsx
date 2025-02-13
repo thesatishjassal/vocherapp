@@ -31,7 +31,7 @@ const RegisterForm = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/users", // Correct API URL (adjust as needed)
+        "http://127.0.0.1:5500/users", // Correct API URL (adjust as needed)
         formValues,
         {
           headers: { "Content-Type": "application/json" },
@@ -51,11 +51,10 @@ const RegisterForm = () => {
       router.push("/");
     } catch (error) {
       toast.dismiss(loadingToastId); // Ensure the loading toast is removed before error handling
-
-      if (error.response) {
-        if (error.response.data.detail === "Phone Number already exists!") {
-          console.log("Phone Number already exists! Please try a different one.");
-          toast.error("Phone Number already exists! Please try a different one.");
+      // console.log("Registration error:", error);
+      if (error) {
+        if (error.response.data.message === "Phone Number already exists!") {
+          toast.error("Phone Number already exists!");
         } else {
           toast.error(error.response.data.detail || "An error occurred!");
         }
@@ -70,7 +69,7 @@ const RegisterForm = () => {
       <div className="container">
         <div className="row">
           <div className="col-xl-4 col-lg-5 col-md-12 d-flex flex-column mx-auto">
-            <div className="card card-plain">
+            <div className="card p-4">
               <div className="card-header pb-0 text-center bg-transparent">
                 <h3 className="font-weight-bolder text-info text-gradient">
                   Register New User
