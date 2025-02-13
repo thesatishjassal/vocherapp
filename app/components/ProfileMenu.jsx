@@ -51,10 +51,7 @@ const ProfileMenu = () => {
           )}
         </div>
         <div className="img-box">
-          <img
-            src="/assets/img/avtar.png"
-            alt="User Image"
-          />
+          <img src="/assets/img/avtar.png" alt="User Image" />
         </div>
       </div>
       {isMenuOpen && (
@@ -72,22 +69,4 @@ const ProfileMenu = () => {
   );
 };
 
-// Handle outside click to close the menu
-const App = () => {
-  const handleDocumentClick = () => {
-    // Handle any logic when clicking outside
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    return () => document.removeEventListener("click", handleDocumentClick);
-  }, []);
-
-  return (
-    <div>
-      <ProfileMenu />
-    </div>
-  );
-};
-
-export default App;
+export default ProfileMenu;

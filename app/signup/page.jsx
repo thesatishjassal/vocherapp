@@ -1,9 +1,9 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation"; // for redirection
+import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify"; // Assuming you're using toast for notifications
+import { toast } from "react-toastify";
 
 const RegisterForm = () => {
   const [formValues, setFormValues] = useState({
@@ -11,6 +11,7 @@ const RegisterForm = () => {
     phone: "",
     password: "",
   });
+
   const router = useRouter();
 
   // Handle input change
@@ -26,53 +27,40 @@ const RegisterForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const loadingToastId = toast.loading("Logging in..."); // Show loading toast
+    const loadingToastId = toast.loading("Signing up...");
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:5500/users", // Replace with your API URL
+        "http://127.0.0.1:8000/users", // Correct API URL (adjust as needed)
         formValues,
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true, // Important if using cookies or authentication
+          withCredentials: true,
         }
       );
 
-      toast.update(loadingToastId, {
-        render: "Login successful!",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
+      toast.dismiss(loadingToastId); // Remove loading toast
+      toast.success("Registration successful!");
+
+      // Set user details in cookies
+      Cookies.set("user_details", JSON.stringify(response.data.user), {
+        expires: 7, // Set expiry for cookies
       });
 
-      // Set user details in cookies (if necessary)
-      Cookies.set("user_details", JSON.stringify(response.data.user));
-      // Redirect to homepage or dashboard
+      // Redirect to dashboard or homepage
       router.push("/");
-
-      console.log("Form submitted successfully:", response.data);
     } catch (error) {
-      toast.update(loadingToastId, {
-        render: "Error logging in.",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
+      toast.dismiss(loadingToastId); // Ensure the loading toast is removed before error handling
 
       if (error.response) {
-        if(error.response.status === 400 && error.response.data.message === "Phone Number already exists!") {
-          console.error("Error submitting form:", error.response.data);
-          toast.update(loadingToastId, {
-            render: "Phone Number already exists!",
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-          });
+        if (error.response.data.detail === "Phone Number already exists!") {
+          console.log("Phone Number already exists! Please try a different one.");
+          toast.error("Phone Number already exists! Please try a different one.");
+        } else {
+          toast.error(error.response.data.detail || "An error occurred!");
         }
-      } else if (error.request) {
-        console.error("No response received:", error.request);
       } else {
-        console.error("Error setting up the request:", error.message);
+        toast.error("Network error! Please check your connection.");
       }
     }
   };
@@ -96,7 +84,6 @@ const RegisterForm = () => {
                       className="form-control"
                       placeholder="Enter your name"
                       aria-label="Name"
-                      aria-describedby="name-addon"
                       name="name"
                       value={formValues.name}
                       onChange={handleInputChange}
@@ -108,7 +95,6 @@ const RegisterForm = () => {
                       className="form-control"
                       placeholder="Enter your phone number"
                       aria-label="Phone"
-                      aria-describedby="phone-addon"
                       name="phone"
                       value={formValues.phone}
                       onChange={handleInputChange}
@@ -120,40 +106,29 @@ const RegisterForm = () => {
                       className="form-control"
                       placeholder="Enter your password"
                       aria-label="Password"
-                      aria-describedby="password-addon"
                       name="password"
                       value={formValues.password}
                       onChange={handleInputChange}
                     />
                   </div>
                   <div className="form-check form-switch">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="rememberMe"
-                    />
+                    <input className="form-check-input" type="checkbox" id="rememberMe" />
                     <label className="form-check-label" htmlFor="rememberMe">
                       Remember me
                     </label>
                   </div>
                   <div className="text-center">
-                    <button
-                      type="submit"
-                      className="btn bg-gradient-info w-100 mt-4 mb-0"
-                    >
-                      Log In
+                    <button type="submit" className="btn bg-gradient-info w-100 mt-4 mb-0">
+                      Register
                     </button>
                   </div>
                 </form>
               </div>
               <div className="card-footer text-center pt-0 px-lg-2 px-1">
                 <p className="mb-4 text-sm mx-auto">
-                  Don't have an account?
-                  <a
-                    href="/signup"
-                    className="text-info text-gradient font-weight-bold"
-                  >
-                    Sign up
+                  Already have an account?{" "}
+                  <a href="/login" className="text-info text-gradient font-weight-bold">
+                    Log in
                   </a>
                 </p>
               </div>
