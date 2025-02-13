@@ -13,7 +13,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname(); // Get current route
 
-  const hideHeaderRoutes = ["/login", "/signup"]; // Define routes where Header should be hidden
+  const hideHeaderRoutes = ["/" , "/login", "/signup"]; // Define routes where Header should be hidden
 
   return (
     <html lang="en">

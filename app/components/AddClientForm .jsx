@@ -1,177 +1,79 @@
 "use client";
 import React, { useState } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import ClientDetailsModal from "../components/ClientDetailsModal";
+
+// Validation schema with Yup
+const validationSchema = Yup.object({
+  clientName: Yup.string().required("Client Name is required"),
+  address: Yup.string().required("Address is required"),
+  gstNumber: Yup.string().required("GST Number is required"),
+  contactNumber: Yup.string()
+    .matches(/^\d{10}$/, "Invalid contact number")
+    .required("Contact Number is required"),
+  emailAddress: Yup.string().email("Invalid email format").required("Email is required"),
+  clientType: Yup.string().required("Client Type is required"),
+  businessName: Yup.string().required("Business Name is required"),
+  pincode: Yup.string().required("Pincode is required"),
+  city: Yup.string().required("City is required"),
+  state: Yup.string().required("State is required"),
+});
 
 const AddClientForm = () => {
   const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [formData, setFormData] = useState({
-    clientName: "",
-    address: "",
-    gstNumber: "",
-    contactNumber: "",
-    emailAddress: "",
-    clientType: "Retail",
-    businessName: "", // New field for Business Name
-    pincode: "", // New field for Pincode
-    city: "", // New field for City
-    state: "", // New field for State
-  });
   const [showModal, setShowModal] = useState(false);
-  const [showModalClientDetails, setShowModalClientDetails] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
-  const [sortField, setSortField] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-
-  const invoices = [
-    {
-      clientName: "ABC Electronics",
-      businessName: "ABC Electronics Shop",
-      city: "New York",
-      state: "NY",
-      gstNo: "NY12345GST",
-      id: "INV001",
-      project: "Fan Supply",
-      status: "Paid",
-    },
-    {
-      clientName: "XYZ Electronics",
-      businessName: "XYZ Home Appliances",
-      city: "Los Angeles",
-      state: "CA",
-      gstNo: "CA67890GST",
-      id: "INV002",
-      project: "LED Light Installation",
-      status: "Pending",
-    },
-    {
-      clientName: "LMN Electricals",
-      businessName: "LMN Electronics",
-      city: "Chicago",
-      state: "IL",
-      gstNo: "IL11223GST",
-      id: "INV003",
-      project: "Washing Machine Supply",
-      status: "Overdue",
-    },
-    {
-      clientName: "PQR Electronics",
-      businessName: "PQR Electronics & Appliances",
-      city: "San Francisco",
-      state: "CA",
-      gstNo: "CA44556GST",
-      id: "INV004",
-      project: "Air Conditioner Installation",
-      status: "Paid",
-    },
-    {
-      clientName: "DEF Appliances",
-      businessName: "DEF Home Electronics",
-      city: "Miami",
-      state: "FL",
-      gstNo: "FL78901GST",
-      id: "INV005",
-      project: "Refrigerator Supply",
-    },
-  ];
-
-  const handleViewClick = (client) => {
-    setSelectedClient(client);
-    setShowModalClientDetails(true);
-  };
-
-  const closeModal = () => {
-    setShowModalClientDetails(false);
-    setSelectedClient(null);
-  };
-  // Filter, Search, and Sort Logic
-  const filteredInvoices = invoices
-    .filter(
-      (invoice) =>
-        // Check if invoice.name and invoice.project are defined before calling toLowerCase
-        ((invoice.clientName &&
-          invoice.clientName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())) ||
-          (invoice.project &&
-            invoice.project
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()))) &&
-        // Check if filterStatus is "All" or matches the invoice status
-        (filterStatus === "All" || invoice.status === filterStatus)
-    )
-
-    .sort((a, b) => {
-      if (!sortField) return 0;
-      const isAscending = sortOrder === "asc" ? 1 : -1;
-      if (typeof a[sortField] === "string") {
-        return isAscending * a[sortField].localeCompare(b[sortField]);
-      }
-      return isAscending * (a[sortField] - b[sortField]);
-    });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setClients((prevClients) => [...prevClients, formData]);
-    setFormData({
+  const formik = useFormik({
+    initialValues: {
       clientName: "",
       address: "",
       gstNumber: "",
       contactNumber: "",
       emailAddress: "",
       clientType: "Retail",
-      businessName: "", // Resetting new fields
-      pincode: "", // Resetting new fields
-      city: "", // Resetting new fields
-      state: "", // Resetting new fields
-    });
-    setShowModal(false);
+      businessName: "",
+      pincode: "",
+      city: "",
+      state: "",
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      // Handle submit logic (e.g., send to API)
+      setClients((prevClients) => [...prevClients, values]);
+      setShowModal(false); // Close modal on submit
+    },
+  });
+
+  const handleChange = (e) => {
+    formik.handleChange(e);
   };
 
   return (
     <div className="container mt-2 px-0">
       <div className="row container mx-auto my-3 p-0">
         <div className="col-12 p-0">
-
-
           <div className="card mb-4">
             <div className="card-header pb-0">
               <h6>Client Invoices</h6>
             </div>
             <div className="card-body py-0 pt-0 pb-2">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-            {/* Search Input */}
-            <input
-              type="text"
-              placeholder="Search by Client or Project"
-              className="form-control w-25"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-            <button
-              className="btn add_warehouse btn-primary"
-              onClick={() => setShowModal(true)}
-            >
-              Add New
-            </button>
-          </div>
-              {showModalClientDetails && selectedClient && (
-                <ClientDetailsModal
-                  client={selectedClient}
-                  onClose={closeModal}
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <input
+                  type="text"
+                  placeholder="Search by Client or Project"
+                  className="form-control w-25"
+                  value={formik.values.searchTerm}
+                  onChange={formik.handleChange}
                 />
-              )}
+                <button
+                  className="btn add_warehouse btn-primary"
+                  onClick={() => setShowModal(true)}
+                >
+                  Add New
+                </button>
+              </div>
+
               {showModal && (
                 <div
                   className="modal fade show"
@@ -201,135 +103,190 @@ const AddClientForm = () => {
                         >×</button>
                       </div>
                       <div className="modal-body  py-3 ">
-                        <form onSubmit={handleSubmit} className="row g-2">
+                        <form onSubmit={formik.handleSubmit} className="row g-2">
                           {/* Business Details Field Group */}
                           <fieldset className="col-12">
-                            <legend className="fs-5 my-2">
-                              Business Details
-                            </legend>
+                            <legend className="fs-5 my-2">Business Details</legend>
                             <div className="row">
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="businessName"
                                   placeholder="Business Name"
-                                  value={formData.businessName}
+                                  value={formik.values.businessName}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.businessName && formik.errors.businessName
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.businessName && formik.errors.businessName && (
+                                  <label className="text-danger">{formik.errors.businessName}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="gstNumber"
                                   placeholder="GST Number"
-                                  value={formData.gstNumber}
+                                  value={formik.values.gstNumber}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.gstNumber && formik.errors.gstNumber
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.gstNumber && formik.errors.gstNumber && (
+                                  <label className="text-danger">{formik.errors.gstNumber}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="address"
                                   placeholder="Address"
-                                  value={formData.address}
+                                  value={formik.values.address}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.address && formik.errors.address
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.address && formik.errors.address && (
+                                  <label className="text-danger">{formik.errors.address}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="pincode"
                                   placeholder="Pincode"
-                                  value={formData.pincode}
+                                  value={formik.values.pincode}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.pincode && formik.errors.pincode
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.pincode && formik.errors.pincode && (
+                                  <label className="text-danger">{formik.errors.pincode}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="city"
                                   placeholder="City"
-                                  value={formData.city}
+                                  value={formik.values.city}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.city && formik.errors.city
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.city && formik.errors.city && (
+                                  <label className="text-danger">{formik.errors.city}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="state"
                                   placeholder="State"
-                                  value={formData.state}
+                                  value={formik.values.state}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.state && formik.errors.state
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.state && formik.errors.state && (
+                                  <label className="text-danger">{formik.errors.state}</label>
+                                )}
                               </div>
                             </div>
                           </fieldset>
 
                           {/* Contact Details Field Group */}
-                          
                           <fieldset className="col-12">
-                            <legend className="fs-5 my-2">
-                              Contact Details
-                            </legend>
+                            <legend className="fs-5 my-2">Contact Details</legend>
                             <div className="row">
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="clientName"
                                   placeholder="Client Name"
-                                  value={formData.clientName}
+                                  value={formik.values.clientName}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.clientName && formik.errors.clientName
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.clientName && formik.errors.clientName && (
+                                  <label className="text-danger">{formik.errors.clientName}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="tel"
                                   name="contactNumber"
                                   placeholder="Contact Number"
-                                  value={formData.contactNumber}
+                                  value={formik.values.contactNumber}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.contactNumber && formik.errors.contactNumber
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.contactNumber && formik.errors.contactNumber && (
+                                  <label className="text-danger">{formik.errors.contactNumber}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="email"
                                   name="emailAddress"
                                   placeholder="Email Address"
-                                  value={formData.emailAddress}
+                                  value={formik.values.emailAddress}
                                   onChange={handleChange}
-                                  className="form-control"
-                                  required
+                                  className={`form-control mb-0 ${
+                                    formik.touched.emailAddress && formik.errors.emailAddress
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 />
+                                {formik.touched.emailAddress && formik.errors.emailAddress && (
+                                  <label className="text-danger">{formik.errors.emailAddress}</label>
+                                )}
                               </div>
                               <div className="col-md-6">
                                 <select
                                   name="clientType"
-                                  value={formData.clientType}
+                                  value={formik.values.clientType}
                                   onChange={handleChange}
-                                  className="form-select"
-                                  required
+                                  className={`form-select ${
+                                    formik.touched.clientType && formik.errors.clientType
+                                      ? "border-danger"
+                                      : ""
+                                  }`}
                                 >
                                   <option disabled>Select Client Type</option>
                                   <option value="Retail">Vendor</option>
                                   <option value="Wholesale">Customer</option>
                                   <option value="Other">Other</option>
                                 </select>
+                                {formik.touched.clientType && formik.errors.clientType && (
+                                  <label className="text-danger">{formik.errors.clientType}</label>
+                                )}
                               </div>
                             </div>
                           </fieldset>
@@ -355,137 +312,6 @@ const AddClientForm = () => {
                   </div>
                 </div>
               )}
-
-              <div className="table-responsive p-0">
-                <table className="table align-items-center justify-content-center mb-0">
-                  <thead>
-                    <tr>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("id");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        Client ID{" "}
-                        {sortField === "id"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("name");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        Client Name{" "}
-                        {sortField === "name"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("businessName");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        Business Name{" "}
-                        {sortField === "businessName"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("city");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        City{" "}
-                        {sortField === "city"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("state");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        State{" "}
-                        {sortField === "state"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th
-                        className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-                        onClick={() => {
-                          setSortField("gstNo");
-                          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                        }}
-                      >
-                        GST No{" "}
-                        {sortField === "gstNo"
-                          ? sortOrder === "asc"
-                            ? "↑"
-                            : "↓"
-                          : ""}
-                      </th>
-                      <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInvoices.map((invoice, index) => (
-                      <tr key={index}>
-                        <td>{invoice.id}</td>
-                        <td>{invoice.clientName}</td>
-                        <td>{invoice.businessName}</td>
-                        <td>{invoice.city}</td>
-                        <td>{invoice.state}</td>
-                        <td>{invoice.gstNo}</td>
-                        <td>
-                          <div className="d-flex ">
-                            <button
-                              className="btn action_icons"
-                              onClick={() => handleViewClick(invoice)}
-                            >
-                              <i className="fa fa-eye"></i>
-                            </button>
-                            <button
-                              className="btn action_icons"
-                              onClick={() => editClient(invoice.id)}
-                            >
-                              <i className="fa fa-edit"></i>
-                            </button>
-                            <button
-                              className="btn action_icons"
-                              onClick={() => deleteClient(invoice.id)}
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          </div>
-                          
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         </div>

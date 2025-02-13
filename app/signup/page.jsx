@@ -48,12 +48,13 @@ const RegisterForm = () => {
       });
 
       // Redirect to dashboard or homepage
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       toast.dismiss(loadingToastId); // Ensure the loading toast is removed before error handling
       // console.log("Registration error:", error);
       if (error) {
         if (error.response.data.message === "Phone Number already exists!") {
+        
           toast.error("Phone Number already exists!");
         } else {
           toast.error(error.response.data.detail || "An error occurred!");

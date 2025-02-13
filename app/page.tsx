@@ -1,362 +1,158 @@
-export default function Home() {
+"use client";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation"; // For Next.js 13+ (App Router)
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Cookies from "js-cookie"; // Import js-cookie for cookie management
+
+const LoginForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [alert, setAlert] = useState({ type: "", message: "" });
+  const router = useRouter();
+
+  const formik = useFormik({
+    initialValues: {
+      phone: "",
+      password: "",
+    },
+    validationSchema: Yup.object({
+      phone: Yup.string()
+        .matches(/^\d{10}$/, "Phone number must be 10 digits")
+        .required("Phone number is required"),
+      password: Yup.string()
+        .required("Password is required"),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      const loadingToastId = toast.loading("Logging in..."); // Show loading toast
+    
+      try {
+        const response = await axios.post(
+          "http://127.0.0.1:5500/login",
+          values,
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true, // Important if using cookies or authentication
+          }
+        );
+    
+        toast.update(loadingToastId, {
+          render: "Login successful!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000
+        });
+    
+        console.log("Form submitted successfully:", response.data);
+    
+        // Set user details in cookies after successful login
+        if (response.data.user_details) {
+          // Stringify the user details object and store it in a cookie
+          Cookies.set("user_details", JSON.stringify(response.data.user_details), { expires: 1 }); // expires in 1 day
+          Cookies.set("session_id", response.data.session_id, { expires: 1 });
+        }
+    
+        // Redirect to the homepage or another page after successful login
+        router.push("/dashboard");
+    
+      } catch (error) {
+        toast.update(loadingToastId, {
+          render: "Error logging in.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000
+        });
+    
+        if (error.response) {
+          console.error("Error submitting form:", error.response.data);
+          setAlert({ type: "error", message: error.response.data.message || "An error occurred" });
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+          setAlert({ type: "error", message: "No response received from the server" });
+        } else {
+          console.error("Error setting up the request:", error.message);
+          setAlert({ type: "error", message: error.message });
+        }
+      }
+    
+      setSubmitting(false);
+    }
+  });
+
   return (
-    <>
-      <div className="row welcome">
-        <h6>🌞 Good Morning!</h6>
-        <p className="text-sm mb-0">Let’s make today amazing! 🚀</p>
-      </div>
-      <div className="row mb-4">
-        {/* Add Clients */}
-        <div className="col-lg-2 col-md-3 col-12">
-          <a href="/addclient">
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://freedesignfile.com/upload/2023/09/Businessman-3D-professions-icon-vector.jpg"
-                        alt=""
-                        className="client_img"
+    <div className="page-header min-vh-100 d-flex align-items-center justify-content-center">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-xl-4 col-lg-5 col-md-8">
+            <div className="card p-4">
+              <div className="card-header pb-2 text-center bg-transparent">
+                <h3 className="font-weight-bold text-info">Welcome Back</h3>
+              </div>
+              <div className="card-body">
+                <form onSubmit={formik.handleSubmit}>
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      className={`form-control ${
+                        formik.touched.phone && formik.errors.phone
+                          ? "is-invalid"
+                          : ""
+                      }`}
+                      placeholder="Enter your phone number"
+                      {...formik.getFieldProps("phone")}
+                    />
+                    {formik.touched.phone && formik.errors.phone ? (
+                      <div className="invalid-feedback">{formik.errors.phone}</div>
+                    ) : null}
+                  </div>
+                  <div className="mb-3 position-relative">
+                    <div className="input-group">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className={`form-control ${
+                          formik.touched.password && formik.errors.password
+                            ? "is-invalid"
+                            : ""
+                        }`}
+                        placeholder="Enter your password"
+                        {...formik.getFieldProps("password")}
                       />
                     </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">
-                      Add Clients
-                    </h5>
-                    <span className="count text-sm">1600</span>
-                  </div>
-                </div>
-              </div>
-              <p className="bottom_lablel">Master Head</p>
-            </div>
-          </a>
-        </div>
-
-        {/* Add Invoice */}
-        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href="/products">
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/product-3d-icon-download-in-png-blend-fbx-gltf-file-formats--tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png?f=webp"
-                        alt=""
-                        className="client_img"
-                      />
-                    </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
-                    <span className="count text-sm">100</span>
-                  </div>
-                </div>
-              </div>
-              <p className="bottom_lablel">Master Head</p>
-            </div>
-          </a>
-        </div>
-
-        {/* Add Outinvoice */}
-        <div className="col-lg-2 col-md-2 col-12">
-          <a href="/addinvoice">
-            {" "}
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/receipt-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png?f=webp"
-                        alt=""
-                        className="client_img"
-                      />
-                    </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">
-                      Add In Vocher
-                    </h5>
-                    <span className="count text-sm">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-
-        {/* Add Warehouse */}
-        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href="/addoutinvoice">
-            {" "}
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/order-list-3d-icon-download-in-png-blend-fbx-gltf-file-formats--logistic-checklist-currier-product-pack-e-commerce-shopping-icons-6159358.png"
-                        alt=""
-                        className="client_img"
-                      />
-                    </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">
-                      Out Voucher
-                    </h5>
-                    <span className="count text-sm">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-        {/* Add Warehouse */}
-        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href="/report">
-            {" "}
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/business-report-3d-icon-download-in-png-blend-fbx-gltf-file-formats--document-clipboard-data-pack-icons-9291057.png?f=webp"
-                        alt=""
-                        className="client_img"
-                      />
-                    </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">
-                      Make Reports
-                    </h5>
-                    <span className="count text-sm">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>  
-        </div>
-        <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href="/quotation">
-            {" "}
-            <div className="card">
-              <span className="mask opacity-10 border-radius-lg"></span>
-              <div className="card-body p-3 position-relative">
-                <div className="row">
-                  <div className="col-12 text-center">
-                    <div className="icon_wrapper">
-                      <img
-                        src="https://cdn3d.iconscout.com/3d/premium/thumb/invoice-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--bill-transaction-payment-purchase-business-pack-illustrations-3928170.png"
-                        alt=""
-                        className="client_img"
-                      />
-                    </div>
-                    <h5 className="font-weight-bolder mb-0 mt-3">
-                      Add Quotation
-                    </h5>
-                    <span className="count text-sm">100</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-
-      <div className="row my-4 ">
-        <div className="col-lg-8 col-md-6 mb-md-0 mb-4">
-          <div className="card">
-            <div className="card-header pb-0">
-              <div className="row">
-                <div className="col-lg-6 col-7">
-                  <h6>Stocks</h6>
-                </div>
-              </div>
-            </div>
-            <div className="card-body pb-2">
-              <div className="table-responsive">
-                <table className="table align-items-center justify-content-center mb-0  ">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Product Name</th>
-                      <th scope="col">Quantity</th>
-                      <th scope="col">Category</th>
-                      <th scope="col">Rack</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Fan Item */}
-                    <tr>
-                      <td>1</td>
-                      <td>Fan</td>
-                      <td>15</td>
-                      <td>Electronics</td>
-                      <td>A1</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
+                    {formik.touched.password && formik.errors.password ? (
+                      <div className="invalid-feedback d-block">
+                        {formik.errors.password}
                       </div>
-                    </tr>
-
-                    {/* Fancy Lights Item */}
-                    <tr>
-                      <td>2</td>
-                      <td>Fancy Lights</td>
-                      <td>30</td>
-                      <td>Electronics</td>
-                      <td>A2</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-
-                    {/* Geexer Item */}
-                    <tr>
-                      <td>3</td>
-                      <td>Geexer</td>
-                      <td>10</td>
-                      <td>Electronics</td>
-                      <td>A3</td>
-                      <td>
-                        <span className="badge bg-danger">Not Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-
-                    {/* Bolard Item */}
-                    <tr>
-                      <td>4</td>
-                      <td>Bolard</td>
-                      <td>8</td>
-                      <td>Electronics</td>
-                      <td>A4</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-4 col-md-6">
-          <div className="card h-100">
-            <div className="card-header pb-0">
-              <h6>Daily Activity</h6>
-              <p className="text-sm">
-                <span className="font-weight-bold">By</span> Users
-              </p>
-            </div>
-            <div className="card-body p-3">
-              <div className="timeline timeline-one-side mb-4">
-                <div className="timeline-block">
-                  <span className="timeline-step">
-                    <i className="fa fa-file-invoice text-success"></i>
-                  </span>
-                  <div className="timeline-content">
-                  <h6 className="text-primary text-sm mb-1">Voucher</h6>
-
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      $2400, Design changes
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      Added by: <span className="text-dark">John Doe</span> |
-                       <span className="text-dark">22 DEC 2024</span> |
-                       <span className="text-dark">7:20 PM</span>
-                    </p>
+                    ) : null}
                   </div>
-                </div>
-              </div>
-
-              <div className="timeline timeline-one-side mb-4">
-                <div className="timeline-block">
-                  <span className="timeline-step">
-                    <i className="fa fa-box-open text-info"></i>
-                  </span>
-                  <div className="timeline-content">
-                  <h6 className="text-primary text-sm mb-1">Stock Item</h6>
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      Stock replenished
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      Added by: <span className="text-dark">Jane Smith</span> |
-                       <span className="text-dark">21 DEC 2024</span> |
-                      Time: <span className="text-dark">9:34 PM</span>
-                    </p>
+                  <div className="text-center">
+                    <button
+                      type="submit"
+                      className="btn btn-primary w-100 mt-4 mb-0"
+                      disabled={!formik.isValid || !formik.dirty}
+                    >
+                      {formik.isSubmitting ? "Logging in..." : "Log In"}
+                    </button>
                   </div>
-                </div>
+                </form>
               </div>
-
-             
-              <div className="timeline timeline-one-side mb-4">
-                <div className="timeline-block">
-                  <span className="timeline-step">
-                    <i className="fa fa-user-plus text-primary"></i>
-                  </span>
-                  <div className="timeline-content">
-                  <h6 className="text-primary text-sm mb-1">Client</h6>
-                    <h6 className="text-dark text-sm font-weight-bold mb-0">
-                      New client added
-                    </h6>
-                    <p className="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                      Added by: <span className="text-dark">Michael Brown</span>{" "}
-                      |  <span className="text-dark">18 DEC 2024</span> |
-                      Time: <span className="text-dark">4:54 AM</span>
-                    </p>
-                  </div>
-                </div>
+              <div className="card-footer text-center pt-3">
+                <p className="mb-0">
+                  Don't have an account?
+                  <a href="/signup" className="text-info font-weight-bold">
+                    {" "}
+                    Sign up
+                  </a>
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+      <ToastContainer />
+    </div>
   );
-}
+};
+
+export default LoginForm;
