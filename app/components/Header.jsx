@@ -19,7 +19,7 @@ const Header = () => {
   return (
     <nav className="navbar sticky-top bg-body-tertiary no-print">
       <div className="container">
-        <a className="navbar-brand" href="/">
+        <a className="navbar-brand" href="/dashboard">
           <img
             src="/assets/img/panviclogo.jpg"
             alt="Bootstrap"
