@@ -14,7 +14,7 @@ const ShowHideFilter = ({ columns, onChange }) => {
 
   return (
     <div>
-      <div className="checkbox-list showHideFilterModal">
+      <div className="checkbox-list showHideFilterModal no-print">
         {Object.keys(columns).map((column) => (
           <div key={column}>
             <input

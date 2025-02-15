@@ -21,7 +21,6 @@ const AddNewClient = () => {
           </li>
         </ol>
       </nav>
-
       <AddClientForm />
     </>
   );

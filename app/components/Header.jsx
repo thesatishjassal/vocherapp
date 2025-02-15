@@ -14,7 +14,7 @@ const Header = () => {
       // Parse and set the user details if the cookie exists
       setUserDetails(JSON.parse(userDetailsCookie));
     }
-  }, [userDetails]);
+  }, []);
 
   return (
     <nav className="navbar sticky-top bg-body-tertiary no-print">

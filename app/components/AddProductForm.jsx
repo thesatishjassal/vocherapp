@@ -217,6 +217,11 @@ const AddProductForm = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                <input
+                  type="file"
+                  placeholder="Upload Excel File"
+                  className="form-control w-25"
+                />
                 <div className="add_product">
                   <button
                     className="btn  action_btn mx-2"
@@ -309,7 +314,7 @@ const AddProductForm = () => {
                           <div className="col-md-6 m-0">
                             <select
                               {...register("category")}
-                              className="form-control"
+                              className="form-select mb-2"
                             >
                               <option value="" disabled selected>
                                 Select Category
@@ -377,7 +382,7 @@ const AddProductForm = () => {
                           <div className="col-md-6 m-0">
                             <select
                               {...register("size")}
-                              className="form-control"
+                              className="form-select mb-2"
                             >
                               <option value="">Select Size</option>
                               <option value="Small">Small</option>
@@ -391,7 +396,7 @@ const AddProductForm = () => {
                           <div className="col-md-6 m-0">
                             <select
                               {...register("color")}
-                              className="form-control"
+                              className="form-select mb-2"
                             >
                               <option value="">Select Color</option>
                               <option value="Red">Red</option>
@@ -406,7 +411,7 @@ const AddProductForm = () => {
                           <div className="col-md-6 m-0">
                             <select
                               {...register("model")}
-                              className="form-control"
+                              className="form-select mb-2"
                             >
                               <option value="">Select Model</option>
                               <option value="Model A">Model A</option>
@@ -419,7 +424,7 @@ const AddProductForm = () => {
                           <div className="col-md-6 m-0">
                             <select
                               {...register("brand")}
-                              className="form-control"
+                              className="form-select mb-2"
                             >
                               <option value="">Select Brand</option>
                               <option value="Brand X">Brand X</option>

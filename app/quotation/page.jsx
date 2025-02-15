@@ -1,6 +1,6 @@
 "use client";
 import InvoucherTable from "../components/InvoucherTable";
-import ReciverDetails from "../components/Reciverdeatails";
+import QuotaionInfo from "../components/QuotaionInfo";
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
 import QuotationTable from "../components/QuotationTable";
@@ -12,6 +12,13 @@ const Quotation = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [FiltercolModal, setFiltercolModal] = useState(false);
   const [ShowHideFiltercolModal, setShowHideFilterModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(false);
+  const [quotationInfo, setQuotationInfo] = useState(null);
+
+  const handleQuotationConfirm = (data) => {
+    setQuotationInfo(data); // Store received quotation info
+    console.log("Quotation Info Received:", data);
+  };
 
   const closeModal = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
@@ -21,6 +28,12 @@ const Quotation = () => {
   const handleTotalAmountChange = (newTotalAmount) => {
     setTotalAmount(newTotalAmount);
   };
+
+  const handleClientConfirm = (selectedClient) => {
+    console.log("Selected Client:", selectedClient);
+    setSelectedCustomer(selectedClient);
+    // Use the selected client data as needed
+  };
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -29,10 +42,7 @@ const Quotation = () => {
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
-                  <img
-                    src="https://panvic-com.preview-domain.com/wp-content/uploads/2025/01/logo-removebg-preview.png"
-                    alt="Logo"
-                  />
+                  <img src="/assets/img/panviclogo.jpg" alt="Logo" />
                 </div>
               </div>
               <div className="tm_invoice_right tm_text_right">
@@ -40,7 +50,7 @@ const Quotation = () => {
                   QUOTATION
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Quotation No: <b className="tm_primary_color">#LL93784</b>
+                  Quotation No: <b className="tm_primary_color">QN-01</b>
                 </p>
               </div>
             </div>
@@ -48,7 +58,12 @@ const Quotation = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_date tm_m0">
-                  Date: <b className="tm_primary_color">01.07.2022</b>
+                  Date:{" "}
+                  <b className="tm_primary_color">
+                    {" "}
+                    {new Date().toLocaleDateString("en-GB")}{" "}
+                    {/* Format: DD/MM/YYYY */}
+                  </b>
                 </p>
               </div>
             </div>
@@ -76,8 +91,11 @@ const Quotation = () => {
                   </button>
                 </p>
                 <p style={{ textAlign: "justify" }}>
-                  Name: <b>Rajesh Kumar</b> <br />
-                  City: <b>Jalandhar City</b> <br />
+                  Name:{" "}
+                  <b>{selectedCustomer && selectedCustomer.Client_Name}</b>{" "}
+                  <br />
+                  City: <b>{selectedCustomer && selectedCustomer.City}</b>{" "}
+                  <br />
                 </p>
               </div>
 
@@ -88,25 +106,27 @@ const Quotation = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
-                  {InfoModal && <ReciverDetails setInfoModal={setInfoModal} />}
+                  {InfoModal && (
+                    <QuotaionInfo
+                      setInfoModal={setInfoModal}
+                      onConfirm={handleQuotationConfirm}
+                    />
+                  )}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
                     onClick={() => setInfoModal(true)}
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
+                  > <i className="fa-solid fa-pen-to-square"></i></button>
                 </p>
-                {/* Issue Slip No:<b> SLIP98765</b> <br /> */}
-                {/* Sale Order No:<b> SO123456 </b><br /> */}
                 Address:{" "}
                 <b>
                   Nakodar Road Beside Silver OAK Appartments Jalandhar City,
                   Punjab-144003
-                </b>{" "}
+                </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                Salesperson: <b>Amar</b> <br />
+                Salesperson:{" "}
+                {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
                 <br />
               </div>
             </div>
@@ -118,12 +138,12 @@ const Quotation = () => {
                 alignItems: "center",
               }}
             >
-              {/* <p className="tm_mb2">
-                <b className="tm_primary_color">Product info:</b>
-              </p> */}
-              <p className="tm_mb2">Subject: &nbsp;
-                <b className="tm_primary_color">Fans</b>
-              </p>  
+              <p className="tm_mb2">
+                Subject: &nbsp;
+                {quotationInfo && (
+                  <b className="tm_primary_color">{quotationInfo.Subject}</b>
+                )}
+              </p>
             </div>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
@@ -138,6 +158,7 @@ const Quotation = () => {
                     <CustomerModal
                       onClose={closeModal} // Pass the closeModal function to the modal
                       client={showModalClientDetails}
+                      onConfirm={handleClientConfirm}
                     />
                   )}
                 </div>
@@ -145,7 +166,7 @@ const Quotation = () => {
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <textarea
-                    className="form-control tm_remarks_box"
+                    className="form-control tm_remarks_box no-print"
                     placeholder="Enter remarks here..."
                     rows="1"
                     cols="30"
@@ -180,7 +201,13 @@ const Quotation = () => {
               <p className="m-0">
                 Warranty/Guarantee :{" "}
                 <b>
-                  as per company norms. <input type="text" placeholder="Warranty/Guarantee" className="form-control m-0" /> <br /> 
+                  as per company norms.{" "}
+                  <input
+                    type="text"
+                    placeholder="Warranty/Guarantee"
+                    className="form-control m-0"
+                  />{" "}
+                  <br />
                 </b>{" "}
               </p>
               <p>
@@ -205,9 +232,10 @@ const Quotation = () => {
                 Bank Details :{" "}
                 <b>
                   PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
-                  Code: ICIC0001510, Jalandhar.<br /> We hope you will find our offer
-                  in quotation and look forward to your positive response.
-                  Please feel free to contact us for any queries.
+                  Code: ICIC0001510, Jalandhar.
+                  <br /> We hope you will find our offer in quotation and look
+                  forward to your positive response. Please feel free to contact
+                  us for any queries.
                 </b>{" "}
               </p>
               <hr />

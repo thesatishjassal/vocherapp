@@ -3,21 +3,24 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import ClientDetailsModal from "../components/ClientDetailsModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import GetClients from "./getClients";
 
 // Validation schema with Yup
 const validationSchema = Yup.object({
-  clientName: Yup.string().required("Client Name is required"),
-  address: Yup.string().required("Address is required"),
-  gstNumber: Yup.string().required("GST Number is required"),
-  contactNumber: Yup.string()
-    .matches(/^\d{10}$/, "Invalid contact number")
+  Client_Name: Yup.string().required("Client Name is required"),
+  Address: Yup.string().required("Address is required"),
+  GST_Number: Yup.string().required("GST Number is required"),
+  Client_Phone: Yup.string()
     .required("Contact Number is required"),
-  emailAddress: Yup.string().email("Invalid email format").required("Email is required"),
-  clientType: Yup.string().required("Client Type is required"),
-  businessName: Yup.string().required("Business Name is required"),
-  pincode: Yup.string().required("Pincode is required"),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
+  Client_Email: Yup.string().email("Invalid email format").required("Email is required"),
+  Client_Type: Yup.string().required("Client Type is required"),
+  BuisnessName: Yup.string().required("Business Name is required"),
+  Pincode: Yup.string().required("Pincode is required"),
+  City: Yup.string().required("City is required"),
+  State: Yup.string().required("State is required"),
 });
 
 const AddClientForm = () => {
@@ -26,28 +29,42 @@ const AddClientForm = () => {
 
   const formik = useFormik({
     initialValues: {
-      clientName: "",
-      address: "",
-      gstNumber: "",
-      contactNumber: "",
-      emailAddress: "",
-      clientType: "Retail",
-      businessName: "",
-      pincode: "",
-      city: "",
-      state: "",
+      Client_Name: "",
+      Address: "",
+      GST_Number: "",
+      Client_Phone: "",
+      Client_Email: "",
+      Client_Type: "",
+      BuisnessName: "",
+      Pincode: "",
+      City: "",
+      State: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      // Handle submit logic (e.g., send to API)
-      setClients((prevClients) => [...prevClients, values]);
-      setShowModal(false); // Close modal on submit
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        console.log("Form values:", values);
+        const response = await axios.post("http://127.0.0.1:5500/clients/", values);
+        toast.success("Client added successfully!");
+
+        setClients((prevClients) => [...prevClients, response.data]);
+        resetForm(); // Reset form on success
+        setShowModal(false);
+      } catch (error) {
+        console.error("Add client error:", error);
+        if(error.response.data.detail =="Phone Number alredy exist!"){
+          toast.error("Phone Number already exists!");
+        }
+        else toast.error("Failed to add client. Please try again.");
+      }
     },
   });
 
   const handleChange = (e) => {
     formik.handleChange(e);
   };
+
+
 
   return (
     <div className="container mt-2 px-0">
@@ -66,6 +83,7 @@ const AddClientForm = () => {
                   value={formik.values.searchTerm}
                   onChange={formik.handleChange}
                 />
+             
                 <button
                   className="btn add_warehouse btn-primary"
                   onClick={() => setShowModal(true)}
@@ -73,7 +91,7 @@ const AddClientForm = () => {
                   Add New
                 </button>
               </div>
-
+              <GetClients />
               {showModal && (
                 <div
                   className="modal fade show"
@@ -111,104 +129,104 @@ const AddClientForm = () => {
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="businessName"
+                                  name="BuisnessName"
                                   placeholder="Business Name"
-                                  value={formik.values.businessName}
+                                  value={formik.values.BuisnessName}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.businessName && formik.errors.businessName
+                                    formik.touched.BuisnessName && formik.errors.BuisnessName
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.businessName && formik.errors.businessName && (
-                                  <label className="text-danger">{formik.errors.businessName}</label>
-                                )}
+                                {/* {formik.touched.BuisnessName && formik.errors.BuisnessName && (
+                                  <label className="text-danger">{formik.errors.BuisnessName}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="gstNumber"
+                                  name="GST_Number"
                                   placeholder="GST Number"
-                                  value={formik.values.gstNumber}
+                                  value={formik.values.GST_Number}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.gstNumber && formik.errors.gstNumber
+                                    formik.touched.GST_Number && formik.errors.GST_Number
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.gstNumber && formik.errors.gstNumber && (
-                                  <label className="text-danger">{formik.errors.gstNumber}</label>
-                                )}
+                                {/* {formik.touched.GST_Number && formik.errors.GST_Number && (
+                                  <label className="text-danger">{formik.errors.GST_Number}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="address"
+                                  name="Address"
                                   placeholder="Address"
-                                  value={formik.values.address}
+                                  value={formik.values.Address}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.address && formik.errors.address
+                                    formik.touched.Address && formik.errors.Address
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.address && formik.errors.address && (
-                                  <label className="text-danger">{formik.errors.address}</label>
-                                )}
+                                {/* {formik.touched.Address && formik.errors.Address && (
+                                  <label className="text-danger">{formik.errors.Address}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="pincode"
+                                  name="Pincode"
                                   placeholder="Pincode"
-                                  value={formik.values.pincode}
+                                  value={formik.values.Pincode}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.pincode && formik.errors.pincode
+                                    formik.touched.Pincode && formik.errors.Pincode
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.pincode && formik.errors.pincode && (
-                                  <label className="text-danger">{formik.errors.pincode}</label>
-                                )}
+                                {/* {formik.touched.Pincode && formik.errors.Pincode && (
+                                  <label className="text-danger">{formik.errors.Pincode}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="city"
+                                  name="City"
                                   placeholder="City"
-                                  value={formik.values.city}
+                                  value={formik.values.City}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.city && formik.errors.city
+                                    formik.touched.City && formik.errors.City
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.city && formik.errors.city && (
-                                  <label className="text-danger">{formik.errors.city}</label>
-                                )}
+                                {/* {formik.touched.City && formik.errors.City && (
+                                  <label className="text-danger">{formik.errors.City}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="state"
+                                  name="State"
                                   placeholder="State"
-                                  value={formik.values.state}
+                                  value={formik.values.State}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.state && formik.errors.state
+                                    formik.touched.State && formik.errors.State
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.state && formik.errors.state && (
-                                  <label className="text-danger">{formik.errors.state}</label>
-                                )}
+                                {/* {formik.touched.State && formik.errors.State && (
+                                  <label className="text-danger">{formik.errors.State}</label>
+                                )} */}
                               </div>
                             </div>
                           </fieldset>
@@ -220,61 +238,61 @@ const AddClientForm = () => {
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="clientName"
+                                  name="Client_Name"
                                   placeholder="Client Name"
-                                  value={formik.values.clientName}
+                                  value={formik.values.Client_Name}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.clientName && formik.errors.clientName
+                                    formik.touched.Client_Name && formik.errors.Client_Name
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.clientName && formik.errors.clientName && (
-                                  <label className="text-danger">{formik.errors.clientName}</label>
-                                )}
+                                {/* {formik.touched.Client_Name && formik.errors.Client_Name && (
+                                  <label className="text-danger">{formik.errors.Client_Name}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="tel"
-                                  name="contactNumber"
+                                  name="Client_Phone"
                                   placeholder="Contact Number"
-                                  value={formik.values.contactNumber}
+                                  value={formik.values.Client_Phone}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.contactNumber && formik.errors.contactNumber
+                                    formik.touched.Client_Phone && formik.errors.Client_Phone
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.contactNumber && formik.errors.contactNumber && (
-                                  <label className="text-danger">{formik.errors.contactNumber}</label>
-                                )}
+                                {/* {formik.touched.Client_Phone && formik.errors.Client_Phone && (
+                                  <label className="text-danger">{formik.errors.Client_Phone}</label>
+                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="email"
-                                  name="emailAddress"
+                                  name="Client_Email"
                                   placeholder="Email Address"
-                                  value={formik.values.emailAddress}
+                                  value={formik.values.Client_Email}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.emailAddress && formik.errors.emailAddress
+                                    formik.touched.Client_Email && formik.errors.Client_Email
                                       ? "border-danger"
                                       : ""
                                   }`}
                                 />
-                                {formik.touched.emailAddress && formik.errors.emailAddress && (
-                                  <label className="text-danger">{formik.errors.emailAddress}</label>
-                                )}
+                                {/* {formik.touched.Client_Email && formik.errors.Client_Email && (
+                                  <label className="text-danger">{formik.errors.Client_Email}</label>
+                                )} */}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-md-6 mt-2">
                                 <select
-                                  name="clientType"
-                                  value={formik.values.clientType}
+                                  name="Client_Type"
+                                  value={formik.values.Client_Type}
                                   onChange={handleChange}
                                   className={`form-select ${
-                                    formik.touched.clientType && formik.errors.clientType
+                                    formik.touched.Client_Type && formik.errors.Client_Type
                                       ? "border-danger"
                                       : ""
                                   }`}
@@ -284,9 +302,9 @@ const AddClientForm = () => {
                                   <option value="Wholesale">Customer</option>
                                   <option value="Other">Other</option>
                                 </select>
-                                {formik.touched.clientType && formik.errors.clientType && (
-                                  <label className="text-danger">{formik.errors.clientType}</label>
-                                )}
+                                {/* {formik.touched.Client_Type && formik.errors.Client_Type && (
+                                  <label className="text-danger">{formik.errors.Client_Type}</label>
+                                )} */}
                               </div>
                             </div>
                           </fieldset>

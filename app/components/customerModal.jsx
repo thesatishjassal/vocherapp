@@ -1,5 +1,40 @@
-const CustomerModal = ({ client, onClose }) => {
-  console.log(client, onClose);
+import { useEffect, useState } from "react";
+import Select from "react-select"; // Import React Select
+
+const CustomerModal = ({ client, onClose, onConfirm }) => {
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5500/clients/")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Fetched clients:", data);
+        setClients(data);
+      })
+      .catch((error) => console.error("Error fetching clients:", error));
+  }, []);
+
+  const handleClientSelect = (selectedOption) => {
+    const clientData = clients.find((c) => c.id === selectedOption.value);
+    setSelectedClient(clientData);
+  };
+
+  const handleConfirm = () => {
+    if (selectedClient) {
+      onConfirm(selectedClient); // Pass selected client to parent
+      onClose(); // Close the modal
+    } else {
+      alert("Please select a client first!");
+    }
+  };
+
+  // Transform data for react-select options
+  const clientOptions = clients.map((client) => ({
+    value: client.id,
+    label: `${client.BuisnessName} - ${client.City} - ${client.State} - ${client.GST_Number}`,
+  }));
+
   return (
     <div
       className={`modal fade show ${client ? "show" : ""}`}
@@ -27,59 +62,56 @@ const CustomerModal = ({ client, onClose }) => {
             </button>
           </div>
           <div className="modal-body">
-            <select
-              id="clientSelect"
-              className="form-select sm mb-4"
-              name="clientSelect"
-            >
-              <option value="" disabled>
-                Select a Cleint?
-              </option>
-              <option value="ABC Electronics Shop">
-                ABC Eclectronics Shop - New York - NY - NY12345GST
-              </option>
-              <option value="XYZ Electronics">XYZ Electronics</option>
-              <option value="LMN Electricals">LMN Electricals</option>
-              <option value="PQR Electronics">PQR Electronics - WTC</option>
-              <option value="DEF Appliances">DEF Appliances</option>
-            </select>
-            <div className="row">
-              <div className="col-md-7 clinetdeatails">
-                <p>
-                  <strong>Client Name:</strong>{" "}
-                </p>
-                <p>
-                  <strong>Business Name:</strong>{" "}
-                </p>
-                <p>
-                  <strong>GST No.:</strong>{" "}
-                </p>
-                <p>
-                  <strong>Contact:</strong>{" "}
-                </p>
-                <p>
-                  <strong>Email:</strong>{" "}
-                </p>
+            {clients.length === 0 ? (
+              <p>Loading clients...</p>
+            ) : (
+              <Select
+                options={clientOptions}
+                onChange={handleClientSelect}
+                placeholder="Search and select a client..."
+                isSearchable
+              />
+            )}
+
+            {selectedClient && (
+              <div className="row mt-3">
+                <div className="col-md-7 clinetdeatails">
+                  <p>
+                    <strong>Client Name:</strong> {selectedClient.Client_Name}
+                  </p>
+                  <p>
+                    <strong>Business Name:</strong> {selectedClient.BuisnessName}
+                  </p>
+                  <p>
+                    <strong>GST No.:</strong> {selectedClient.GST_Number}
+                  </p>
+                  <p>
+                    <strong>Contact:</strong> {selectedClient.Client_Phone}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedClient.Client_Email}
+                  </p>
+                </div>
+                <div className="col-md-5 clinetdeatails">
+                  <p>
+                    <strong>City:</strong> {selectedClient.City}
+                  </p>
+                  <p>
+                    <strong>State:</strong> {selectedClient.State}
+                  </p>
+                  <p>
+                    <strong>Pincode:</strong> {selectedClient.Pincode}
+                  </p>
+                  <p>
+                    <strong>Client Type:</strong> {selectedClient.Client_Type}
+                  </p>
+                </div>
               </div>
-              <div className="col-md-5 clinetdeatails">
-                <p>
-                  <strong>City:</strong>{" "}
-                </p>
-                <p>
-                  <strong>State:</strong>{" "}
-                </p>
-                <p>
-                  <strong>Pincode:</strong>
-                </p>
-                <p>
-                  <strong>Client Type:</strong>
-                </p>
-              </div>
-            </div>
+            )}
           </div>
           <div className="modal-footer">
             <div className="col-12 text-end">
-              <button type="button" className="btn btn-success">
+              <button type="button" className="btn btn-success" onClick={handleConfirm}>
                 Confirm & Add
               </button>
             </div>

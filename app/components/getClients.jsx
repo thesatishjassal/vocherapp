@@ -1,0 +1,148 @@
+"use client"
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const GetClients = () => {
+  const [clients, setClients] = useState([]);
+  const [sortField, setSortField] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5500/clients/");
+      setClients(response.data);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
+
+    const editClient = (clientId) => {
+    // Redirect to the edit client page
+    // window.location.href = `/edit-client/${clientId}`;
+    console.log(clientId);    
+    }
+
+  const handleDelete = async (clientId) =>{
+    const isConfirmed = confirm("Are you sure you want to delete this client?");
+    
+    if (isConfirmed) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5500/client/${clientId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.ok) {
+                alert("Client deleted successfully!");
+                // Optionally, refresh the page or update the UI
+                window.location.reload(); // Refresh the page after deletion
+            } else {
+                alert("Failed to delete client. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error deleting client:", error);
+            alert("An error occurred. Please try again later.");
+        }
+    }
+}
+
+  return (
+    <table className="table align-items-center justify-content-center mb-0">
+      <thead>
+        <tr>
+          <th
+            className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+            onClick={() => {
+              setSortField("id");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}
+          >
+            ID {sortField === "id" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+          </th>
+          <th
+            className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+            onClick={() => {
+              setSortField("BuisnessName");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}
+          >
+            Business Name{" "}
+            {sortField === "BuisnessName" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+          </th>
+          <th
+            className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+            onClick={() => {
+              setSortField("GST_Number");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            }}
+          >
+            GST Number{" "}
+            {sortField === "GST_Number" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Address
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            City
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            State
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Pincode
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Client Name
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Client Phone
+          </th>
+          {/* <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Client Email
+          </th> */}
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Client Type
+          </th>
+          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {clients.map((client, index) => (
+          <tr key={index}>
+            <td>{client.id}</td>
+            <td>{client.BuisnessName}</td>
+            <td>{client.GST_Number}</td>
+            <td>{client.Address}</td>
+            <td>{client.City}</td>
+            <td>{client.State}</td>
+            <td>{client.Pincode}</td>
+            <td>{client.Client_Name}</td>
+            <td>{client.Client_Phone}</td>
+            {/* <td>{client.Client_Email}</td> */}
+            <td>{client.Client_Type}</td>
+            <td>
+              <div className="d-flex">
+                <button className="btn action_icons" onClick={() => editClient(client.id)}>
+                  <i className="fa fa-edit"></i>
+                </button>
+                <button className="btn action_icons" onClick={() => handleDelete(client.id)}>
+                  <i className="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default GetClients;

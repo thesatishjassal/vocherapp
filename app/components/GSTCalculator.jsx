@@ -19,12 +19,12 @@ const GSTCalculator = ({ totalAmount }) => {
             onChange={(e) =>
               setGstPercentage(parseFloat(e.target.value) || 0)
             }
-            className="form-control m-0"
+            className="form-control m-0 no-print"
           />
         </div>
       )}
 
-      <div className="col-md-6">
+      <div className="col-md-6 no-print">
         <select
           value={gstType}
           onChange={(e) => setGstType(e.target.value)}
@@ -44,7 +44,7 @@ const GSTCalculator = ({ totalAmount }) => {
             <>
               <tr>
                 <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                  <p className="m-0">Amount Without GST:</p>
+                  <p className="m-0">Without GST:</p>
                 </td>
                 <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
                   {totalAmount.toFixed(2)}
@@ -53,7 +53,7 @@ const GSTCalculator = ({ totalAmount }) => {
               <tr>
                 <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                   <p className="m-0">
-                    GST Amount (<b>{gstPercentage}%</b>):
+                    GST Amt (<b>{gstPercentage}%</b>):
                   </p>
                 </td>
                 <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">

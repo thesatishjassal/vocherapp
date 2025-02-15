@@ -238,7 +238,7 @@ img.logo {
 .tm_round_border td{
   text-align: center !important;   
   border-right: 1px solid #e3e3e7 !important;
-    word-break: break-word;
+    /* word-break: break-word; */
   white-space: normal !important;
 }
 @media print {
