@@ -31,7 +31,7 @@ const RegisterForm = () => {
 
     try {
       const response = await axios.post(
-        "https://147.93.107.232:5500/users", // Correct API URL (adjust as needed)
+        "https://api.panvic.in/users", // Correct API URL (adjust as needed)
         formValues,
         {
           headers: { "Content-Type": "application/json" },

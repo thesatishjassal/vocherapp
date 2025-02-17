@@ -6,7 +6,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
   const [selectedClient, setSelectedClient] = useState(null);
 
   useEffect(() => {
-    fetch("https://147.93.107.232:5500/clients/")
+    fetch("https://api.panvic.in/clients/")
       .then((response) => response.json())
       .then((data) => {
         console.log("Fetched clients:", data);

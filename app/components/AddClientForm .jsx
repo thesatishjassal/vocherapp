@@ -44,7 +44,7 @@ const AddClientForm = () => {
     onSubmit: async (values, { resetForm }) => {
       try {
         console.log("Form values:", values);
-        const response = await axios.post("https://147.93.107.232:5500/clients/", values);
+        const response = await axios.post("https://api.panvic.in/clients/", values);
         toast.success("Client added successfully!");
 
         setClients((prevClients) => [...prevClients, response.data]);

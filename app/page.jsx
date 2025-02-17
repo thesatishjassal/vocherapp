@@ -30,7 +30,7 @@ const LoginForm = () => {
     
       try {
         const response = await axios.post(
-          "https://147.93.107.232:5500/login",
+          "https://api.panvic.in/login",
           values,
           {
             headers: { "Content-Type": "application/json" },
