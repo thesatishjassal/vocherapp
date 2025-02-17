@@ -44,7 +44,7 @@ const AddClientForm = () => {
     onSubmit: async (values, { resetForm }) => {
       try {
         console.log("Form values:", values);
-        const response = await axios.post("http://127.0.0.1:5500/clients/", values);
+        const response = await axios.post("http://147.93.107.232:5500/clients/", values);
         toast.success("Client added successfully!");
 
         setClients((prevClients) => [...prevClients, response.data]);

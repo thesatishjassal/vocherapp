@@ -1,8 +1,10 @@
+import DynamicGreeting from "../components/getGreeting";
+
 export default function Home() {
   return (
     <>
       <div className="row welcome">
-        <h6>🌞 Good Morning!</h6>
+        <DynamicGreeting />
         <p className="text-sm mb-0">Let’s make today amazing! 🚀</p>
       </div>
       <div className="row mb-4">
