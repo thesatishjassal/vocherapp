@@ -13,7 +13,7 @@ const GetClients = () => {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get("http://147.93.107.232:5500/clients/");
+      const response = await axios.get("https://147.93.107.232:5500/clients/");
       setClients(response.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -31,7 +31,7 @@ const GetClients = () => {
     
     if (isConfirmed) {
         try {
-            const response = await fetch(`http://147.93.107.232:5500/client/${clientId}`, {
+            const response = await fetch(`https://147.93.107.232:5500/client/${clientId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"
