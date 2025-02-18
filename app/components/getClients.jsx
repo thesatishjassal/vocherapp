@@ -79,12 +79,12 @@ const GetClients = () => {
           <th
             className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
             onClick={() => {
-              setSortField("GST_Number");
+              setSortField("gst_number");
               setSortOrder(sortOrder === "asc" ? "desc" : "asc");
             }}
           >
             GST Number{" "}
-            {sortField === "GST_Number" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            {sortField === "gst_number" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
           </th>
           <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
             Address
@@ -120,15 +120,15 @@ const GetClients = () => {
           <tr key={index}>
             <td>{client.id}</td>
             <td>{client.buisnessname}</td>
-            <td>{client.GST_Number}</td>
-            <td>{client.Address}</td>
-            <td>{client.City}</td>
-            <td>{client.State}</td>
-            <td>{client.Pincode}</td>
-            <td>{client.Client_Name}</td>
-            <td>{client.Client_Phone}</td>
+            <td>{client.gst_number}</td>
+            <td>{client.address}</td>
+            <td>{client.city}</td>
+            <td>{client.state}</td>
+            <td>{client.pincode}</td>
+            <td>{client.client_name}</td>
+            <td>{client.client_phone}</td>
             {/* <td>{client.Client_Email}</td> */}
-            <td>{client.Client_Type}</td>
+            <td>{client.client_type}</td>
             <td>
               <div className="d-flex">
                 <button className="btn action_icons" onClick={() => editClient(client.id)}>
