@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"; // For Next.js 13+ (App Router)
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie"; // Import js-cookie for cookie management
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,63 +23,81 @@ const LoginForm = () => {
       phone: Yup.string()
         .matches(/^\d{10}$/, "Phone number must be 10 digits")
         .required("Phone number is required"),
-      password: Yup.string()
-        .required("Password is required"),
+      password: Yup.string().required("Password is required"),
     }),
     onSubmit: async (values, { setSubmitting }) => {
       const loadingToastId = toast.loading("Logging in..."); // Show loading toast
-    
+
       try {
+        // Ensure that values are being sent as JSON
         const response = await axios.post(
-          "https://api.panvic.in/login",
-          values,
+          `${API_URL}/login`,
+          JSON.stringify(values), // Explicitly stringify the data
           {
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             withCredentials: true, // Important if using cookies or authentication
           }
         );
-    
+
+        console.log("Form submitted successfully:", JSON.stringify(values));
+
         toast.update(loadingToastId, {
           render: "Login successful!",
           type: "success",
           isLoading: false,
-          autoClose: 3000
+          autoClose: 3000,
         });
-    
-        console.log("Form submitted successfully:", response.data);
-    
+
+        console.log("Form submitted successfully:", response);
+
         // Set user details in cookies after successful login
         if (response.data.user_details) {
           // Stringify the user details object and store it in a cookie
-          Cookies.set("user_details", JSON.stringify(response.data.user_details), { expires: 1 }); // expires in 1 day
+          Cookies.set(
+            "user_details",
+            JSON.stringify(response.data.user_details),
+            { expires: 1 }
+          ); // expires in 1 day
           Cookies.set("session_id", response.data.session_id, { expires: 1 });
         }
-    
+
         // Redirect to the homepage or another page after successful login
         router.push("/dashboard");
-    
       } catch (error) {
         toast.update(loadingToastId, {
           render: "Error logging in.",
           type: "error",
           isLoading: false,
-          autoClose: 3000
+          autoClose: 3000,
         });
-    
+
         if (error.response) {
+          // Check if the message is available in the response
           console.error("Error submitting form:", error.response.data);
-          setAlert({ type: "error", message: error.response.data.message || "An error occurred" });
+          if (error.response.data && error.response.data.message) {
+            setAlert({ type: "error", message: error.response.data.message });
+          } else {
+            setAlert({
+              type: "error",
+              message: "An error occurred, no specific message received",
+            });
+          }
         } else if (error.request) {
           console.error("No response received:", error.request);
-          setAlert({ type: "error", message: "No response received from the server" });
+          setAlert({
+            type: "error",
+            message: "No response received from the server",
+          });
         } else {
           console.error("Error setting up the request:", error.message);
           setAlert({ type: "error", message: error.message });
         }
       }
-    
+
       setSubmitting(false);
-    }
+    },
   });
 
   return (
@@ -104,7 +123,9 @@ const LoginForm = () => {
                       {...formik.getFieldProps("phone")}
                     />
                     {formik.touched.phone && formik.errors.phone ? (
-                      <div className="invalid-feedback">{formik.errors.phone}</div>
+                      <div className="invalid-feedback">
+                        {formik.errors.phone}
+                      </div>
                     ) : null}
                   </div>
                   <div className="mb-3 position-relative">

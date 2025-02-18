@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import Select from "react-select"; // Import React Select
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CustomerModal = ({ client, onClose, onConfirm }) => {
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
 
   useEffect(() => {
-    fetch("https://api.panvic.in/clients/")
+    fetch(`${API_URL}/clients/`)
       .then((response) => response.json())
       .then((data) => {
         console.log("Fetched clients:", data);

@@ -433,7 +433,6 @@ button.addrow:hover {
 /* Optional: Style for all form controls to have a consistent look */
 .form-control {
   padding: 8px;
-  margin: 5px;
   border-radius: 4px;
 }
 @media print {

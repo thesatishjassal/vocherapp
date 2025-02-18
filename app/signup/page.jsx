@@ -4,6 +4,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const RegisterForm = () => {
   const [formValues, setFormValues] = useState({
@@ -31,7 +32,7 @@ const RegisterForm = () => {
 
     try {
       const response = await axios.post(
-        "https://api.panvic.in/users", // Correct API URL (adjust as needed)
+        `${API_URL}/users`, // Correct API URL (adjust as needed)
         formValues,
         {
           headers: { "Content-Type": "application/json" },

@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import GetClients from "./getClients";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Validation schema with Yup
 const validationSchema = Yup.object({
@@ -44,7 +45,7 @@ const AddClientForm = () => {
     onSubmit: async (values, { resetForm }) => {
       try {
         console.log("Form values:", values);
-        const response = await axios.post("https://api.panvic.in/clients/", values);
+        const response = await axios.post(`${API_URL}/clients/`, values);
         toast.success("Client added successfully!");
 
         setClients((prevClients) => [...prevClients, response.data]);

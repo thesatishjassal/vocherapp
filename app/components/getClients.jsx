@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import axios from "axios";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetClients = () => {
   const [clients, setClients] = useState([]);
@@ -13,7 +14,7 @@ const GetClients = () => {
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get("https://api.panvic.in/clients/");
+      const response = await axios.get(`${API_URL}/clients/`);
       setClients(response.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -31,7 +32,7 @@ const GetClients = () => {
     
     if (isConfirmed) {
         try {
-            const response = await fetch(`https://api.panvic.in/client/${clientId}`, {
+            const response = await fetch(`${API_URL}/client/${clientId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"
