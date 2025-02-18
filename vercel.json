@@ -1,8 +1,9 @@
 {
-  "rewrites": [
-    {
-      "source": "/admin/(.*)",
-      "destination": "/$1"
-    }
-  ]
-}
+    "rewrites": [
+      {
+        "source": "/admmin/:path*",
+        "destination": "/:path*"
+      }
+    ]
+  }
+  
