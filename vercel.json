@@ -1,9 +1,8 @@
 {
-    "rewrites": [
-      {
-        "source": "/admmin/(.*)",
-        "destination": "/$1"
-      }
-    ]
-  }
-  
+  "rewrites": [
+    {
+      "source": "/admmin/(.*)",
+      "destination": "/$1"
+    }
+  ]
+}
