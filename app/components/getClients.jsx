@@ -69,12 +69,12 @@ const GetClients = () => {
           <th
             className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
             onClick={() => {
-              setSortField("BuisnessName");
+              setSortField("buisnessname");
               setSortOrder(sortOrder === "asc" ? "desc" : "asc");
             }}
           >
             Business Name{" "}
-            {sortField === "BuisnessName" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            {sortField === "buisnessname" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
           </th>
           <th
             className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
@@ -119,7 +119,7 @@ const GetClients = () => {
         {clients.map((client, index) => (
           <tr key={index}>
             <td>{client.id}</td>
-            <td>{client.BuisnessName}</td>
+            <td>{client.buisnessname}</td>
             <td>{client.GST_Number}</td>
             <td>{client.Address}</td>
             <td>{client.City}</td>

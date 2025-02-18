@@ -33,7 +33,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
   // Transform data for react-select options
   const clientOptions = clients.map((client) => ({
     value: client.id,
-    label: `${client.BuisnessName} - ${client.City} - ${client.State} - ${client.GST_Number}`,
+    label: `${client.buisnessname} - ${client.City} - ${client.State} - ${client.GST_Number}`,
   }));
 
   return (
@@ -81,7 +81,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
                     <strong>Client Name:</strong> {selectedClient.Client_Name}
                   </p>
                   <p>
-                    <strong>Business Name:</strong> {selectedClient.BuisnessName}
+                    <strong>Business Name:</strong> {selectedClient.buisnessname}
                   </p>
                   <p>
                     <strong>GST No.:</strong> {selectedClient.GST_Number}
