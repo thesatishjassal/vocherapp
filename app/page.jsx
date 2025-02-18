@@ -13,7 +13,6 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "" });
   const router = useRouter();
-
   const formik = useFormik({
     initialValues: {
       phone: "",
