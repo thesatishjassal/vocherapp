@@ -12,16 +12,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Validation schema with Yup
 const validationSchema = Yup.object({
   client_name: Yup.string().required("Client Name is required"),
-  address: Yup.string().required("address is required"),
+  address: Yup.string().required("Address is required"),
   gst_number: Yup.string().required("GST Number is required"),
-  client_phone: Yup.string()
-    .required("Contact Number is required"),
+  client_phone: Yup.string().required("Contact Number is required"),
   client_email: Yup.string().email("Invalid email format").required("Email is required"),
   client_type: Yup.string().required("Client Type is required"),
   buisnessname: Yup.string().required("Business Name is required"),
-  pincode: Yup.string().required("pincode is required"),
-  city: Yup.string().required("city is required"),
-  State: Yup.string().required("State is required"),
+  pincode: Yup.string().required("Pincode is required"),
+  city: Yup.string().required("City is required"),
+  state: Yup.string().required("State is required"),
 });
 
 const AddClientForm = () => {
@@ -53,10 +52,11 @@ const AddClientForm = () => {
         setShowModal(false);
       } catch (error) {
         console.error("Add client error:", error);
-        if(error.response.data.detail =="Phone Number alredy exist!"){
+        if (error.response.data.detail === "Phone Number already exists!") {
           toast.error("Phone Number already exists!");
+        } else {
+          toast.error("Failed to add client. Please try again.");
         }
-        else toast.error("Failed to add client. Please try again.");
       }
     },
   });
@@ -64,8 +64,6 @@ const AddClientForm = () => {
   const handleChange = (e) => {
     formik.handleChange(e);
   };
-
-
 
   return (
     <div className="container mt-2 px-0">
@@ -84,7 +82,6 @@ const AddClientForm = () => {
                   value={formik.values.searchTerm}
                   onChange={formik.handleChange}
                 />
-             
                 <button
                   className="btn add_warehouse btn-primary"
                   onClick={() => setShowModal(true)}
@@ -108,10 +105,7 @@ const AddClientForm = () => {
                   <div className="modal-dialog addclientform">
                     <div className="modal-content">
                       <div className="modal-header">
-                        <h1
-                          className="modal-title fs-5"
-                          id="staticBackdropLabel"
-                        >
+                        <h1 className="modal-title fs-5" id="staticBackdropLabel">
                           Add New Client
                         </h1>
                         <button
@@ -119,9 +113,11 @@ const AddClientForm = () => {
                           className="btn-close"
                           onClick={() => setShowModal(false)}
                           aria-label="Close"
-                        >×</button>
+                        >
+                          ×
+                        </button>
                       </div>
-                      <div className="modal-body  py-3 ">
+                      <div className="modal-body py-3">
                         <form onSubmit={formik.handleSubmit} className="row g-2">
                           {/* Business Details Field Group */}
                           <fieldset className="col-12">
@@ -140,9 +136,6 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.buisnessname && formik.errors.buisnessname && (
-                                  <label className="text-danger">{formik.errors.buisnessname}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
@@ -157,15 +150,12 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.gst_number && formik.errors.gst_number && (
-                                  <label className="text-danger">{formik.errors.gst_number}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="address"
-                                  placeholder="address"
+                                  placeholder="Address"
                                   value={formik.values.address}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
@@ -174,15 +164,12 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.address && formik.errors.address && (
-                                  <label className="text-danger">{formik.errors.address}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="pincode"
-                                  placeholder="pincode"
+                                  placeholder="Pincode"
                                   value={formik.values.pincode}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
@@ -191,15 +178,12 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.pincode && formik.errors.pincode && (
-                                  <label className="text-danger">{formik.errors.pincode}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="city"
-                                  placeholder="city"
+                                  placeholder="City"
                                   value={formik.values.city}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
@@ -208,15 +192,12 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.city && formik.errors.city && (
-                                  <label className="text-danger">{formik.errors.city}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="text"
                                   name="state"
-                                  placeholder="state"
+                                  placeholder="State"
                                   value={formik.values.state}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
@@ -225,9 +206,6 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.state && formik.errors.state && (
-                                  <label className="text-danger">{formik.errors.state}</label>
-                                )} */}
                               </div>
                             </div>
                           </fieldset>
@@ -249,9 +227,6 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.client_name && formik.errors.client_name && (
-                                  <label className="text-danger">{formik.errors.client_name}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
@@ -266,15 +241,12 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.client_phone && formik.errors.client_phone && (
-                                  <label className="text-danger">{formik.errors.client_phone}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6">
                                 <input
                                   type="email"
                                   name="client_email"
-                                  placeholder="Email address"
+                                  placeholder="Email Address"
                                   value={formik.values.client_email}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
@@ -283,9 +255,6 @@ const AddClientForm = () => {
                                       : ""
                                   }`}
                                 />
-                                {/* {formik.touched.client_email && formik.errors.client_email && (
-                                  <label className="text-danger">{formik.errors.client_email}</label>
-                                )} */}
                               </div>
                               <div className="col-md-6 mt-2">
                                 <select
@@ -303,9 +272,6 @@ const AddClientForm = () => {
                                   <option value="Wholesale">Customer</option>
                                   <option value="Other">Other</option>
                                 </select>
-                                {/* {formik.touched.client_type && formik.errors.client_type && (
-                                  <label className="text-danger">{formik.errors.client_type}</label>
-                                )} */}
                               </div>
                             </div>
                           </fieldset>
