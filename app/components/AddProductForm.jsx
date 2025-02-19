@@ -200,8 +200,8 @@ const AddProductForm = () => {
   };
 
   return (
-    <div className="container mt-2 px-0">
-      <div className="row container mx-auto my-3 p-0">
+    <div className="container px-0">
+      <div className="row container mx-auto p-0">
         <div className="col-12 p-0">
           <div className="card mb-4">
             <div className="card-header pb-0">
@@ -223,18 +223,6 @@ const AddProductForm = () => {
                   className="form-control w-25"
                 />
                 <div className="add_product">
-                  <button
-                    className="btn  action_btn mx-2"
-                    onClick={() => setShowSubcategoryModal(true)}
-                  >
-                    Add SubCategory
-                  </button>
-                  <button
-                    className="btn  action_btn mx-2"
-                    onClick={() => setShowCategoryModal(true)}
-                  >
-                    Add Category
-                  </button>
                   <button
                     className="btn  action_btn"
                     onClick={() => setShowModal(true)}

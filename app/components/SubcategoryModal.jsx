@@ -74,32 +74,16 @@ const SubcategoryModal = ({ show, onClose = () => {}, onSave, categories = [] })
                 onChange={handleChange}
               />
             </div>
-
-            {/* Image Upload */}
             <div className="mb-3">
               <input
-                type="file"
+                type="text"
+                name="name"
                 className="form-control"
-                accept="image/*"
-                onChange={handleImageChange}
+                placeholder="Enter subcategory name"
+                value={subcategory.name}
+                onChange={handleChange}
               />
             </div>
-
-            {/* Image Preview */}
-            {subcategory.image && (
-              <div className="mb-3">
-                <img
-                  src={URL.createObjectURL(subcategory.image)}
-                  alt="Subcategory Preview"
-                  style={{
-                    maxWidth: "100%",
-                    height: "100px",
-                    objectFit: "cover",
-                    borderRadius: "5px",
-                  }}
-                />
-              </div>
-            )}
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary ms-2" onClick={onClose}>

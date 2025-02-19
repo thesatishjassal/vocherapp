@@ -1,13 +1,13 @@
-"use client"
+"use client";
 import { useState } from "react";
 import AddProductForm from "../components/AddProductForm";
-import AddClientForm from "../components/AddClientForm ";
+import CategoryTable from "../components/CategoryTable";
+import SubcategoryTable from "../components/SubcategoryTable";
 
 const Products = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-
- 
+  const [activeTab, setActiveTab] = useState("products");
 
   return (
     <>
@@ -19,7 +19,54 @@ const Products = () => {
           </div>
         </div>
       </div>
-    <AddProductForm /> 
+      <div className="container mt-4 p-0">
+      {/* Nav Tabs */}
+      <ul className="nav nav-tabs">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "products" ? "active" : ""}`}
+            onClick={() => setActiveTab("products")}
+          >
+            Products
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "category" ? "active" : ""}`}
+            onClick={() => setActiveTab("category")}
+          >
+            Category
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "subcategory" ? "active" : ""}`}
+            onClick={() => setActiveTab("subcategory")}
+          >
+            Subcategory
+          </button>
+        </li>
+      </ul>
+
+      {/* Tab Content */}
+      <div className="tab-content">
+        {activeTab === "products" && (
+          <div className="tab-pane fade show active">
+            <AddProductForm />
+          </div>
+        )}
+        {activeTab === "category" && (
+          <div className="tab-pane fade show active">
+           <CategoryTable /> 
+          </div>
+        )}
+        {activeTab === "subcategory" && (
+          <div className="tab-pane fade show active">
+           <SubcategoryTable />
+          </div>
+        )}
+      </div>
+    </div>
     </>
   );
 };

@@ -1,31 +1,40 @@
+"use-clients"
 import { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
   const [category, setCategory] = useState({
-    name: "",
+    catname: "",
     slug: "",
-    image: null,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCategory((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCategory((prev) => ({ ...prev, image: file }));
+  const handleSubmit = async () => {
+    if (!category.catname || !category.slug) {
+      toast.warn("Please fill in all fields!", { position: "top-right" });
+      return;
     }
-  };
 
-  const handleSubmit = () => {
-    if (category.name && category.slug && category.image) {
-      onSave(category);
-      setCategory({ name: "", slug: "", image: null });
-      onClose();
-    } else {
-      alert("Please fill out all fields and upload an image.");
+    setLoading(true);
+
+    try {
+      const response = await axios.post("https://api.panvic.in/category", category);
+      toast.success("Category added successfully!", { position: "top-right" });
+
+      if (onSave) onSave(response.data); // Pass the new category to parent
+      setCategory({ catname: "", slug: "" }); // Reset fields
+      onClose(); // Close modal after saving
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong!", { position: "top-right" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,10 +58,10 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
             <div className="mb-3">
               <input
                 type="text"
-                name="name"
+                name="catname"
                 className="form-control"
                 placeholder="Enter category name"
-                value={category.name}
+                value={category.catname}
                 onChange={handleChange}
               />
             </div>
@@ -66,35 +75,18 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
                 onChange={handleChange}
               />
             </div>
-            <div className="mb-3">
-              <input
-                type="file"
-                className="form-control"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </div>
-            {category.image && (
-              <div className="mb-3">
-                <img
-                  src={URL.createObjectURL(category.image)}
-                  alt="Category Preview"
-                  style={{
-                    maxWidth: "100%",
-                    height: "100px",
-                    objectFit: "cover",
-                    borderRadius: "5px",
-                  }}
-                />
-              </div>
-            )}
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary ms-2" onClick={onClose}>
               Close
             </button>
-            <button type="button" className="btn btn-success" onClick={handleSubmit}>
-              Save Category
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Category"}
             </button>
           </div>
         </div>
