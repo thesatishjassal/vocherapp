@@ -2,6 +2,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
   const [category, setCategory] = useState({
@@ -13,15 +14,18 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Updating field: ${name} with value: ${value}`);
     setCategory((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
     if (!category.catname || !category.slug) {
+      console.warn("Validation failed: Please fill in all fields!");
       toast.warn("Please fill in all fields!", { position: "top-right" });
       return;
     }
 
+    console.log("Submitting category:", category);
     setLoading(true);
 
     try {
@@ -35,17 +39,21 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
           withCredentials: true, // Important if using cookies or authentication
         }
       );
+      
+      console.log("Category saved successfully:", response.data);
       toast.success("Category added successfully!", { position: "top-right" });
 
       if (onSave) onSave(response.data); // Pass the new category to parent
       setCategory({ catname: "", slug: "" }); // Reset fields
       onClose(); // Close modal after saving
     } catch (err) {
+      console.error("Error saving category:", err.response?.data || err);
       toast.error(err.response?.data?.message || "Something went wrong!", {
         position: "top-right",
       });
     } finally {
       setLoading(false);
+      console.log("Request completed");
     }
   };
 
