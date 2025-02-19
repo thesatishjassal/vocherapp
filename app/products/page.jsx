@@ -3,6 +3,7 @@ import { useState } from "react";
 import AddProductForm from "../components/AddProductForm";
 import CategoryTable from "../components/CategoryTable";
 import SubcategoryTable from "../components/SubcategoryTable";
+import ProductsTable from "../components/ProductsTable";
 
 const Products = () => {
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +53,7 @@ const Products = () => {
       <div className="tab-content">
         {activeTab === "products" && (
           <div className="tab-pane fade show active">
-            <AddProductForm />
+            <ProductsTable />
           </div>
         )}
         {activeTab === "category" && (

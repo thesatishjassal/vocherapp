@@ -54,7 +54,7 @@ const CategoryTable = () => {
         />
       )}
       <div className="card-header pb-0">
-        <h6>Add Products</h6>
+        <h6>Add Category</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         <div className="d-flex justify-content-between align-items-center mb-3">

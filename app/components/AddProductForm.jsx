@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import ProductsTable from "./ProductsTable"
 import * as yup from "yup";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -25,11 +24,7 @@ const productSchema = yup.object().shape({
   brand: yup.string().required(),
 });
 
-const AddProductForm = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-
+const AddProductForm = ({ show, onClose, onSave }) => {
   const {
     register,
     handleSubmit,
@@ -40,46 +35,44 @@ const AddProductForm = () => {
     mode: "onChange",
   });
 
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
   // Fetch categories & subcategories
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("https://api.panvic.in/category/");
-        const data = await res.json();
-        setCategories(data || []);
+        const resCategories = await fetch("https://api.panvic.in/category/");
+        const categoriesData = await resCategories.json();
+        setCategories(categoriesData || []);
+
+        const resSubCategories = await fetch(
+          "https://api.panvic.in/subcategory/"
+        );
+        const subCategoriesData = await resSubCategories.json();
+        setSubCategories(subCategoriesData || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
 
-    const fetchSubCategories = async () => {
-      try {
-        const res = await fetch("https://api.panvic.in/subcategory/");
-        const data = await res.json();
-        setSubCategories(data || []);
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-
-    fetchCategories();
-    fetchSubCategories();
+    fetchData();
   }, []);
 
   const onSubmit = async (data) => {
     try {
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) throw new Error("Failed to add product");
 
-      alert("Product added successfully!");
+      const newProduct = await response.json();
+      onSave(newProduct);
       reset();
+      alert("Product added successfully!");
     } catch (error) {
       console.error("Error:", error);
       alert("Error adding product");
@@ -87,98 +80,112 @@ const AddProductForm = () => {
   };
 
   return (
-    <div className="container px-0">
-      <button className="btn action_btn" onClick={() => setShowModal(true)}>Add New</button>
+    <div
+      className={`modal ${show ? "show" : ""}`}
+      tabIndex="-1"
+      style={{
+        display: show ? "block" : "none",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}
+    >
+      <div className="modal-dialog AddProductForm">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h1 className="modal-title fs-5">Add New Product</h1>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+            ></button>
+          </div>
+          <div className="modal-body py-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+              {/* All Input Fields */}
+              {[
+                "hsncode",
+                "itemCode",
+                "itemName",
+                "description",
+                "price",
+                "quantity",
+                "rackCode",
+                "size",
+                "color",
+                "model",
+                "brand",
+              ].map((field) => (
+                <div className="col-md-6" key={field}>
+                  <input
+                    type="text"
+                    {...register(field)}
+                    className={`form-control ${
+                      errors[field] ? "border-danger" : ""
+                    }`}
+                    placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+                  />
+                </div>
+              ))}
 
-      {showModal && (
-        <div className="modal fade show" tabIndex="-1" style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-          <div className="modal-dialog AddProductForm">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h1 className="modal-title fs-5">Add New Product</h1>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-              </div>
-              <div className="modal-body py-3">
-                <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-                  
-                  {/* All Input Fields */}
-                  {[
-                    "hsncode",
-                    "itemCode",
-                    "itemName",
-                    "description",
-                    "price",
-                    "quantity",
-                    "rackCode",
-                    "size",
-                    "color",
-                    "model",
-                    "brand",
-                  ].map((field) => (
-                    <div className="col-md-6" key={field}>
-                      <input
-                        type="text"
-                        {...register(field)}
-                        className={`form-control ${errors[field] ? "border-danger" : ""}`}
-                        placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-                      />
-                    </div>
+              {/* Category Dropdown */}
+              <div className="col-md-6">
+                <select
+                  {...register("category")}
+                  className={`form-control ${
+                    errors.category ? "border-danger" : ""
+                  }`}
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.catname}
+                    </option>
                   ))}
-
-                  {/* Category Dropdown */}
-                  <div className="col-md-6">
-                    <select
-                      {...register("category")}
-                      className={`form-control ${errors.category ? "border-danger" : ""}`}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.catname}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Subcategory Dropdown */}
-                  <div className="col-md-6">
-                    <select
-                      {...register("subCategory")}
-                      className={`form-control ${errors.subCategory ? "border-danger" : ""}`}
-                    >
-                      <option value="">Select Subcategory</option>
-                      {subCategories.map((sub) => (
-                        <option key={sub.id} value={sub.id}>
-                          {sub.subcatname}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Image URL Input */}
-                  <div className="col-md-6">
-                    <input
-                      type="url"
-                      {...register("thumbnail")}
-                      className={`form-control ${errors.thumbnail ? "border-danger" : ""}`}
-                      placeholder="Enter Image URL"
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="col-12">
-                    <button type="submit" className="btn btn-primary w-100" disabled={!isValid}>
-                      Add Product
-                    </button>
-                  </div>
-                  
-                </form>
+                </select>
               </div>
-            </div>
+
+              {/* Subcategory Dropdown */}
+              <div className="col-md-6">
+                <select
+                  {...register("subCategory")}
+                  className={`form-control ${
+                    errors.subCategory ? "border-danger" : ""
+                  }`}
+                >
+                  <option value="">Select Subcategory</option>
+                  {subCategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.subcatname}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Image URL Input */}
+              <div className="col-md-6">
+                <input
+                  type="url"
+                  {...register("thumbnail")}
+                  className={`form-control ${
+                    errors.thumbnail ? "border-danger" : ""
+                  }`}
+                  placeholder="Enter Image URL"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="col-12">
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={!isValid}
+                >
+                  Add Product
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      )}
-      <ProductsTable />
+      </div>
     </div>
   );
 };
