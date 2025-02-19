@@ -1,31 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const SubcategoryModal = ({ show, onClose = () => {}, onSave, categories = [] }) => {
+const SubcategoryModal = ({ show, onClose = () => {} }) => {
   const [subcategory, setSubcategory] = useState({
     category: "",
-    name: "",
-    image: null,
+    subcatname: "",
+    slug: "",
   });
+  const [categories, setCategories] = useState([]);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/category`, {
+          withCredentials: true,
+        });
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories!");
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSubcategory((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSubcategory((prev) => ({ ...prev, image: file }));
-    }
-  };
+  // Generate slug from subcategory name
+  useEffect(() => {
+    setSubcategory((prev) => ({
+      ...prev,
+      slug: prev.subcatname.toLowerCase().replace(/\s+/g, "-"),
+    }));
+  }, [subcategory.subcatname]);
 
-  const handleSubmit = () => {
-    if (subcategory.category && subcategory.name && subcategory.image) {
-      onSave(subcategory);
-      setSubcategory({ category: "", name: "", image: null });
-      onClose();
+  const handleSubmit = async () => {
+    if (subcategory.category && subcategory.subcatname && subcategory.slug) {
+      try {
+        const response = await axios.post(
+          `${API_URL}/subcategory`,
+          {
+            catname: subcategory.category,
+            subcatname: subcategory.subcatname,
+            slug: subcategory.slug,
+          },
+          { withCredentials: true }
+        );
+
+        if (response.status === 201) {
+          toast.success("Subcategory added successfully!");
+          setSubcategory({ category: "", subcatname: "", slug: "" });
+          onClose();
+        }
+      } catch (error) {
+        console.error("Error adding subcategory:", error);
+        toast.error("Failed to add subcategory!");
+      }
     } else {
-      alert("Please fill out all fields and upload an image.");
+      toast.warn("Please fill out all fields!");
     }
   };
 
@@ -43,7 +82,9 @@ const SubcategoryModal = ({ show, onClose = () => {}, onSave, categories = [] })
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Add Subcategory</h5>
-            <button type="button" className="btn-close" onClick={onClose}>×</button>
+            <button type="button" className="btn-close" onClick={onClose}>
+              ×
+            </button>
           </div>
           <div className="modal-body">
             {/* Category Dropdown */}
@@ -55,9 +96,9 @@ const SubcategoryModal = ({ show, onClose = () => {}, onSave, categories = [] })
                 onChange={handleChange}
               >
                 <option value="">Select Category</option>
-                {categories.map((cat, index) => (
-                  <option key={index} value={cat}>
-                    {cat}
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.catname}>
+                    {cat.catname}
                   </option>
                 ))}
               </select>
@@ -67,26 +108,32 @@ const SubcategoryModal = ({ show, onClose = () => {}, onSave, categories = [] })
             <div className="mb-3">
               <input
                 type="text"
-                name="name"
+                name="subcatname"
                 className="form-control"
                 placeholder="Enter subcategory name"
-                value={subcategory.name}
+                value={subcategory.subcatname}
                 onChange={handleChange}
               />
             </div>
+
+            {/* Slug (Read-only) */}
             <div className="mb-3">
               <input
                 type="text"
-                name="name"
+                name="slug"
                 className="form-control"
-                placeholder="Enter subcategory name"
-                value={subcategory.name}
-                onChange={handleChange}
+                placeholder="Slug (auto-generated)"
+                value={subcategory.slug}
+                readOnly
               />
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary ms-2" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={onClose}
+            >
               Close
             </button>
             <button type="button" className="btn btn-success" onClick={handleSubmit}>
