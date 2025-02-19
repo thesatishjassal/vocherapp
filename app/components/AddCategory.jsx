@@ -1,4 +1,4 @@
-"use-clients"
+"use-clients";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -25,14 +25,25 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post("https://api.panvic.in/category", category);
+      const response = await axios.post(
+        `${API_URL}/category`,
+        JSON.stringify(category),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // Important if using cookies or authentication
+        }
+      );
       toast.success("Category added successfully!", { position: "top-right" });
 
       if (onSave) onSave(response.data); // Pass the new category to parent
       setCategory({ catname: "", slug: "" }); // Reset fields
       onClose(); // Close modal after saving
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong!", { position: "top-right" });
+      toast.error(err.response?.data?.message || "Something went wrong!", {
+        position: "top-right",
+      });
     } finally {
       setLoading(false);
     }
@@ -52,7 +63,9 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Add Category</h5>
-            <button type="button" className="btn-close" onClick={onClose}>×</button>
+            <button type="button" className="btn-close" onClick={onClose}>
+              ×
+            </button>
           </div>
           <div className="modal-body">
             <div className="mb-3">
@@ -77,7 +90,11 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary ms-2" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={onClose}
+            >
               Close
             </button>
             <button
