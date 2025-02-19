@@ -62,6 +62,7 @@ const ProductsTable = () => {
             <thead>
               <tr>
                 <th>Id</th>
+                <th>Thumbnail</th>
                 <th>HSN Code</th>
                 <th>Item Code</th>
                 <th>Item Name</th>
@@ -71,26 +72,16 @@ const ProductsTable = () => {
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Rack Code</th>
-                <th>Thumbnail</th>
-                <th>Size</th>
+                {/* <th>Size</th>
                 <th>Color</th>
                 <th>Model</th>
-                <th>Brand</th>
+                <th>Brand</th> */}
               </tr>
             </thead>
             <tbody>
               {products.map((product, index) => (
                 <tr key={index}>
                   <td>{product.id}</td>
-                  <td>{product.hsncode}</td>
-                  <td>{product.itemCode}</td>
-                  <td>{product.itemName}</td>
-                  <td>{product.description}</td>
-                  <td>{product.category}</td>
-                  <td>{product.subCategory}</td>
-                  <td>₹{product.price}</td>
-                  <td>{product.quantity}</td>
-                  <td>{product.rackCode}</td>
                   <td>
                     <img
                       src={product.thumbnail}
@@ -100,10 +91,19 @@ const ProductsTable = () => {
                       style={{ borderRadius: "5px" }}
                     />
                   </td>
-                  <td>{product.size}</td>
+                  <td>{product.hsncode}</td>
+                  <td>{product.itemCode}</td>
+                  <td>{product.itemName}</td>
+                  <td>{product.description}</td>
+                  <td>{product.category}</td>
+                  <td>{product.subCategory}</td>
+                  <td>₹{product.price}</td>
+                  <td>{product.quantity}</td>
+                  <td>{product.rackCode}</td>
+                  {/* <td>{product.size}</td>
                   <td>{product.color}</td>
                   <td>{product.model}</td>
-                  <td>{product.brand}</td>
+                  <td>{product.brand}</td> */}
                 </tr>
               ))}
             </tbody>
