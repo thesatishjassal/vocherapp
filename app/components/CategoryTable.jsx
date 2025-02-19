@@ -13,7 +13,7 @@ const CategoryTable = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${API_URL}/category`, {
-          withCredentials: true, 
+          withCredentials: true,
         });
         setCategories(response.data);
         console.log("Categories fetched:", response.data);
@@ -34,6 +34,16 @@ const CategoryTable = () => {
     setCategories((prev) => [...prev, newCategory]);
   };
 
+  const handleEdit = (categoryId) => {
+    console.log("Edit category:", categoryId);
+    // Implement edit functionality here
+  };
+
+  const handleDelete = (categoryId) => {
+    console.log("Delete category:", categoryId);
+    // Implement delete functionality here
+  };
+
   return (
     <div className="card">
       {showCategoryModal && (
@@ -43,7 +53,7 @@ const CategoryTable = () => {
           onSave={handleAddCategory}
         />
       )}
-      <div class="card-header pb-0">
+      <div className="card-header pb-0">
         <h6>Add Products</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
@@ -68,6 +78,7 @@ const CategoryTable = () => {
               <th>Id</th>
               <th>Name</th>
               <th>Slug</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -76,6 +87,24 @@ const CategoryTable = () => {
                 <td>{cat.id}</td>
                 <td>{cat.catname}</td>
                 <td>{cat.slug}</td>
+                <td>
+                  <u
+                    className="text-primary mx-2"
+                    style={{ cursor: "pointer" }}
+                    title="Edit"
+                    onClick={() => handleEdit(cat.id)}
+                  >
+                    <i className="fas fa-edit"></i>
+                  </u>
+                  <u
+                    className="text-danger"
+                    style={{ cursor: "pointer" }}
+                    title="Delete"
+                    onClick={() => handleDelete(cat.id)}
+                  >
+                    <i className="fas fa-trash"></i>
+                  </u>
+                </td>
               </tr>
             ))}
           </tbody>

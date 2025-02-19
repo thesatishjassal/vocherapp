@@ -64,6 +64,7 @@ const SubcategoryTable = () => {
               <th>Subcategory Name</th>
               <th>Category Name</th>
               <th>Slug</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -74,11 +75,27 @@ const SubcategoryTable = () => {
                   <td>{cat.subcatname}</td>
                   <td>{cat.catname}</td>
                   <td>{cat.slug}</td>
+                  <td>
+                    <u
+                      className="text-primary mx-2"
+                      style={{ cursor: "pointer" }}
+                      title="Edit"
+                    >
+                      <i className="fas fa-edit"></i>
+                    </u>
+                    <u
+                      className="text-danger"
+                      style={{ cursor: "pointer" }}
+                      title="Delete"
+                    >
+                      <i className="fas fa-trash"></i>
+                    </u>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="text-center">
+                <td colSpan="5" className="text-center">
                   No subcategories found
                 </td>
               </tr>

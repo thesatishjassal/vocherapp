@@ -593,5 +593,7 @@ License - nucleoapp.com/license/
   content: "\ea65";
 }
 
-
+.nav-link {
+  color: #272d22;
+}
 /* all icon font classes list here */
