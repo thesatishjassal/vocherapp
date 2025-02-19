@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import ProductsTable from "./ProductsTable"
 import * as yup from "yup";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -177,6 +178,7 @@ const AddProductForm = () => {
           </div>
         </div>
       )}
+      <ProductsTable />
     </div>
   );
 };
