@@ -16,6 +16,7 @@ const SubcategoryTable = () => {
         withCredentials: true,
       });
       setCategories(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error("Error fetching subcategories:", error);
       toast.error("Failed to load subcategories!");
