@@ -14,8 +14,8 @@ const productSchema = yup.object().shape({
   description: yup.string().required(),
   category: yup.string().required(),
   subCategory: yup.string().required(),
-  price: yup.number().typeError("Invalid").positive().required(),
-  quantity: yup.number().typeError("Invalid").integer().min(0).required(),
+  price: yup.string().required(),
+  quantity: yup.string().required(),
   rackCode: yup.string().required(),
   thumbnail: yup.string().url().nullable(), // Not required anymore
   size: yup.string().required(),
