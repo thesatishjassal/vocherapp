@@ -1,46 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import CategoryModal from "./AddCategory";
+import { toast } from "react-toastify";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CategoryTable = () => {
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState({ name: "", slug: "", image: null });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/category`, {
+          withCredentials: true, 
+        });
+        setCategories(response.data);
+        console.log("Categories fetched:", response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories!");
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const handleCategoryClose = () => {
     setShowCategoryModal(false);
   };
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setCategory({ ...category, [e.target.name]: e.target.value });
-  };
-
-  // Handle image upload
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCategory({ ...category, image: URL.createObjectURL(file) });
-    }
-  };
-
-  // Add category to table
-  const handleAddCategory = () => {
-    if (!category.name || !category.slug)
-      return alert("Name and slug are required!");
-    setCategories([...categories, category]);
-    setCategory({ name: "", slug: "", image: null }); // Reset form
+  const handleAddCategory = (newCategory) => {
+    setCategories((prev) => [...prev, newCategory]);
   };
 
   return (
     <div className="card">
       {showCategoryModal && (
-        <CategoryModal show={showCategoryModal} onClose={handleCategoryClose} />
+        <CategoryModal
+          show={showCategoryModal}
+          onClose={handleCategoryClose}
+          onSave={handleAddCategory}
+        />
       )}
       <div class="card-header pb-0">
         <h6>Add Products</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          {/* Search Input */}
           <input
             type="text"
             placeholder="Search by Client or Project"
@@ -48,7 +55,7 @@ const CategoryTable = () => {
           />
           <div className="add_product">
             <button
-              className="btn  action_btn mx-2"
+              className="btn action_btn mx-2"
               onClick={() => setShowCategoryModal(true)}
             >
               Add Category
@@ -67,15 +74,13 @@ const CategoryTable = () => {
             {categories.map((cat, index) => (
               <tr key={index}>
                 <td>{cat.id}</td>
-                <td>{cat.name}</td>
+                <td>{cat.catname}</td>
                 <td>{cat.slug}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Category Table */}
     </div>
   );
 };
