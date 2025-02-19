@@ -17,7 +17,7 @@ const productSchema = yup.object().shape({
   price: yup.number().typeError("Invalid").positive().required(),
   quantity: yup.number().typeError("Invalid").integer().min(0).required(),
   rackCode: yup.string().required(),
-  thumbnail: yup.mixed().required(),
+  thumbnail: yup.string().url().nullable(), // Not required anymore
   size: yup.string().required(),
   color: yup.string().required(),
   model: yup.string().required(),
@@ -28,6 +28,7 @@ const AddProductForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+
   const {
     register,
     handleSubmit,
@@ -65,19 +66,13 @@ const AddProductForm = () => {
   }, []);
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      if (key === "thumbnail") {
-        formData.append(key, data[key][0]);
-      } else {
-        formData.append(key, data[key]);
-      }
-    });
-
     try {
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) throw new Error("Failed to add product");
@@ -104,6 +99,8 @@ const AddProductForm = () => {
               </div>
               <div className="modal-body py-3">
                 <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+                  
+                  {/* All Input Fields */}
                   {[
                     "hsncode",
                     "itemCode",
@@ -136,7 +133,7 @@ const AddProductForm = () => {
                       <option value="">Select Category</option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
-                          {cat.catname}
+                          {cat.name}
                         </option>
                       ))}
                     </select>
@@ -151,18 +148,19 @@ const AddProductForm = () => {
                       <option value="">Select Subcategory</option>
                       {subCategories.map((sub) => (
                         <option key={sub.id} value={sub.id}>
-                          {sub.subcatname}
+                          {sub.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  {/* File Input */}
+                  {/* Image URL Input */}
                   <div className="col-md-6">
                     <input
-                      type="file"
+                      type="url"
                       {...register("thumbnail")}
                       className={`form-control ${errors.thumbnail ? "border-danger" : ""}`}
+                      placeholder="Enter Image URL"
                     />
                   </div>
 
@@ -172,6 +170,7 @@ const AddProductForm = () => {
                       Add Product
                     </button>
                   </div>
+                  
                 </form>
               </div>
             </div>
