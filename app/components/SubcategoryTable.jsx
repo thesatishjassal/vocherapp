@@ -1,36 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SubcategoryModal from "./SubcategoryModal";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SubcategoryTable = () => {
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState({ name: "", slug: "", image: null });
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setCategory({ ...category, [e.target.name]: e.target.value });
-  };
-  const handleSubcategoryClose = () => {
-    setShowSubcategoryModal(false);
+  // Fetch subcategories from API
+  const fetchSubcategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/subcategory`, {
+        withCredentials: true,
+      });
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      toast.error("Failed to load subcategories!");
+    }
   };
 
-  // Add category to table
-  const handleAddCategory = () => {
-    if (!category.name || !category.slug)
-      return alert("Name and slug are required!");
-    setCategories([...categories, category]);
-    setCategory({ name: "", slug: ""}); // Reset form
+  useEffect(() => {
+    fetchSubcategories();
+  }, []);
+
+  // Handle modal close and refresh data
+  const handleSubcategoryClose = (refresh = false) => {
+    setShowSubcategoryModal(false);
+    if (refresh) fetchSubcategories(); // Refresh subcategory list after adding
   };
 
   return (
     <div className="card">
       {showSubcategoryModal && (
-        <SubcategoryModal
-          show={showSubcategoryModal}
-          onClose={handleSubcategoryClose}
-        />
+        <SubcategoryModal show={showSubcategoryModal} onClose={handleSubcategoryClose} />
       )}
-      <div class="card-header pb-0">
+      <div className="card-header pb-0">
         <h6>Add Products</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
@@ -43,7 +50,7 @@ const SubcategoryTable = () => {
           />
           <div className="add_product">
             <button
-              className="btn  action_btn mx-2"
+              className="btn action_btn mx-2"
               onClick={() => setShowSubcategoryModal(true)}
             >
               Add SubCategory
@@ -54,24 +61,31 @@ const SubcategoryTable = () => {
           <thead>
             <tr>
               <th>Id</th>
-              <th>Name</th>
-              <th>Categoryname</th>
+              <th>Subcategory Name</th>
+              <th>Category Name</th>
               <th>Slug</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, index) => (
-              <tr key={index}>
-                <td>{cat.id}</td>
-                <td>{cat.name}</td>
-                <td>{cat.slug}</td>
+            {categories.length > 0 ? (
+              categories.map((cat, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{cat.subcatname}</td>
+                  <td>{cat.catname}</td>
+                  <td>{cat.slug}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No subcategories found
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-
-      {/* Category Table */}
     </div>
   );
 };
