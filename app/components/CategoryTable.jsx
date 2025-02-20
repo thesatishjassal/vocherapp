@@ -39,9 +39,22 @@ const CategoryTable = () => {
     // Implement edit functionality here
   };
 
-  const handleDelete = (categoryId) => {
-    console.log("Delete category:", categoryId);
-    // Implement delete functionality here
+  const handleDelete = async (categoryId) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/category/${categoryId}`, {
+        withCredentials: true,
+      });
+
+      setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+      toast.success("Category deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast.error("Failed to delete category!");
+    }
   };
 
   return (
