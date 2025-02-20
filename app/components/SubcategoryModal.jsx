@@ -15,7 +15,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/category`, {
+        const response = await axios.get(`${API_URL}/subcategory`, {
           withCredentials: true,
         });
         setCategories(response.data);
@@ -47,7 +47,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
         const response = await axios.post(
           `${API_URL}/subcategory`,
           {
-            catname: subcategory.category,
+            catname: subcategory.catname,
             subcatname: subcategory.subcatname,
             slug: subcategory.slug,
           },
@@ -92,7 +92,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
               <select
                 name="category"
                 className="form-select"
-                value={subcategory.category}
+                value={subcategory.catname}
                 onChange={handleChange}
               >
                 <option value="">Select Category</option>
