@@ -78,23 +78,32 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
+  
       const responseData = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to add product");
       }
-
+  
       onSave(responseData.product);
       reset();
       toast.success("Product added successfully!", { position: "top-right" });
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(error.message || "Error adding product", {
-        position: "top-right",
-      });
+      console.error("Error:", error.message);
+  
+      if (error.response && error.response.data && error.response.data.errors) {
+        // Display multiple errors in toast
+        error.response.data.errors.forEach((err) => {
+          toast.error(err, { position: "top-right" });
+        });
+      } else {
+        toast.error(error.message || "Error adding product", {
+          position: "top-right",
+        });
+      }
     }
   };
+  
 
   return (
     <div
