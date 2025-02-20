@@ -15,7 +15,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/subcategory`, {
+        const response = await axios.get(`${API_URL}/category`, {
           withCredentials: true,
         });
         setCategories(response.data);

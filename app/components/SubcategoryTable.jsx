@@ -34,34 +34,35 @@ const SubcategoryTable = () => {
   };
 
   // Handle delete subcategory
-  const handleDelete = async (subCategoryId) => {
+  const handleDeleteSubcategory = async (subcategoryId) => {
     if (!window.confirm("Are you sure you want to delete this subcategory?")) {
       return;
     }
-
+  
     try {
-      const userDetails = Cookies.get("user_details"); // Retrieve user details from cookies
-      if (!userDetails) {
-        toast.error("User details not found!");
-        return;
+      const response = await axios.delete(`${API_URL}/subcategory/${subcategoryId}`);
+      
+      if (response.status === 200) {
+        setCategories((prev) => prev.filter((subcat) => subcat.id !== subcategoryId));
+        toast.success("Subcategory deleted successfully!");
+      } else {
+        console.error("Unexpected response:", response);
+        toast.error("Something went wrong!");
       }
-
-      const user = JSON.parse(userDetails); // Parse user details
-
-      await axios.delete(`${API_URL}/subcategory/${subCategoryId}`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`, // Include user token
-        },
-        withCredentials: true,
-      });
-
-      setCategories((prev) => prev.filter((cat) => cat.id !== subCategoryId));
-      toast.success("Subcategory deleted successfully!");
     } catch (error) {
-      console.error("Error deleting subcategory:", error);
-      toast.error("Failed to delete subcategory!");
+      if (error.response) {
+        console.error("Server responded with an error:", error.response.data);
+        toast.error(error.response.data.message || "Failed to delete subcategory!");
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        toast.error("No response from server!");
+      } else {
+        console.error("Error setting up request:", error.message);
+        toast.error("Something went wrong!");
+      }
     }
   };
+  
 
   return (
     <div className="card">
@@ -118,7 +119,7 @@ const SubcategoryTable = () => {
                       className="text-danger"
                       style={{ cursor: "pointer" }}
                       title="Delete"
-                      onClick={() => handleDelete(cat.id)}
+                      onClick={() => handleDeleteSubcategory(cat.id)}
                     >
                       <i className="fas fa-trash"></i>
                     </u>
