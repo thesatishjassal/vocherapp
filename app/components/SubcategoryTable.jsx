@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import SubcategoryModal from "./SubcategoryModal";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -16,7 +17,6 @@ const SubcategoryTable = () => {
         withCredentials: true,
       });
       setCategories(response.data);
-      console.log(response.data)
     } catch (error) {
       console.error("Error fetching subcategories:", error);
       toast.error("Failed to load subcategories!");
@@ -33,13 +33,43 @@ const SubcategoryTable = () => {
     if (refresh) fetchSubcategories(); // Refresh subcategory list after adding
   };
 
+  // Handle delete subcategory
+  const handleDelete = async (subCategoryId) => {
+    if (!window.confirm("Are you sure you want to delete this subcategory?")) {
+      return;
+    }
+
+    try {
+      const userDetails = Cookies.get("user_details"); // Retrieve user details from cookies
+      if (!userDetails) {
+        toast.error("User details not found!");
+        return;
+      }
+
+      const user = JSON.parse(userDetails); // Parse user details
+
+      await axios.delete(`${API_URL}/subcategory/${subCategoryId}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`, // Include user token
+        },
+        withCredentials: true,
+      });
+
+      setCategories((prev) => prev.filter((cat) => cat.id !== subCategoryId));
+      toast.success("Subcategory deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      toast.error("Failed to delete subcategory!");
+    }
+  };
+
   return (
     <div className="card">
       {showSubcategoryModal && (
         <SubcategoryModal show={showSubcategoryModal} onClose={handleSubcategoryClose} />
       )}
       <div className="card-header pb-0">
-        <h6>Add Products</h6>
+        <h6>Add SubCategory</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -88,6 +118,7 @@ const SubcategoryTable = () => {
                       className="text-danger"
                       style={{ cursor: "pointer" }}
                       title="Delete"
+                      onClick={() => handleDelete(cat.id)}
                     >
                       <i className="fas fa-trash"></i>
                     </u>
