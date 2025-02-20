@@ -8,9 +8,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Initialize toast notifications
-toast.configure();
-
 // Schema validation
 const productSchema = yup.object().shape({
   hsncode: yup.string().required(),
