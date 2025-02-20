@@ -1,7 +1,7 @@
-"use-clients";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
@@ -12,10 +12,23 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
 
   const [loading, setLoading] = useState(false);
 
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .trim();
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     console.log(`Updating field: ${name} with value: ${value}`);
-    setCategory((prev) => ({ ...prev, [name]: value }));
+
+    setCategory((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "catname" ? { slug: generateSlug(value) } : {}),
+    }));
   };
 
   const handleSubmit = async () => {
@@ -39,7 +52,7 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
           withCredentials: true, // Important if using cookies or authentication
         }
       );
-      
+
       console.log("Category saved successfully:", response.data);
       toast.success("Category added successfully!", { position: "top-right" });
 
@@ -59,7 +72,7 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
 
   return (
     <div
-      className={`modal fade show ${show ? "show" : ""}`}
+      className={`modal fade ${show ? "show" : ""}`}
       tabIndex="-1"
       aria-hidden={!show}
       style={{
@@ -91,9 +104,9 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
                 type="text"
                 name="slug"
                 className="form-control"
-                placeholder="Enter slug (e.g., category-name)"
+                placeholder="Slug (auto-generated)"
                 value={category.slug}
-                onChange={handleChange}
+                readOnly
               />
             </div>
           </div>
