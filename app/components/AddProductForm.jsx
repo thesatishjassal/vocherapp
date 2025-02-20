@@ -29,8 +29,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors, isValid },
+    watch,
   } = useForm({
     resolver: yupResolver(productSchema),
     mode: "onChange",
@@ -38,7 +38,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+
+  // Watch the selected category
   const selectedCategory = watch("category");
 
   // Fetch categories & subcategories
@@ -62,17 +63,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     fetchData();
   }, []);
 
-  // Update subcategories when category changes
-  useEffect(() => {
-    if (selectedCategory) {
-      const filteredSubs = subCategories.filter(
-        (sub) => sub.category_id === selectedCategory
-      );
-      setFilteredSubCategories(filteredSubs);
-    } else {
-      setFilteredSubCategories([]);
-    }
-  }, [selectedCategory, subCategories]);
+  // Filter subcategories based on selected category
+  const filteredSubCategories = subCategories.filter(
+    (sub) => sub.catname === selectedCategory
+  );
 
   const onSubmit = async (data) => {
     try {
@@ -107,11 +101,15 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5">Add New Product</h1>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button
+              type="button"
+              className="btn-close"
+              onClick={onClose}
+            ></button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              {/* Common Input Fields */}
+              {/* All Input Fields */}
               {[
                 "hsncode",
                 "itemCode",
@@ -129,7 +127,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   <input
                     type="text"
                     {...register(field)}
-                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                    className={`form-control ${
+                      errors[field] ? "border-danger" : ""
+                    }`}
                     placeholder={field.replace(/([A-Z])/g, " $1").trim()}
                   />
                 </div>
@@ -139,26 +139,30 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <div className="col-md-6">
                 <select
                   {...register("category")}
-                  className={`form-control ${errors.category ? "border-danger" : ""}`}
+                  className={`form-control ${
+                    errors.category ? "border-danger" : ""
+                  }`}
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
+                    <option key={cat.id} value={cat.catname}>
                       {cat.catname}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Subcategory Dropdown */}
+              {/* Subcategory Dropdown (Filtered) */}
               <div className="col-md-6">
                 <select
                   {...register("subCategory")}
-                  className={`form-control ${errors.subCategory ? "border-danger" : ""}`}
+                  className={`form-control ${
+                    errors.subCategory ? "border-danger" : ""
+                  }`}
                 >
                   <option value="">Select Subcategory</option>
                   {filteredSubCategories.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
+                    <option key={sub.id} value={sub.subcatname}>
                       {sub.subcatname}
                     </option>
                   ))}
@@ -170,14 +174,20 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 <input
                   type="url"
                   {...register("thumbnail")}
-                  className={`form-control ${errors.thumbnail ? "border-danger" : ""}`}
+                  className={`form-control ${
+                    errors.thumbnail ? "border-danger" : ""
+                  }`}
                   placeholder="Enter Image URL"
                 />
               </div>
 
               {/* Submit Button */}
               <div className="col-12">
-                <button type="submit" className="btn btn-primary w-100" disabled={!isValid}>
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={!isValid}
+                >
                   Add Product
                 </button>
               </div>
