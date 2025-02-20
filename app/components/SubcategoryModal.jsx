@@ -47,7 +47,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
         const response = await axios.post(
           `${API_URL}/subcategory`,
           {
-            catname: subcategory.catname,
+            catname: subcategory.category,
             subcatname: subcategory.subcatname,
             slug: subcategory.slug,
           },
@@ -92,7 +92,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
               <select
                 name="category"
                 className="form-select"
-                value={subcategory.catname}
+                value={subcategory.category}
                 onChange={handleChange}
               >
                 <option value="">Select Category</option>
