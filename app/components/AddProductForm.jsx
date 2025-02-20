@@ -91,11 +91,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     } catch (error) {
       console.error("Error:", error.message);
   
-      if (error.response && error.response.data && error.response.data.errors) {
-        // Display multiple errors in toast
-        error.response.data.errors.forEach((err) => {
-          toast.error(err, { position: "top-right" });
-        });
+      if (error.response && error.response.data && Array.isArray(error.response.data.errors)) {
+        // Map through errors and display each in a toast
+        error.response.data.errors.map((err) =>
+          toast.error(err, { position: "top-right" })
+        );
       } else {
         toast.error(error.message || "Error adding product", {
           position: "top-right",
@@ -103,6 +103,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       }
     }
   };
+  
   
 
   return (
