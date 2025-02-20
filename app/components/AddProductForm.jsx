@@ -48,12 +48,12 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resCategories = await fetch(`${API_URL}/category/`);
+        const resCategories = await fetch("https://api.panvic.in/category/");
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
         const resSubCategories = await fetch(
-          `${API_URL}/subcategory/`
+          "https://api.panvic.in/subcategory/"
         );
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
