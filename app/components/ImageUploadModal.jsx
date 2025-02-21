@@ -39,7 +39,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`/products/${product.id}`, {
+      const response = await fetch(`https://api.panvic.in/products/${product.id}`, {
         method: "PATCH",  // ✅ Ensure PATCH is used
         headers: {
           "Content-Type": "application/json",
