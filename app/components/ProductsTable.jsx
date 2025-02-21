@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
+import ImageUploadModal from "./ImageUploadModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleModalClose = () => {
@@ -17,6 +19,15 @@ const ProductsTable = () => {
   const handleModalOpen = (product = null) => {
     setSelectedProduct(product);
     setShowModal(true);
+  };
+
+  const handleImageModalOpen = (product) => {
+    setSelectedProduct(product);
+    setShowImageModal(true);
+  };
+
+  const handleImageModalClose = () => {
+    setShowImageModal(false);
   };
 
   const handleAddOrUpdateProduct = (updatedProduct) => {
@@ -41,6 +52,14 @@ const ProductsTable = () => {
     } catch (error) {
       console.error("Error deleting product:", error);
     }
+  };
+
+  const handleImageUpload = (productId, newImage) => {
+    setProducts((prev) =>
+      prev.map((product) =>
+        product.id === productId ? { ...product, thumbnail: newImage } : product
+      )
+    );
   };
 
   useEffect(() => {
@@ -69,6 +88,15 @@ const ProductsTable = () => {
           onClose={handleModalClose}
           onSave={handleAddOrUpdateProduct}
           product={selectedProduct}
+        />
+      )}
+
+      {showImageModal && (
+        <ImageUploadModal
+          show={showImageModal}
+          onClose={handleImageModalClose}
+          product={selectedProduct}
+          onUpload={handleImageUpload}
         />
       )}
 
@@ -115,7 +143,7 @@ const ProductsTable = () => {
                         width="50"
                         height="50"
                         style={{ borderRadius: "5px", cursor: "pointer" }}
-                        onClick={() => handleModalOpen(product)}
+                        onClick={() => handleImageModalOpen(product)}
                       />
                     ) : (
                       <i
@@ -125,7 +153,7 @@ const ProductsTable = () => {
                           color: "#007bff",
                           cursor: "pointer",
                         }}
-                        onClick={() => handleModalOpen(product)}
+                        onClick={() => handleImageModalOpen(product)}
                       >
                         +
                       </i>
