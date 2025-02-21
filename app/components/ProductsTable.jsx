@@ -142,7 +142,7 @@ const ProductsTable = () => {
                   <td>
                     {product.thumbnail ? (
                       <img
-                        src={`${API_URL}/uploads/${product.thumbnail}`} // Ensure correct path
+                        src={`${API_URL}${product.thumbnail}`} // Ensure correct path
                         alt={product.itemName}
                         width="50"
                         height="50"
