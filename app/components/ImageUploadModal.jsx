@@ -47,26 +47,29 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       toast.error("⚠️ Please select an image before uploading.");
       return;
     }
-
+  
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("thumbnail", file); // ✅ Match API field name
-
+      formData.append("file", file); // ✅ Ensure correct field name
+  
+      console.log("Sending FormData:", formData.get("file")); // Debugging Line
+  
       const response = await fetch(`${API_URL}/products/${product.id}/upload`, {
         method: "POST",
         body: formData,
       });
-
+  
+      console.log("Response Status:", response.status); // Debugging
+      const responseData = await response.json();
+      console.log("Response Data:", responseData); // Debugging
+  
       if (!response.ok) {
-        console.log(response)
-        throw new Error("❌ Image upload failed. Please try again.");
+        throw new Error(responseData.detail || "❌ Image upload failed. Please try again.");
       }
-
-      const updatedData = await response.json();
+  
       toast.success("✅ Image uploaded successfully!");
-
-      onUpload(product.id, updatedData.thumbnail); // ✅ Update state with new URL
+      onUpload(product.id, responseData.thumbnail);
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
@@ -75,6 +78,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div
