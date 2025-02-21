@@ -19,7 +19,7 @@ const productSchema = yup.object().shape({
   price: yup.string().required(),
   quantity: yup.string().required(),
   rackCode: yup.string().required(),
-  thumbnail: yup.string().url().nullable(),
+  // thumbnail: yup.string().url().nullable(),
   size: yup.string().required(),
   color: yup.string().required(),
   model: yup.string().required(),
@@ -199,7 +199,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               </div>
 
               {/* Image URL Input */}
-              <div className="col-md-6">
+              {/* <div className="col-md-6">
                 <input
                   type="url"
                   {...register("thumbnail")}
@@ -211,7 +211,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 {errors.thumbnail && (
                   <small className="text-danger">{errors.thumbnail.message}</small>
                 )}
-              </div>
+              </div> */}
 
               {/* Submit Button */}
               <div className="col-12">
