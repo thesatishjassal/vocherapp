@@ -42,43 +42,48 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
       toast.warn("Please fill in all fields!", { position: "top-right" });
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
+      let response;
       if (categoryData) {
-        // **Edit Category**
-        const response = await axios.put(
-          `${API_URL}/category/${category.id}`,
-          JSON.stringify(category),
+        if (!categoryData.id) {
+          throw new Error("Category ID is missing for update!");
+        }
+        // Edit Category
+        response = await axios.put(
+          `${API_URL}/category/${categoryData.id}`,
+          category,
           {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,
           }
         );
         toast.success("Category updated successfully!", { position: "top-right" });
-        onSave(response.data, true); // `true` indicates edit mode
       } else {
-        // **Add Category**
-        const response = await axios.post(
+        // Add Category
+        response = await axios.post(
           `${API_URL}/category`,
-          JSON.stringify(category),
+          category,
           {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,
           }
         );
         toast.success("Category added successfully!", { position: "top-right" });
-        onSave(response.data, false); // `false` indicates add mode
       }
+      await onSave(response.data, !!categoryData); // Wait for onSave to finish
       onClose();
     } catch (err) {
+      console.error("Submit Error:", err.response || err);
       toast.error(err.response?.data?.message || "Something went wrong!", { position: "top-right" });
     } finally {
       setLoading(false);
     }
   };
 
+  
   return (
     <div
       className={`modal fade ${show ? "show" : ""}`}
