@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
+const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
   const [category, setCategory] = useState({
     catname: "",
     slug: "",
@@ -12,18 +12,24 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
 
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (categoryData) {
+      setCategory(categoryData);
+    } else {
+      setCategory({ catname: "", slug: "" });
+    }
+  }, [categoryData]);
+
   const generateSlug = (name) => {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
       .trim();
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Updating field: ${name} with value: ${value}`);
-
     setCategory((prev) => ({
       ...prev,
       [name]: value,
@@ -33,40 +39,43 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
 
   const handleSubmit = async () => {
     if (!category.catname || !category.slug) {
-      console.warn("Validation failed: Please fill in all fields!");
       toast.warn("Please fill in all fields!", { position: "top-right" });
       return;
     }
 
-    console.log("Submitting category:", category);
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${API_URL}/category`,
-        JSON.stringify(category),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // Important if using cookies or authentication
-        }
-      );
-
-      console.log("Category saved successfully:", response.data);
-      toast.success("Category added successfully!", { position: "top-right" });
-
-      if (onSave) onSave(response.data); // Pass the new category to parent
-      setCategory({ catname: "", slug: "" }); // Reset fields
-      onClose(); // Close modal after saving
+      if (categoryData) {
+        // **Edit Category**
+        const response = await axios.put(
+          `${API_URL}/category/${category.id}`,
+          JSON.stringify(category),
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+        toast.success("Category updated successfully!", { position: "top-right" });
+        onSave(response.data, true); // `true` indicates edit mode
+      } else {
+        // **Add Category**
+        const response = await axios.post(
+          `${API_URL}/category`,
+          JSON.stringify(category),
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+        toast.success("Category added successfully!", { position: "top-right" });
+        onSave(response.data, false); // `false` indicates add mode
+      }
+      onClose();
     } catch (err) {
-      console.error("Error saving category:", err.response?.data || err);
-      toast.error(err.response?.data?.message || "Something went wrong!", {
-        position: "top-right",
-      });
+      toast.error(err.response?.data?.message || "Something went wrong!", { position: "top-right" });
     } finally {
       setLoading(false);
-      console.log("Request completed");
     }
   };
 
@@ -83,7 +92,7 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Add Category</h5>
+            <h5 className="modal-title">{categoryData ? "Edit Category" : "Add Category"}</h5>
             <button type="button" className="btn-close" onClick={onClose}>
               ×
             </button>
@@ -111,11 +120,7 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
             </div>
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary ms-2"
-              onClick={onClose}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
             <button
@@ -124,7 +129,7 @@ const CategoryModal = ({ show, onClose = () => {}, onSave }) => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save Category"}
+              {loading ? (categoryData ? "Updating..." : "Saving...") : categoryData ? "Update Category" : "Save Category"}
             </button>
           </div>
         </div>
