@@ -597,3 +597,12 @@ License - nucleoapp.com/license/
   color: #272d22;
 }
 /* all icon font classes list here */
+img.no-product-found {
+  width: 100%;
+  max-width: 600px;
+}
+.blacnk_box.w-100 {
+  margin: 0 auto;
+  display: block;
+  text-align: center;
+}
