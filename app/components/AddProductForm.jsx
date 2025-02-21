@@ -10,20 +10,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Schema validation
 const productSchema = yup.object().shape({
-  hsncode: yup.string().required(),
-  itemCode: yup.string().required(),
-  itemName: yup.string().required(),
-  description: yup.string().required(),
-  category: yup.string().required(),
-  subCategory: yup.string().required(),
-  price: yup.string().required(),
-  quantity: yup.string().required(),
-  rackCode: yup.string().required(),
-  // thumbnail: yup.string().url().nullable(),
-  size: yup.string().required(),
-  color: yup.string().required(),
-  model: yup.string().required(),
-  brand: yup.string().required(),
+  hsncode: yup.string().required("HSN Code is required"),
+  itemCode: yup.string().required("Item Code is required"),
+  itemName: yup.string().required("Item Name is required"),
+  description: yup.string().required("Description is required"),
+  category: yup.string().required("Category is required"),
+  subCategory: yup.string().required("Subcategory is required"),
+  price: yup.string().required("Price is required"),
+  quantity: yup.string().required("Quantity is required"),
+  rackCode: yup.string().required("Rack Code is required"),
+  size: yup.string().required("Size is required"),
+  color: yup.string().required("Color is required"),
+  model: yup.string().required("Model is required"),
+  brand: yup.string().required("Brand is required"),
 });
 
 const AddProductForm = ({ show, onClose, onSave }) => {
@@ -40,11 +39,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Watch the selected category
   const selectedCategory = watch("category");
 
-  // Fetch categories & subcategories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,7 +56,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
-        toast.error("Error fetching categories!", { position: "top-right" });
+        toast.error("Error fetching categories!", { 
+          position: "top-right",
+          autoClose: 3000 
+        });
         console.error("Error fetching categories:", error);
       }
     };
@@ -66,62 +67,64 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     fetchData();
   }, []);
 
-  // Filter subcategories based on selected category
   const filteredSubCategories = subCategories.filter(
     (sub) => sub.catname === selectedCategory
   );
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
     try {
-      // Ensure data is a plain object
-      const payload = { ...data }; 
-  
+      const payload = { ...data };
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       const responseData = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to add product");
       }
-  
+
       onSave(responseData.product);
       reset();
-      toast.success("Product added successfully!", { position: "top-right" });
+      toast.success("Product added successfully!", { 
+        position: "top-right",
+        autoClose: 3000 
+      });
     } catch (error) {
       console.error("Error:", error.message);
       toast.error(error.message || "Error adding product", {
         position: "top-right",
+        autoClose: 3000
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
 
   return (
     <div
-      className={`modal ${show ? "show" : ""}`}
+      className={`modal fade ${show ? "show" : ""}`}
       tabIndex="-1"
       style={{
         display: show ? "block" : "none",
         backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}
     >
-      <div className="modal-dialog AddProductForm">
-        <div className="modal-content">
-          <div className="modal-header">
+      <div className="modal-dialog modal-lg">
+        <div className="modal-content shadow-lg">
+          <div className="modal-header bg-primary text-white">
             <h1 className="modal-title fs-5">Add New Product</h1>
             <button
               type="button"
-              className="btn-close"
+              className="btn-close btn-close-white"
               onClick={onClose}
             ></button>
           </div>
-          <div className="modal-body py-3">
+          <div className="modal-body p-4">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              {/* All Input Fields */}
               {[
                 "hsncode",
                 "itemCode",
@@ -136,85 +139,88 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "brand",
               ].map((field) => (
                 <div className="col-md-6" key={field}>
-                  <input
-                    type="text"
-                    {...register(field)}
-                    className={`form-control ${
-                      errors[field] ? "border-danger" : ""
-                    }`}
-                    placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-                  />
-                  {errors[field] && (
-                    <small className="text-danger">{errors[field].message}</small>
-                  )}
+                  <div className="form-floating">
+                    <input
+                      type="text"
+                      {...register(field)}
+                      className={`form-control ${errors[field] ? "is-invalid" : ""}`}
+                      placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+                      disabled={isLoading}
+                    />
+                    <label>{field.replace(/([A-Z])/g, " $1").trim()}</label>
+                    {errors[field] && (
+                      <div className="invalid-feedback">
+                        {errors[field].message}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
 
-              {/* Category Dropdown */}
               <div className="col-md-6">
-                <select
-                  {...register("category")}
-                  className={`form-control ${
-                    errors.category ? "border-danger" : ""
-                  }`}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.catname}>
-                      {cat.catname}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <small className="text-danger">{errors.category.message}</small>
-                )}
+                <div className="form-floating">
+                  <select
+                    {...register("category")}
+                    className={`form-control ${errors.category ? "is-invalid" : ""}`}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.catname}>
+                        {cat.catname}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Category</label>
+                  {errors.category && (
+                    <div className="invalid-feedback">
+                      {errors.category.message}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Subcategory Dropdown (Filtered) */}
               <div className="col-md-6">
-                <select
-                  {...register("subCategory")}
-                  className={`form-control ${
-                    errors.subCategory ? "border-danger" : ""
-                  }`}
-                >
-                  <option value="">Select Subcategory</option>
-                  {filteredSubCategories.map((sub) => (
-                    <option key={sub.id} value={sub.subcatname}>
-                      {sub.subcatname}
-                    </option>
-                  ))}
-                </select>
-                {errors.subCategory && (
-                  <small className="text-danger">
-                    {errors.subCategory.message}
-                  </small>
-                )}
+                <div className="form-floating">
+                  <select
+                    {...register("subCategory")}
+                    className={`form-control ${errors.subCategory ? "is-invalid" : ""}`}
+                    disabled={isLoading || !selectedCategory}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {filteredSubCategories.map((sub) => (
+                      <option key={sub.id} value={sub.subcatname}>
+                        {sub.subcatname}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Subcategory</label>
+                  {errors.subCategory && (
+                    <div className="invalid-feedback">
+                      {errors.subCategory.message}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Image URL Input */}
-              {/* <div className="col-md-6">
-                <input
-                  type="url"
-                  {...register("thumbnail")}
-                  className={`form-control ${
-                    errors.thumbnail ? "border-danger" : ""
-                  }`}
-                  placeholder="Enter Image URL"
-                />
-                {errors.thumbnail && (
-                  <small className="text-danger">{errors.thumbnail.message}</small>
-                )}
-              </div> */}
-
-              {/* Submit Button */}
-              <div className="col-12">
+              <div className="col-12 mt-4">
                 <button
                   type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={!isValid}
+                  className="btn btn-primary w-100 py-2"
+                  disabled={!isValid || isLoading}
                 >
-                  Add Product
+                  {isLoading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      Adding Product...
+                    </>
+                  ) : (
+                    "Add Product"
+                  )}
                 </button>
               </div>
             </form>
