@@ -11,9 +11,8 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-
+  
     if (file) {
-      // Validate file type and size (limit to 2MB)
       if (!file.type.startsWith("image/")) {
         toast.error("Only image files are allowed!");
         return;
@@ -22,16 +21,16 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         toast.error("File size must be under 2MB!");
         return;
       }
-
+  
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
-        setImage(reader.result);
+        setImage(reader.result); // ✅ Ensures state update
       };
       reader.readAsDataURL(file);
     }
   };
-
+  
   const handleSave = async () => {
     if (!image) {
       toast.error("Please select an image!");
@@ -40,6 +39,9 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   
     setLoading(true);
     try {
+      // ✅ Wait a short time to ensure state is updated
+      await new Promise((resolve) => setTimeout(resolve, 100));
+  
       const response = await fetch(`${API_URL}/products/${product.id}`, {
         method: "PATCH",
         headers: {
@@ -48,22 +50,15 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         body: JSON.stringify({ thumbnail: image }),
       });
   
-      // ✅ Check if the response status is OK
       if (!response.ok) {
-        const errorText = await response.text(); // Read error message
+        const errorText = await response.text();
         throw new Error(errorText || "Failed to update image!");
       }
   
-      // ✅ Success: Display a success toast
       toast.success("Image updated successfully!");
-      
-      // ✅ Ensure response is in JSON format
+  
       const updatedData = await response.json();
-  
-      // ✅ Update parent state with the new image
       onUpload(product.id, updatedData.thumbnail || image);
-  
-      // ✅ Close the modal
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
@@ -72,7 +67,6 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       setLoading(false);
     }
   };
-
 
   return (
     <div
