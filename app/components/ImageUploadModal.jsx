@@ -40,7 +40,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     setLoading(true);
     try {
       const response = await fetch(`/products/${product.id}`, {
-        method: "PATCH", // Use PATCH for updating a single field
+        method: "PATCH",  // ✅ Ensure PATCH is used
         headers: {
           "Content-Type": "application/json",
         },
@@ -59,7 +59,8 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     } finally {
       setLoading(false);
     }
-  };
+};
+
 
   return (
     <div
