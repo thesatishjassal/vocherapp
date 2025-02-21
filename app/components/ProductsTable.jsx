@@ -11,6 +11,12 @@ const ProductsTable = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const truncateText = (text, wordLimit = 8) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
+  };
+
   const handleModalClose = () => {
     setShowModal(false);
     setSelectedProduct(null);
@@ -166,8 +172,8 @@ const ProductsTable = () => {
 
                   <td>{product.hsncode}</td>
                   <td>{product.itemCode}</td>
-                  <td>{product.itemName}</td>
-                  <td>{product.description}</td>
+                  <td>{truncateText(product.itemName, 5)}</td>
+                  <td>{truncateText(product.description, 6)}</td>
                   <td>{product.category}</td>
                   <td>{product.subCategory}</td>
                   <td>₹{product.price}</td>
