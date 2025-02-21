@@ -142,7 +142,12 @@ const ProductsTable = () => {
               </tr>
             </thead>
             <tbody>
-              {products.length == 0 ? <div className="blacnk_box w-100"><img src="/assets/img/no-product-found.png" className="no-product-found" /></div>  : products.map((product, index) => (
+            {products.length === 0 ? (
+              <div className="blacnk_box w-100">
+                <img src="/assets/img/no-product-found.png" className="no-product-found" />
+              </div>
+            ) : null}
+              {products.map((product, index) => (
                 <tr key={index}>
                   <td>{product.id}</td>
                   <td>
