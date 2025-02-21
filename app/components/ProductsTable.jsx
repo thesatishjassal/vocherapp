@@ -142,7 +142,7 @@ const ProductsTable = () => {
               </tr>
             </thead>
             <tbody>
-              {products.map((product, index) => (
+              {products.length == 0 ? <img src="/assets/img/no-product-found.png" /> : products.map((product, index) => (
                 <tr key={index}>
                   <td>{product.id}</td>
                   <td>
@@ -206,6 +206,7 @@ const ProductsTable = () => {
                   </td>
                 </tr>
               ))}
+            
             </tbody>
           </table>
         </div>
