@@ -56,9 +56,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
-        toast.error("Error fetching categories!", { 
+        toast.error("Error fetching categories!", {
           position: "top-right",
-          autoClose: 3000 
+          autoClose: 3000,
         });
         console.error("Error fetching categories:", error);
       }
@@ -83,21 +83,23 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
       const responseData = await response.json();
 
-      if (!response.ok) {
+      // Check if the response is successful (typically 200 or 201 status)
+      if (response.ok) {
+        onSave(responseData.product);
+        reset();
+        toast.success("Product added successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        // If the server returns a non-OK status, throw an error with the message
         throw new Error(responseData.message || "Failed to add product");
       }
-
-      onSave(responseData.product);
-      reset();
-      toast.success("Product added successfully!", { 
-        position: "top-right",
-        autoClose: 3000 
-      });
     } catch (error) {
       console.error("Error:", error.message);
       toast.error(error.message || "Error adding product", {
         position: "top-right",
-        autoClose: 3000
+        autoClose: 3000,
       });
     } finally {
       setIsLoading(false);
