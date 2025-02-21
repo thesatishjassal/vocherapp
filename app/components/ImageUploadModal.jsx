@@ -59,6 +59,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       });
 
       if (!response.ok) {
+        console.log(response)
         throw new Error("❌ Image upload failed. Please try again.");
       }
 
