@@ -132,7 +132,7 @@ const ProductsTable = () => {
                 <th>HSN Code</th>
                 <th>Item Code</th>
                 <th>Item Name</th>
-                <th>Description</th>
+                {/* <th>Description</th> */}
                 <th>Category</th>
                 <th>Sub-Category</th>
                 <th>Price</th>
@@ -172,8 +172,8 @@ const ProductsTable = () => {
 
                   <td>{product.hsncode}</td>
                   <td>{product.itemCode}</td>
-                  <td>{truncateText(product.itemName, 5)}</td>
-                  <td>{truncateText(product.description, 6)}</td>
+                  <td>{truncateText(product.itemName)}</td>
+                  {/* <td>{truncateText(product.description, 6)}</td> */}
                   <td>{product.category}</td>
                   <td>{product.subCategory}</td>
                   <td>₹{product.price}</td>
