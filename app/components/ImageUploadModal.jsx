@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [image, setImage] = useState(product?.thumbnail || "");
@@ -39,7 +40,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`https://api.panvic.in/products/${product.id}`, {
+      const response = await fetch(`${API_URL}/products/${product.id}`, {
         method: "PATCH",  // ✅ Ensure PATCH is used
         headers: {
           "Content-Type": "application/json",
