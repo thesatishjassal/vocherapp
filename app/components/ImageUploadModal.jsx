@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 1 MB
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [file, setFile] = useState(null);
-  const ImageUrl = "https://api.panvic.in/" + product?.thumbnail;
+  const ImageUrl = "https://api.panvic.in" + product?.thumbnail;
   const [preview, setPreview] = useState(ImageUrl);
   const [loading, setLoading] = useState(false);
 
