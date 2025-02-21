@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
-import ImageUploadModal from "./ImageUploadModal";
+import ImageUploadModal from "../components/ImageUploadModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
