@@ -20,7 +20,7 @@ const Products = () => {
           </div>
         </div>
       </div>
-      <div className="container mt-4 p-0">
+      <div className="container my-4 p-0">
       {/* Nav Tabs */}
       <ul className="nav nav-tabs">
         <li className="nav-item">
