@@ -48,23 +48,25 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         body: JSON.stringify({ thumbnail: image }),
       });
   
-      // ✅ Check if response is JSON
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (error) {
-        throw new Error("Invalid response from server!");
-      }
-  
+      // ✅ Check if the response status is OK
       if (!response.ok) {
-        throw new Error(responseData.message || "Failed to update image!");
+        const errorText = await response.text(); // Read error message
+        throw new Error(errorText || "Failed to update image!");
       }
   
-      toast.success(responseData.message || "Image updated successfully!");
-      onUpload(product.id, image); // ✅ Update parent state
+      // ✅ Success: Display a success toast
+      toast.success("Image updated successfully!");
+      
+      // ✅ Ensure response is in JSON format
+      const updatedData = await response.json();
+  
+      // ✅ Update parent state with the new image
+      onUpload(product.id, updatedData.thumbnail || image);
+  
+      // ✅ Close the modal
       onClose();
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error:", error.message);
       toast.error(error.message || "Something went wrong!");
     } finally {
       setLoading(false);
