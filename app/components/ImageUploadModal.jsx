@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
@@ -9,21 +10,29 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [preview, setPreview] = useState(product?.thumbnail || "");
   const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith("blob:")) {
+        URL.revokeObjectURL(preview); // ✅ Prevent memory leaks
+      }
+    };
+  }, [preview]);
 
-    if (file) {
-      if (!file.type.startsWith("image/")) {
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+
+    if (selectedFile) {
+      if (!selectedFile.type.startsWith("image/")) {
         toast.error("Only image files are allowed!");
         return;
       }
-      if (file.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > 2 * 1024 * 1024) {
         toast.error("File size must be under 2MB!");
         return;
       }
 
-      setPreview(URL.createObjectURL(file)); // ✅ Better performance
-      setFile(file); // ✅ Store the file
+      setPreview(URL.createObjectURL(selectedFile));
+      setFile(selectedFile);
     }
   };
 
@@ -36,7 +45,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("thumbnail", file); // ✅ Match API field name
 
       const response = await fetch(`${API_URL}/products/${product.id}/upload`, {
         method: "POST",
@@ -50,7 +59,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       const updatedData = await response.json();
       toast.success("Image uploaded successfully!");
 
-      onUpload(product.id, updatedData.thumbnail);
+      onUpload(product.id, updatedData.thumbnail); // ✅ Update state with new URL
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
