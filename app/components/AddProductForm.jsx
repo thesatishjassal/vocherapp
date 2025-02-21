@@ -8,7 +8,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Schema validation
 const productSchema = yup.object().shape({
   hsncode: yup.string().required(),
   itemCode: yup.string().required(),
@@ -39,11 +38,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-
-  // Watch the selected category
   const selectedCategory = watch("category");
 
-  // Fetch categories & subcategories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,9 +47,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
-        const resSubCategories = await fetch(
-          "https://api.panvic.in/subcategory/"
-        );
+        const resSubCategories = await fetch("https://api.panvic.in/subcategory/");
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
@@ -61,7 +55,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         console.error("Error fetching categories:", error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -71,24 +64,23 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const onSubmit = async (data) => {
     try {
-      // Ensure data is a plain object
-      const payload = { ...data }; 
-  
+      const payload = { ...data };
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       const responseData = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to add product");
       }
-  
-      onSave(responseData.product);
-      reset();
+
+      console.log("API Response:", responseData); // Debug log
+      onSave(responseData); // Pass full response object
       toast.success("Product added successfully!", { position: "top-right" });
+      reset();
     } catch (error) {
       console.error("Error:", error.message);
       toast.error(error.message || "Error adding product", {
@@ -96,7 +88,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       });
     }
   };
-  
 
   return (
     <div
@@ -111,15 +102,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5">Add New Product</h1>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-            ></button>
+            <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              {/* All Input Fields */}
               {[
                 "hsncode",
                 "itemCode",
@@ -137,9 +123,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   <input
                     type="text"
                     {...register(field)}
-                    className={`form-control ${
-                      errors[field] ? "border-danger" : ""
-                    }`}
+                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
                     placeholder={field.replace(/([A-Z])/g, " $1").trim()}
                   />
                   {errors[field] && (
@@ -148,13 +132,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </div>
               ))}
 
-              {/* Category Dropdown */}
               <div className="col-md-6">
                 <select
                   {...register("category")}
-                  className={`form-control ${
-                    errors.category ? "border-danger" : ""
-                  }`}
+                  className={`form-control ${errors.category ? "border-danger" : ""}`}
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -168,13 +149,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 )}
               </div>
 
-              {/* Subcategory Dropdown (Filtered) */}
               <div className="col-md-6">
                 <select
                   {...register("subCategory")}
-                  className={`form-control ${
-                    errors.subCategory ? "border-danger" : ""
-                  }`}
+                  className={`form-control ${errors.subCategory ? "border-danger" : ""}`}
                 >
                   <option value="">Select Subcategory</option>
                   {filteredSubCategories.map((sub) => (
@@ -184,28 +162,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   ))}
                 </select>
                 {errors.subCategory && (
-                  <small className="text-danger">
-                    {errors.subCategory.message}
-                  </small>
+                  <small className="text-danger">{errors.subCategory.message}</small>
                 )}
               </div>
 
-              {/* Image URL Input */}
-              {/* <div className="col-md-6">
-                <input
-                  type="url"
-                  {...register("thumbnail")}
-                  className={`form-control ${
-                    errors.thumbnail ? "border-danger" : ""
-                  }`}
-                  placeholder="Enter Image URL"
-                />
-                {errors.thumbnail && (
-                  <small className="text-danger">{errors.thumbnail.message}</small>
-                )}
-              </div> */}
-
-              {/* Submit Button */}
               <div className="col-12">
                 <button
                   type="submit"
