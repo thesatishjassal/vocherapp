@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const MIN_FILE_SIZE = 500 * 1024; // 500 KB
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 1 MB
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [file, setFile] = useState(null);
@@ -33,7 +33,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         return;
       }
       if (selectedFile.size > MAX_FILE_SIZE) {
-        toast.error("⚠️ File size exceeds 1MB. Please select a smaller image.");
+        toast.error("⚠️ File size exceeds 2MB. Please select a smaller image.");
         return;
       }
 
