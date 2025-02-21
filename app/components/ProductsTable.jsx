@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { FaPlus } from "react-icons/fa";
 import AddProductForm from "./AddProductForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -7,9 +8,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
-  const handleModalClose = () => setShowModal(false);
-  const handleModalOpen = () => setShowModal(true);
+  const handleModalClose = () => {
+    setShowModal(false);
+    setSelectedProductId(null);
+  };
+
+  const handleModalOpen = (productId) => {
+    setSelectedProductId(productId);
+    setShowModal(true);
+  };
 
   const handleAddProducts = (newProduct) => {
     setProducts((prev) => [...prev, newProduct]);
@@ -41,6 +50,7 @@ const ProductsTable = () => {
           show={showModal}
           onClose={handleModalClose}
           onSave={handleAddProducts}
+          productId={selectedProductId} // Pass selected product ID if needed
         />
       )}
 
@@ -52,7 +62,7 @@ const ProductsTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <button className="btn btn-primary m-3" onClick={handleModalOpen}>
+            <button className="btn btn-primary m-3" onClick={() => handleModalOpen(null)}>
               Add Product
             </button>
           </div>
@@ -72,10 +82,6 @@ const ProductsTable = () => {
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Rack Code</th>
-                {/* <th>Size</th>
-                <th>Color</th>
-                <th>Model</th>
-                <th>Brand</th> */}
               </tr>
             </thead>
             <tbody>
@@ -83,13 +89,25 @@ const ProductsTable = () => {
                 <tr key={index}>
                   <td>{product.id}</td>
                   <td>
-                    <img
-                      src={product.thumbnail}
-                      alt={product.itemName}
-                      width="50"
-                      height="50"
-                      style={{ borderRadius: "5px" }}
-                    />
+                    {product.thumbnail ? (
+                      <img
+                        src={product.thumbnail}
+                        alt={product.itemName}
+                        width="50"
+                        height="50"
+                        style={{ borderRadius: "5px", cursor: "pointer" }}
+                        onClick={() => handleModalOpen(product.id)}
+                      />
+                    ) : (
+                      <FaPlus
+                        size={24}
+                        style={{
+                          color: "#007bff",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleModalOpen(product.id)}
+                      />
+                    )}
                   </td>
                   <td>{product.hsncode}</td>
                   <td>{product.itemCode}</td>
@@ -100,10 +118,6 @@ const ProductsTable = () => {
                   <td>₹{product.price}</td>
                   <td>{product.quantity}</td>
                   <td>{product.rackCode}</td>
-                  {/* <td>{product.size}</td>
-                  <td>{product.color}</td>
-                  <td>{product.model}</td>
-                  <td>{product.brand}</td> */}
                 </tr>
               ))}
             </tbody>

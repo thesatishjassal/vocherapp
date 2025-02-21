@@ -19,7 +19,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
           withCredentials: true,
         });
         setCategories(response.data);
-      } catch (error) {
+      } catch (error) {v
         console.error("Error fetching categories:", error);
         toast.error("Failed to load categories!");
       }
