@@ -75,8 +75,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     setIsLoading(true);
     try {
       const payload = { ...data };
-      console.log("Sending payload:", payload);
-
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,27 +82,22 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       });
 
       const responseData = await response.json();
-      console.log("Response status:", response.status);
-      console.log("Response data:", responseData);
 
+      // Check if the response is successful (typically 200 or 201 status)
       if (response.ok) {
-        // Only proceed if status is 200-299
-        // if (responseData.product) {
-          onSave(responseData.product);
-          reset();
-          toast.success("Product added successfully!", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        } else {
-          throw new Error("Product data not found in response");
-        }
-      // } else {
-      //   throw new Error(responseData.message || "Failed to add product");
-      // }
+        onSave(responseData.product);
+        reset();
+        toast.success("Product added successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        // If the server returns a non-OK status, throw an error with the message
+        throw new Error(responseData.message || "Failed to add product");
+      }
     } catch (error) {
-      console.error("Error in submission:", error);
-      // toast.error(error.message || "Something went wrong", {
+      console.error("Error:", error);
+      // toast.error(error.message || "Error adding product", {
       //   position: "top-right",
       //   autoClose: 3000,
       // });
@@ -114,166 +107,130 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   };
 
   return (
-    <div className={`modal ${show ? "show" : ""}`}>
-      <style jsx>{`
-        .modal {
-          display: ${show ? "block" : "none"};
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          overflow-y: auto;
-        }
+    <div
+      className={`modal fade ${show ? "show" : ""}`}
+      tabIndex="-1"
+      style={{
+        display: show ? "block" : "none",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}
+    >
+      <div className="modal-dialog modal-lg">
+        <div className="modal-content shadow-lg">
+          <div className="modal-header bg-primary text-white">
+            <h1 className="modal-title fs-5">Add New Product</h1>
+            <button
+              type="button"
+              className="btn-close btn-close-white"
+              onClick={onClose}
+            ></button>
+          </div>
+          <div className="modal-body p-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+              {[
+                "hsncode",
+                "itemCode",
+                "itemName",
+                "description",
+                "price",
+                "quantity",
+                "rackCode",
+                "size",
+                "color",
+                "model",
+                "brand",
+              ].map((field) => (
+                <div className="col-md-6" key={field}>
+                  <div className="form-floating">
+                    <input
+                      type="text"
+                      {...register(field)}
+                      className={`form-control ${errors[field] ? "is-invalid" : ""}`}
+                      placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+                      disabled={isLoading}
+                    />
+                    <label>{field.replace(/([A-Z])/g, " $1").trim()}</label>
+                    {errors[field] && (
+                      <div className="invalid-feedback">
+                        {errors[field].message}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
 
-        .form-input:disabled,
-        .form-select:disabled {
-          background-color: #2a2a2a;
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-
-        .error-text {
-          color: #ff4444;
-          font-size: 0.85rem;
-          margin-top: 4px;
-        }
-
-        .submit-btn {
-          width: 100%;
-          padding: 12px;
-          background-color: #4285f4;
-          color: #fff;
-          border: none;
-          border-radius: 4px;
-          font-size: 1rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          background-color: #357abd;
-        }
-
-        .submit-btn:disabled {
-          background-color: #555;
-          cursor: not-allowed;
-        }
-
-        .spinner {
-          width: 1rem;
-          height: 1rem;
-          border: 2px solid #fff;
-          border-top: 2px solid transparent;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-right: 8px;
-          display: inline-block;
-          vertical-align: middle;
-        }
-      `}</style>
-
-      <div className="modal-content">
-        <div className="modal-header">
-          <h1 className="modal-title">Add New Product</h1>
-          <button className="close-btn" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit(onSubmit)} className="row">
-            {[
-              "hsncode",
-              "itemCode",
-              "itemName",
-              "description",
-              "price",
-              "quantity",
-              "rackCode",
-              "size",
-              "color",
-              "model",
-              "brand",
-            ].map((field) => (
-              <div className="form-group" key={field}>
-                <label className="form-label">
-                  {field.replace(/([A-Z])/g, " $1").trim()}
-                </label>
-                <input
-                  type="text"
-                  {...register(field)}
-                  className="form-input"
-                  placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-                  disabled={isLoading}
-                />
-                {errors[field] && (
-                  <span className="error-text">{errors[field].message}</span>
-                )}
+              <div className="col-md-6">
+                <div className="form-floating">
+                  <select
+                    {...register("category")}
+                    className={`form-control ${errors.category ? "is-invalid" : ""}`}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.catname}>
+                        {cat.catname}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Category</label>
+                  {errors.category && (
+                    <div className="invalid-feedback">
+                      {errors.category.message}
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
 
-            <div className="form-group">
-              <label className="form-label">Category</label>
-              <select
-                {...register("category")}
-                className="form-select"
-                disabled={isLoading}
-              >
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.catname}>
-                    {cat.catname}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <span className="error-text">{errors.category.message}</span>
-              )}
-            </div>
+              <div className="col-md-6">
+                <div className="form-floating">
+                  <select
+                    {...register("subCategory")}
+                    className={`form-control ${errors.subCategory ? "is-invalid" : ""}`}
+                    disabled={isLoading || !selectedCategory}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {filteredSubCategories.map((sub) => (
+                      <option key={sub.id} value={sub.subcatname}>
+                        {sub.subcatname}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Subcategory</label>
+                  {errors.subCategory && (
+                    <div className="invalid-feedback">
+                      {errors.subCategory.message}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Subcategory</label>
-              <select
-                {...register("subCategory")}
-                className="form-select"
-                disabled={isLoading || !selectedCategory}
-              >
-                <option value="">Select Subcategory</option>
-                {filteredSubCategories.map((sub) => (
-                  <option key={sub.id} value={sub.subcatname}>
-                    {sub.subcatname}
-                  </option>
-                ))}
-              </select>
-              {errors.subCategory && (
-                <span className="error-text">{errors.subCategory.message}</span>
-              )}
-            </div>
-
-            <div className="col-12">
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={!isValid || isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="spinner"></span>
-                    Adding Product...
-                  </>
-                ) : (
-                  "Add Product"
-                )}
-              </button>
-            </div>
-          </form>
+              <div className="col-12 mt-4">
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100 py-2"
+                  disabled={!isValid || isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      Adding Product...
+                    </>
+                  ) : (
+                    "Add Product"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default AddProductForm;''
+export default AddProductForm;
