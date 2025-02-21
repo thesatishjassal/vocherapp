@@ -103,11 +103,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       //   throw new Error(responseData.message || "Failed to add product");
       // }
     } catch (error) {
-      console.error("Error in submission:", error.message);
-      toast.error(error.message || "Something went wrong", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      console.error("Error in submission:", error);
+      // toast.error(error.message || "Something went wrong", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      // });
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +115,67 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   return (
     <div className={`modal ${show ? "show" : ""}`}>
+      <style jsx>{`
+        .modal {
+          display: ${show ? "block" : "none"};
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.7);
+          z-index: 1000;
+          overflow-y: auto;
+        }
+
+        .form-input:disabled,
+        .form-select:disabled {
+          background-color: #2a2a2a;
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .error-text {
+          color: #ff4444;
+          font-size: 0.85rem;
+          margin-top: 4px;
+        }
+
+        .submit-btn {
+          width: 100%;
+          padding: 12px;
+          background-color: #4285f4;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          font-size: 1rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+          background-color: #357abd;
+        }
+
+        .submit-btn:disabled {
+          background-color: #555;
+          cursor: not-allowed;
+        }
+
+        .spinner {
+          width: 1rem;
+          height: 1rem;
+          border: 2px solid #fff;
+          border-top: 2px solid transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-right: 8px;
+          display: inline-block;
+          vertical-align: middle;
+        }
+      `}</style>
+
       <div className="modal-content">
         <div className="modal-header">
           <h1 className="modal-title">Add New Product</h1>
