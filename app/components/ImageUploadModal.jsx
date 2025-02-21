@@ -37,30 +37,39 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       toast.error("Please select an image!");
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/products/${product.id}`, {
-        method: "PATCH",  // ✅ Ensure PATCH is used
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ thumbnail: image }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to update image!");
+  
+      // ✅ Check if response is JSON
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        throw new Error("Invalid response from server!");
       }
-
-      toast.success("Image updated successfully!");
-      onUpload(product.id, image); // Update parent state
+  
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to update image!");
+      }
+  
+      toast.success(responseData.message || "Image updated successfully!");
+      onUpload(product.id, image); // ✅ Update parent state
       onClose();
     } catch (error) {
-      toast.error(error.message);
+      console.error("Error:", error);
+      toast.error(error.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
-};
+  };
 
 
   return (
