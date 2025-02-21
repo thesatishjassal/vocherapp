@@ -22,30 +22,36 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     onClose();
   };
 
-  if (!show) return null;
-
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h4>Upload Product Image</h4>
-        
-        <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
-        
-        {preview && (
-          <div className="preview mt-3">
-            <img
-              src={preview}
-              alt="Preview"
-              width="100"
-              height="100"
-              style={{ borderRadius: "5px" }}
-            />
+    <div className={`modal fade ${show ? "show d-block" : "d-none"}`} tabIndex="-1" role="dialog">
+      <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Upload Product Image</h5>
+            <button type="button" className="close" onClick={onClose} aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-        )}
 
-        <div className="modal-actions mt-3">
-          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={!image}>Save</button>
+          <div className="modal-body">
+            <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
+            {preview && (
+              <div className="preview mt-3 text-center">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  width="100"
+                  height="100"
+                  className="rounded"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="modal-footer">
+            <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSave} disabled={!image}>Save</button>
+          </div>
         </div>
       </div>
     </div>
