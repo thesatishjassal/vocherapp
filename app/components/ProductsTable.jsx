@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
 import AddProductForm from "./AddProductForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -99,14 +98,17 @@ const ProductsTable = () => {
                         onClick={() => handleModalOpen(product.id)}
                       />
                     ) : (
-                      <FaPlus
-                        size={24}
+                      <i
+                        className="plus-icon"
                         style={{
+                          fontSize: "24px",
                           color: "#007bff",
                           cursor: "pointer",
                         }}
                         onClick={() => handleModalOpen(product.id)}
-                      />
+                      >
+                        +
+                      </i>
                     )}
                   </td>
                   <td>{product.hsncode}</td>
