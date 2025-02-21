@@ -5,13 +5,13 @@ import "react-toastify/dist/ReactToastify.css";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
-  const [image, setImage] = useState(product?.thumbnail || "");
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(product?.thumbnail || "");
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-  
+
     if (file) {
       if (!file.type.startsWith("image/")) {
         toast.error("Only image files are allowed!");
@@ -21,44 +21,36 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         toast.error("File size must be under 2MB!");
         return;
       }
-  
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-        setImage(reader.result); // ✅ Ensures state update
-      };
-      reader.readAsDataURL(file);
+
+      setPreview(URL.createObjectURL(file)); // ✅ Better performance
+      setFile(file); // ✅ Store the file
     }
   };
-  
+
   const handleSave = async () => {
-    if (!image) {
+    if (!file) {
       toast.error("Please select an image!");
       return;
     }
-  
+
     setLoading(true);
     try {
-      // ✅ Wait a short time to ensure state is updated
-      await new Promise((resolve) => setTimeout(resolve, 100));
-  
-      const response = await fetch(`${API_URL}/products/${product.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ thumbnail: image }),
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${API_URL}/products/${product.id}/upload`, {
+        method: "POST",
+        body: formData,
       });
-  
+
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to update image!");
+        throw new Error("Failed to upload image!");
       }
-  
-      toast.success("Image updated successfully!");
-  
+
       const updatedData = await response.json();
-      onUpload(product.id, updatedData.thumbnail || image);
+      toast.success("Image uploaded successfully!");
+
+      onUpload(product.id, updatedData.thumbnail);
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
@@ -124,9 +116,9 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
               type="button"
               className="btn btn-success"
               onClick={handleSave}
-              disabled={loading || !image}
+              disabled={loading || !file}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Uploading..." : "Upload"}
             </button>
           </div>
         </div>
