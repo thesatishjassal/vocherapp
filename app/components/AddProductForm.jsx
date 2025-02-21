@@ -73,10 +73,13 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const onSubmit = async (data) => {
     try {
+      // Ensure data is a plain object
+      const payload = { ...data }; 
+  
       const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
   
       const responseData = await response.json();
@@ -90,20 +93,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       toast.success("Product added successfully!", { position: "top-right" });
     } catch (error) {
       console.error("Error:", error.message);
-  
-      if (error.response && error.response.data && Array.isArray(error.response.data.errors)) {
-        // Map through errors and display each in a toast
-        error.response.data.errors.map((err) =>
-          toast.error(err, { position: "top-right" })
-        );
-      } else {
-        toast.error(error.message || "Error adding product", {
-          position: "top-right",
-        });
-      }
+      toast.error(error.message || "Error adding product", {
+        position: "top-right",
+      });
     }
   };
-  
   
 
   return (
