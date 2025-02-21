@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [image, setImage] = useState(product?.thumbnail || "");
   const [preview, setPreview] = useState(product?.thumbnail || "");
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -17,26 +20,69 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     }
   };
 
-  const handleSave = () => {
-    onUpload(product.id, image);
-    onClose();
+  const handleSave = async () => {
+    if (!image) {
+      toast.error("Please select an image!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/products/${product.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ thumbnail: image }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update image!");
+      }
+
+      toast.success("Image updated successfully!");
+      onUpload(product.id, image); // Update parent state
+      onClose();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className={`modal fade ${show ? "show d-block" : "d-none"}`} tabIndex="-1" role="dialog">
+    <div
+      className={`modal fade ${show ? "show" : ""}`}
+      tabIndex="-1"
+      aria-hidden={!show}
+      style={{
+        display: show ? "block" : "none",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}
+    >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Upload Product Image</h5>
-            <button type="button" className="close" onClick={onClose} aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+            <button type="button" className="btn-close" onClick={onClose}>
+              ×
             </button>
           </div>
 
           <div className="modal-body">
-            <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
+            {/* File Input */}
+            <div className="mb-3">
+              <input
+                type="file"
+                accept="image/*"
+                className="form-control"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            {/* Image Preview */}
             {preview && (
-              <div className="preview mt-3 text-center">
+              <div className="text-center">
                 <img
                   src={preview}
                   alt="Preview"
@@ -49,8 +95,17 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
           </div>
 
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button className="btn btn-primary" onClick={handleSave} disabled={!image}>Save</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={handleSave}
+              disabled={loading || !image}
+            >
+              {loading ? "Saving..." : "Save"}
+            </button>
           </div>
         </div>
       </div>
