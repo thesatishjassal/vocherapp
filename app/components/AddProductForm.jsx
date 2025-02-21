@@ -88,22 +88,30 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       console.log("Response data:", responseData);
 
       if (response.ok) {
-        // Only proceed if status is 200-299
-        if (responseData.product) {
-          onSave(responseData.product);
-          reset();
-          toast.success("Product added successfully!", {
-            position: "top-right",
-            autoClose: 3000,
-          });
+        // Check for common success indicators in the response
+        const productData = responseData.product || responseData.data || responseData;
+        if (productData && typeof productData === "object") {
+          console.log("Product data found:", productData);
+          try {
+            onSave(productData);
+            reset();
+            toast.success("Product added successfully!", {
+              position: "top-right",
+              autoClose: 3000,
+            });
+          } catch (postSaveError) {
+            console.error("Error after saving:", postSaveError);
+            throw new Error("Error processing successful response");
+          }
         } else {
-          throw new Error("Product data not found in response");
+          throw new Error("No valid product data in response");
         }
       } else {
+        console.log("API returned non-OK status:", response.status);
         throw new Error(responseData.message || "Failed to add product");
       }
     } catch (error) {
-      console.error("Error in submission:", error.message);
+      console.error("Submission error:", error.message);
       toast.error(error.message || "Something went wrong", {
         position: "top-right",
         autoClose: 3000,
@@ -115,157 +123,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   return (
     <div className={`modal ${show ? "show" : ""}`}>
-      <style jsx>{`
-        .modal {
-          display: ${show ? "block" : "none"};
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          overflow-y: auto;
-        }
-
-        .modal-content {
-          background-color: #212121;
-          color: #e0e0e0;
-          width: 90%;
-          max-width: 700px;
-          margin: 5% auto;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-          overflow: hidden;
-        }
-
-        .modal-header {
-          background-color: #333;
-          padding: 16px 24px;
-          border-bottom: 1px solid #424242;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .modal-title {
-          font-size: 1.25rem;
-          font-weight: 500;
-          margin: 0;
-        }
-
-        .close-btn {
-          background: none;
-          border: none;
-          color: #e0e0e0;
-          font-size: 1.5rem;
-          cursor: pointer;
-          padding: 0;
-          line-height: 1;
-        }
-
-        .close-btn:hover {
-          color: #ff4444;
-        }
-
-        .modal-body {
-          padding: 24px;
-        }
-
-        .form-group {
-          margin-bottom: 16px;
-        }
-
-        .form-label {
-          display: block;
-          font-size: 0.9rem;
-          color: #b0b0b0;
-          margin-bottom: 4px;
-        }
-
-        .form-input,
-        .form-select {
-          width: 100%;
-          padding: 10px 12px;
-          background-color: #333;
-          border: 1px solid ${errors ? "#ff4444" : "#424242"};
-          border-radius: 4px;
-          color: #e0e0e0;
-          font-size: 1rem;
-          transition: border-color 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus {
-          outline: none;
-          border-color: #4285f4;
-          box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
-        }
-
-        .form-input:disabled,
-        .form-select:disabled {
-          background-color: #2a2a2a;
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-
-        .error-text {
-          color: #ff4444;
-          font-size: 0.85rem;
-          margin-top: 4px;
-        }
-
-        .submit-btn {
-          width: 100%;
-          padding: 12px;
-          background-color: #4285f4;
-          color: #fff;
-          border: none;
-          border-radius: 4px;
-          font-size: 1rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          background-color: #357abd;
-        }
-
-        .submit-btn:disabled {
-          background-color: #555;
-          cursor: not-allowed;
-        }
-
-        .spinner {
-          width: 1rem;
-          height: 1rem;
-          border: 2px solid #fff;
-          border-top: 2px solid transparent;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-right: 8px;
-          display: inline-block;
-          vertical-align: middle;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .row {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
-        }
-
-        .col-12 {
-          grid-column: span 2;
-          margin-top: 8px;
-        }
-      `}</style>
-
       <div className="modal-content">
         <div className="modal-header">
           <h1 className="modal-title">Add New Product</h1>
