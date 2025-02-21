@@ -1,12 +1,20 @@
 "use client";
 import { useState } from "react";
-import FileUploader from "./FileUploader";
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [image, setImage] = useState(product?.thumbnail || "");
+  const [preview, setPreview] = useState(product?.thumbnail || "");
 
-  const handleUpload = (uploadedImage) => {
-    setImage(uploadedImage);
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        setImage(reader.result); // Store base64 string
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = () => {
@@ -20,21 +28,24 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <h4>Upload Product Image</h4>
-        <FileUploader onUpload={handleUpload} />
-        {image && (
+        
+        <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
+        
+        {preview && (
           <div className="preview mt-3">
             <img
-              src={image}
-              alt="Uploaded"
+              src={preview}
+              alt="Preview"
               width="100"
               height="100"
               style={{ borderRadius: "5px" }}
             />
           </div>
         )}
-        <div className="modal-actions">
+
+        <div className="modal-actions mt-3">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>Save</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={!image}>Save</button>
         </div>
       </div>
     </div>
