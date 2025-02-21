@@ -88,30 +88,22 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       console.log("Response data:", responseData);
 
       if (response.ok) {
-        // Check for common success indicators in the response
-        const productData = responseData.product || responseData.data || responseData;
-        if (productData && typeof productData === "object") {
-          console.log("Product data found:", productData);
-          try {
-            onSave(productData);
-            reset();
-            toast.success("Product added successfully!", {
-              position: "top-right",
-              autoClose: 3000,
-            });
-          } catch (postSaveError) {
-            console.error("Error after saving:", postSaveError);
-            throw new Error("Error processing successful response");
-          }
+        // Only proceed if status is 200-299
+        // if (responseData.product) {
+          onSave(responseData.product);
+          reset();
+          toast.success("Product added successfully!", {
+            position: "top-right",
+            autoClose: 3000,
+          });
         } else {
-          throw new Error("No valid product data in response");
+          throw new Error("Product data not found in response");
         }
-      } else {
-        console.log("API returned non-OK status:", response.status);
-        throw new Error(responseData.message || "Failed to add product");
-      }
+      // } else {
+      //   throw new Error(responseData.message || "Failed to add product");
+      // }
     } catch (error) {
-      console.error("Submission error:", error.message);
+      console.error("Error in submission:", error.message);
       toast.error(error.message || "Something went wrong", {
         position: "top-right",
         autoClose: 3000,
@@ -223,4 +215,4 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   );
 };
 
-export default AddProductForm;
+export default AddProductForm;''
