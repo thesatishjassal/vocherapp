@@ -44,8 +44,9 @@ const ProductsTable = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
-    
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
+
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -108,7 +109,10 @@ const ProductsTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <button className="btn btn-primary m-3" onClick={() => handleModalOpen()}>
+            <button
+              className="btn btn-primary m-3"
+              onClick={() => handleModalOpen()}
+            >
               Add Product
             </button>
           </div>
@@ -138,7 +142,7 @@ const ProductsTable = () => {
                   <td>
                     {product.thumbnail ? (
                       <img
-                        src={product.thumbnail}
+                        src={`${API_URL}/uploads/${product.thumbnail}`} // Ensure correct path
                         alt={product.itemName}
                         width="50"
                         height="50"
@@ -159,6 +163,7 @@ const ProductsTable = () => {
                       </i>
                     )}
                   </td>
+
                   <td>{product.hsncode}</td>
                   <td>{product.itemCode}</td>
                   <td>{product.itemName}</td>
@@ -171,14 +176,23 @@ const ProductsTable = () => {
                   <td>
                     <i
                       className="edit-icon"
-                      style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }}
+                      style={{
+                        fontSize: "18px",
+                        marginRight: "10px",
+                        cursor: "pointer",
+                        color: "#28a745",
+                      }}
                       onClick={() => handleModalOpen(product)}
                     >
                       ✏️
                     </i>
                     <i
                       className="delete-icon"
-                      style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }}
+                      style={{
+                        fontSize: "18px",
+                        cursor: "pointer",
+                        color: "#dc3545",
+                      }}
                       onClick={() => handleDeleteProduct(product.id)}
                     >
                       🗑️
