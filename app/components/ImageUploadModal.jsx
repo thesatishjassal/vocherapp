@@ -28,10 +28,10 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         toast.error("❌ Only image files are allowed!");
         return;
       }
-      if (selectedFile.size < MIN_FILE_SIZE) {
-        toast.error("⚠️ File size is too small. Please select an image of at least 500KB.");
-        return;
-      }
+      // if (selectedFile.size < MIN_FILE_SIZE) {
+      //   toast.error("⚠️ File size is too small. Please select an image of at least 500KB.");
+      //   return;
+      // }
       // if (selectedFile.size > MAX_FILE_SIZE) {
       //   toast.error("⚠️ File size exceeds 2MB. Please select a smaller image.");
       //   return;
