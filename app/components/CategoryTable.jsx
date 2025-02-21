@@ -13,7 +13,9 @@ const CategoryTable = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/category`, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/category`, {
+          withCredentials: true,
+        });
         setCategories(response.data);
       } catch (error) {
         toast.error("Failed to load categories!");
@@ -30,7 +32,9 @@ const CategoryTable = () => {
 
   const handleAddOrUpdateCategory = (category, isEdit) => {
     if (isEdit) {
-      setCategories((prev) => prev.map((cat) => (cat.id === category.id ? category : cat)));
+      setCategories((prev) =>
+        prev.map((cat) => (cat.id === category.id ? category : cat))
+      );
     } else {
       setCategories((prev) => [...prev, category]);
     }
@@ -47,7 +51,9 @@ const CategoryTable = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/category/${categoryId}`, { withCredentials: true });
+      await axios.delete(`${API_URL}/category/${categoryId}`, {
+        withCredentials: true,
+      });
       setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
       toast.success("Category deleted successfully!");
     } catch (error) {
@@ -70,8 +76,15 @@ const CategoryTable = () => {
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <input type="text" placeholder="Search categories" className="form-control w-25" />
-          <button className="btn btn-primary" onClick={() => setShowCategoryModal(true)}>
+          <input
+            type="text"
+            placeholder="Search categories"
+            className="form-control w-25"
+          />
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowCategoryModal(true)}
+          >
             Add Category
           </button>
         </div>
@@ -91,12 +104,22 @@ const CategoryTable = () => {
                 <td>{cat.catname}</td>
                 <td>{cat.slug}</td>
                 <td>
-                  <button className="btn btn-sm btn-warning mx-2" onClick={() => handleEdit(cat)}>
-                    <i className="fas fa-edit"></i> Edit
-                  </button>
-                  <button className="btn btn-sm btn-danger" onClick={() => handleDelete(cat.id)}>
-                    <i className="fas fa-trash"></i> Delete
-                  </button>
+                  <u
+                    class="text-primary mx-2"
+                    title="Edit"
+                    style="cursor: pointer;"
+                    onClick={() => handleEdit(cat)}
+                  >
+                    <i class="fas fa-edit"></i>
+                  </u>
+                  <u
+                    class="text-danger"
+                    title="Delete"
+                    style="cursor: pointer;"
+                    onClick={() => handleDelete(cat.id)}
+                  >
+                    <i class="fas fa-trash"></i>
+                  </u>
                 </td>
               </tr>
             ))}
