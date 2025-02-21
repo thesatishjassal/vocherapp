@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const MIN_FILE_SIZE = 500 * 1024; // 500 KB
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
 const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   const [file, setFile] = useState(null);
@@ -23,11 +25,15 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
     if (selectedFile) {
       if (!selectedFile.type.startsWith("image/")) {
-        toast.error("Only image files are allowed!");
+        toast.error("❌ Only image files are allowed!");
         return;
       }
-      if (selectedFile.size > 2 * 1024 * 1024) {
-        toast.error("File size must be under 2MB!");
+      if (selectedFile.size < MIN_FILE_SIZE) {
+        toast.error("⚠️ File size is too small. Please select an image of at least 500KB.");
+        return;
+      }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error("⚠️ File size exceeds 1MB. Please select a smaller image.");
         return;
       }
 
@@ -38,7 +44,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
   const handleSave = async () => {
     if (!file) {
-      toast.error("Please select an image!");
+      toast.error("⚠️ Please select an image before uploading.");
       return;
     }
 
@@ -53,17 +59,17 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload image!");
+        throw new Error("❌ Image upload failed. Please try again.");
       }
 
       const updatedData = await response.json();
-      toast.success("Image uploaded successfully!");
+      toast.success("✅ Image uploaded successfully!");
 
       onUpload(product.id, updatedData.thumbnail); // ✅ Update state with new URL
       onClose();
     } catch (error) {
       console.error("Error:", error.message);
-      toast.error(error.message || "Something went wrong!");
+      toast.error(error.message || "❌ Something went wrong!");
     } finally {
       setLoading(false);
     }
