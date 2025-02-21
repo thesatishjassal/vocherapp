@@ -101,24 +101,24 @@ const CategoryTable = () => {
             {categories.map((cat) => (
               <tr key={cat.id}>
                 <td>{cat.id}</td>
-                <td>{cat.catname}</td>
+                <td>{cat.name}</td>
                 <td>{cat.slug}</td>
                 <td>
                   <u
-                    class="text-primary mx-2"
+                    className="text-primary mx-2"
                     title="Edit"
-                    style="cursor: pointer;"
+                    style={{ cursor: "pointer" }}
                     onClick={() => handleEdit(cat)}
                   >
-                    <i class="fas fa-edit"></i>
+                    <i className="fas fa-edit"></i>
                   </u>
                   <u
-                    class="text-danger"
+                    className="text-danger"
                     title="Delete"
-                    style="cursor: pointer;"
+                    style={{ cursor: "pointer" }}
                     onClick={() => handleDelete(cat.id)}
                   >
-                    <i class="fas fa-trash"></i>
+                    <i className="fas fa-trash"></i>
                   </u>
                 </td>
               </tr>
