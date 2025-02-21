@@ -101,7 +101,7 @@ const CategoryTable = () => {
             {categories.map((cat) => (
               <tr key={cat.id}>
                 <td>{cat.id}</td>
-                <td>{cat.name}</td>
+                <td>{cat.catname}</td>
                 <td>{cat.slug}</td>
                 <td>
                   <u
