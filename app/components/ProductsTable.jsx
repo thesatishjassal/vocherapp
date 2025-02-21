@@ -7,21 +7,40 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleModalClose = () => {
     setShowModal(false);
-    setSelectedProductId(null);
+    setSelectedProduct(null);
   };
 
-  const handleModalOpen = (productId) => {
-    setSelectedProductId(productId);
+  const handleModalOpen = (product = null) => {
+    setSelectedProduct(product);
     setShowModal(true);
   };
 
-  const handleAddProducts = (newProduct) => {
-    setProducts((prev) => [...prev, newProduct]);
+  const handleAddOrUpdateProduct = (updatedProduct) => {
+    setProducts((prev) => {
+      const index = prev.findIndex((p) => p.id === updatedProduct.id);
+      if (index > -1) {
+        const newProducts = [...prev];
+        newProducts[index] = updatedProduct;
+        return newProducts;
+      }
+      return [...prev, updatedProduct];
+    });
     setShowModal(false);
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    
+    try {
+      await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
+      setProducts((prev) => prev.filter((product) => product.id !== productId));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
   useEffect(() => {
@@ -41,15 +60,15 @@ const ProductsTable = () => {
   return (
     <div className="card">
       <div className="card-header pb-0">
-        <h6>Add Products</h6>
+        <h6>Manage Products</h6>
       </div>
 
       {showModal && (
         <AddProductForm
           show={showModal}
           onClose={handleModalClose}
-          onSave={handleAddProducts}
-          productId={selectedProductId} // Pass selected product ID if needed
+          onSave={handleAddOrUpdateProduct}
+          product={selectedProduct}
         />
       )}
 
@@ -61,7 +80,7 @@ const ProductsTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <button className="btn btn-primary m-3" onClick={() => handleModalOpen(null)}>
+            <button className="btn btn-primary m-3" onClick={() => handleModalOpen()}>
               Add Product
             </button>
           </div>
@@ -81,6 +100,7 @@ const ProductsTable = () => {
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Rack Code</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -95,7 +115,7 @@ const ProductsTable = () => {
                         width="50"
                         height="50"
                         style={{ borderRadius: "5px", cursor: "pointer" }}
-                        onClick={() => handleModalOpen(product.id)}
+                        onClick={() => handleModalOpen(product)}
                       />
                     ) : (
                       <i
@@ -105,7 +125,7 @@ const ProductsTable = () => {
                           color: "#007bff",
                           cursor: "pointer",
                         }}
-                        onClick={() => handleModalOpen(product.id)}
+                        onClick={() => handleModalOpen(product)}
                       >
                         +
                       </i>
@@ -120,6 +140,22 @@ const ProductsTable = () => {
                   <td>₹{product.price}</td>
                   <td>{product.quantity}</td>
                   <td>{product.rackCode}</td>
+                  <td>
+                    <i
+                      className="edit-icon"
+                      style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }}
+                      onClick={() => handleModalOpen(product)}
+                    >
+                      ✏️
+                    </i>
+                    <i
+                      className="delete-icon"
+                      style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }}
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      🗑️
+                    </i>
+                  </td>
                 </tr>
               ))}
             </tbody>
