@@ -23,6 +23,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
 
   const handleConfirm = () => {
     if (selectedClient) {
+      console.log(selectedClient)
       onConfirm(selectedClient); // Pass selected client to parent
       onClose(); // Close the modal
     } else {
@@ -78,33 +79,33 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
               <div className="row mt-3">
                 <div className="col-md-7 clinetdeatails">
                   <p>
-                    <strong>Client Name:</strong> {selectedClient.Client_Name}
+                    <strong>Client Name:</strong> {selectedClient.clientname}
                   </p>
                   <p>
                     <strong>Business Name:</strong> {selectedClient.buisnessname}
                   </p>
                   <p>
-                    <strong>GST No.:</strong> {selectedClient.GST_Number}
+                    <strong>GST No.:</strong> {selectedClient.gst_number}
                   </p>
                   <p>
-                    <strong>Contact:</strong> {selectedClient.Client_Phone}
+                    <strong>Contact:</strong> {selectedClient.clientphone}
                   </p>
                   <p>
-                    <strong>Email:</strong> {selectedClient.Client_Email}
+                    <strong>Email:</strong> {selectedClient.clientemail}
                   </p>
                 </div>
                 <div className="col-md-5 clinetdeatails">
                   <p>
-                    <strong>City:</strong> {selectedClient.City}
+                    <strong>City:</strong> {selectedClient.city}
                   </p>
                   <p>
-                    <strong>State:</strong> {selectedClient.State}
+                    <strong>State:</strong> {selectedClient.state}
                   </p>
                   <p>
-                    <strong>Pincode:</strong> {selectedClient.Pincode}
+                    <strong>Pincode:</strong> {selectedClient.pincode}
                   </p>
                   <p>
-                    <strong>Client Type:</strong> {selectedClient.Client_Type}
+                    <strong>Client Type:</strong> {selectedClient.clienttype}
                   </p>
                 </div>
               </div>
