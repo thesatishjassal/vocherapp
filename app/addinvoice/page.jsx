@@ -8,6 +8,7 @@ const AddInvoice = () => {
     const [InfoModal, setInfoModal] = useState(false);
     const [showModalClientDetails, setShowModalClientDetails] = useState(false);
     const [totalAmount, setTotalAmount] = useState(0);
+    const [selectedCustomer, setSelectedCustomer] = useState(false);
 
     const closeModal = () => {
       setShowModalClientDetails(false); // Close the modal when this function is called
@@ -15,6 +16,13 @@ const AddInvoice = () => {
       // Callback to receive the updated totalAmount from the child
   const handleTotalAmountChange = (newTotalAmount) => {
     setTotalAmount(newTotalAmount);
+  };
+
+  const handleClientConfirm = (selectedClient) => {
+    console.log("Selected Client:", selectedClient);
+    setSelectedCustomer(selectedClient);
+    // Use the selected client data as needed
+    console.log(selectedClient)
   };
   return (
     <div className="card tm_container my-4">
@@ -25,7 +33,7 @@ const AddInvoice = () => {
               <div className="tm_invoice_left">
                 <div className="tm_logo">
                   <img
-                    src="https://panvic-com.preview-domain.com/wp-content/uploads/2025/01/logo-removebg-preview.png"
+                    src="/assets/img/panviclogo.jpg"
                     alt="Logo"
                   />
                 </div>
@@ -128,6 +136,7 @@ const AddInvoice = () => {
                     <CustomerModal
                       onClose={closeModal} // Pass the closeModal function to the modal
                       client={showModalClientDetails}
+                      onConfirm={handleClientConfirm}
                     />
                   )}
                 </div>

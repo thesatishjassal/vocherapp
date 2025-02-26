@@ -119,7 +119,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "model",
                 "brand",
               ].map((field) => (
-                <div className="col-md-6" key={field}>
+                <div className="col-md-6" key={field}>  
                   <input
                     type="text"
                     {...register(field)}
