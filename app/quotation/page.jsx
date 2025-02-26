@@ -92,9 +92,9 @@ const Quotation = () => {
                 </p>
                 <p style={{ textAlign: "justify" }}>
                   Name:{" "}
-                  <b>{selectedCustomer && selectedCustomer.Client_Name}</b>{" "}
+                  <b>{selectedCustomer && selectedCustomer.client_name}</b>{" "}
                   <br />
-                  City: <b>{selectedCustomer && selectedCustomer.City}</b>{" "}
+                  City: <b>{selectedCustomer && selectedCustomer.city}</b>{" "}
                   <br />
                 </p>
               </div>
