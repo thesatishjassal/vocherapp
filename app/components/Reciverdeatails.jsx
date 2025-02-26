@@ -6,7 +6,8 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
     InvoiceDate: "",
     InvoiceNumber: "",
     NumberofPackages: "",
-    Freight:""
+    Freight:"",
+    transactionType:""
   });
 
   const handleChange = (e) => {
@@ -111,6 +112,14 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                         <option value="Paid">Paid</option>
                         <option value="To Pay">To Pay</option>
                       </select>
+                    
+                    </div>
+                    <div className="col-md-06">
+                    <select id="transactionType" name="transactionType" value={formData.transactionType} onChange={handleChange}>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Return">Return</option>
+                    <option value="ToCustomer">To Customer</option>
+                  </select>
                     </div>
                   </fieldset>
 

@@ -55,12 +55,8 @@ const AddInvoice = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
-                  Transaction Types:{" "}
-                  <select id="transactionType" name="transactionType">
-                    <option value="Transfer">Transfer</option>
-                    <option value="Return">Return</option>
-                    <option value="ToCustomer">To Customer</option>
-                  </select>
+                  Transaction Types:
+                  {receiverInfo && receiverInfo.transactionType}
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>
@@ -100,8 +96,8 @@ const AddInvoice = () => {
                   <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
-                </p>
-                Freight: {receiverInfo && receiverInfo.Freight}
+                </p>  
+                Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
               </div>
 
               {/* Right Column */}
