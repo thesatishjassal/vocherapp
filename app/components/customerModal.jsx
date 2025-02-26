@@ -79,7 +79,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
               <div className="row mt-3">
                 <div className="col-md-7 clinetdeatails">
                   <p>
-                    <strong>Client Name:</strong> {selectedClient.clientname}
+                    <strong>Client Name:</strong> {selectedClient.client_name}
                   </p>
                   <p>
                     <strong>Business Name:</strong> {selectedClient.buisnessname}
@@ -88,10 +88,10 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
                     <strong>GST No.:</strong> {selectedClient.gst_number}
                   </p>
                   <p>
-                    <strong>Contact:</strong> {selectedClient.clientphone}
+                    <strong>Contact:</strong> {selectedClient.client_phone}
                   </p>
                   <p>
-                    <strong>Email:</strong> {selectedClient.clientemail}
+                    <strong>Email:</strong> {selectedClient.client_email}
                   </p>
                 </div>
                 <div className="col-md-5 clinetdeatails">
@@ -105,7 +105,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
                     <strong>Pincode:</strong> {selectedClient.pincode}
                   </p>
                   <p>
-                    <strong>Client Type:</strong> {selectedClient.clienttype}
+                    <strong>Client Type:</strong> {selectedClient.client_type}
                   </p>
                 </div>
               </div>
