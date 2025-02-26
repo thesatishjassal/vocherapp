@@ -31,15 +31,6 @@ const AddInvoice = () => {
     console.log("Received Data:", data);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setReceiverInfo((prevInfo) => ({
-      ...prevInfo,
-      [name]: value,
-    }));
-    console.log(receiverInfo)
-  };
-
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -110,18 +101,7 @@ const AddInvoice = () => {
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>
-                Freight:
-                <select
-                  id="Freight"
-                  name="Freight"
-                  value={formData.Freight}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                >
-                  <option value="Paid">Paid</option>
-                  <option value="To Pay">To Pay</option>
-                </select>
+                Freight: {receiverInfo && receiverInfo.Freight}
               </div>
 
               {/* Right Column */}

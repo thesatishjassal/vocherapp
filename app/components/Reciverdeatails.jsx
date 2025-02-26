@@ -6,6 +6,7 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
     InvoiceDate: "",
     InvoiceNumber: "",
     NumberofPackages: "",
+    Freight:""
   });
 
   const handleChange = (e) => {
@@ -97,6 +98,19 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                           required
                         />
                       </div>
+                    </div>
+                    <div className="col-md-6">
+                      <select
+                        id="Freight"
+                        name="Freight"
+                        value={formData.Freight}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                      >
+                        <option value="Paid">Paid</option>
+                        <option value="To Pay">To Pay</option>
+                      </select>
                     </div>
                   </fieldset>
 
