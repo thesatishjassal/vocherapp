@@ -1,19 +1,19 @@
 "use client";
-import InvoucherTable  from "../components/InvoucherTable";
-import ReciverDetails from "../components/Reciverdeatails"
+import InvoucherTable from "../components/InvoucherTable";
+import ReciverDetails from "../components/Reciverdeatails";
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
 
 const AddInvoice = () => {
-    const [InfoModal, setInfoModal] = useState(false);
-    const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-    const [totalAmount, setTotalAmount] = useState(0);
-    const [selectedCustomer, setSelectedCustomer] = useState(false);
+  const [InfoModal, setInfoModal] = useState(false);
+  const [showModalClientDetails, setShowModalClientDetails] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState(false);
 
-    const closeModal = () => {
-      setShowModalClientDetails(false); // Close the modal when this function is called
-    };
-      // Callback to receive the updated totalAmount from the child
+  const closeModal = () => {
+    setShowModalClientDetails(false); // Close the modal when this function is called
+  };
+  // Callback to receive the updated totalAmount from the child
   const handleTotalAmountChange = (newTotalAmount) => {
     setTotalAmount(newTotalAmount);
   };
@@ -22,7 +22,7 @@ const AddInvoice = () => {
     console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
     // Use the selected client data as needed
-    console.log(selectedClient)
+    console.log(selectedClient);
   };
   return (
     <div className="card tm_container my-4">
@@ -32,10 +32,7 @@ const AddInvoice = () => {
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
-                  <img
-                    src="/assets/img/panviclogo.jpg"
-                    alt="Logo"
-                  />
+                  <img src="/assets/img/panviclogo.jpg" alt="Logo" />
                 </div>
               </div>
               <div className="tm_invoice_right tm_text_right">
@@ -77,7 +74,8 @@ const AddInvoice = () => {
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">Supplier Details:</b> <button
+                  <b className="tm_primary_color">Supplier Details:</b>{" "}
+                  <button
                     type="button"
                     className="btn modalaction_btn no-print "
                     onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
@@ -86,17 +84,18 @@ const AddInvoice = () => {
                   </button>
                 </p>
                 <p style={{ textAlign: "justify" }}>
-                  Name: <b>XYZ Ltd</b> <br />
-                  Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
-                 
-                  State: <b>XYZ State</b>, <b>Country</b> | Pincode: <b>123456</b> <br />
-                  Email:<b>xyz@gmail.com</b> | Phone: <b>+91-1234567890</b><br />
-                  GST NO: <b>JDKURE1525</b>
+                  Name: <b>{selectedCustomer.client_name}</b> <br />
+                  Address: <b>{selectedCustomer.address}</b> <br />
+                  City:<b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: {selectedCustomer.pincode}<br />
+                  Email:<b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
+                  <br />
+                  GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>
-                Freight: <select id="transactionType" name="transactionType">
-                    <option value="Transfer">Paid</option>
-                    <option value="Return">To Pay</option>
-                  </select>
+                Freight:{" "}
+                <select id="transactionType" name="transactionType">
+                  <option value="Transfer">Paid</option>
+                  <option value="Return">To Pay</option>
+                </select>
               </div>
 
               {/* Right Column */}
@@ -121,7 +120,6 @@ const AddInvoice = () => {
                 Invoice Date: <b>2025-01-24</b> <br />
                 Mode of Transport: <b>Air Freight</b> <br />
                 Number of Packages: <b>50</b> <br />
-            
                 <br />
               </div>
             </div>
@@ -131,7 +129,9 @@ const AddInvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <InvoucherTable onTotalAmountChange={handleTotalAmountChange} />
+                  <InvoucherTable
+                    onTotalAmountChange={handleTotalAmountChange}
+                  />
                   {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
                       onClose={closeModal} // Pass the closeModal function to the modal
@@ -162,7 +162,7 @@ const AddInvoice = () => {
                           Total Amount Without GST
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {totalAmount.toFixed(2)}
+                          {totalAmount.toFixed(2)}
                         </td>
                       </tr>
                     </tbody>
