@@ -31,6 +31,15 @@ const AddInvoice = () => {
     console.log("Received Data:", data);
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setReceiverInfo((prevInfo) => ({
+      ...prevInfo,
+      [name]: value,
+    }));
+    console.log(receiverInfo)
+  };
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -93,15 +102,25 @@ const AddInvoice = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{selectedCustomer.client_name}</b> <br />
                   Address: <b>{selectedCustomer.address}</b> <br />
-                  City: <b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: <b>{selectedCustomer.pincode}</b> <br />
-                  Email: <b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
+                  City: <b>{selectedCustomer.city}</b>, State:{" "}
+                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
+                  <b>{selectedCustomer.pincode}</b> <br />
+                  Email: <b>{selectedCustomer.client_email}</b> | Phone:{" "}
+                  <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>
                 Freight:
-                <select id="transactionType" name="transactionType">
-                  <option value="Transfer">Paid</option>
-                  <option value="Return">To Pay</option>
+                <select
+                  id="Freight"
+                  name="Freight"
+                  value={formData.Freight}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                >
+                  <option value="Paid">Paid</option>
+                  <option value="To Pay">To Pay</option>
                 </select>
               </div>
 
@@ -112,7 +131,12 @@ const AddInvoice = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
-                  {InfoModal && <ReciverDetails setInfoModal={setInfoModal} onConfirm={handleConfirm}/>}
+                  {InfoModal && (
+                    <ReciverDetails
+                      setInfoModal={setInfoModal}
+                      onConfirm={handleConfirm}
+                    />
+                  )}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
@@ -121,10 +145,16 @@ const AddInvoice = () => {
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                Invoice Number: <b>{receiverInfo && receiverInfo.InvoiceNumber}</b> <br />
-                Invoice Date: <b>{receiverInfo && receiverInfo.InvoiceDate}</b> <br />
-                Mode of Transport: <b>{receiverInfo && receiverInfo.ModeofTransport}</b> <br />
-                Number of Packages: <b>{receiverInfo && receiverInfo.NumberofPackages}</b> <br />
+                Invoice Number:{" "}
+                <b>{receiverInfo && receiverInfo.InvoiceNumber}</b> <br />
+                Invoice Date: <b>
+                  {receiverInfo && receiverInfo.InvoiceDate}
+                </b>{" "}
+                <br />
+                Mode of Transport:{" "}
+                <b>{receiverInfo && receiverInfo.ModeofTransport}</b> <br />
+                Number of Packages:{" "}
+                <b>{receiverInfo && receiverInfo.NumberofPackages}</b> <br />
                 <br />
               </div>
             </div>
