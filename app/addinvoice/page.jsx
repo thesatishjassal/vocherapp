@@ -56,7 +56,7 @@ const AddInvoice = () => {
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
                   Transaction Types:
-                  {receiverInfo && receiverInfo.transactionType}
+                  <b>{receiverInfo && receiverInfo.transactionType}</b>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date: <b className="tm_primary_color">01.07.2022</b>

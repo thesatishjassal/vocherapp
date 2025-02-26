@@ -106,7 +106,7 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                         name="Freight"
                         value={formData.Freight}
                         onChange={handleChange}
-                        className="form-control"
+                        className="form-select"
                         required
                       >
                         <option value="Paid">Paid</option>
@@ -115,7 +115,7 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                     
                     </div>
                     <div className="col-md-06">
-                    <select id="transactionType" name="transactionType" value={formData.transactionType} onChange={handleChange}>
+                    <select id="transactionType" className="form-select" name="transactionType" value={formData.transactionType} onChange={handleChange}>
                     <option value="Transfer">Transfer</option>
                     <option value="Return">Return</option>
                     <option value="ToCustomer">To Customer</option>
