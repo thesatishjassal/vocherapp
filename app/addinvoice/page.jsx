@@ -121,10 +121,10 @@ const AddInvoice = () => {
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                Invoice Number: <b>{data && data.InvoiceNumber}</b> <br />
-                Invoice Date: <b>{data && data.InvoiceDate}</b> <br />
-                Mode of Transport: <b>{data && data.ModeofTransport}</b> <br />
-                Number of Packages: <b>{data && data.NumberofPackages}</b> <br />
+                Invoice Number: <b>{receiverInfo && receiverInfo.InvoiceNumber}</b> <br />
+                Invoice Date: <b>{receiverInfo && receiverInfo.InvoiceDate}</b> <br />
+                Mode of Transport: <b>{receiverInfo && receiverInfo.ModeofTransport}</b> <br />
+                Number of Packages: <b>{receiverInfo && receiverInfo.NumberofPackages}</b> <br />
                 <br />
               </div>
             </div>
