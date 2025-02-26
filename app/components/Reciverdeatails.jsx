@@ -1,19 +1,11 @@
-"use client";
 import React, { useState } from "react";
 
-const ReciverDetails = ({setInfoModal }) => {
-    console.log(setInfoModal)
+const ReciverDetails = ({ setInfoModal, onConfirm }) => {
   const [formData, setFormData] = useState({
-    clientName: "",
     ModeofTransport: "",
     InvoiceDate: "",
-    contactNumber: "",
-    emailAddress: "",
-    clientType: "Retail",
-    InvoiceNumber: "", 
-    NumberofPackages: "", 
-    SalePerson: "", 
-    state: "", 
+    InvoiceNumber: "",
+    NumberofPackages: "",
   });
 
   const handleChange = (e) => {
@@ -26,20 +18,8 @@ const ReciverDetails = ({setInfoModal }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setClients((prevClients) => [...prevClients, formData]);
-    setFormData({
-      clientName: "",
-      ModeofTransport: "",
-      InvoiceDate: "",
-      contactNumber: "",
-      emailAddress: "",
-      clientType: "Retail",
-      InvoiceNumber: "", 
-      NumberofPackages: "", 
-      SalePerson: "", 
-      state: "", 
-    });
-    setInfoModal(false);
+    onConfirm(formData); // ✅ Send data to parent component
+    setInfoModal(false); // Close modal
   };
 
   return (
@@ -56,20 +36,20 @@ const ReciverDetails = ({setInfoModal }) => {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         >
-          <div className="modal-dialog addclientform  modal-dialog-centered">
+          <div className="modal-dialog addclientform modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h1 className="modal-title fs-5" id="staticBackdropLabel">
-                Reciver Details
+                  Receiver Details
                 </h1>
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setBasicInfoModal(false)}
+                  onClick={() => setInfoModal(false)}
                   aria-label="Close"
                 ></button>
               </div>
-              <div className="modal-body  py-3 ">
+              <div className="modal-body py-3">
                 <form onSubmit={handleSubmit} className="row g-2">
                   <fieldset className="col-12">
                     <div className="row">
@@ -86,7 +66,7 @@ const ReciverDetails = ({setInfoModal }) => {
                       </div>
                       <div className="col-md-6">
                         <input
-                          type="text"
+                          type="date"
                           name="InvoiceDate"
                           placeholder="Invoice Date"
                           value={formData.InvoiceDate}
@@ -98,7 +78,7 @@ const ReciverDetails = ({setInfoModal }) => {
                       <div className="col-md-6">
                         <input
                           type="text"
-                          name="Mode of Transport"
+                          name="ModeofTransport"
                           placeholder="Mode of Transport"
                           value={formData.ModeofTransport}
                           onChange={handleChange}
@@ -108,8 +88,8 @@ const ReciverDetails = ({setInfoModal }) => {
                       </div>
                       <div className="col-md-6">
                         <input
-                          type="text"
-                          name="Number of Packages"
+                          type="number"
+                          name="NumberofPackages"
                           placeholder="Number of Packages"
                           value={formData.NumberofPackages}
                           onChange={handleChange}
@@ -119,7 +99,7 @@ const ReciverDetails = ({setInfoModal }) => {
                       </div>
                     </div>
                   </fieldset>
-                 
+
                   {/* Form Footer */}
                   <div className="modal-footer col-12">
                     <div className="text-end">

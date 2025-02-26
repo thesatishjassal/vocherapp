@@ -9,6 +9,7 @@ const AddInvoice = () => {
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(false);
+  const [receiverInfo, setReceiverInfo] = useState(null);
 
   const closeModal = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
@@ -24,6 +25,12 @@ const AddInvoice = () => {
     // Use the selected client data as needed
     console.log(selectedClient);
   };
+
+  const handleConfirm = (data) => {
+    setReceiverInfo(data);
+    console.log("Received Data:", data);
+  };
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -86,12 +93,15 @@ const AddInvoice = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{selectedCustomer.client_name}</b> <br />
                   Address: <b>{selectedCustomer.address}</b> <br />
-                  City: <b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: <b>{selectedCustomer.pincode}</b> <br />
-                  Email: <b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
+                  City: <b>{selectedCustomer.city}</b>, State:{" "}
+                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
+                  <b>{selectedCustomer.pincode}</b> <br />
+                  Email: <b>{selectedCustomer.client_email}</b> | Phone:{" "}
+                  <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>
-                Freight:{" "}
+                Freight:
                 <select id="transactionType" name="transactionType">
                   <option value="Transfer">Paid</option>
                   <option value="Return">To Pay</option>
@@ -105,18 +115,21 @@ const AddInvoice = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
-                  {InfoModal && <ReciverDetails setInfoModal={setInfoModal} />}
+                  {receiverInfo && (
+                    <ReciverDetails
+                      setReceiverInfo={setReceiverInfo}
+                      onConfirm={handleConfirm}
+                    />
+                  )}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
-                    onClick={() => setInfoModal(true)}
+                    onClick={() => setReceiverInfo(true)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
                 Invoice Number: <b>INV12345</b> <br />
-                {/* Issue Slip No:<b> SLIP98765</b> <br /> */}
-                {/* Sale Order No:<b> SO123456 </b><br /> */}
                 Invoice Date: <b>2025-01-24</b> <br />
                 Mode of Transport: <b>Air Freight</b> <br />
                 Number of Packages: <b>50</b> <br />
