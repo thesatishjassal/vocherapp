@@ -92,8 +92,7 @@ const AddInvoice = () => {
                   City: <b>{selectedCustomer.city}</b>, State:{" "}
                   <b>{selectedCustomer.state}</b> | Pincode:{" "}
                   <b>{selectedCustomer.pincode}</b> <br />
-                  Email: <b>{selectedCustomer.client_email}</b> | Phone:{" "}
-                  <b>{selectedCustomer.client_phone}</b>
+                  Phone: <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>  
