@@ -93,11 +93,8 @@ const AddInvoice = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{selectedCustomer.client_name}</b> <br />
                   Address: <b>{selectedCustomer.address}</b> <br />
-                  City: <b>{selectedCustomer.city}</b>, State:{" "}
-                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
-                  <b>{selectedCustomer.pincode}</b> <br />
-                  Email: <b>{selectedCustomer.client_email}</b> | Phone:{" "}
-                  <b>{selectedCustomer.client_phone}</b>
+                  City: <b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: <b>{selectedCustomer.pincode}</b> <br />
+                  Email: <b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>
@@ -115,16 +112,11 @@ const AddInvoice = () => {
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Reciver Details:</b>
-                  {receiverInfo && (
-                    <ReciverDetails
-                      setReceiverInfo={setReceiverInfo}
-                      onConfirm={handleConfirm}
-                    />
-                  )}
+                  {InfoModal && <ReciverDetails setInfoModal={setInfoModal} onConfirm={handleConfirm}/>}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"
-                    onClick={() => setReceiverInfo(true)}
+                    onClick={() => setInfoModal(true)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
