@@ -172,14 +172,14 @@ const ProductsTable = () => {
                   </td>
 
                   <td>{product.hsncode}</td>
-                  <td>{product.itemCode}</td>
+                  <td>{product.itemcode}</td>
                   <td>{truncateText(product.itemName)}</td>
                   {/* <td>{truncateText(product.description, 6)}</td> */}
                   <td>{product.category}</td>
-                  <td>{product.subCategory}</td>
+                  <td>{product.subcategory}</td>
                   <td>₹{product.price}</td>
                   <td>{product.quantity}</td>
-                  <td>{product.rackCode}</td>
+                  <td>{product.rackcode}</td>
                   <td>
                     <i
                       className="edit-icon"
