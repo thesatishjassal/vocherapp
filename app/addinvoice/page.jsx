@@ -86,8 +86,8 @@ const AddInvoice = () => {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{selectedCustomer.client_name}</b> <br />
                   Address: <b>{selectedCustomer.address}</b> <br />
-                  City:<b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: {selectedCustomer.pincode}<br />
-                  Email:<b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
+                  City: <b>{selectedCustomer.city}</b>, State: <b>{selectedCustomer.state}</b> | Pincode: {selectedCustomer.pincode}<br />
+                  Email: <b>{selectedCustomer.client_email}</b> | Phone: <b>{selectedCustomer.client_phone}</b>
                   <br />
                   GST NO: <b>{selectedCustomer.gst_number}</b>
                 </p>

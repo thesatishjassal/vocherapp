@@ -85,7 +85,7 @@ const CustomerModal = ({ client, onClose, onConfirm }) => {
                     <strong>Business Name:</strong> {selectedClient.buisnessname}
                   </p>
                   <p>
-                    <strong>GST No.:</strong> {selectedClient.gst_number}
+                    <strong>GST No:</strong> {selectedClient.gst_number}
                   </p>
                   <p>
                     <strong>Contact:</strong> {selectedClient.client_phone}
