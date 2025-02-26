@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const productSchema = yup.object().shape({
   hsncode: yup.string().required(),
-  itemCode: yup.string().required(),
+  itemcode: yup.string().required(),
   itemName: yup.string().required(),
   description: yup.string().required(),
   category: yup.string().required(),
@@ -108,7 +108,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
               {[
                 "hsncode",
-                "itemCode",
+                "itemcode",
                 "itemName",
                 "description",
                 "price",
