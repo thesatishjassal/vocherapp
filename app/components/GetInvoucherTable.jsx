@@ -29,6 +29,20 @@ const GetInvoucherTable = () => {
         <h6>Manage Invouchers</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+          <input
+            type="text"
+            placeholder="Search by Client or Project"
+            className="form-control w-25"
+          />
+          <div className="add_product">
+            <button
+              className="btn btn-primary m-3"
+            >
+              Add In-Vocuhers
+            </button>
+          </div>
+        </div>
         <table className="table align-items-center mb-0">
           <thead>
             <tr>
