@@ -62,7 +62,7 @@ export default function Home() {
 
         {/* Add Outinvoice */}
         <div className="col-lg-2 col-md-2 col-12">
-          <a href="/addinvoice">
+          <a href="/getinvouchers">
             {" "}
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>
