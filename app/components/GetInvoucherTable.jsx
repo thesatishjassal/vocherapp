@@ -44,6 +44,7 @@ const GetInvoucherTable = () => {
               <th>Freight Status</th>
               <th>Total Amount</th>
               <th>Remarks</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -61,6 +62,11 @@ const GetInvoucherTable = () => {
                 <td>{voucher.freight_status}</td>
                 <td>{voucher.total_amount}</td>
                 <td>{voucher.remarks}</td>
+                <td>
+                  <u className="text-primary" title="View" style={{ cursor: "pointer" }}>
+                    <i className="fas fa-eye"></i>
+                  </u>
+                </td>
               </tr>
             ))}
           </tbody>
