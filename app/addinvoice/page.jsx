@@ -61,9 +61,10 @@ const AddInvoice = () => {
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
           const lastVoucher = vouchers.reduce((max, voucher) =>
-            voucher.voucher_id > max.voucher_id ? voucher : max
+            parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
           );
-          setVoucherId(lastVoucher.voucher_id); // Keep as string
+          const nextVoucherId = String(parseInt(lastVoucher.voucher_id) + 1);
+          setVoucherId(nextVoucherId);
 
           const lastSequence = vouchers
             .map((voucher) => {
@@ -73,7 +74,7 @@ const AddInvoice = () => {
             .reduce((max, num) => Math.max(max, num), 0);
           setVoucherSequence(lastSequence + 1);
         } else {
-          setVoucherId("1"); // Start with string "1"
+          setVoucherId("1");
           setVoucherSequence(1);
         }
       } catch (error) {
@@ -111,125 +112,130 @@ const AddInvoice = () => {
     }
   }, [submitStatus]);
 
-  const handleSubmit = async () => {
-    if (!selectedCustomer || !receiverInfo) {
-      setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
-      console.log("Missing required fields:", { selectedCustomer, receiverInfo });
-      return;
+
+const handleSubmit = async () => {
+  if (!selectedCustomer || !receiverInfo) {
+    setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
+    console.log("Missing required fields:", { selectedCustomer, receiverInfo });
+    return;
+  }
+
+  if (voucherId === null || voucherSequence === null) {
+    setSubmitStatus("Voucher data not yet loaded, please wait");
+    console.log("Voucher data not loaded:", { voucherId, voucherSequence });
+    return;
+  }
+
+  if (invoiceItems.length === 0) {
+    setSubmitStatus("Please add at least one item to the invoice");
+    console.log("No invoice items provided");
+    return;
+  }
+
+  setIsSubmitting(true);
+  setSubmitStatus(null);
+
+  const voucherNumber = generateVoucherNumber();
+  const invoiceData = {
+    voucher_id: String(voucherId),
+    voucher_number: voucherNumber,
+    transaction_type: receiverInfo?.transactionType || "",
+    voucher_date: new Date().toISOString().split("T")[0],
+    client_id: selectedCustomer?.id || "3",
+    invoice_number: receiverInfo?.InvoiceNumber || "",
+    invoice_date: receiverInfo?.InvoiceDate || "",
+    mode_of_transport: receiverInfo?.ModeofTransport || "",
+    number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
+    freight_status: receiverInfo?.Freight || "",
+    total_amount: totalAmount,
+    remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
+  };
+
+  try {
+    // Step 1: Submit the invoice
+    console.log("Submitting Invoice Data:", invoiceData);
+    const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(invoiceData),
+    });
+
+    if (!invoiceResponse.ok) {
+      const errorData = await invoiceResponse.json();
+      console.error("Invoice submission failed:", errorData);
+      throw new Error(
+        `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
+      );
     }
 
-    if (voucherId === null || voucherSequence === null) {
-      setSubmitStatus("Voucher data not yet loaded, please wait");
-      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
-      return;
+    const invoiceResult = await invoiceResponse.json();
+    console.log("Invoice submission response:", invoiceResult);
+
+    // Step 2: Extract the correct ID
+    const newVoucherId = invoiceResult.id;
+    console.log("New Voucher ID (from id):", newVoucherId);
+
+    if (!newVoucherId) {
+      console.error("No id field in invoiceResult:", invoiceResult);
+      throw new Error("No valid id returned from invoice creation. Check API response.");
     }
 
-    if (invoiceItems.length === 0) {
-      setSubmitStatus("Please add at least one item to the invoice");
-      console.log("No invoice items provided");
-      return;
-    }
+    // Step 3: Submit invoice items
+    console.log("Submitting Invoice Items:", invoiceItems);
+    for (const item of invoiceItems) {
+      const itemData = {
+        voucher_id: newVoucherId, // Use invouchers.id
+        product_id: item.product_id,
+        item_name: item.item_name,
+        unit: item.unit,
+        rack_code: item.rack_code,
+        quantity: parseInt(item.quantity),
+        rate: parseFloat(item.rate),
+        discount_percentage: parseFloat(item.discount_percentage || 0),
+        amount: parseFloat(item.amount),
+        comments: item.comments || "",
+      };
 
-    setIsSubmitting(true);
-    setSubmitStatus(null);
+      const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+      console.log("Submitting item to:", itemUrl, "with data:", itemData);
 
-    const voucherNumber = generateVoucherNumber();
-    const invoiceData = {
-      voucher_id: String(voucherId), // Send as string
-      voucher_number: voucherNumber,
-      transaction_type: receiverInfo?.transactionType || "",
-      voucher_date: new Date().toISOString().split("T")[0],
-      client_id: selectedCustomer?.id || "3",
-      invoice_number: receiverInfo?.InvoiceNumber || "",
-      invoice_date: receiverInfo?.InvoiceDate || "",
-      mode_of_transport: receiverInfo?.ModeofTransport || "",
-      number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
-      freight_status: receiverInfo?.Freight || "",
-      total_amount: totalAmount,
-      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
-    };
-
-    try {
-      // Step 1: Submit the invoice
-      console.log("Submitting Invoice Data:", invoiceData);
-      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
+      const itemsResponse = await fetch(itemUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(invoiceData),
+        body: JSON.stringify(itemData),
       });
 
-      if (!invoiceResponse.ok) {
-        const errorData = await invoiceResponse.json();
-        console.error("Invoice submission failed:", errorData);
+      if (!itemsResponse.ok) {
+        const errorData = await itemsResponse.json();
+        console.error("Item submission failed:", errorData);
         throw new Error(
-          `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
+          `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
         );
       }
 
-      const invoiceResult = await invoiceResponse.json();
-      console.log("Invoice submission response:", invoiceResult);
-      const newVoucherId = invoiceResult.id; // Use id (e.g., 45) instead of voucher_id (e.g., "1")
-      console.log("New Voucher ID (from id):", newVoucherId);
-
-      if (!newVoucherId) {
-        throw new Error("No valid id returned from invoice creation");
-      }
-
-      // Step 2: Submit invoice items using invouchers.id
-      console.log("Submitting Invoice Items:", invoiceItems);
-      for (const item of invoiceItems) {
-        const itemData = {
-          product_id: item.product_id,
-          item_name: item.item_name,
-          unit: item.unit,
-          rack_code: item.rack_code,
-          quantity: parseInt(item.quantity),
-          rate: parseFloat(item.rate),
-          discount_percentage: parseFloat(item.discount_percentage || 0),
-          amount: parseFloat(item.amount),
-          comments: item.comments || "",
-        };
-
-        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
-        console.log("Submitting item to:", itemUrl, "with data:", itemData);
-
-        const itemsResponse = await fetch(itemUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(itemData),
-        });
-
-        if (!itemsResponse.ok) {
-          const errorData = await itemsResponse.json();
-          console.error("Item submission failed:", errorData);
-          throw new Error(
-            `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
-          );
-        }
-
-        const itemsResult = await itemsResponse.json();
-        console.log("Item submitted successfully:", itemsResult);
-      }
-
-      // Success: Update state and notify user
-      setSubmitStatus("Invoice and items submitted successfully!");
-      setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
-      setVoucherId((prev) => (prev !== null ? String(Number(prev) + 1) : "1"));
-      setSelectedCustomer(null);
-      setReceiverInfo(null);
-      setInvoiceItems([]);
-      setTotalAmount(0);
-    } catch (error) {
-      setSubmitStatus("Error submitting invoice or items: " + error.message);
-      console.error("Submission Error:", error);
-    } finally {
-      setIsSubmitting(false);
+      const itemsResult = await itemsResponse.json();
+      console.log("Item submitted successfully:", itemsResult);
     }
-  };
+
+    // Success: Update state and notify user
+    setSubmitStatus("Invoice and items submitted successfully!");
+    setVoucherSequence((prev) => prev + 1);
+    setVoucherId(String(parseInt(invoiceResult.voucher_id) + 1));
+    setSelectedCustomer(null);
+    setReceiverInfo(null);
+    setInvoiceItems([]);
+    setTotalAmount(0);
+  } catch (error) {
+    setSubmitStatus("Error submitting invoice or items: " + error.message);
+    console.error("Submission Error:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="card tm_container my-4">
@@ -369,7 +375,7 @@ const AddInvoice = () => {
                   strokeWidth="32"
                 ></rect>
                 <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 0 00-40 40v24"
+                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
                   fill="none"
                   stroke="currentColor"
                   strokeLinejoin="round"
