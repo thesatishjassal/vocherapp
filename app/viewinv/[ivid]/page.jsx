@@ -145,6 +145,8 @@ freight_status}</b>
                   <br />
                   Invoice Date: <b>{voucher.invoice_date}</b>
                   <br />
+                  Number of Packages: <b>{voucher.number_of_packages}</b>
+                  <br />
                   Transport: <b>{voucher.mode_of_transport}</b>
                   <br />
                 </p>
