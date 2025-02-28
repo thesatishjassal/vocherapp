@@ -13,7 +13,7 @@ const AddInvoice = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [invoiceItems, setInvoiceItems] = useState([]);
-  const [voucherSequence, setVoucherSequence] = useState(1);
+  const [voucherSequence, setVoucherSequence] = useState(null); // Start as null until fetched
   const [voucherId, setVoucherId] = useState(null);
 
   const closeModal = () => {
@@ -38,12 +38,13 @@ const AddInvoice = () => {
   };
 
   const generateVoucherNumber = () => {
+    if (voucherSequence === null) return "PLINV-Loading..."; // Display loading until sequence is fetched
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLINV-${sequenceStr}`;
   };
 
   useEffect(() => {
-    const fetchLastVoucherId = async () => {
+    const fetchLastVoucherData = async () => {
       try {
         const response = await fetch("https://api.panvic.in/invouchers/", {
           method: "GET",
@@ -60,21 +61,33 @@ const AddInvoice = () => {
 
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
+          // Find the highest voucher_id
           const lastVoucher = vouchers.reduce((max, voucher) =>
             voucher.voucher_id > max.voucher_id ? voucher : max
           );
           setVoucherId(lastVoucher.voucher_id + 1);
+
+          // Find the highest sequence number from voucher_number
+          const lastSequence = vouchers
+            .map(voucher => {
+              const match = voucher.voucher_number.match(/^PLINV-(\d+)$/);
+              return match ? parseInt(match[1], 10) : 0;
+            })
+            .reduce((max, num) => Math.max(max, num), 0);
+          setVoucherSequence(lastSequence + 1);
         } else {
           setVoucherId(1);
+          setVoucherSequence(1); // Start with 1 if no vouchers exist
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error);
         setVoucherId(1);
-        setSubmitStatus("Error fetching last voucher ID, starting with 1");
+        setVoucherSequence(1); // Fallback to 1 on error
+        setSubmitStatus("Error fetching last voucher data, starting with 1");
       }
     };
 
-    fetchLastVoucherId();
+    fetchLastVoucherData();
   }, []);
 
   const handleSubmit = async () => {
@@ -85,8 +98,8 @@ const AddInvoice = () => {
       return;
     }
 
-    if (voucherId === null) {
-      setSubmitStatus("Voucher ID not yet loaded, please wait");
+    if (voucherId === null || voucherSequence === null) {
+      setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
 
@@ -141,8 +154,8 @@ const AddInvoice = () => {
       const result = await response.json();
       setSubmitStatus("Invoice submitted successfully!");
       console.log("Success:", result);
-      setVoucherSequence((prev) => prev + 1);
-      setVoucherId((prev) => prev + 1);
+      setVoucherSequence((prev) => prev + 1); // Increment for next voucher_number
+      setVoucherId((prev) => prev + 1); // Increment for next voucher_id
     } catch (error) {
       setSubmitStatus("Error submitting invoice: " + error.message);
       console.error("Error:", error);
