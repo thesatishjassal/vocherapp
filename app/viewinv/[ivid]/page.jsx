@@ -14,27 +14,27 @@ const InvoucherDetail = () => {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch and filter Invoucher by ID
+  // Fetch Invoucher Details
   useEffect(() => {
     if (!ivid) return;
-    console.log(ivid)
+
     const fetchVoucher = async () => {
       try {
-        const response = await axios.get(INVOCHER_API_URL, {
+        const response = await axios.get(`${INVOCHER_API_URL}/${ivid}`, {
           withCredentials: true,
         });
+        console.log(response.data);
+        if (response.data) {
+          setVoucher(response.data);
 
-        const filteredVoucher = response.data.find((v) => v.voucher_id === ivid);
-        console.log(filteredVoucher)
-        if (filteredVoucher) {
-          setVoucher(filteredVoucher);
-
-          // Fetch Client details if client_id exists
-          if (filteredVoucher.client_id) {
-            fetchClient(filteredVoucher.client_id);
+          // If the voucher contains a clientId, fetch client details
+          if (response.data.
+            client_id) {
+            fetchClient(response.data.
+              client_id);
           }
         } else {
-          toast.error("Voucher not found!");
+          toast.error("No voucher found!");
         }
       } catch (error) {
         toast.error("Failed to load voucher details!");
@@ -44,16 +44,17 @@ const InvoucherDetail = () => {
     };
 
     fetchVoucher();
-  }, [ivid , client, voucher]);
+  }, [ivid]);
 
-  // Fetch and filter Client by ID
+  // Fetch Client Details
   const fetchClient = async (client_id) => {
     try {
       const response = await axios.get(CLIENT_API_URL, {
         withCredentials: true,
       });
 
-      const filteredClient = response.data.find((c) => c.id === client_id);
+      const filteredClient = response.data.find((c) => c.id ===  client_id);
+      console.log(filteredClient)
       if (filteredClient) {
         setClient(filteredClient);
       } else {
@@ -84,7 +85,8 @@ const InvoucherDetail = () => {
                   IN VOUCHER
                 </div>
                 <p className="tm_invoice_number">
-                  Voucher No: <b className="tm_primary_color">#{voucher.voucherNo}</b>
+                  Voucher No:{" "}
+                  <b className="tm_primary_color">#{voucher.voucherNo}</b>
                 </p>
               </div>
             </div>
@@ -94,53 +96,73 @@ const InvoucherDetail = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number">
-                  Transaction Type: <b>{voucher.transactionType}</b>
+                  Transaction Type: <b>{voucher.
+transaction_type
+}</b>
                 </p>
                 <p className="tm_invoice_date">
-                  Date: <b className="tm_primary_color">{voucher.date}</b>
+                  Date:{" "}
+                  <b className="tm_primary_color">{voucher.invoice_date}</b>
                 </p>
               </div>
             </div>
 
             {/* Supplier & Receiver Details */}
             <div className="tm_invoice_head tm_mb10">
-              <div className="tm_invoice_left">
-                <p><b className="tm_primary_color">Supplier Details:</b></p>
-                <p>
-                  Name: <b>{voucher.supplierDetails?.name}</b><br />
-                  Address: <b>{voucher.supplierDetails?.address}</b><br />
-                  Phone: <b>{voucher.supplierDetails?.phone}</b><br />
-                  GST NO: <b>{voucher.supplierDetails?.gstNumber}</b>
+                    {/* Client Details */}
+            {client && (
+              <div className="tm_invoice_head tm_mb10">
+        <div
+                className="tm_invoice_left mt-0"
+                style={{ flex: 1, textAlign: "left" }}
+              >
+                <p className="tm_mb2">
+                  <b className="tm_primary_color">Supplier Details:</b>{" "}
+                  <button
+                    type="button"
+                    className="btn modalaction_btn no-print "
+                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
+                <p style={{ textAlign: "justify" }}>
+                  Name: <b>{client.client_name}</b> <br />
+                  Address: <b>{client.address}</b> <br />
+                  City: <b>{client.city}</b>, State:{" "}
+                  <b>{client.state}</b> | Pincode:{" "}
+                  <b>{client.pincode}</b> <br />
+                  Phone: <b>{client.client_phone}</b>
+                  <br />
+                  GST NO: <b>{client.gst_number}</b>
+                </p>  
+                Freight: <b>{voucher && voucher.
+freight_status}</b>
               </div>
 
+              </div>
+            )}
               <div className="tm_invoice_right tm_text_right">
-                <p><b className="tm_primary_color">Receiver Details:</b></p>
                 <p>
-                  Invoice No: <b>{voucher.receiverDetails?.invoiceNumber}</b><br />
-                  Invoice Date: <b>{voucher.receiverDetails?.invoiceDate}</b><br />
-                  Transport: <b>{voucher.receiverDetails?.modeOfTransport}</b><br />
+                  <b className="tm_primary_color">Receiver Details:</b>
+                </p>
+                <p>
+                  Invoice No: <b>{voucher.invoice_number}</b>
+                  <br />
+                  Invoice Date: <b>{voucher.invoice_date}</b>
+                  <br />
+                  Transport: <b>{voucher.mode_of_transport}</b>
+                  <br />
                 </p>
               </div>
             </div>
 
-            {/* Client Details */}
-            {client && (
-              <div className="tm_invoice_head tm_mb10">
-                <div className="tm_invoice_left">
-                  <p><b className="tm_primary_color">Client Details:</b></p>
-                  <p>
-                    Name: <b>{client.name}</b><br />
-                    Email: <b>{client.email}</b><br />
-                    Phone: <b>{client.phone}</b><br />
-                    Address: <b>{client.address}</b>
-                  </p>
-                </div>
-              </div>
-            )}
+      
 
             {/* Product Info */}
-            <p><b className="tm_primary_color">Product Info:</b></p>
+            <p>
+              <b className="tm_primary_color">Product Info:</b>
+            </p>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
@@ -188,14 +210,17 @@ const InvoucherDetail = () => {
 
             {/* Buttons */}
             <div className="tm_invoice_btns tm_hide_print">
-              <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="tm_invoice_btn tm_color1"
+              >
                 <span className="tm_btn_text">Print</span>
               </button>
               <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
                 <span className="tm_btn_text">Download</span>
               </button>
             </div>
-
           </div>
         </div>
       </div>
