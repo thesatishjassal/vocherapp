@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { redirect } from "next/dist/server/api-utils";
 
 const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -219,10 +220,12 @@ const handleSubmit = async () => {
 
       const itemsResult = await itemsResponse.json();
       console.log("Item submitted successfully:", itemsResult);
+      
     }
 
     // Success: Update state and notify user
     setSubmitStatus("Invoice and items submitted successfully!");
+    window.location.href = "/getinvouchers";
     setVoucherSequence((prev) => prev + 1);
     setVoucherId(String(parseInt(invoiceResult.voucher_id) + 1));
     setSelectedCustomer(null);
