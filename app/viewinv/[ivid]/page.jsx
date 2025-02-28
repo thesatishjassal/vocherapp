@@ -21,6 +21,7 @@ const InvoucherDetail = () => {
           withCredentials: true,
         });
         setVoucher(response.data);
+        console.log(voucher)
       } catch (error) {
         toast.error("Failed to load voucher details!");
       } finally {
