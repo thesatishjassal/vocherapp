@@ -1,7 +1,7 @@
 "use client";
 import InvoucherTable from "../components/InvoucherTable";
 import ReciverDetails from "../components/Reciverdeatails";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
 
 const AddInvoice = () => {
@@ -12,19 +12,23 @@ const AddInvoice = () => {
   const [receiverInfo, setReceiverInfo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [invoiceItems, setInvoiceItems] = useState([]);
+  const [voucherSequence, setVoucherSequence] = useState(1);
+  const [voucherId, setVoucherId] = useState(null);
 
   const closeModal = () => {
-    setShowModalClientDetails(false); // Close the modal when this function is called
+    setShowModalClientDetails(false);
   };
-  // Callback to receive the updated totalAmount from the child
-  const handleTotalAmountChange = (newTotalAmount) => {
+
+  const handleTotalAmountChange = (newTotalAmount, rows) => {
     setTotalAmount(newTotalAmount);
+    setInvoiceItems(rows);
+    console.log("Received rows from InvoucherTable:", rows);
   };
 
   const handleClientConfirm = (selectedClient) => {
     console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
-    // Use the selected client data as needed
     console.log(selectedClient);
   };
 
@@ -33,22 +37,69 @@ const AddInvoice = () => {
     console.log("Received Data:", data);
   };
 
+  const generateVoucherNumber = () => {
+    const sequenceStr = voucherSequence.toString().padStart(3, "0");
+    return `PLINV-${sequenceStr}`;
+  };
+
+  useEffect(() => {
+    const fetchLastVoucherId = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/invouchers/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Add authentication headers if required
+            // "Authorization": "Bearer your-token-here"
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const vouchers = await response.json();
+        if (vouchers && vouchers.length > 0) {
+          const lastVoucher = vouchers.reduce((max, voucher) =>
+            voucher.voucher_id > max.voucher_id ? voucher : max
+          );
+          setVoucherId(lastVoucher.voucher_id + 1);
+        } else {
+          setVoucherId(1);
+        }
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+        setVoucherId(1);
+        setSubmitStatus("Error fetching last voucher ID, starting with 1");
+      }
+    };
+
+    fetchLastVoucherId();
+  }, []);
+
   const handleSubmit = async () => {
     if (!selectedCustomer || !receiverInfo) {
-      console.log(selectedCustomer)
-      console.log(receiverInfo)
+      console.log(selectedCustomer);
+      console.log(receiverInfo);
       setSubmitStatus("Please complete all required fields");
+      return;
+    }
+
+    if (voucherId === null) {
+      setSubmitStatus("Voucher ID not yet loaded, please wait");
       return;
     }
 
     setIsSubmitting(true);
     setSubmitStatus(null);
 
-    // Console log all required fields before submission
-    console.log("Voucher Number:", "#LL93784");
+    const voucherNumber = generateVoucherNumber();
+
+    console.log("Voucher ID:", voucherId);
+    console.log("Voucher Number:", voucherNumber);
     console.log("Transaction Type:", receiverInfo?.transactionType || "");
     console.log("Voucher Date:", new Date().toISOString().split('T')[0]);
-    console.log("Client ID:", selectedCustomer?.id );
+    console.log("Client ID:", selectedCustomer?.id);
     console.log("Invoice Number:", receiverInfo?.InvoiceNumber || "");
     console.log("Invoice Date:", receiverInfo?.InvoiceDate || "");
     console.log("Mode of Transport:", receiverInfo?.ModeofTransport || "");
@@ -56,23 +107,24 @@ const AddInvoice = () => {
     console.log("Freight Status:", receiverInfo?.Freight || "");
     console.log("Total Amount:", totalAmount);
     console.log("Remarks:", document.querySelector(".tm_remarks_box")?.value || "");
+    console.log("Invoice Items:", invoiceItems);
 
-    // Prepare the data object based on the API structure
     const invoiceData = {
-      voucher_id:5,
-      voucher_number: `LL93784`,
+      voucher_id: voucherId,
+      voucher_number: voucherNumber,
       transaction_type: receiverInfo?.transactionType || "",
-      voucher_date: new Date().toISOString().split('T')[0], // Current date
-      client_id: selectedCustomer?.client_id || 3, // Assuming client object has an ID
+      voucher_date: new Date().toISOString().split('T')[0],
+      client_id: selectedCustomer?.id || 3,
       invoice_number: receiverInfo?.InvoiceNumber || "",
       invoice_date: receiverInfo?.InvoiceDate || "",
       mode_of_transport: receiverInfo?.ModeofTransport || "",
       number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
       freight_status: receiverInfo?.Freight || "",
       total_amount: totalAmount,
-      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery"
+      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
+      items: invoiceItems,
     };
-  
+
     try {
       const response = await fetch("https://api.panvic.in/invouchers/", {
         method: "POST",
@@ -89,6 +141,8 @@ const AddInvoice = () => {
       const result = await response.json();
       setSubmitStatus("Invoice submitted successfully!");
       console.log("Success:", result);
+      setVoucherSequence((prev) => prev + 1);
+      setVoucherId((prev) => prev + 1);
     } catch (error) {
       setSubmitStatus("Error submitting invoice: " + error.message);
       console.error("Error:", error);
@@ -113,7 +167,7 @@ const AddInvoice = () => {
                   IN VOUCHER
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Voucher No: <b className="tm_primary_color">#LL93784</b>
+                  Voucher No: <b className="tm_primary_color">{generateVoucherNumber()}</b>
                 </p>
               </div>
             </div>
@@ -138,32 +192,32 @@ const AddInvoice = () => {
               }}
             >
               {/* Left Column */}
-                <div
-                  className="tm_invoice_left mt-0"
-                  style={{ flex: 1, textAlign: "left" }}
-                >
-                  <p className="tm_mb2">
-                    <b className="tm_primary_color">Supplier Details:</b>{" "}
-                    <button
-                      type="button"
-                      className="btn modalaction_btn no-print "
-                      onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
-                    >
-                      <i className="fa-solid fa-pen-to-square"></i>
-                    </button>
-                  </p>
-                  <p style={{ textAlign: "justify" }}>
-                    Name: <b>{selectedCustomer.client_name}</b> <br />
-                    Address: <b>{selectedCustomer.address}</b> <br />
-                    City: <b>{selectedCustomer.city}</b>, State:{" "}
-                    <b>{selectedCustomer.state}</b> | Pincode:{" "}
-                    <b>{selectedCustomer.pincode}</b> <br />
-                    Phone: <b>{selectedCustomer.client_phone}</b>
-                    <br />
-                    GST NO: <b>{selectedCustomer.gst_number}</b>
-                  </p>  
-                  Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
-                </div>
+              <div
+                className="tm_invoice_left mt-0"
+                style={{ flex: 1, textAlign: "left" }}
+              >
+                <p className="tm_mb2">
+                  <b className="tm_primary_color">Supplier Details:</b>{" "}
+                  <button
+                    type="button"
+                    className="btn modalaction_btn no-print "
+                    onClick={() => setShowModalClientDetails(true)}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </p>
+                <p style={{ textAlign: "justify" }}>
+                  Name: <b>{selectedCustomer.client_name}</b> <br />
+                  Address: <b>{selectedCustomer.address}</b> <br />
+                  City: <b>{selectedCustomer.city}</b>, State:{" "}
+                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
+                  <b>{selectedCustomer.pincode}</b> <br />
+                  Phone: <b>{selectedCustomer.client_phone}</b>
+                  <br />
+                  GST NO: <b>{selectedCustomer.gst_number}</b>
+                </p>
+                Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
+              </div>
 
               {/* Right Column */}
               <div
@@ -188,9 +242,7 @@ const AddInvoice = () => {
                 </p>
                 Invoice Number:{" "}
                 <b>{receiverInfo && receiverInfo.InvoiceNumber}</b> <br />
-                Invoice Date: <b>
-                  {receiverInfo && receiverInfo.InvoiceDate}
-                </b>{" "}
+                Invoice Date: <b>{receiverInfo && receiverInfo.InvoiceDate}</b>{" "}
                 <br />
                 Mode of Transport:{" "}
                 <b>{receiverInfo && receiverInfo.ModeofTransport}</b> <br />
@@ -208,9 +260,9 @@ const AddInvoice = () => {
                   <InvoucherTable
                     onTotalAmountChange={handleTotalAmountChange}
                   />
-                  {showModalClientDetails && ( // Conditionally render the modal
+                  {showModalClientDetails && (
                     <CustomerModal
-                      onClose={closeModal} // Pass the closeModal function to the modal
+                      onClose={closeModal}
                       client={showModalClientDetails}
                       onConfirm={handleClientConfirm}
                     />

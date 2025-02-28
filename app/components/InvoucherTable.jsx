@@ -39,18 +39,23 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     if (newRow.itemCode && newRow.itemName && qty && rate) {
       const amount = calculateAmount(qty, rate, discount);
 
-      setRows((prevRows) => [
-        ...prevRows,
+      const updatedRows = [
+        ...rows,
         {
-          id: prevRows.length + 1,
+          id: rows.length + 1,
           ...newRow,
           amount,
         },
-      ]);
+      ];
+
+      setRows(updatedRows);
 
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal + amount;
-        if (onTotalAmountChange) onTotalAmountChange(updatedTotal); // Pass updated total to the parent
+        if (onTotalAmountChange) {
+          // Pass both the updated total and the rows to the parent
+          onTotalAmountChange(updatedTotal, updatedRows);
+        }
         return updatedTotal;
       });
 
@@ -86,7 +91,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
     if (["itemCode", "itemName"].includes(field) && value.trim()) {
       setShowModal(true);
-      filterProducts(value);
+      // filterProducts(value); // Assuming this function exists elsewhere
     }
   };
 
