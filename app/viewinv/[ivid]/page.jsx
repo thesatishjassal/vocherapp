@@ -32,7 +32,7 @@ const InvoucherDetail = () => {
     };
 
     fetchVoucher();
-  }, [ivid]);
+  }, [ivid, voucher]);
 
   if (loading) return <p>Loading...</p>;
   if (!voucher) return <p>No voucher found!</p>;
