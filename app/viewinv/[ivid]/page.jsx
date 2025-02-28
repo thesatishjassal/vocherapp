@@ -182,22 +182,6 @@ freight_status}</b>
                 </table>
               </div>
             </div>
-            <div className="tm_invoice_footer my-2">
-                <div className="tm_right_footer">
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td className="tm_width_2 tm_primary_color tm_border_none tm_bold">
-                          Total Amount Without GST
-                        </td>
-                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {voucher.total_amount?.toFixed(2)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             {/* Buttons */}
             <div className="tm_invoice_btns tm_hide_print">
               <button
