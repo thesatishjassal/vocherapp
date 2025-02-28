@@ -17,7 +17,7 @@ const InvoucherDetail = () => {
   // Fetch and filter Invoucher by ID
   useEffect(() => {
     if (!ivid) return;
-
+    console.log(ivid)
     const fetchVoucher = async () => {
       try {
         const response = await axios.get(INVOCHER_API_URL, {
@@ -25,6 +25,7 @@ const InvoucherDetail = () => {
         });
 
         const filteredVoucher = response.data.find((v) => v.voucher_id === ivid);
+        console.log(filteredVoucher)
         if (filteredVoucher) {
           setVoucher(filteredVoucher);
 
