@@ -175,7 +175,7 @@ freight_status}</b>
                         Total Amount Without GST
                       </td>
                       <td className="tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {voucher.totalAmount?.toFixed(2)}
+                        {voucher.total_amount?.toFixed(2)}
                       </td>
                     </tr>
                   </tbody>
