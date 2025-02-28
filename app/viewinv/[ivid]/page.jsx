@@ -6,10 +6,12 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const API_URL = "https://api.panvic.in/invouchers";
+const CLIENT_API_URL = "https://api.panvic.in/clients";
 
 const InvoucherDetail = () => {
   const { ivid } = useParams();
   const [voucher, setVoucher] = useState(null);
+  const [clientDetails, setClientDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,9 +23,12 @@ const InvoucherDetail = () => {
           withCredentials: true,
         });
         setVoucher(response.data);
-        console.log(API_URL)
-        console.log(ivid)
-        console.log(voucher)
+
+        // क्लाइंट आईडी निकालना
+        const clientId = response.data?.clientId;
+        if (clientId) {
+          fetchClientDetails(clientId);
+        }
       } catch (error) {
         toast.error("Failed to load voucher details!");
       } finally {
@@ -31,8 +36,19 @@ const InvoucherDetail = () => {
       }
     };
 
+    const fetchClientDetails = async (clientId) => {
+      try {
+        const clientResponse = await axios.get(`${CLIENT_API_URL}/${clientId}`, {
+          withCredentials: true,
+        });
+        setClientDetails(clientResponse.data);
+      } catch (error) {
+        toast.error("Failed to load client details!");
+      }
+    };
+
     fetchVoucher();
-  }, [ivid, voucher]);
+  }, [ivid]);
 
   if (loading) return <p>Loading...</p>;
   if (!voucher) return <p>No voucher found!</p>;
@@ -78,6 +94,24 @@ const InvoucherDetail = () => {
                 </p>
               </div>
             </div>
+
+            {/* Client Details Section */}
+            {clientDetails && (
+              <div className="tm_invoice_head tm_mb10">
+                <div className="tm_invoice_left">
+                  <p className="tm_mb2">
+                    <b className="tm_primary_color">Client Details:</b>
+                  </p>
+                  <p>
+                    Name: <b>{clientDetails?.name}</b> <br />
+                    Email: <b>{clientDetails?.email}</b> <br />
+                    Phone: <b>{clientDetails?.phone}</b> <br />
+                    Address: <b>{clientDetails?.address}</b>
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="tm_invoice_head tm_mb10">
               <div className="tm_invoice_left">
                 <p className="tm_mb2">
