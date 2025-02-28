@@ -10,7 +10,7 @@ const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [selectedCustomer, setSelectedCustomer] = useState(null); // Changed to null for stricter validation
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [receiverInfo, setReceiverInfo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -44,7 +44,6 @@ const AddInvoice = () => {
     return `PLINV-${sequenceStr}`;
   };
 
-  // Fetch the last voucher data to generate a unique voucher ID and sequence
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
@@ -64,7 +63,7 @@ const AddInvoice = () => {
           const lastVoucher = vouchers.reduce((max, voucher) =>
             voucher.voucher_id > max.voucher_id ? voucher : max
           );
-          setVoucherId(lastVoucher.voucher_id + 1);
+          setVoucherId(lastVoucher.voucher_id); // Keep as string
 
           const lastSequence = vouchers
             .map((voucher) => {
@@ -74,12 +73,12 @@ const AddInvoice = () => {
             .reduce((max, num) => Math.max(max, num), 0);
           setVoucherSequence(lastSequence + 1);
         } else {
-          setVoucherId(1);
+          setVoucherId("1"); // Start with string "1"
           setVoucherSequence(1);
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error);
-        setVoucherId(1);
+        setVoucherId("1");
         setVoucherSequence(1);
         setSubmitStatus("Error fetching last voucher data, starting with 1");
       }
@@ -88,7 +87,6 @@ const AddInvoice = () => {
     fetchLastVoucherData();
   }, []);
 
-  // Toast notifications for submit status
   useEffect(() => {
     if (submitStatus) {
       if (submitStatus.includes("Error")) {
@@ -113,7 +111,6 @@ const AddInvoice = () => {
     }
   }, [submitStatus]);
 
-  // Handle form submission
   const handleSubmit = async () => {
     if (!selectedCustomer || !receiverInfo) {
       setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
@@ -138,11 +135,11 @@ const AddInvoice = () => {
 
     const voucherNumber = generateVoucherNumber();
     const invoiceData = {
-      voucher_id: voucherId,
+      voucher_id: String(voucherId), // Send as string
       voucher_number: voucherNumber,
       transaction_type: receiverInfo?.transactionType || "",
       voucher_date: new Date().toISOString().split("T")[0],
-      client_id: selectedCustomer?.id || 3, // Fallback to 3 if no ID (adjust as needed)
+      client_id: selectedCustomer?.id || "3",
       invoice_number: receiverInfo?.InvoiceNumber || "",
       invoice_date: receiverInfo?.InvoiceDate || "",
       mode_of_transport: receiverInfo?.ModeofTransport || "",
@@ -172,11 +169,15 @@ const AddInvoice = () => {
       }
 
       const invoiceResult = await invoiceResponse.json();
-      console.log(invoiceResult)
       console.log("Invoice submission response:", invoiceResult);
-      const newVoucherId = invoiceResult.voucher_id; // Assuming `id` is the key returned (adjust if needed)
-      console.log(newVoucherId)
-      // Step 2: Submit invoice items
+      const newVoucherId = invoiceResult.id; // Use id (e.g., 45) instead of voucher_id (e.g., "1")
+      console.log("New Voucher ID (from id):", newVoucherId);
+
+      if (!newVoucherId) {
+        throw new Error("No valid id returned from invoice creation");
+      }
+
+      // Step 2: Submit invoice items using invouchers.id
       console.log("Submitting Invoice Items:", invoiceItems);
       for (const item of invoiceItems) {
         const itemData = {
@@ -217,8 +218,7 @@ const AddInvoice = () => {
       // Success: Update state and notify user
       setSubmitStatus("Invoice and items submitted successfully!");
       setVoucherSequence((prev) => prev + 1);
-      setVoucherId((prev) => prev + 1);
-      // Optionally reset form fields here
+      setVoucherId(invoiceResult.voucher_id); // Keep voucher_id for next submission
       setSelectedCustomer(null);
       setReceiverInfo(null);
       setInvoiceItems([]);
@@ -350,7 +350,7 @@ const AddInvoice = () => {
             <span className="tm_btn_icon">
               <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
                 <path
-                  d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
+                  d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
                   fill="none"
                   stroke="currentColor"
                   strokeLinejoin="round"
@@ -369,7 +369,7 @@ const AddInvoice = () => {
                   strokeWidth="32"
                 ></rect>
                 <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
+                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 0 00-40 40v24"
                   fill="none"
                   stroke="currentColor"
                   strokeLinejoin="round"
