@@ -10,6 +10,8 @@ const AddInvoice = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(false);
   const [receiverInfo, setReceiverInfo] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const closeModal = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
@@ -29,6 +31,70 @@ const AddInvoice = () => {
   const handleConfirm = (data) => {
     setReceiverInfo(data);
     console.log("Received Data:", data);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedCustomer || !receiverInfo) {
+      console.log(selectedCustomer)
+      console.log(receiverInfo)
+      setSubmitStatus("Please complete all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    // Console log all required fields before submission
+    console.log("Voucher Number:", "#LL93784");
+    console.log("Transaction Type:", receiverInfo?.transactionType || "");
+    console.log("Voucher Date:", new Date().toISOString().split('T')[0]);
+    console.log("Client ID:", selectedCustomer?.id );
+    console.log("Invoice Number:", receiverInfo?.InvoiceNumber || "");
+    console.log("Invoice Date:", receiverInfo?.InvoiceDate || "");
+    console.log("Mode of Transport:", receiverInfo?.ModeofTransport || "");
+    console.log("Number of Packages:", parseInt(receiverInfo?.NumberofPackages) || 0);
+    console.log("Freight Status:", receiverInfo?.Freight || "");
+    console.log("Total Amount:", totalAmount);
+    console.log("Remarks:", document.querySelector(".tm_remarks_box")?.value || "");
+
+    // Prepare the data object based on the API structure
+    const invoiceData = {
+      voucher_id:5,
+      voucher_number: `LL93784`,
+      transaction_type: receiverInfo?.transactionType || "",
+      voucher_date: new Date().toISOString().split('T')[0], // Current date
+      client_id: selectedCustomer?.client_id || 3, // Assuming client object has an ID
+      invoice_number: receiverInfo?.InvoiceNumber || "",
+      invoice_date: receiverInfo?.InvoiceDate || "",
+      mode_of_transport: receiverInfo?.ModeofTransport || "",
+      number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
+      freight_status: receiverInfo?.Freight || "",
+      total_amount: totalAmount,
+      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery"
+    };
+  
+    try {
+      const response = await fetch("https://api.panvic.in/invouchers/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(invoiceData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setSubmitStatus("Invoice submitted successfully!");
+      console.log("Success:", result);
+    } catch (error) {
+      setSubmitStatus("Error submitting invoice: " + error.message);
+      console.error("Error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -244,7 +310,22 @@ const AddInvoice = () => {
             </span>
             <span className="tm_btn_text">Download</span>
           </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="tm_invoice_btn tm_color3"
+            // disabled={isSubmitting}
+          >
+            <span className="tm_btn_text">
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </span>
+          </button>
         </div>
+        {submitStatus && (
+          <div className={`alert ${submitStatus.includes("Error") ? "alert-danger" : "alert-success"} mt-2`}>
+            {submitStatus}
+          </div>
+        )}
       </div>
     </div>
   );
