@@ -72,32 +72,32 @@ const AddInvoice = () => {
               }}
             >
               {/* Left Column */}
-              <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">Supplier Details:</b>{" "}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print "
-                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                </p>
-                <p style={{ textAlign: "justify" }}>
-                  Name: <b>{selectedCustomer.client_name}</b> <br />
-                  Address: <b>{selectedCustomer.address}</b> <br />
-                  City: <b>{selectedCustomer.city}</b>, State:{" "}
-                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
-                  <b>{selectedCustomer.pincode}</b> <br />
-                  Phone: <b>{selectedCustomer.client_phone}</b>
-                  <br />
-                  GST NO: <b>{selectedCustomer.gst_number}</b>
-                </p>  
-                Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
-              </div>
+                <div
+                  className="tm_invoice_left mt-0"
+                  style={{ flex: 1, textAlign: "left" }}
+                >
+                  <p className="tm_mb2">
+                    <b className="tm_primary_color">Supplier Details:</b>{" "}
+                    <button
+                      type="button"
+                      className="btn modalaction_btn no-print "
+                      onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i>
+                    </button>
+                  </p>
+                  <p style={{ textAlign: "justify" }}>
+                    Name: <b>{selectedCustomer.client_name}</b> <br />
+                    Address: <b>{selectedCustomer.address}</b> <br />
+                    City: <b>{selectedCustomer.city}</b>, State:{" "}
+                    <b>{selectedCustomer.state}</b> | Pincode:{" "}
+                    <b>{selectedCustomer.pincode}</b> <br />
+                    Phone: <b>{selectedCustomer.client_phone}</b>
+                    <br />
+                    GST NO: <b>{selectedCustomer.gst_number}</b>
+                  </p>  
+                  Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
+                </div>
 
               {/* Right Column */}
               <div
