@@ -172,7 +172,7 @@ const AddInvoice = () => {
       });
 
       if (!invoiceResponse.ok) {
-        const errorData = await invoiceResponse.json(); // Capture detailed error response
+        const errorData = await invoiceResponse.json();
         console.error("Invoice submission failed:", {
           status: invoiceResponse.status,
           statusText: invoiceResponse.statusText,
@@ -184,42 +184,44 @@ const AddInvoice = () => {
       const invoiceResult = await invoiceResponse.json();
       const newVoucherId = invoiceResult.voucher_id;
 
-      // Step 2: Submit the items to the new endpoint
+      // Step 2: Submit each item individually to the items endpoint
       if (invoiceItems.length > 0) {
-        const itemsData = invoiceItems.map(item => ({
-          product_id: item.product_id,
-          item_name: item.item_name,
-          unit: item.unit,
-          rack_code: item.rack_code,
-          quantity: parseInt(item.quantity),
-          rate: parseFloat(item.rate),
-          discount_percentage: parseFloat(item.discount_percentage || 0),
-          amount: parseFloat(item.amount),
-          comments: item.comments || "",
-        }));
+        for (const item of invoiceItems) {
+          const itemData = {
+            product_id: item.product_id,
+            item_name: item.item_name,
+            unit: item.unit,
+            rack_code: item.rack_code,
+            quantity: parseInt(item.quantity),
+            rate: parseFloat(item.rate),
+            discount_percentage: parseFloat(item.discount_percentage || 0),
+            amount: parseFloat(item.amount),
+            comments: item.comments || "",
+          };
 
-        console.log("Submitting Items with Data:", itemsData);
+          console.log("Submitting Item:", itemData);
 
-        const itemsResponse = await fetch(`https://api.panvic.in/invouchers/${newVoucherId}/items`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(itemsData),
-        });
-
-        if (!itemsResponse.ok) {
-          const errorData = await itemsResponse.json(); // Capture detailed error response
-          console.error("Items submission failed:", {
-            status: itemsResponse.status,
-            statusText: itemsResponse.statusText,
-            errorData,
+          const itemsResponse = await fetch(`https://api.panvic.in/invouchers/${newVoucherId}/items`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(itemData), // Send single object, not array
           });
-          throw new Error(`HTTP error submitting items! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`);
-        }
 
-        const itemsResult = await itemsResponse.json();
-        console.log("Items submitted successfully:", itemsResult);
+          if (!itemsResponse.ok) {
+            const errorData = await itemsResponse.json();
+            console.error("Item submission failed:", {
+              status: itemsResponse.status,
+              statusText: itemsResponse.statusText,
+              errorData,
+            });
+            throw new Error(`HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`);
+          }
+
+          const itemsResult = await itemsResponse.json();
+          console.log("Item submitted successfully:", itemsResult);
+        }
       }
 
       setSubmitStatus("Invoice and items submitted successfully!");
