@@ -171,7 +171,7 @@ freight_status}</b>
                 <table>
                   <tbody>
                     <tr>
-                      <td className="tm_primary_color tm_border_none tm_bold">
+                      <td className="tm_primary_color tm_border_none tm_bold px-0">
                         Total Amount Without GST
                       </td>
                       <td className="tm_primary_color tm_text_right tm_border_none tm_bold">

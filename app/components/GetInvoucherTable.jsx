@@ -46,16 +46,16 @@ const GetInvoucherTable = () => {
             <tr>
               <th>ID</th>
               <th>Voucher Number</th>
-              <th>Transaction Type</th>
               <th>Voucher Date</th>
-              <th>Client ID</th>
+              <th>Transaction Type</th>
+              {/* <th>Client ID</th> */}
               <th>Invoice Number</th>
-              <th>Invoice Date</th>
+              {/* <th>Invoice Date</th> */}
               <th>Transport Mode</th>
               <th>Packages</th>
               <th>Freight Status</th>
               <th>Total Amount</th>
-              <th>Remarks</th>
+              {/* <th>Remarks</th> */}
               <th>Actions</th>
             </tr>
           </thead>
@@ -64,16 +64,16 @@ const GetInvoucherTable = () => {
               <tr key={voucher.voucher_id}>
                 <td>{voucher.voucher_id}</td>
                 <td>{voucher.voucher_number}</td>
-                <td>{voucher.transaction_type}</td>
                 <td>{voucher.voucher_date}</td>
-                <td>{voucher.client_id}</td>
+                <td>{voucher.transaction_type}</td>
+                {/* <td>{voucher.client_id}</td> */}
                 <td>{voucher.invoice_number}</td>
-                <td>{voucher.invoice_date}</td>
+                {/* <td>{voucher.invoice_date}</td> */}
                 <td>{voucher.mode_of_transport}</td>
                 <td>{voucher.number_of_packages}</td>
                 <td>{voucher.freight_status}</td>
                 <td>{voucher.total_amount}</td>
-                <td>{voucher.remarks}</td>
+                {/* <td>{voucher.remarks}</td> */}
                 <td>
                   <Link href={`/viewinv/${voucher.voucher_id}`}>
                     <u className="text-primary" title="View" style={{ cursor: "pointer" }}>
