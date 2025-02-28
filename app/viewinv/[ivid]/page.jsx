@@ -24,13 +24,13 @@ const InvoucherDetail = () => {
           withCredentials: true,
         });
 
-        const filteredVoucher = response.data.find((v) => v.id === ivid);
+        const filteredVoucher = response.data.find((v) => v.voucher_id === ivid);
         if (filteredVoucher) {
           setVoucher(filteredVoucher);
 
-          // Fetch Client details if clientId exists
-          if (filteredVoucher.clientId) {
-            fetchClient(filteredVoucher.clientId);
+          // Fetch Client details if client_id exists
+          if (filteredVoucher.client_id) {
+            fetchClient(filteredVoucher.client_id);
           }
         } else {
           toast.error("Voucher not found!");
@@ -43,16 +43,16 @@ const InvoucherDetail = () => {
     };
 
     fetchVoucher();
-  }, [ivid]);
+  }, [ivid , client, voucher]);
 
   // Fetch and filter Client by ID
-  const fetchClient = async (clientId) => {
+  const fetchClient = async (client_id) => {
     try {
       const response = await axios.get(CLIENT_API_URL, {
         withCredentials: true,
       });
 
-      const filteredClient = response.data.find((c) => c.id === clientId);
+      const filteredClient = response.data.find((c) => c.id === client_id);
       if (filteredClient) {
         setClient(filteredClient);
       } else {
