@@ -1,6 +1,8 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 import { toast } from "react-toastify";
 
 const API_URL = "https://api.panvic.in/invouchers";
@@ -29,18 +31,14 @@ const GetInvoucherTable = () => {
         <h6>Manage Invouchers</h6>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
           <input
             type="text"
             placeholder="Search by Client or Project"
             className="form-control w-25"
           />
           <div className="add_product">
-            <button
-              className="btn btn-primary m-3"
-            >
-              Add In-Vocuhers
-            </button>
+            <button className="btn btn-primary m-3">Add In-Vouchers</button>
           </div>
         </div>
         <table className="table align-items-center mb-0">
@@ -77,9 +75,11 @@ const GetInvoucherTable = () => {
                 <td>{voucher.total_amount}</td>
                 <td>{voucher.remarks}</td>
                 <td>
-                  <u className="text-primary" title="View" style={{ cursor: "pointer" }}>
-                    <i className="fas fa-eye"></i>
-                  </u>
+                  <Link href={`/viewinv/${voucher.voucher_id}`}>
+                    <u className="text-primary" title="View" style={{ cursor: "pointer" }}>
+                      <i className="fas fa-eye"></i>
+                    </u>
+                  </Link>
                 </td>
               </tr>
             ))}
