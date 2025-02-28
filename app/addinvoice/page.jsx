@@ -10,7 +10,7 @@ const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [selectedCustomer, setSelectedCustomer] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null); // Changed to null for stricter validation
   const [receiverInfo, setReceiverInfo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -31,7 +31,6 @@ const AddInvoice = () => {
   const handleClientConfirm = (selectedClient) => {
     console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
-    console.log(selectedClient);
   };
 
   const handleConfirm = (data) => {
@@ -45,6 +44,7 @@ const AddInvoice = () => {
     return `PLINV-${sequenceStr}`;
   };
 
+  // Fetch the last voucher data to generate a unique voucher ID and sequence
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
@@ -88,6 +88,7 @@ const AddInvoice = () => {
     fetchLastVoucherData();
   }, []);
 
+  // Toast notifications for submit status
   useEffect(() => {
     if (submitStatus) {
       if (submitStatus.includes("Error")) {
@@ -112,16 +113,23 @@ const AddInvoice = () => {
     }
   }, [submitStatus]);
 
+  // Handle form submission
   const handleSubmit = async () => {
     if (!selectedCustomer || !receiverInfo) {
+      setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
       console.log("Missing required fields:", { selectedCustomer, receiverInfo });
-      setSubmitStatus("Please complete all required fields");
       return;
     }
 
     if (voucherId === null || voucherSequence === null) {
-      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
       setSubmitStatus("Voucher data not yet loaded, please wait");
+      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
+      return;
+    }
+
+    if (invoiceItems.length === 0) {
+      setSubmitStatus("Please add at least one item to the invoice");
+      console.log("No invoice items provided");
       return;
     }
 
@@ -129,29 +137,12 @@ const AddInvoice = () => {
     setSubmitStatus(null);
 
     const voucherNumber = generateVoucherNumber();
-
-    console.log("Submitting Invoice with Data:", {
-      voucherId,
-      voucherNumber,
-      transactionType: receiverInfo?.transactionType || "",
-      voucherDate: new Date().toISOString().split('T')[0],
-      clientId: selectedCustomer?.id,
-      invoiceNumber: receiverInfo?.InvoiceNumber || "",
-      invoiceDate: receiverInfo?.InvoiceDate || "",
-      modeOfTransport: receiverInfo?.ModeofTransport || "",
-      numberOfPackages: parseInt(receiverInfo?.NumberofPackages) || 0,
-      freightStatus: receiverInfo?.Freight || "",
-      totalAmount,
-      remarks: document.querySelector(".tm_remarks_box")?.value || "",
-      invoiceItems,
-    });
-
     const invoiceData = {
       voucher_id: voucherId,
       voucher_number: voucherNumber,
       transaction_type: receiverInfo?.transactionType || "",
-      voucher_date: new Date().toISOString().split('T')[0],
-      client_id: selectedCustomer?.id || 3,
+      voucher_date: new Date().toISOString().split("T")[0],
+      client_id: selectedCustomer?.id || 3, // Fallback to 3 if no ID (adjust as needed)
       invoice_number: receiverInfo?.InvoiceNumber || "",
       invoice_date: receiverInfo?.InvoiceDate || "",
       mode_of_transport: receiverInfo?.ModeofTransport || "",
@@ -162,7 +153,8 @@ const AddInvoice = () => {
     };
 
     try {
-      // Step 1: Submit the invoice data
+      // Step 1: Submit the invoice
+      console.log("Submitting Invoice Data:", invoiceData);
       const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
         method: "POST",
         headers: {
@@ -173,64 +165,66 @@ const AddInvoice = () => {
 
       if (!invoiceResponse.ok) {
         const errorData = await invoiceResponse.json();
-        console.error("Invoice submission failed:", {
-          status: invoiceResponse.status,
-          statusText: invoiceResponse.statusText,
-          errorData,
-        });
-        throw new Error(`HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`);
+        console.error("Invoice submission failed:", errorData);
+        throw new Error(
+          `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
+        );
       }
 
       const invoiceResult = await invoiceResponse.json();
-      const newVoucherId = invoiceResult.voucher_id;
+      console.log("Invoice submission response:", invoiceResult);
+      const newVoucherId = invoiceResult.id; // Assuming `id` is the key returned (adjust if needed)
 
-      // Step 2: Submit each item individually to the items endpoint
-      if (invoiceItems.length > 0) {
-        for (const item of invoiceItems) {
-          const itemData = {
-            product_id: item.product_id,
-            item_name: item.item_name,
-            unit: item.unit,
-            rack_code: item.rack_code,
-            quantity: parseInt(item.quantity),
-            rate: parseFloat(item.rate),
-            discount_percentage: parseFloat(item.discount_percentage || 0),
-            amount: parseFloat(item.amount),
-            comments: item.comments || "",
-          };
+      // Step 2: Submit invoice items
+      console.log("Submitting Invoice Items:", invoiceItems);
+      for (const item of invoiceItems) {
+        const itemData = {
+          product_id: item.product_id,
+          item_name: item.item_name,
+          unit: item.unit,
+          rack_code: item.rack_code,
+          quantity: parseInt(item.quantity),
+          rate: parseFloat(item.rate),
+          discount_percentage: parseFloat(item.discount_percentage || 0),
+          amount: parseFloat(item.amount),
+          comments: item.comments || "",
+        };
 
-          console.log("Submitting Item:", itemData);
+        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+        console.log("Submitting item to:", itemUrl, "with data:", itemData);
 
-          const itemsResponse = await fetch(`https://api.panvic.in/invouchers/${newVoucherId}/items`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(itemData), // Send single object, not array
-          });
+        const itemsResponse = await fetch(itemUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(itemData),
+        });
 
-          if (!itemsResponse.ok) {
-            const errorData = await itemsResponse.json();
-            console.error("Item submission failed:", {
-              status: itemsResponse.status,
-              statusText: itemsResponse.statusText,
-              errorData,
-            });
-            throw new Error(`HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`);
-          }
-
-          const itemsResult = await itemsResponse.json();
-          console.log("Item submitted successfully:", itemsResult);
+        if (!itemsResponse.ok) {
+          const errorData = await itemsResponse.json();
+          console.error("Item submission failed:", errorData);
+          throw new Error(
+            `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
+          );
         }
+
+        const itemsResult = await itemsResponse.json();
+        console.log("Item submitted successfully:", itemsResult);
       }
 
+      // Success: Update state and notify user
       setSubmitStatus("Invoice and items submitted successfully!");
-      console.log("Invoice Success:", invoiceResult);
       setVoucherSequence((prev) => prev + 1);
       setVoucherId((prev) => prev + 1);
+      // Optionally reset form fields here
+      setSelectedCustomer(null);
+      setReceiverInfo(null);
+      setInvoiceItems([]);
+      setTotalAmount(0);
     } catch (error) {
       setSubmitStatus("Error submitting invoice or items: " + error.message);
-      console.error("Submission Error:", error.message);
+      console.error("Submission Error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -260,60 +254,39 @@ const AddInvoice = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
-                  Transaction Types:
-                  <b>{receiverInfo && receiverInfo.transactionType}</b>
+                  Transaction Types: <b>{receiverInfo?.transactionType || "N/A"}</b>
                 </p>
                 <p className="tm_invoice_date tm_m0">
-                  Date: <b className="tm_primary_color">01.07.2022</b>
+                  Date: <b className="tm_primary_color">{new Date().toLocaleDateString()}</b>
                 </p>
               </div>
             </div>
-            <div
-              className="tm_invoice_head tm_mb10"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
+            <div className="tm_invoice_head tm_mb10" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Supplier Details:</b>{" "}
                   <button
                     type="button"
-                    className="btn modalaction_btn no-print "
+                    className="btn modalaction_btn no-print"
                     onClick={() => setShowModalClientDetails(true)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
                 <p style={{ textAlign: "justify" }}>
-                  Name: <b>{selectedCustomer.client_name}</b> <br />
-                  Address: <b>{selectedCustomer.address}</b> <br />
-                  City: <b>{selectedCustomer.city}</b>, State:{" "}
-                  <b>{selectedCustomer.state}</b> | Pincode:{" "}
-                  <b>{selectedCustomer.pincode}</b> <br />
-                  Phone: <b>{selectedCustomer.client_phone}</b>
-                  <br />
-                  GST NO: <b>{selectedCustomer.gst_number}</b>
+                  Name: <b>{selectedCustomer?.client_name || "Not Selected"}</b> <br />
+                  Address: <b>{selectedCustomer?.address || "N/A"}</b> <br />
+                  City: <b>{selectedCustomer?.city || "N/A"}</b>, State: <b>{selectedCustomer?.state || "N/A"}</b> | Pincode: <b>{selectedCustomer?.pincode || "N/A"}</b> <br />
+                  Phone: <b>{selectedCustomer?.client_phone || "N/A"}</b> <br />
+                  GST NO: <b>{selectedCustomer?.gst_number || "N/A"}</b>
                 </p>
-                Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
+                Freight: <b>{receiverInfo?.Freight || "N/A"}</b>
               </div>
-
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
+              <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Receiver Details:</b>
                   {InfoModal && (
-                    <ReciverDetails
-                      setInfoModal={setInfoModal}
-                      onConfirm={handleConfirm}
-                    />
+                    <ReciverDetails setInfoModal={setInfoModal} onConfirm={handleConfirm} />
                   )}
                   <button
                     type="button"
@@ -323,15 +296,10 @@ const AddInvoice = () => {
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                Invoice Number:{" "}
-                <b>{receiverInfo && receiverInfo.InvoiceNumber}</b> <br />
-                Invoice Date: <b>{receiverInfo && receiverInfo.InvoiceDate}</b>{" "}
-                <br />
-                Mode of Transport:{" "}
-                <b>{receiverInfo && receiverInfo.ModeofTransport}</b> <br />
-                Number of Packages:{" "}
-                <b>{receiverInfo && receiverInfo.NumberofPackages}</b> <br />
-                <br />
+                Invoice Number: <b>{receiverInfo?.InvoiceNumber || "N/A"}</b> <br />
+                Invoice Date: <b>{receiverInfo?.InvoiceDate || "N/A"}</b> <br />
+                Mode of Transport: <b>{receiverInfo?.ModeofTransport || "N/A"}</b> <br />
+                Number of Packages: <b>{receiverInfo?.NumberofPackages || "N/A"}</b> <br />
               </div>
             </div>
             <p className="tm_mb2">
@@ -340,15 +308,9 @@ const AddInvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <InvoucherTable
-                    onTotalAmountChange={handleTotalAmountChange}
-                  />
+                  <InvoucherTable onTotalAmountChange={handleTotalAmountChange} />
                   {showModalClientDetails && (
-                    <CustomerModal
-                      onClose={closeModal}
-                      client={showModalClientDetails}
-                      onConfirm={handleClientConfirm}
-                    />
+                    <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
                   )}
                 </div>
               </div>
@@ -364,7 +326,6 @@ const AddInvoice = () => {
                     cols="50"
                   ></textarea>
                 </div>
-
                 <div className="tm_right_footer">
                   <table>
                     <tbody>
@@ -384,17 +345,9 @@ const AddInvoice = () => {
           </div>
         </div>
         <div className="tm_invoice_btns tm_hide_print">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
+          <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
             <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
                 <path
                   d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
                   fill="none"
@@ -428,11 +381,7 @@ const AddInvoice = () => {
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
                 <path
                   d="M320 336h76c55 0 100-21.21 100-75.6s-53-73.47-96-75.6C391.11 99.74 329 48 256 48c-69 0-113.44 45.79-128 91.2-60 5.7-112 35.88-112 98.4S70 336 136 336h56M192 400.1l64 63.9 64-63.9M256 224v224.03"
                   fill="none"
@@ -449,12 +398,12 @@ const AddInvoice = () => {
             type="button"
             onClick={handleSubmit}
             className="tm_invoice_btn tm_color1"
-            // disabled={isSubmitting}
+            disabled={isSubmitting}
           >
             <span className="tm_btn_icon">
               <i className="fa-solid fa-floppy-disk"></i>
             </span>
-            <span className="tm_btn_text">Submit</span>
+            <span className="tm_btn_text">{isSubmitting ? "Submitting..." : "Submit"}</span>
           </button>
         </div>
         <ToastContainer />
