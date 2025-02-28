@@ -217,8 +217,8 @@ const AddInvoice = () => {
 
       // Success: Update state and notify user
       setSubmitStatus("Invoice and items submitted successfully!");
-      setVoucherSequence((prev) => prev + 1);
-      setVoucherId(invoiceResult.voucher_id); // Keep voucher_id for next submission
+      setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
+      setVoucherId((prev) => (prev !== null ? String(Number(prev) + 1) : "1"));
       setSelectedCustomer(null);
       setReceiverInfo(null);
       setInvoiceItems([]);
