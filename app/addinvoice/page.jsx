@@ -172,9 +172,10 @@ const AddInvoice = () => {
       }
 
       const invoiceResult = await invoiceResponse.json();
+      console.log(invoiceResult)
       console.log("Invoice submission response:", invoiceResult);
-      const newVoucherId = invoiceResult.id; // Assuming `id` is the key returned (adjust if needed)
-
+      const newVoucherId = invoiceResult.voucher_id; // Assuming `id` is the key returned (adjust if needed)
+      console.log(newVoucherId)
       // Step 2: Submit invoice items
       console.log("Submitting Invoice Items:", invoiceItems);
       for (const item of invoiceItems) {
