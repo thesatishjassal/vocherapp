@@ -3,6 +3,8 @@ import InvoucherTable from "../components/InvoucherTable";
 import ReciverDetails from "../components/Reciverdeatails";
 import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
+import { ToastContainer, toast } from "react-toastify"; // Import react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
 
 const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -69,7 +71,7 @@ const AddInvoice = () => {
 
           // Find the highest sequence number from voucher_number
           const lastSequence = vouchers
-            .map(voucher => {
+            .map((voucher) => {
               const match = voucher.voucher_number.match(/^PLINV-(\d+)$/);
               return match ? parseInt(match[1], 10) : 0;
             })
@@ -89,6 +91,31 @@ const AddInvoice = () => {
 
     fetchLastVoucherData();
   }, []);
+
+  // Effect to display toast notifications when submitStatus changes
+  useEffect(() => {
+    if (submitStatus) {
+      if (submitStatus.includes("Error")) {
+        toast.error(submitStatus, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else {
+        toast.success(submitStatus, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    }
+  }, [submitStatus]);
 
   const handleSubmit = async () => {
     if (!selectedCustomer || !receiverInfo) {
@@ -378,19 +405,15 @@ const AddInvoice = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="tm_invoice_btn tm_color3"
+            className="tm_invoice_btn tm_color1"
             // disabled={isSubmitting}
           >
-            <span className="tm_btn_text">
-              {isSubmitting ? "Submitting..." : "Submit"}
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-floppy-disk"></i>
             </span>
+            <span className="tm_btn_text">Submit</span>
           </button>
         </div>
-        {submitStatus && (
-          <div className={`alert ${submitStatus.includes("Error") ? "alert-danger" : "alert-success"} mt-2`}>
-            {submitStatus}
-          </div>
-        )}
       </div>
     </div>
   );
