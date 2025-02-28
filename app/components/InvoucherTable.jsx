@@ -1,16 +1,17 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
-import FindProduct from "../components/FindPropduct";
+import FindProduct from "../components/FindPropduct"; // Corrected typo from FindPropduct
 
 const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
-    itemCode: "",
-    itemName: "",
-    qty: "",
+    product_id: "",
+    item_name: "",
+    quantity: "",
     unit: "",
-    rackCode: "",
+    rack_code: "",
     rate: "",
-    discount: "",
+    discount_percentage: "",
     amount: "",
     comments: "",
   });
@@ -18,26 +19,26 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const inputRefs = {
-    itemCode: useRef(null),
-    itemName: useRef(null),
-    qty: useRef(null),
+    product_id: useRef(null),
+    item_name: useRef(null),
+    quantity: useRef(null),
     unit: useRef(null),
-    rackCode: useRef(null),
+    rack_code: useRef(null),
     rate: useRef(null),
-    discount: useRef(null),
+    discount_percentage: useRef(null),
     comments: useRef(null),
   };
 
-  const calculateAmount = (qty, rate, discount) => {
-    const discountAmount = (rate * qty * (discount || 0)) / 100;
-    return qty * rate - discountAmount;
+  const calculateAmount = (quantity, rate, discount_percentage) => {
+    const discountAmount = (rate * quantity * (discount_percentage || 0)) / 100;
+    return quantity * rate - discountAmount;
   };
 
   const handleAddRow = () => {
-    const { qty, rate, discount } = newRow;
+    const { quantity, rate, discount_percentage } = newRow;
 
-    if (newRow.itemCode && newRow.itemName && qty && rate) {
-      const amount = calculateAmount(qty, rate, discount);
+    if (newRow.product_id && newRow.item_name && quantity && rate) {
+      const amount = calculateAmount(quantity, rate, discount_percentage);
 
       const updatedRows = [
         ...rows,
@@ -53,24 +54,23 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal + amount;
         if (onTotalAmountChange) {
-          // Pass both the updated total and the rows to the parent
           onTotalAmountChange(updatedTotal, updatedRows);
         }
         return updatedTotal;
       });
 
       setNewRow({
-        itemCode: "",
-        itemName: "",
-        qty: "",
+        product_id: "",
+        item_name: "",
+        quantity: "",
         unit: "",
-        rackCode: "",
+        rack_code: "",
         rate: "",
-        discount: "",
+        discount_percentage: "",
         amount: "",
         comments: "",
       });
-      inputRefs.itemCode.current.focus();
+      inputRefs.product_id.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
@@ -89,7 +89,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["itemCode", "itemName"].includes(field) && value.trim()) {
+    if (["product_id", "item_name"].includes(field) && value.trim()) {
       setShowModal(true);
       // filterProducts(value); // Assuming this function exists elsewhere
     }
@@ -98,14 +98,15 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const handleProductSelect = (product) => {
     setNewRow((prev) => ({
       ...prev,
-      itemCode: product.value,
-      itemName: product.name,
+      product_id: product.product_id, // Only set fields that shouldn't be calculated or manually entered
+      item_name: product.item_name,
       unit: product.unit,
-      rackCode: product.rackCode,
+      rack_code: product.rack_code,
+      // Do not set quantity, rate, discount_percentage, amount, or comments from FindProduct
     }));
     setShowModal(false);
     setTimeout(() => {
-      inputRefs.qty.current?.focus();
+      inputRefs.quantity.current?.focus(); // Focus on quantity for manual input
     }, 0);
   };
 
@@ -115,13 +116,13 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         <thead>
           <tr>
             <th>SR NO</th>
-            <th>Item Code</th>
+            <th>Product ID</th>
             <th>Item Name</th>
             <th>Unit</th>
             <th>Rack Code</th>
-            <th>Qty</th>
+            <th>Quantity</th>
             <th>Rate</th>
-            <th>Discount (%)</th>
+            <th>Disc %</th>
             <th>Amount</th>
             <th>Comments</th>
           </tr>
@@ -130,13 +131,13 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
           {rows.map((row, index) => (
             <tr key={row.id}>
               <td>{index + 1}</td>
-              <td>{row.itemCode}</td>
-              <td>{row.itemName}</td>
+              <td>{row.product_id}</td>
+              <td>{row.item_name}</td>
               <td>{row.unit}</td>
-              <td>{row.rackCode}</td>
-              <td>{row.qty}</td>
+              <td>{row.rack_code}</td>
+              <td>{row.quantity}</td>
               <td>{row.rate}</td>
-              <td>{row.discount}</td>
+              <td>{row.discount_percentage}</td>
               <td>{row.amount.toFixed(2)}</td>
               <td>{row.comments}</td>
             </tr>
@@ -146,25 +147,25 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="text"
-                name="itemCode"
-                value={newRow.itemCode}
-                onChange={(e) => handleFieldChange("itemCode", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                placeholder="Enter item code"
+                name="product_id"
+                value={newRow.product_id}
+                onChange={(e) => handleFieldChange("product_id", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "item_name")}
+                placeholder="Product ID"
                 className="form-control input-small"
-                ref={inputRefs.itemCode}
+                ref={inputRefs.product_id}
               />
             </td>
             <td>
               <input
                 type="text"
-                name="itemName"
-                value={newRow.itemName}
-                onChange={(e) => handleFieldChange("itemName", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "qty")}
-                placeholder="Enter item name"
+                name="item_name"
+                value={newRow.item_name}
+                onChange={(e) => handleFieldChange("item_name", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "quantity")}
+                placeholder="Item Name"
                 className="form-control"
-                ref={inputRefs.itemName}
+                ref={inputRefs.item_name}
               />
             </td>
             <td>
@@ -173,7 +174,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
                 name="unit"
                 value={newRow.unit}
                 onChange={(e) => handleFieldChange("unit", e.target.value)}
-                placeholder="Enter unit"
+                placeholder="Unit"
                 className="form-control input-small"
                 ref={inputRefs.unit}
                 disabled
@@ -182,25 +183,25 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="text"
-                name="rackCode"
-                value={newRow.rackCode}
-                onChange={(e) => handleFieldChange("rackCode", e.target.value)}
+                name="rack_code"
+                value={newRow.rack_code}
+                onChange={(e) => handleFieldChange("rack_code", e.target.value)}
                 placeholder="Rack Code"
                 className="form-control input-small"
-                ref={inputRefs.rackCode}
+                ref={inputRefs.rack_code}
                 disabled
               />
             </td>
             <td>
               <input
                 type="number"
-                name="qty"
-                value={newRow.qty}
-                onChange={(e) => handleFieldChange("qty", e.target.value)}
+                name="quantity"
+                value={newRow.quantity}
+                onChange={(e) => handleFieldChange("quantity", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "rate")}
                 placeholder="Qty"
                 className="form-control input-small"
-                ref={inputRefs.qty}
+                ref={inputRefs.quantity}
               />
             </td>
             <td>
@@ -209,7 +210,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
                 name="rate"
                 value={newRow.rate}
                 onChange={(e) => handleFieldChange("rate", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "discount")}
+                onKeyDown={(e) => handleKeyDown(e, "discount_percentage")}
                 placeholder="Rate"
                 className="form-control input-small"
                 ref={inputRefs.rate}
@@ -218,13 +219,13 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="number"
-                name="discount"
-                value={newRow.discount}
-                onChange={(e) => handleFieldChange("discount", e.target.value)}
+                name="discount_percentage"
+                value={newRow.discount_percentage}
+                onChange={(e) => handleFieldChange("discount_percentage", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "comments")}
-                placeholder="Discount (%)"
+                placeholder="Disc %"
                 className="form-control input-small"
-                ref={inputRefs.discount}
+                ref={inputRefs.discount_percentage}
               />
             </td>
             <td>
@@ -257,8 +258,8 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         showModal={showModal}
         setShowModal={setShowModal}
         productList={{
-          PassItemCode: newRow.itemCode.toLowerCase(),
-          PassItemName: newRow.itemName.toLowerCase(),
+          PassItemCode: newRow.product_id.toLowerCase(),
+          PassItemName: newRow.item_name.toLowerCase(),
         }}
         handleProductSelect={handleProductSelect}
       />

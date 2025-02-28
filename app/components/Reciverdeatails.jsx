@@ -1,3 +1,4 @@
+"use client"; // Added "use client" directive for Next.js
 import React, { useState } from "react";
 
 const ReciverDetails = ({ setInfoModal, onConfirm }) => {
@@ -20,8 +21,8 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onConfirm(formData); // ✅ Send data to parent component
-    setInfoModal(false); // Close modal
+    onConfirm(formData);
+    setInfoModal(false);
   };
 
   return (
@@ -52,12 +53,16 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                 ></button>
               </div>
               <div className="modal-body py-3">
-                <form onSubmit={handleSubmit} className="row g-2">
+                <form onSubmit={handleSubmit} className="row g-3"> {/* Increased gap with g-3 */}
                   <fieldset className="col-12">
                     <div className="row">
-                      <div className="col-md-6">
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="InvoiceNumber" className="form-label">
+                          Invoice Number
+                        </label>
                         <input
                           type="text"
+                          id="InvoiceNumber"
                           name="InvoiceNumber"
                           placeholder="Invoice Number"
                           value={formData.InvoiceNumber}
@@ -66,20 +71,27 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                           required
                         />
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="InvoiceDate" className="form-label">
+                          Invoice Date
+                        </label>
                         <input
                           type="date"
+                          id="InvoiceDate"
                           name="InvoiceDate"
-                          placeholder="Invoice Date"
                           value={formData.InvoiceDate}
                           onChange={handleChange}
                           className="form-control"
                           required
                         />
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="ModeofTransport" className="form-label">
+                          Mode of Transport
+                        </label>
                         <input
                           type="text"
+                          id="ModeofTransport"
                           name="ModeofTransport"
                           placeholder="Mode of Transport"
                           value={formData.ModeofTransport}
@@ -88,9 +100,13 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                           required
                         />
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="NumberofPackages" className="form-label">
+                          Number of Packages
+                        </label>
                         <input
                           type="number"
+                          id="NumberofPackages"
                           name="NumberofPackages"
                           placeholder="Number of Packages"
                           value={formData.NumberofPackages}
@@ -99,32 +115,41 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                           required
                         />
                       </div>
-                    </div>
-                    <div className="col-md-6">
-                      <select
-                        id="Freight"
-                        name="Freight"
-                        value={formData.Freight}
-                        onChange={handleChange}
-                        className="form-select"
-                        required
-                      >
-                        <option value="Paid">Paid</option>
-                        <option value="To Pay">To Pay</option>
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <select
-                        id="transactionType"
-                        className="form-select"
-                        name="transactionType"
-                        value={formData.transactionType}
-                        onChange={handleChange}
-                      >
-                        <option value="Transfer">Transfer</option>
-                        <option value="Return">Return</option>
-                        <option value="ToCustomer">To Customer</option>
-                      </select>
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="Freight" className="form-label">
+                          Freight
+                        </label>
+                        <select
+                          id="Freight"
+                          name="Freight"
+                          value={formData.Freight}
+                          onChange={handleChange}
+                          className="form-select"
+                          required
+                        >
+                          <option value="">Select Freight</option>
+                          <option value="Paid">Paid</option>
+                          <option value="To Pay">To Pay</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4 col-sm-6 mb-2"> {/* Adjusted to col-md-4 */}
+                        <label htmlFor="transactionType" className="form-label">
+                          Transaction Type
+                        </label>
+                        <select
+                          id="transactionType"
+                          name="transactionType"
+                          value={formData.transactionType}
+                          onChange={handleChange}
+                          className="form-select"
+                          required
+                        >
+                          <option value="">Select Type</option>
+                          <option value="Transfer">Transfer</option>
+                          <option value="Return">Return</option>
+                          <option value="ToCustomer">To Customer</option>
+                        </select>
+                      </div>
                     </div>
                   </fieldset>
 
@@ -138,7 +163,7 @@ const ReciverDetails = ({ setInfoModal, onConfirm }) => {
                       >
                         Cancel
                       </button>
-                      <button type="submit" className="btn btn-success">
+                      <button type="submit" className="btn btn-success ms-2">
                         Confirm & Update
                       </button>
                     </div>

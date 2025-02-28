@@ -25,6 +25,28 @@ const GetInvoucherTable = () => {
     fetchInvouchers();
   }, []);
 
+  const handleDelete = async (voucherId) => {
+    if (!confirm("Are you sure you want to delete this voucher?")) return; // Confirmation prompt
+
+    try {
+      const response = await axios.delete(`${API_URL}/${voucherId}`, {
+        withCredentials: true, // Maintain session/cookies if applicable
+      });
+
+      if (response.status === 204 || response.status === 200) { // Assuming 204 No Content or 200 OK for DELETE success
+        setInvouchers((prevInvouchers) =>
+          prevInvouchers.filter((voucher) => voucher.voucher_id !== voucherId)
+        );
+        toast.success("Voucher deleted successfully!");
+      } else {
+        throw new Error("Unexpected response status");
+      }
+    } catch (error) {
+      toast.error(`Failed to delete voucher: ${error.message}`);
+      console.error("Delete error:", error);
+    }
+  };
+
   return (
     <div className="card">
       <div className="card-header pb-0">
@@ -38,7 +60,9 @@ const GetInvoucherTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <a className="btn btn-primary m-3"  href="/addinvoice">Add In-Vouchers</a>
+            <a className="btn btn-primary m-3" href="/addinvoice">
+              Add In-Vouchers
+            </a>
           </div>
         </div>
         <table className="table align-items-center mb-0">
@@ -76,10 +100,18 @@ const GetInvoucherTable = () => {
                 {/* <td>{voucher.remarks}</td> */}
                 <td>
                   <Link href={`/viewinv/${voucher.voucher_id}`}>
-                    <u className="text-primary" title="View" style={{ cursor: "pointer" }}>
+                    <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
                       <i className="fas fa-eye"></i>
                     </u>
                   </Link>
+                  <u
+                    className="text-danger"
+                    title="Delete"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDelete(voucher.voucher_id)}
+                  >
+                    <i className="fas fa-trash"></i>
+                  </u>
                 </td>
               </tr>
             ))}

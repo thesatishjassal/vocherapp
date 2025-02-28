@@ -1,8 +1,9 @@
+"use client";
 import React, { useState } from "react";
 import Select from "react-select";
 
-const FindProduct = ({ showModal, setShowModal, handleProductSelect , productList }) => {
-  console.log(productList)
+const FindProduct = ({ showModal, setShowModal, handleProductSelect, productList }) => {
+  console.log(productList);
   const [selectedCode, setSelectedCode] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
 
@@ -10,58 +11,83 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect , productLis
     setShowModal(false); // Close modal when clicking close button
   };
 
+  // Updated items array to match the JSON structure
   const items = [
-    { code: "P001", name: "ORIENT 1200MM AEROQUIET FAN CHECKED FINISH", unit: "pcs", rackCode: "A1, A2", mrp: 2500, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+1200MM+AEROQUIET+FAN+CHECKED+FINISH" },
-    { code: "P002", name: "ORIENT 1200MM AEROQUIET FAN ROASTED COFFE", unit: "pcs", rackCode: "A2", mrp: 2600, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+1200MM+AEROQUIET+FAN+ROASTED+COFFE" },
-    { code: "P003", name: "ORIENT 200MM 3-1DE VENTILATION FAN GREY-3110810417110", unit: "box", rackCode: "A3", mrp: 3200, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+200MM+VENTILATION+FAN" },
-    { code: "P004", name: "ORIENT 450MM TORNADO WALL", unit: "pcs", rackCode: "A4", mrp: 1800, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+450MM+TORNADO+WALL" },
-    { code: "P005", name: "ORIENT AEON BLDC MGM GREY 1200MM", unit: "pcs", rackCode: "A5", mrp: 3500, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEON+BLDC+MGM+GREY" },
-    { code: "P006", name: "ORIENT AEROLITE BROWN 1200MM", unit: "pcs", rackCode: "A6", mrp: 2300, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROLITE+BROWN+1200MM" },
-    { code: "P007", name: "ORIENT AEROQUIET FAN 48 1200MM", unit: "pcs", rackCode: "A7", mrp: 2700, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROQUIET+FAN+48+1200MM" },
-    { code: "P008", name: "ORIENT AEROSENSE ASHWOOD BLDC FAN 1200MM", unit: "pcs", rackCode: "A8", mrp: 2900, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROSENSE+ASHWOOD+BLDC+FAN" },
-    { code: "P009", name: "ORIENT AEROSENSE BROWN FAN 1200MM", unit: "pcs", rackCode: "A9", mrp: 2800, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROSENSE+BROWN+FAN" },
-    { code: "P010", name: "ORIENT AEROSENSE DNGLD GOLD 1200MM", unit: "box", rackCode: "A10", mrp: 3500, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROSENSE+DNGLD+GOLD" },
-    { code: "P011", name: "ORIENT AEROSENSE WHITE FAN 1200MM", unit: "pcs", rackCode: "A11", mrp: 3000, brand: "ORIENT", image: "https://picsum.photos/150/150?text=ORIENT+AEROSENSE+WHITE+FAN" },
-    { code: "P012", name: "PHILIPS GRANDEUR 3HEAD PENDANT 58072", unit: "pcs", rackCode: "A12", mrp: 1500, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+GRANDEUR+3HEAD+PENDANT" },
-    { code: "P013", name: "PHILIPS HAMRAA WALL LAMP NICKEL 1*60W 230V", unit: "box", rackCode: "A13", mrp: 2200, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HAMRAA+WALL+LAMP" },
-    { code: "P014", name: "PHILIPS HEDGE PEDESTAL RUST 1X60W 230V", unit: "pcs", rackCode: "A14", mrp: 2400, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HEDGE+PEDESTAL+RUST" },
-    { code: "P015", name: "PHILIPS HUE 10W E-27 LAMP", unit: "pcs", rackCode: "A15", mrp: 800, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+10W+E-27+LAMP" },
-    { code: "P016", name: "PHILIPS HUE BRIDGE", unit: "pcs", rackCode: "A16", mrp: 1200, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+BRIDGE" },
-    { code: "P017", name: "PHILIPS HUE COL LIGHTSTRIP PLUS INDIA BASE 2 MTR", unit: "box", rackCode: "A17", mrp: 3500, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+COL+LIGHTSTRIP" },
-    { code: "P018", name: "PHILIPS HUE COL LIGHTSTRIP PLUS INDIA EXT 1 MTR", unit: "pcs", rackCode: "A18", mrp: 1800, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+COL+LIGHTSTRIP+EXT" },
-    { code: "P019", name: "PHILIPS HUE DIM SWITCH", unit: "pcs", rackCode: "A19", mrp: 1500, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+DIM+SWITCH" },
-    { code: "P020", name: "PHILIPS HUE DLWA GARNEA 150MM DOWNLIGHTS 51108", unit: "box", rackCode: "A20", mrp: 4500, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+DLWA+GARNEA" },
-    { code: "P021", name: "PHILIPS HUE E-27 FIXTURE", unit: "pcs", rackCode: "A21", mrp: 950, brand: "PHILIPS", image: "https://picsum.photos/150/150?text=PHILIPS+HUE+E-27+FIXTURE" }
-];
-
+    {
+      product_id: "P001",
+      item_name: "ORIENT 1200MM AEROQUIET FAN CHECKED FINISH",
+      unit: "pcs",
+      rack_code: "A1, A2",
+      quantity: 5,
+      rate: 2500,
+      discount_percentage: 0,
+      amount: 12500,
+      comments: "In stock",
+    },
+    {
+      product_id: "P002",
+      item_name: "ORIENT 1200MM AEROQUIET FAN ROASTED COFFE",
+      unit: "pcs",
+      rack_code: "A2",
+      quantity: 3,
+      rate: 2600,
+      discount_percentage: 5,
+      amount: 7410,
+      comments: "Limited stock",
+    },
+    {
+      product_id: "P003",
+      item_name: "ORIENT 200MM 3-1DE VENTILATION FAN GREY-3110810417110",
+      unit: "box",
+      rack_code: "A3",
+      quantity: 10,
+      rate: 3200,
+      discount_percentage: 10,
+      amount: 28800,
+      comments: "Special discount applied",
+    },
+    {
+      product_id: "P004",
+      item_name: "ORIENT 450MM TORNADO WALL",
+      unit: "pcs",
+      rack_code: "A4",
+      quantity: 8,
+      rate: 1800,
+      discount_percentage: 0,
+      amount: 14400,
+      comments: "",
+    },
+    // Add more items as needed, following the same structure
+  ];
 
   const productCodeOptions = items.map((product) => ({
-    label: `${product.code} `,
-    value: product.code,
+    label: `${product.product_id}`,
+    value: product.product_id,
   }));
 
   const productNameOptions = items.map((product) => ({
-    label: `${product.name}`,
-    value: product.name,
+    label: `${product.item_name}`,
+    value: product.item_name,
   }));
 
   const handleCodeChange = (selectedOption) => {
     if (selectedOption) {
-      const selectedProduct = items.find((item) => item.code === selectedOption.value);
+      const selectedProduct = items.find((item) => item.product_id === selectedOption.value);
       setSelectedCode(selectedOption);
       setSelectedName({
-        label: `${selectedProduct.name}`,
-        value: selectedProduct.name,
+        label: `${selectedProduct.item_name}`,
+        value: selectedProduct.item_name,
       });
       handleProductSelect({
-        type: "code",
-        value: selectedOption.value,
-        name: selectedProduct.name,
+        product_id: selectedProduct.product_id,
+        item_name: selectedProduct.item_name,
         unit: selectedProduct.unit,
-        rackCode: selectedProduct.rackCode,
-        mrp: selectedProduct.mrp,
-        brand: selectedProduct.brand,
-        image: selectedProduct.image,
+        rack_code: selectedProduct.rack_code,
+        quantity: selectedProduct.quantity,
+        rate: selectedProduct.rate,
+        discount_percentage: selectedProduct.discount_percentage,
+        amount: selectedProduct.amount,
+        comments: selectedProduct.comments,
       });
     } else {
       setSelectedCode(null);
@@ -71,20 +97,22 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect , productLis
 
   const handleNameChange = (selectedOption) => {
     if (selectedOption) {
-      const selectedProduct = items.find((item) => item.name === selectedOption.value);
+      const selectedProduct = items.find((item) => item.item_name === selectedOption.value);
       setSelectedName(selectedOption);
       setSelectedCode({
-        label: `${selectedProduct.code}`,
-        value: selectedProduct.code,
+        label: `${selectedProduct.product_id}`,
+        value: selectedProduct.product_id,
       });
       handleProductSelect({
-        value: selectedProduct.code,
-        name: selectedProduct.name,
+        product_id: selectedProduct.product_id,
+        item_name: selectedProduct.item_name,
         unit: selectedProduct.unit,
-        rackCode: selectedProduct.rackCode,
-        mrp: selectedProduct.mrp,
-        brand: selectedProduct.brand,
-        image: selectedProduct.image,
+        rack_code: selectedProduct.rack_code,
+        quantity: selectedProduct.quantity,
+        rate: selectedProduct.rate,
+        discount_percentage: selectedProduct.discount_percentage,
+        amount: selectedProduct.amount,
+        comments: selectedProduct.comments,
       });
     } else {
       setSelectedName(null);
@@ -126,20 +154,20 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect , productLis
               }}
             >
               <div style={{ flex: 1 }}>
-                <label htmlFor="itemCode" style={{ display: "block", marginBottom: "5px" }}>
-                  Item Code
+                <label htmlFor="product_id" style={{ display: "block", marginBottom: "5px" }}>
+                  Product ID
                 </label>
                 <Select
                   options={productCodeOptions}
                   value={selectedCode}
                   onChange={handleCodeChange}
-                  placeholder="Select Item Code"
+                  placeholder="Select Product ID"
                   isClearable
-                  id="itemCode"
+                  id="product_id"
                 />
               </div>
               <div style={{ flex: 2 }}>
-                <label htmlFor="itemName" style={{ display: "block", marginBottom: "5px" }}>
+                <label htmlFor="item_name" style={{ display: "block", marginBottom: "5px" }}>
                   Item Name
                 </label>
                 <Select
@@ -148,7 +176,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect , productLis
                   onChange={handleNameChange}
                   placeholder="Select Item Name"
                   isClearable
-                  id="itemName"
+                  id="item_name"
                 />
               </div>
             </div>

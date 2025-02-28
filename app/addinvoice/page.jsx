@@ -3,8 +3,8 @@ import InvoucherTable from "../components/InvoucherTable";
 import ReciverDetails from "../components/Reciverdeatails";
 import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
-import { ToastContainer, toast } from "react-toastify"; // Import react-toastify
-import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -15,7 +15,7 @@ const AddInvoice = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [invoiceItems, setInvoiceItems] = useState([]);
-  const [voucherSequence, setVoucherSequence] = useState(null); // Start as null until fetched
+  const [voucherSequence, setVoucherSequence] = useState(null);
   const [voucherId, setVoucherId] = useState(null);
 
   const closeModal = () => {
@@ -40,7 +40,7 @@ const AddInvoice = () => {
   };
 
   const generateVoucherNumber = () => {
-    if (voucherSequence === null) return "PLINV-Loading..."; // Display loading until sequence is fetched
+    if (voucherSequence === null) return "PLINV-Loading...";
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLINV-${sequenceStr}`;
   };
@@ -52,8 +52,6 @@ const AddInvoice = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            // Add authentication headers if required
-            // "Authorization": "Bearer your-token-here"
           },
         });
 
@@ -63,13 +61,11 @@ const AddInvoice = () => {
 
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
-          // Find the highest voucher_id
           const lastVoucher = vouchers.reduce((max, voucher) =>
             voucher.voucher_id > max.voucher_id ? voucher : max
           );
           setVoucherId(lastVoucher.voucher_id + 1);
 
-          // Find the highest sequence number from voucher_number
           const lastSequence = vouchers
             .map((voucher) => {
               const match = voucher.voucher_number.match(/^PLINV-(\d+)$/);
@@ -79,12 +75,12 @@ const AddInvoice = () => {
           setVoucherSequence(lastSequence + 1);
         } else {
           setVoucherId(1);
-          setVoucherSequence(1); // Start with 1 if no vouchers exist
+          setVoucherSequence(1);
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error);
         setVoucherId(1);
-        setVoucherSequence(1); // Fallback to 1 on error
+        setVoucherSequence(1);
         setSubmitStatus("Error fetching last voucher data, starting with 1");
       }
     };
@@ -92,7 +88,6 @@ const AddInvoice = () => {
     fetchLastVoucherData();
   }, []);
 
-  // Effect to display toast notifications when submitStatus changes
   useEffect(() => {
     if (submitStatus) {
       if (submitStatus.includes("Error")) {
@@ -119,13 +114,13 @@ const AddInvoice = () => {
 
   const handleSubmit = async () => {
     if (!selectedCustomer || !receiverInfo) {
-      console.log(selectedCustomer);
-      console.log(receiverInfo);
+      console.log("Missing required fields:", { selectedCustomer, receiverInfo });
       setSubmitStatus("Please complete all required fields");
       return;
     }
 
     if (voucherId === null || voucherSequence === null) {
+      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
       setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
@@ -135,19 +130,21 @@ const AddInvoice = () => {
 
     const voucherNumber = generateVoucherNumber();
 
-    console.log("Voucher ID:", voucherId);
-    console.log("Voucher Number:", voucherNumber);
-    console.log("Transaction Type:", receiverInfo?.transactionType || "");
-    console.log("Voucher Date:", new Date().toISOString().split('T')[0]);
-    console.log("Client ID:", selectedCustomer?.id);
-    console.log("Invoice Number:", receiverInfo?.InvoiceNumber || "");
-    console.log("Invoice Date:", receiverInfo?.InvoiceDate || "");
-    console.log("Mode of Transport:", receiverInfo?.ModeofTransport || "");
-    console.log("Number of Packages:", parseInt(receiverInfo?.NumberofPackages) || 0);
-    console.log("Freight Status:", receiverInfo?.Freight || "");
-    console.log("Total Amount:", totalAmount);
-    console.log("Remarks:", document.querySelector(".tm_remarks_box")?.value || "");
-    console.log("Invoice Items:", invoiceItems);
+    console.log("Submitting Invoice with Data:", {
+      voucherId,
+      voucherNumber,
+      transactionType: receiverInfo?.transactionType || "",
+      voucherDate: new Date().toISOString().split('T')[0],
+      clientId: selectedCustomer?.id,
+      invoiceNumber: receiverInfo?.InvoiceNumber || "",
+      invoiceDate: receiverInfo?.InvoiceDate || "",
+      modeOfTransport: receiverInfo?.ModeofTransport || "",
+      numberOfPackages: parseInt(receiverInfo?.NumberofPackages) || 0,
+      freightStatus: receiverInfo?.Freight || "",
+      totalAmount,
+      remarks: document.querySelector(".tm_remarks_box")?.value || "",
+      invoiceItems,
+    });
 
     const invoiceData = {
       voucher_id: voucherId,
@@ -162,11 +159,11 @@ const AddInvoice = () => {
       freight_status: receiverInfo?.Freight || "",
       total_amount: totalAmount,
       remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
-      items: invoiceItems,
     };
 
     try {
-      const response = await fetch("https://api.panvic.in/invouchers/", {
+      // Step 1: Submit the invoice data
+      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,18 +171,64 @@ const AddInvoice = () => {
         body: JSON.stringify(invoiceData),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!invoiceResponse.ok) {
+        const errorData = await invoiceResponse.json(); // Capture detailed error response
+        console.error("Invoice submission failed:", {
+          status: invoiceResponse.status,
+          statusText: invoiceResponse.statusText,
+          errorData,
+        });
+        throw new Error(`HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`);
       }
 
-      const result = await response.json();
-      setSubmitStatus("Invoice submitted successfully!");
-      console.log("Success:", result);
-      setVoucherSequence((prev) => prev + 1); // Increment for next voucher_number
-      setVoucherId((prev) => prev + 1); // Increment for next voucher_id
+      const invoiceResult = await invoiceResponse.json();
+      const newVoucherId = invoiceResult.voucher_id;
+
+      // Step 2: Submit the items to the new endpoint
+      if (invoiceItems.length > 0) {
+        const itemsData = invoiceItems.map(item => ({
+          product_id: item.product_id,
+          item_name: item.item_name,
+          unit: item.unit,
+          rack_code: item.rack_code,
+          quantity: parseInt(item.quantity),
+          rate: parseFloat(item.rate),
+          discount_percentage: parseFloat(item.discount_percentage || 0),
+          amount: parseFloat(item.amount),
+          comments: item.comments || "",
+        }));
+
+        console.log("Submitting Items with Data:", itemsData);
+
+        const itemsResponse = await fetch(`https://api.panvic.in/invouchers/${newVoucherId}/items`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(itemsData),
+        });
+
+        if (!itemsResponse.ok) {
+          const errorData = await itemsResponse.json(); // Capture detailed error response
+          console.error("Items submission failed:", {
+            status: itemsResponse.status,
+            statusText: itemsResponse.statusText,
+            errorData,
+          });
+          throw new Error(`HTTP error submitting items! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`);
+        }
+
+        const itemsResult = await itemsResponse.json();
+        console.log("Items submitted successfully:", itemsResult);
+      }
+
+      setSubmitStatus("Invoice and items submitted successfully!");
+      console.log("Invoice Success:", invoiceResult);
+      setVoucherSequence((prev) => prev + 1);
+      setVoucherId((prev) => prev + 1);
     } catch (error) {
-      setSubmitStatus("Error submitting invoice: " + error.message);
-      console.error("Error:", error);
+      setSubmitStatus("Error submitting invoice or items: " + error.message);
+      console.error("Submission Error:", error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -231,7 +274,6 @@ const AddInvoice = () => {
                 alignItems: "center",
               }}
             >
-              {/* Left Column */}
               <div
                 className="tm_invoice_left mt-0"
                 style={{ flex: 1, textAlign: "left" }}
@@ -259,13 +301,12 @@ const AddInvoice = () => {
                 Freight: <b>{receiverInfo && receiverInfo.Freight}</b>
               </div>
 
-              {/* Right Column */}
               <div
                 className="tm_invoice_right tm_text_right"
                 style={{ flex: 1, textAlign: "right" }}
               >
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">Reciver Details:</b>
+                  <b className="tm_primary_color">Receiver Details:</b>
                   {InfoModal && (
                     <ReciverDetails
                       setInfoModal={setInfoModal}
@@ -292,7 +333,7 @@ const AddInvoice = () => {
               </div>
             </div>
             <p className="tm_mb2">
-              <b className="tm_primary_color">Product info:</b>
+              <b className="tm_primary_color">Product Info:</b>
             </p>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
@@ -312,7 +353,7 @@ const AddInvoice = () => {
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <p className="tm_mb2">
-                    <b className="tm_primary_color">Remarks If any:</b>
+                    <b className="tm_primary_color">Remarks If Any:</b>
                   </p>
                   <textarea
                     className="form-control tm_remarks_box"
@@ -414,6 +455,7 @@ const AddInvoice = () => {
             <span className="tm_btn_text">Submit</span>
           </button>
         </div>
+        <ToastContainer />
       </div>
     </div>
   );
