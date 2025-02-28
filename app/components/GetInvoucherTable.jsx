@@ -38,7 +38,7 @@ const GetInvoucherTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <button className="btn btn-primary m-3">Add In-Vouchers</button>
+            <a className="btn btn-primary m-3"  href="/addinvoice">Add In-Vouchers</a>
           </div>
         </div>
         <table className="table align-items-center mb-0">
