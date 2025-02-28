@@ -1,19 +1,20 @@
-"use client"
+"use client";
+
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const API_URL = "https://api.panvic.in/invouchers";
 
 const InvoucherDetail = () => {
-  const router = useRouter();
-  const { ivid } = router.query;
+  const { ivid } = useParams();
   const [voucher, setVoucher] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!ivid) return;
-    
+
     const fetchVoucher = async () => {
       try {
         const response = await axios.get(`${API_URL}/${ivid}`, {
@@ -22,15 +23,16 @@ const InvoucherDetail = () => {
         setVoucher(response.data);
       } catch (error) {
         toast.error("Failed to load voucher details!");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchVoucher();
-  }, [id]);
+  }, [ivid]);
 
-  if (!voucher) {
-    return <p>Loading...</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (!voucher) return <p>No voucher found!</p>;
 
   return (
     <div className="card">
@@ -56,9 +58,3 @@ const InvoucherDetail = () => {
 };
 
 export default InvoucherDetail;
-
-export async function getServerSideProps(context) {
-  return {
-    props: {},
-  };
-}
