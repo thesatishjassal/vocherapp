@@ -119,13 +119,6 @@ transaction_type
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Supplier Details:</b>{" "}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print "
-                    onClick={() => setShowModalClientDetails(true)} // Use the function to set the state to true
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
                 </p>
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{client.client_name}</b> <br />
