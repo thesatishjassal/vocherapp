@@ -11,13 +11,31 @@ const Addoutinvoice = () => {
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [open, setOpen] = useState(false);
+  const [basicinfoData, setBasicinfoData] = useState(null);
 
   const handleIconClick = () => {
     setOpen(!open); // Toggle the date picker visibility
   };
 
+  const handleConfirm = (data) => {
+    console.log("Received Data:", data);
+    setBasicinfoData(data);
+  };
+
   const closeModal = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
+  };
+
+  const handleClientConfirm = (selectedClient) => {
+    console.log("Selected Client:", selectedClient);
+    setSelectedCustomer(selectedClient);
+  };
+
+  const generateVoucherNumber = () => {
+    let voucherSequence = "";
+    if (voucherSequence === null) return "PLOTV-Loading...";
+    const sequenceStr = voucherSequence.toString().padStart(3, "0");
+    return `PLOTV-${sequenceStr}`;
   };
 
   return (
@@ -28,10 +46,7 @@ const Addoutinvoice = () => {
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-2">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
-                  <img
-                    src="https://panvic-com.preview-domain.com/wp-content/uploads/2025/01/logo-removebg-preview.png"
-                    alt="Logo"
-                  />
+                  <img src="/assets/img/panviclogo.jpg" alt="Logo" />
                 </div>
               </div>
               <div className="tm_invoice_right tm_text_right">
@@ -39,7 +54,8 @@ const Addoutinvoice = () => {
                   OUT VOUCHER
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Voucher No: <b className="tm_primary_color">#LL93784</b>
+                  Voucher No:{" "}
+                  <b className="tm_primary_color">{generateVoucherNumber()}</b>
                 </p>
               </div>
             </div>
@@ -55,14 +71,10 @@ const Addoutinvoice = () => {
                   </select>
                 </p>
                 <p className="tm_invoice_date tm_m0">
-                  Date: <b className="tm_primary_color">01.07.2022</b>
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={handleIconClick}
-                  >
-                    <i className="fa-regular fa-calendar-days"></i>
-                  </button>
+                  Date:{" "}
+                  <b className="tm_primary_color">
+                    {new Date().toLocaleDateString()}
+                  </b>
                   {open && (
                     <div className="custom_datepciker">
                       {open && (
@@ -105,16 +117,16 @@ const Addoutinvoice = () => {
                   </button>
                   {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
-                      onClose={closeModal} // Pass the closeModal function to the modal
+                      onClose={closeModal}
                       client={showModalClientDetails}
+                      onConfirm={handleClientConfirm}
                     />
                   )}
                 </p>
                 <p style={{ textAlign: "justify" }} className="m-0">
                   Name: <b>XYZ Ltd</b> <br />
                   Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
-                  State: <b>XYZ State</b>, <b>Country</b>,<b>123456</b>{" "}
-                  <br />
+                  State: <b>XYZ State</b>, <b>Country</b>,<b>123456</b> <br />
                   {/* Email:<b>xyz@gmail.com</b>  <br />  */}
                   {/* Phone: <b>+91-1234567890</b> */}
                   GST NO: <b>JDKURE1525</b>
@@ -127,7 +139,12 @@ const Addoutinvoice = () => {
                 style={{ flex: 1, textAlign: "right" }}
               >
                 <p className="tm_mb2">
-                  {InfoModal && <BasicInfoModal setInfoModal={setInfoModal} />}
+                  {InfoModal && (
+                    <BasicInfoModal
+                      setInfoModal={setInfoModal}
+                      onConfirm={handleConfirm}
+                    />
+                  )}
                   <b className="tm_primary_color">Basic Details:</b>
                   <button
                     type="button"
@@ -138,25 +155,34 @@ const Addoutinvoice = () => {
                   </button>
                 </p>
                 {/* Invoice Number: <b>INV12345</b> <br /> */}
-                Issue Slip No:<b> SLIP98765</b> <br />
-                Sale Order No:<b> SO123456 </b>
+                Issue Slip No:
+                <b> {basicinfoData && basicinfoData.IssueSlipNo}</b> <br />
+                Sale Order No:
+                <b> {basicinfoData && basicinfoData.SaleOrderNo} </b>
                 <br />
-                Transport: <b>DHL</b> <br />
-                Vehicle No: <b>PB 08: 1014</b> <br />
+                Transport: <b>
+                  {basicinfoData && basicinfoData.Transport}
+                </b>{" "}
+                <br />
+                Vehicle No: <b>
+                  {basicinfoData && basicinfoData.VehicleNo}
+                </b>{" "}
+                <br />
               </div>
             </div>
             <div className="d-flex py-2 px-0 no-top-border">
               <div className="flex-grow-1 py-0 pl-0 no-top-border">
-                Package <b>2 Box</b>
+                Package <b>{basicinfoData && basicinfoData.Packages}</b>
               </div>
               <div className="flex-grow-1 py-0 no-top-border">
-                Order BY: <b>Johny</b>
+                Order BY: <b>{basicinfoData && basicinfoData.OrderBy}</b>
               </div>
               <div className="flex-grow-1 py-0 no-top-border">
-                Sale Person: <b>John</b>
+                Sale Person: <b>{basicinfoData && basicinfoData.SalePerson}</b>
               </div>
               <div className="flex-grow-1 py-0 no-top-border">
-                Freight Amount: <b>200</b>
+                Freight Amount:{" "}
+                <b>{basicinfoData && basicinfoData.FreightAmount}</b>
               </div>
             </div>
 
@@ -185,29 +211,22 @@ const Addoutinvoice = () => {
               </div>
             </div>
             <div className="tm_left_footer px-0">
-              <p className="tm_mb2 ">
-                <b className="tm_primary_color"> Reciver Name & Mobile Name:</b>
+              <p className="tm_mb2 d-flex flex-wrap gap-2">
+                <b className="tm_primary_color">
+                  Receiver Name: {basicinfoData?.ReceiverName || "N/A"}
+                </b>
+                ||
+                <b className="tm_primary_color">
+                  Mobile: {basicinfoData?.ContactNumber || "N/A"}
+                </b>
               </p>
-              <div className="d-flex">
-                <div className="d-flex col-6 pr-1">
-                  <input
-                    type="text"
-                    className="form-control mr-1 "
-                    placeholder="Reciver name"
-                  />
-                  <input
-                    type="text"
-                    className="form-control mx-1"
-                    placeholder="Reciver Phone number"
-                  />
-                </div>
-                <div className="col-6  ">
-                  <p className="tm_mb2 text-right">
-                    <b className="tm_primary_color text-right">
-                      Store Manager:
-                    </b>
+
+              <div className="d-flex justify-content-between align-items-end">
+                <div className="col-auto ms-auto text-end">
+                  <p className="tm_mb2">
+                    <b className="tm_primary_color">Store Manager:</b>
                     <br />
-                    <span className="tm_primary_color ">Auth Sign</span>
+                    <span className="tm_primary_color">Auth Sign</span>
                   </p>
                 </div>
               </div>
