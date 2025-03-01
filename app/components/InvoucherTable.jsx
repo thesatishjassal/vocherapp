@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import FindProduct from "../components/FindPropduct"; // Corrected typo from FindPropduct
+import FindProduct from "../components/FindPropduct";
 
 const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);
@@ -12,6 +12,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     rack_code: "",
     rate: "",
     discount_percentage: "",
+    additional_discount_percentage: "", // Added new field
     amount: "",
     comments: "",
   });
@@ -26,19 +27,25 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     rack_code: useRef(null),
     rate: useRef(null),
     discount_percentage: useRef(null),
+    additional_discount_percentage: useRef(null), // Added new ref
     comments: useRef(null),
   };
 
-  const calculateAmount = (quantity, rate, discount_percentage) => {
-    const discountAmount = (rate * quantity * (discount_percentage || 0)) / 100;
-    return quantity * rate - discountAmount;
+  const calculateAmount = (quantity, rate, discount_percentage, additional_discount_percentage) => {
+    const baseAmount = quantity * rate;
+    // Apply first discount
+    const firstDiscount = (baseAmount * (discount_percentage || 0)) / 100;
+    const amountAfterFirstDiscount = baseAmount - firstDiscount;
+    // Apply additional discount on the result
+    const additionalDiscount = (amountAfterFirstDiscount * (additional_discount_percentage || 0)) / 100;
+    return amountAfterFirstDiscount - additionalDiscount;
   };
 
   const handleAddRow = () => {
-    const { quantity, rate, discount_percentage } = newRow;
+    const { quantity, rate, discount_percentage, additional_discount_percentage } = newRow;
 
     if (newRow.product_id && newRow.item_name && quantity && rate) {
-      const amount = calculateAmount(quantity, rate, discount_percentage);
+      const amount = calculateAmount(quantity, rate, discount_percentage, additional_discount_percentage);
 
       const updatedRows = [
         ...rows,
@@ -67,6 +74,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         rack_code: "",
         rate: "",
         discount_percentage: "",
+        additional_discount_percentage: "", // Reset new field
         amount: "",
         comments: "",
       });
@@ -91,22 +99,20 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
     if (["product_id", "item_name"].includes(field) && value.trim()) {
       setShowModal(true);
-      // filterProducts(value); // Assuming this function exists elsewhere
     }
   };
 
   const handleProductSelect = (product) => {
     setNewRow((prev) => ({
       ...prev,
-      product_id: product.product_id, // Only set fields that shouldn't be calculated or manually entered
+      product_id: product.product_id,
       item_name: product.item_name,
       unit: product.unit,
       rack_code: product.rack_code,
-      // Do not set quantity, rate, discount_percentage, amount, or comments from FindProduct
     }));
     setShowModal(false);
     setTimeout(() => {
-      inputRefs.quantity.current?.focus(); // Focus on quantity for manual input
+      inputRefs.quantity.current?.focus();
     }, 0);
   };
 
@@ -123,6 +129,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <th>Quantity</th>
             <th>Rate</th>
             <th>Disc %</th>
+            <th>Add. Disc %</th> {/* Added new header */}
             <th>Amount</th>
             <th>Comments</th>
           </tr>
@@ -138,6 +145,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
               <td>{row.quantity}</td>
               <td>{row.rate}</td>
               <td>{row.discount_percentage}</td>
+              <td>{row.additional_discount_percentage}</td> {/* Added new column */}
               <td>{row.amount.toFixed(2)}</td>
               <td>{row.comments}</td>
             </tr>
@@ -222,10 +230,22 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
                 name="discount_percentage"
                 value={newRow.discount_percentage}
                 onChange={(e) => handleFieldChange("discount_percentage", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "comments")}
+                onKeyDown={(e) => handleKeyDown(e, "additional_discount_percentage")}
                 placeholder="Disc %"
                 className="form-control input-small"
                 ref={inputRefs.discount_percentage}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="additional_discount_percentage"
+                value={newRow.additional_discount_percentage}
+                onChange={(e) => handleFieldChange("additional_discount_percentage", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "comments")}
+                placeholder="Add. Disc %"
+                className="form-control input-small"
+                ref={inputRefs.additional_discount_percentage}
               />
             </td>
             <td>
