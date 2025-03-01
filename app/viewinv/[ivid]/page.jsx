@@ -29,10 +29,8 @@ const InvoucherDetail = () => {
           setVoucher(response.data);
 
           // If the voucher contains a clientId, fetch client details
-          if (response.data.
-            client_id) {
-            fetchClient(response.data.
-              client_id);
+          if (response.data.client_id) {
+            fetchClient(response.data.client_id);
           }
         } else {
           toast.error("No voucher found!");
@@ -54,8 +52,8 @@ const InvoucherDetail = () => {
         withCredentials: true,
       });
 
-      const filteredClient = response.data.find((c) => c.id ===  client_id);
-      console.log(filteredClient)
+      const filteredClient = response.data.find((c) => c.id === client_id);
+      console.log(filteredClient);
       if (filteredClient) {
         setClient(filteredClient);
       } else {
@@ -97,9 +95,7 @@ const InvoucherDetail = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number">
-                  Transaction Type: <b>{voucher.
-transaction_type
-}</b>
+                  Transaction Type: <b>{voucher.transaction_type}</b>
                 </p>
                 <p className="tm_invoice_date">
                   Date:{" "}
@@ -110,32 +106,29 @@ transaction_type
 
             {/* Supplier & Receiver Details */}
             <div className="tm_invoice_head tm_mb10">
-                    {/* Client Details */}
-            {client && (
-              <div className="tm_invoice_head tm_mb10">
-        <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">Supplier Details:</b>{" "}
-                </p>
-                <p style={{ textAlign: "justify" }}>
-                  Name: <b>{client.client_name}</b> <br />
-                  Address: <b>{client.address}</b> <br />
-                  City: <b>{client.city}</b>, State:{" "}
-                  <b>{client.state}</b> | Pincode:{" "}
-                  <b>{client.pincode}</b> <br />
-                  Phone: <b>{client.client_phone}</b>
-                  <br />
-                  GST NO: <b>{client.gst_number}</b>
-                </p>  
-                Freight: <b>{voucher && voucher.
-freight_status}</b>
-              </div>
-
-              </div>
-            )}
+              {/* Client Details */}
+              {client && (
+                <div className="tm_invoice_head tm_mb10">
+                  <div
+                    className="tm_invoice_left mt-0"
+                    style={{ flex: 1, textAlign: "left" }}
+                  >
+                    <p className="tm_mb2">
+                      <b className="tm_primary_color">Supplier Details:</b>{" "}
+                    </p>
+                    <p style={{ textAlign: "justify" }}>
+                      Name: <b>{client.client_name}</b> <br />
+                      Address: <b>{client.address}</b> <br />
+                      City: <b>{client.city}</b>, State: <b>{client.state}</b> |
+                      Pincode: <b>{client.pincode}</b> <br />
+                      Phone: <b>{client.client_phone}</b>
+                      <br />
+                      GST NO: <b>{client.gst_number}</b>
+                    </p>
+                    Freight: <b>{voucher && voucher.freight_status}</b>
+                  </div>
+                </div>
+              )}
               <div className="tm_invoice_right tm_text_right">
                 <p>
                   <b className="tm_primary_color">Receiver Details:</b>
@@ -152,8 +145,6 @@ freight_status}</b>
                 </p>
               </div>
             </div>
-
-      
 
             {/* Product Info */}
             <p>
@@ -191,7 +182,8 @@ freight_status}</b>
               </button>
             </div>
           </div>
-        </div> <div className="tm_invoice_btns tm_hide_print">
+        </div>{" "}
+        <div className="tm_invoice_btns tm_hide_print">
           <button
             type="button"
             onClick={() => window.print()}

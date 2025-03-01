@@ -42,6 +42,7 @@ const InvoucherTable = ({ invoucherId }) => {
             <th>Qty</th>
             <th>Rate</th>
             <th>Discount %</th>
+            <th>Add Discount %</th>
             <th>Amount</th>
             <th>Comments</th>
           </tr>
@@ -57,6 +58,7 @@ const InvoucherTable = ({ invoucherId }) => {
               <td>{item.quantity}</td>
               <td>{item.rate.toFixed(2)}</td>
               <td>{item.discount_percentage.toFixed(2)}%</td>
+              <td>{itemadditional_discount_percentage.toFixed(2)}%</td>
               <td>{item.amount.toFixed(2)}</td>
               <td>{item.comments}</td>
             </tr>
