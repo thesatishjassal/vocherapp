@@ -195,6 +195,7 @@ const handleSubmit = async () => {
         quantity: parseInt(item.quantity),
         rate: parseFloat(item.rate),
         discount_percentage: parseFloat(item.discount_percentage || 0),
+        additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
         amount: parseFloat(item.amount),
         comments: item.comments || "",
       };
