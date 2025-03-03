@@ -36,8 +36,8 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
   if (error) return <div>Error loading products: {error.message}</div>;
 
   const productCodeOptions = items.map((product) => ({
-    label: product.id,
-    value: product.id,
+    label: product.itemcode,
+    value: product.itemcode,
   }));
 
   const productNameOptions = items.map((product) => ({
@@ -47,7 +47,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
 
   const handleCodeChange = (selectedOption) => {
     if (selectedOption) {
-      const selectedProduct = items.find((item) => item.id === selectedOption.value);
+      const selectedProduct = items.find((item) => item.itemcode === selectedOption.value);
       setSelectedCode(selectedOption);
       setSelectedName({ label: selectedProduct.itemname, value: selectedProduct.itemname });
       handleProductSelect(selectedProduct);
@@ -62,7 +62,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
     if (selectedOption) {
       const selectedProduct = items.find((item) => item.itemname === selectedOption.value);
       setSelectedName(selectedOption);
-      setSelectedCode({ label: selectedProduct.id, value: selectedProduct.id });
+      setSelectedCode({ label: selectedProduct.itemcode, value: selectedProduct.itemcode });
       handleProductSelect(selectedProduct);
     } else {
       setSelectedName(null);
