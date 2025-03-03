@@ -118,6 +118,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "color",
                 "model",
                 "brand",
+                "unit",
               ].map((field) => (
                 <div className="col-md-6" key={field}>  
                   <input
