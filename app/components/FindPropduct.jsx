@@ -142,7 +142,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
           <div className="modal-body py-3">
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               <div style={{ flex: 1 }}>
-                <label htmlFor="product_id">Product ID</label>
+                <label htmlFor="product_id">Item Code</label>
                 <Select 
                   options={productCodeOptions} 
                   value={selectedCode} 
@@ -158,26 +158,6 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
                   value={selectedName} 
                   onChange={handleNameChange} 
                   placeholder="Select Item Name" 
-                  isClearable 
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label htmlFor="unit">Unit</label>
-                <Select 
-                  options={unitOptions} 
-                  value={selectedUnit} 
-                  onChange={handleUnitChange} 
-                  placeholder="Select Unit" 
-                  isClearable 
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label htmlFor="rackcode">Rack Code</label>
-                <Select 
-                  options={rackCodeOptions} 
-                  value={selectedRackCode} 
-                  onChange={handleRackCodeChange} 
-                  placeholder="Select Rack Code" 
                   isClearable 
                 />
               </div>
