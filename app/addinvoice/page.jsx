@@ -64,7 +64,7 @@ const AddInvoice = () => {
           const lastVoucher = vouchers.reduce((max, voucher) =>
             parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
           );
-          const nextVoucherId = String(parseInt(lastVoucher.voucher_id) + 1);
+          const nextVoucherId = lastVoucher.voucher_id + 1;
           setVoucherId(nextVoucherId);
 
           const lastSequence = vouchers
@@ -138,7 +138,7 @@ const handleSubmit = async () => {
 
   const voucherNumber = generateVoucherNumber();
   const invoiceData = {
-    voucher_id: String(voucherId),
+    voucher_id: voucherId,
     voucher_number: voucherNumber,
     transaction_type: receiverInfo?.transactionType || "",
     voucher_date: new Date().toISOString().split("T")[0],
@@ -228,7 +228,7 @@ const handleSubmit = async () => {
     setSubmitStatus("Invoice and items submitted successfully!");
     window.location.href = "/getinvouchers";
     setVoucherSequence((prev) => prev + 1);
-    setVoucherId(String(parseInt(invoiceResult.voucher_id) + 1));
+    setVoucherId(invoiceResult.voucher_id + 1);
     setSelectedCustomer(null);
     setReceiverInfo(null);
     setInvoiceItems([]);
