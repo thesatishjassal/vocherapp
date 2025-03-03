@@ -11,13 +11,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const productSchema = yup.object().shape({
   hsncode: yup.string().required(),
   itemcode: yup.string().required(),
-  itemName: yup.string().required(),
+  itemname: yup.string().required(),
   description: yup.string().required(),
   category: yup.string().required(),
-  subCategory: yup.string().required(),
+  subcategory: yup.string().required(),
   price: yup.string().required(),
   quantity: yup.string().required(),
-  rackCode: yup.string().required(),
+  rackcode: yup.string().required(),
   size: yup.string().required(),
   color: yup.string().required(),
   model: yup.string().required(),
@@ -109,11 +109,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               {[
                 "hsncode",
                 "itemcode",
-                "itemName",
+                "itemname",
                 "description",
                 "price",
                 "quantity",
-                "rackCode",
+                "rackcode",
                 "size",
                 "color",
                 "model",
@@ -152,18 +152,18 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
               <div className="col-md-6">
                 <select
-                  {...register("subCategory")}
-                  className={`form-control ${errors.subCategory ? "border-danger" : ""}`}
+                  {...register("subcategory")}
+                  className={`form-control ${errors.subcategory ? "border-danger" : ""}`}
                 >
-                  <option value="">Select Subcategory</option>
+                  <option value="">Select subcategory</option>
                   {filteredSubCategories.map((sub) => (
                     <option key={sub.id} value={sub.subcatname}>
                       {sub.subcatname}
                     </option>
                   ))}
                 </select>
-                {errors.subCategory && (
-                  <small className="text-danger">{errors.subCategory.message}</small>
+                {errors.subcategory && (
+                  <small className="text-danger">{errors.subcategory.message}</small>
                 )}
               </div>
 
