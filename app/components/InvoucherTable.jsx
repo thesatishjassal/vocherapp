@@ -108,7 +108,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
       itemcode: product.itemcode,
       itemname: product.itemname,
       unit: product.unit,
-      rackcode: product.rack_code,
+      rackcode: product.rackcode,
     }));
     setShowModal(false);
     setTimeout(() => {
@@ -141,7 +141,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
               <td>{row.itemcode}</td>
               <td>{row.itemname}</td>
               <td>{row.unit}</td>
-              <td>{row.rack_code}</td>
+              <td>{row.rackcode}</td>
               <td>{row.quantity}</td>
               <td>{row.rate}</td>
               <td>{row.discount_percentage}</td>
@@ -191,12 +191,12 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="text"
-                name="rack_code"
-                value={newRow.rack_code}
-                onChange={(e) => handleFieldChange("rack_code", e.target.value)}
+                name="rackcode"
+                value={newRow.rackcode}
+                onChange={(e) => handleFieldChange("rackcode", e.target.value)}
                 placeholder="Rack Code"
                 className="form-control input-small"
-                ref={inputRefs.rack_code}
+                ref={inputRefs.rackcode}
                 disabled
               />
             </td>
