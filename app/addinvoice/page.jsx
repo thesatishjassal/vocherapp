@@ -188,10 +188,10 @@ const handleSubmit = async () => {
     for (const item of invoiceItems) {
       const itemData = {
         voucher_id: newVoucherId, // Use invouchers.id
-        product_id: item.product_id,
-        item_name: item.item_name,
+        product_id: item.itemcode,
+        item_name: item.itemname,
         unit: item.unit,
-        rack_code: item.rack_code,
+        rack_code: item.rackcode,
         quantity: parseInt(item.quantity),
         rate: parseFloat(item.rate),
         discount_percentage: parseFloat(item.discount_percentage || 0),
