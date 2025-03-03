@@ -5,7 +5,7 @@ import FindProduct from "../components/FindPropduct";
 const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
-    product_id: "",
+    itemcode: "",
     item_name: "",
     quantity: "",
     unit: "",
@@ -20,7 +20,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const inputRefs = {
-    product_id: useRef(null),
+    itemcode: useRef(null),
     item_name: useRef(null),
     quantity: useRef(null),
     unit: useRef(null),
@@ -44,7 +44,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const handleAddRow = () => {
     const { quantity, rate, discount_percentage, additional_discount_percentage } = newRow;
 
-    if (newRow.product_id && newRow.item_name && quantity && rate) {
+    if (newRow.itemcode && newRow.item_name && quantity && rate) {
       const amount = calculateAmount(quantity, rate, discount_percentage, additional_discount_percentage);
 
       const updatedRows = [
@@ -67,7 +67,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
       });
 
       setNewRow({
-        product_id: "",
+        itemcode: "",
         item_name: "",
         quantity: "",
         unit: "",
@@ -78,7 +78,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         amount: "",
         comments: "",
       });
-      inputRefs.product_id.current.focus();
+      inputRefs.itemcode.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
@@ -97,7 +97,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["product_id", "item_name"].includes(field) && value.trim()) {
+    if (["itemcode", "item_name"].includes(field) && value.trim()) {
       setShowModal(true);
     }
   };
@@ -105,7 +105,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const handleProductSelect = (product) => {
     setNewRow((prev) => ({
       ...prev,
-      product_id: product.product_id,
+      itemcode: product.itemcode,
       item_name: product.item_name,
       unit: product.unit,
       rack_code: product.rack_code,
@@ -138,7 +138,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
           {rows.map((row, index) => (
             <tr key={row.id}>
               <td>{index + 1}</td>
-              <td>{row.product_id}</td>
+              <td>{row.itemcode}</td>
               <td>{row.item_name}</td>
               <td>{row.unit}</td>
               <td>{row.rack_code}</td>
@@ -155,13 +155,13 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="text"
-                name="product_id"
-                value={newRow.product_id}
-                onChange={(e) => handleFieldChange("product_id", e.target.value)}
+                name="itemcode"
+                value={newRow.itemcode}
+                onChange={(e) => handleFieldChange("itemcode", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "item_name")}
                 placeholder="Product ID"
                 className="form-control input-small"
-                ref={inputRefs.product_id}
+                ref={inputRefs.itemcode}
               />
             </td>
             <td>
@@ -278,7 +278,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         showModal={showModal}
         setShowModal={setShowModal}
         productList={{
-          PassItemCode: newRow.product_id.toLowerCase(),
+          PassItemCode: newRow.itemcode.toLowerCase(),
           PassItemName: newRow.item_name.toLowerCase(),
         }}
         handleProductSelect={handleProductSelect}
