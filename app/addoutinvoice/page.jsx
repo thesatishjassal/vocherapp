@@ -122,13 +122,12 @@ const Addoutinvoice = () => {
                     />
                   )}
                 </p>
-                <p style={{ textAlign: "justify" }} className="m-0">
-                  Name: <b>XYZ Ltd</b> <br />
-                  Address: <b>123 ABC Street</b> , <b>XYZ City</b> <br />
-                  State: <b>XYZ State</b>, <b>Country</b>,<b>123456</b> <br />
-                  {/* Email:<b>xyz@gmail.com</b>  <br />  */}
-                  {/* Phone: <b>+91-1234567890</b> */}
-                  GST NO: <b>JDKURE1525</b>
+                <p style={{ textAlign: "justify" }}>
+                  Name: <b>{selectedCustomer?.client_name || "Not Selected"}</b> <br />
+                  Address: <b>{selectedCustomer?.address || "N/A"}</b> <br />
+                  City: <b>{selectedCustomer?.city || "N/A"}</b>, State: <b>{selectedCustomer?.state || "N/A"}</b> | Pincode: <b>{selectedCustomer?.pincode || "N/A"}</b> <br />
+                  Phone: <b>{selectedCustomer?.client_phone || "N/A"}</b> <br />
+                  GST NO: <b>{selectedCustomer?.gst_number || "N/A"}</b>
                 </p>
               </div>
 
