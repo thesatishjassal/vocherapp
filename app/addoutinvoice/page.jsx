@@ -12,6 +12,7 @@ const Addoutinvoice = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   const [basicinfoData, setBasicinfoData] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const handleIconClick = () => {
     setOpen(!open); // Toggle the date picker visibility
@@ -117,9 +118,7 @@ const Addoutinvoice = () => {
                   </button>
                   {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
-                      onClose={closeModal}
-                      client={showModalClientDetails}
-                      onConfirm={handleClientConfirm}
+                    onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm}
                     />
                   )}
                 </p>
