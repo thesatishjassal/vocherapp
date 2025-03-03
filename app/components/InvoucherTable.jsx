@@ -9,7 +9,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     itemname: "",
     quantity: "",
     unit: "",
-    rack_code: "",
+    rackcode: "",
     rate: "",
     discount_percentage: "",
     additional_discount_percentage: "", // Added new field
@@ -24,7 +24,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     itemname: useRef(null),
     quantity: useRef(null),
     unit: useRef(null),
-    rack_code: useRef(null),
+    rackcode: useRef(null),
     rate: useRef(null),
     discount_percentage: useRef(null),
     additional_discount_percentage: useRef(null), // Added new ref
@@ -71,7 +71,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         itemname: "",
         quantity: "",
         unit: "",
-        rack_code: "",
+        rackcode: "",
         rate: "",
         discount_percentage: "",
         additional_discount_percentage: "", // Reset new field
@@ -108,7 +108,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
       itemcode: product.itemcode,
       itemname: product.itemname,
       unit: product.unit,
-      rack_code: product.rack_code,
+      rackcode: product.rack_code,
     }));
     setShowModal(false);
     setTimeout(() => {
