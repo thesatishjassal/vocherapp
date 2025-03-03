@@ -8,7 +8,7 @@ const OutvocuherTable = ({ items = [] }) => {
     itemname: "",
     qty: "",
     unit: "",
-    rackCode: "",
+    rackcode: "",
     comments: "",
   });
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +18,7 @@ const OutvocuherTable = ({ items = [] }) => {
     itemname: useRef(null),
     qty: useRef(null),
     unit: useRef(null),
-    rackCode: useRef(null),
+    rackcode: useRef(null),
     comments: useRef(null),
   };
 
@@ -81,13 +81,13 @@ const OutvocuherTable = ({ items = [] }) => {
   // Handle product selection from modal
   const handleProductSelect = (product) => {
     console.log(product);
-setNewRow((prev) => ({
-  ...prev,
-  itemcode: product.value,
-  itemname: product.name,
-  unit: product.unit,
-  rackCode: product.rackCode,
-}));
+    setNewRow((prev) => ({
+      ...prev,
+      itemcode: product.itemcode,
+      itemname: product.itemname,
+      unit: product.unit,
+      rackcode: product.rackcode,
+    }));
 
     setShowModal(false);
     // Focus on the 'qty' input field
@@ -126,7 +126,7 @@ setNewRow((prev) => ({
               <td>{row.itemcode}</td>
               <td>{row.itemname}</td>
               <td>{row.unit}</td>
-              <td>{row.rackCode}</td>
+              <td>{row.rackcode}</td>
               <td>{row.qty}</td>
               <td>{row.comments}</td>
             </tr>
@@ -173,11 +173,11 @@ setNewRow((prev) => ({
               <input
                 type="text"
                 name="rackcode"
-                value={newRow.rackCode}
+                value={newRow.rackcode}
                 onChange={(e) => handleFieldChange("rackcode", e.target.value)}
                 placeholder="Rackcode"
                 className="form-control input-small"
-                ref={inputRefs.rackCode}
+                ref={inputRefs.rackcode}
                 disabled
               />
             </td>
