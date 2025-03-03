@@ -278,8 +278,8 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         showModal={showModal}
         setShowModal={setShowModal}
         productList={{
-          PassItemCode: newRow.itemcode.toLowerCase(),
-          PassItemName: newRow.item_name.toLowerCase(),
+          PassItemCode: newRow.itemcode,
+          PassItemName: newRow.item_name,
         }}
         handleProductSelect={handleProductSelect}
       />
