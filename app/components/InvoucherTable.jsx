@@ -6,7 +6,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
     itemcode: "",
-    item_name: "",
+    itemname: "",
     quantity: "",
     unit: "",
     rack_code: "",
@@ -21,7 +21,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [productList, setProductList] = useState([]);
   const inputRefs = {
     itemcode: useRef(null),
-    item_name: useRef(null),
+    itemname: useRef(null),
     quantity: useRef(null),
     unit: useRef(null),
     rack_code: useRef(null),
@@ -44,7 +44,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const handleAddRow = () => {
     const { quantity, rate, discount_percentage, additional_discount_percentage } = newRow;
 
-    if (newRow.itemcode && newRow.item_name && quantity && rate) {
+    if (newRow.itemcode && newRow.itemname && quantity && rate) {
       const amount = calculateAmount(quantity, rate, discount_percentage, additional_discount_percentage);
 
       const updatedRows = [
@@ -68,7 +68,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
 
       setNewRow({
         itemcode: "",
-        item_name: "",
+        itemname: "",
         quantity: "",
         unit: "",
         rack_code: "",
@@ -97,7 +97,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["itemcode", "item_name"].includes(field) && value.trim()) {
+    if (["itemcode", "itemname"].includes(field) && value.trim()) {
       setShowModal(true);
     }
   };
@@ -106,7 +106,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     setNewRow((prev) => ({
       ...prev,
       itemcode: product.itemcode,
-      item_name: product.item_name,
+      itemname: product.itemname,
       unit: product.unit,
       rack_code: product.rack_code,
     }));
@@ -139,7 +139,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <tr key={row.id}>
               <td>{index + 1}</td>
               <td>{row.itemcode}</td>
-              <td>{row.item_name}</td>
+              <td>{row.itemname}</td>
               <td>{row.unit}</td>
               <td>{row.rack_code}</td>
               <td>{row.quantity}</td>
@@ -158,7 +158,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
                 name="itemcode"
                 value={newRow.itemcode}
                 onChange={(e) => handleFieldChange("itemcode", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "item_name")}
+                onKeyDown={(e) => handleKeyDown(e, "itemname")}
                 placeholder="Product ID"
                 className="form-control input-small"
                 ref={inputRefs.itemcode}
@@ -167,13 +167,13 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
             <td>
               <input
                 type="text"
-                name="item_name"
-                value={newRow.item_name}
-                onChange={(e) => handleFieldChange("item_name", e.target.value)}
+                name="itemname"
+                value={newRow.itemname}
+                onChange={(e) => handleFieldChange("itemname", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "quantity")}
                 placeholder="Item Name"
                 className="form-control"
-                ref={inputRefs.item_name}
+                ref={inputRefs.itemname}
               />
             </td>
             <td>
@@ -279,7 +279,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         setShowModal={setShowModal}
         productList={{
           PassItemCode: newRow.itemcode,
-          PassItemName: newRow.item_name,
+          PassItemName: newRow.itemname,
         }}
         handleProductSelect={handleProductSelect}
       />
