@@ -1,5 +1,5 @@
 "use client";
-import DynamicTable from "../components/DynamicTable";
+import OutvocuherTable from "../components/outVoucherTable";
 import BasicInfoModal from "../components/AddBasicInfo";
 import { useState } from "react";
 import CustomerModal from "../components/customerModal";
@@ -190,7 +190,7 @@ const Addoutinvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <DynamicTable />
+                  <OutvocuherTable />
                 </div>
               </div>
               <div className="tm_invoice_footer my-2">

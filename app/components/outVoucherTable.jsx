@@ -1,11 +1,11 @@
 import React, { useState, useRef, useMemo } from "react";
-import FindProduct from "../components/FindPropduct"; // Import FindProduct component
+import FindProduct from "./FindPropduct"; // Import FindProduct component
 
-const DynamicTable = ({ items = [] }) => {
+const OutvocuherTable = ({ items = [] }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
-    itemCode: "",
-    itemName: "",
+    itemcode: "",
+    itemname: "",
     qty: "",
     unit: "",
     rackCode: "",
@@ -14,8 +14,8 @@ const DynamicTable = ({ items = [] }) => {
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const inputRefs = {
-    itemCode: useRef(null),
-    itemName: useRef(null),
+    itemcode: useRef(null),
+    itemname: useRef(null),
     qty: useRef(null),
     unit: useRef(null),
     rackCode: useRef(null),
@@ -24,7 +24,7 @@ const DynamicTable = ({ items = [] }) => {
 
   // Add new row to the table
   const handleAddRow = () => {
-    if (newRow.itemCode && newRow.itemName && newRow.qty && newRow.unit) {
+    if (newRow.itemcode && newRow.itemname && newRow.qty && newRow.unit) {
       setRows((prevRows) => [
         ...prevRows,
         {
@@ -33,13 +33,13 @@ const DynamicTable = ({ items = [] }) => {
         },
       ]);
       setNewRow({
-        itemCode: "",
-        itemName: "",
+        itemcode: "",
+        itemname: "",
         qty: "",
         unit: "",
         comments: "",
       });
-      inputRefs.itemCode.current.focus();
+      inputRefs.itemcode.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
@@ -60,7 +60,7 @@ const DynamicTable = ({ items = [] }) => {
   // Handle field changes dynamically
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["itemCode", "itemName"].includes(field) && value.trim()) {
+    if (["itemcode", "itemname"].includes(field) && value.trim()) {
       setShowModal(true);
       filterProducts(value);
     }
@@ -69,9 +69,9 @@ const DynamicTable = ({ items = [] }) => {
   // Filter product list based on query
   const filterProducts = (query, field) => {
     const filtered = items.filter((item) => {
-      if (field === "itemCode") {
+      if (field === "itemcode") {
         return item.code.toLowerCase().includes(query.toLowerCase());
-      } else if (field === "itemName") {
+      } else if (field === "itemname") {
         return item.name.toLowerCase().includes(query.toLowerCase());
       }
       return false;
@@ -83,8 +83,8 @@ const DynamicTable = ({ items = [] }) => {
     console.log(product);
 setNewRow((prev) => ({
   ...prev,
-  itemCode: product.value,
-  itemName: product.name,
+  itemcode: product.value,
+  itemname: product.name,
   unit: product.unit,
   rackCode: product.rackCode,
 }));
@@ -100,10 +100,10 @@ setNewRow((prev) => ({
   const filteredProducts = useMemo(() => {
     return items.filter(
       (item) =>
-        item.code.toLowerCase().includes(newRow.itemCode.toLowerCase()) ||
-        item.name.toLowerCase().includes(newRow.itemName.toLowerCase())
+        item.code.toLowerCase().includes(newRow.itemcode.toLowerCase()) ||
+        item.name.toLowerCase().includes(newRow.itemname.toLowerCase())
     );
-  }, [items, newRow.itemCode, newRow.itemName]);
+  }, [items, newRow.itemcode, newRow.itemname]);
 
   return (
     <div>
@@ -123,8 +123,8 @@ setNewRow((prev) => ({
           {rows.map((row, index) => (
             <tr key={row.id}>
               <td>{index + 1}</td>
-              <td>{row.itemCode}</td>
-              <td>{row.itemName}</td>
+              <td>{row.itemcode}</td>
+              <td>{row.itemname}</td>
               <td>{row.unit}</td>
               <td>{row.rackCode}</td>
               <td>{row.qty}</td>
@@ -136,25 +136,25 @@ setNewRow((prev) => ({
             <td>
               <input
                 type="text"
-                name="itemCode"
-                value={newRow.itemCode}
-                onChange={(e) => handleFieldChange("itemCode", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "itemName")}
+                name="itemcode"
+                value={newRow.itemcode}
+                onChange={(e) => handleFieldChange("itemcode", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "itemname")}
                 placeholder="Enter item code"
                 className="form-control input-small"
-                ref={inputRefs.itemCode}
+                ref={inputRefs.itemcode}
               />
             </td>
             <td>
               <input
                 type="text"
-                name="itemName"
-                value={newRow.itemName}
-                onChange={(e) => handleFieldChange("itemName", e.target.value)}
+                name="itemname"
+                value={newRow.itemname}
+                onChange={(e) => handleFieldChange("itemname", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "qty")}
                 placeholder="Enter item name"
                 className="form-control"
-                ref={inputRefs.itemName}
+                ref={inputRefs.itemname}
               />
             </td>
             <td>
@@ -215,8 +215,8 @@ setNewRow((prev) => ({
         showModal={showModal}
         setShowModal={setShowModal}
         productList={{
-          PassItemCode: newRow.itemCode.toLowerCase(),
-          PassItemName: newRow.itemName.toLowerCase(),
+          PassItemcode: newRow.itemcode,
+          PassItemname: newRow.itemname,
         }}
         handleProductSelect={handleProductSelect}
       />
@@ -224,4 +224,4 @@ setNewRow((prev) => ({
   );
 };
 
-export default DynamicTable;
+export default OutvocuherTable;
