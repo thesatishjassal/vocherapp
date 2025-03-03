@@ -16,6 +16,7 @@ const InvoucherTable = ({ invoucherId }) => {
         });
 
         setItems(response.data);
+        console.log(items)
       } catch (error) {
         toast.error("Failed to fetch voucher items!");
       } finally {
