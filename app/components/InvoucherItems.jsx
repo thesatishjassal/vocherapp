@@ -29,7 +29,7 @@ const InvoucherTable = ({ invoucherId }) => {
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this voucher.</p>;
-  console.log(items)
+
   return (
     <div>
       <table className="tm_round_border table align-items-center justify-content-center mb-0">
@@ -52,10 +52,10 @@ const InvoucherTable = ({ invoucherId }) => {
           {items.map((item, index) => (
             <tr key={item.item_id}>
               <td>{index + 1}</td>
-              <td>{item.itemcode}</td>
-              <td>{item.itemname}</td>
+              <td>{item.product_id}</td>
+              <td>{item.item_name}</td>
               <td>{item.unit}</td>
-              <td>{item.rackcode}</td>
+              <td>{item.rack_code}</td>
               <td>{item.quantity}</td>
               <td>{item.rate.toFixed(2)}</td>
               <td>{item.discount_percentage.toFixed(2)}%</td>
