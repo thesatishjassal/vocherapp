@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import InvoucherTable from "../../components/InvoucherItems";
 
-const INVOCHER_API_URL = "https://api.panvic.in/invouchers/";
+const INVOCHER_API_URL = "https://api.panvic.in/invouchers";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
 
 const InvoucherDetail = () => {
