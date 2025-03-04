@@ -64,7 +64,7 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
       } else {
         // Add Category
         response = await axios.post(
-          `${API_URL}/category`,
+          `${API_URL}/category/`,
           category,
           {
             headers: { "Content-Type": "application/json" },

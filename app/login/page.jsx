@@ -30,7 +30,7 @@ const LoginForm = () => {
       try {
         // Ensure that values are being sent as JSON
         const response = await axios.post(
-          `${API_URL}/login`,
+          `${API_URL}/login/`,
           JSON.stringify(values), // Explicitly stringify the data
           {
             headers: {

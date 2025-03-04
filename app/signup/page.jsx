@@ -32,7 +32,7 @@ const RegisterForm = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/users`, // Correct API URL (adjust as needed)
+        `${API_URL}/users/`, // Correct API URL (adjust as needed)
         formValues,
         {
           headers: { "Content-Type": "application/json" },

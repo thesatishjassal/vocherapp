@@ -5,9 +5,9 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/invouchers/";
+const API_URL = "https://api.panvic.in/invouchers";
 
-const GetInvoucherTable = () => {
+const GetOutvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
 
   useEffect(() => {
@@ -122,4 +122,4 @@ const GetInvoucherTable = () => {
   );
 };
 
-export default GetInvoucherTable;
+export default GetOutvoucherTable;

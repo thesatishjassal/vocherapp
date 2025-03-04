@@ -13,7 +13,7 @@ const SubcategoryTable = () => {
   // Fetch subcategories from API
   const fetchSubcategories = async () => {
     try {
-      const response = await axios.get(`${API_URL}/subcategory`, {
+      const response = await axios.get(`${API_URL}/subcategory/`, {
         withCredentials: true,
       });
       setCategories(response.data);

@@ -65,7 +65,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const onSubmit = async (data) => {
     try {
       const payload = { ...data };
-      const response = await fetch(`${API_URL}/products`, {
+      const response = await fetch(`${API_URL}/products/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
