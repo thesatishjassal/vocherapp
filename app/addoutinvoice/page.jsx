@@ -64,12 +64,7 @@ const Addoutinvoice = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number tm_m0">
-                  Transaction Types: <b className="tm_primary_color"></b>
-                  <select id="transactionType" name="transactionType">
-                    <option value="Transfer">Transfer</option>
-                    <option value="Return">Return</option>
-                    <option value="ToCustomer">To Customer</option>
-                  </select>
+                  Transaction Types: <b className="tm_primary_color">{basicinfoData && basicinfoData.TransactionType || "N/A"}</b>
                 </p>
                 <p className="tm_invoice_date tm_m0">
                   Date:{" "}
@@ -273,6 +268,15 @@ const Addoutinvoice = () => {
               </svg>
             </span>
             <span className="tm_btn_text">Print</span>
+          </button>
+          <button
+            type="button"
+            className="tm_invoice_btn tm_color1"
+          >
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-floppy-disk"></i>
+            </span>
+            <span className="tm_btn_text">Submit</span>
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">

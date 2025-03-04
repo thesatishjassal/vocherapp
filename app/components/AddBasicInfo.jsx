@@ -13,6 +13,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
     FreightAmount: "",
     ReceiverName: "",
     ContactNumber: "",
+    TransactionType: "Transfer" // Added default value for TransactionType
   });
 
   const handleChange = (e) => {
@@ -25,7 +26,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onConfirm(formData); // Pass data to parent component
+    onConfirm(formData);
     setInfoModal(false);
   };
 
@@ -81,7 +82,21 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Second Row */}
+                  {/* Transaction Type Row */}
+                  <div className="col-md-6">
+                    <label className="form-label">Transaction Type</label>
+                    <select
+                      name="TransactionType"
+                      className="form-select"
+                      value={formData.TransactionType}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="Transfer">Transfer</option>
+                      <option value="Return">Return</option>
+                      <option value="To customer">To customer</option>
+                    </select>
+                  </div>
                   <div className="col-md-6">
                     <label className="form-label">Transport</label>
                     <input
@@ -92,6 +107,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
+
+                  {/* Second Row */}
                   <div className="col-md-6">
                     <label className="form-label">Vehicle No</label>
                     <input
@@ -102,8 +119,6 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-
-                  {/* Third Row */}
                   <div className="col-md-6">
                     <label className="form-label">Packages</label>
                     <input
@@ -114,6 +129,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
+
+                  {/* Third Row */}
                   <div className="col-md-6">
                     <label className="form-label">Order By</label>
                     <input
@@ -124,8 +141,6 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-
-                  {/* Fourth Row */}
                   <div className="col-md-6">
                     <label className="form-label">Sale Person</label>
                     <input
@@ -136,6 +151,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
+
+                  {/* Fourth Row */}
                   <div className="col-md-6">
                     <label className="form-label">Freight Amount</label>
                     <input
@@ -146,8 +163,6 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-
-                  {/* Fifth Row */}
                   <div className="col-md-6">
                     <label className="form-label">Receiver Name</label>
                     <input
@@ -157,6 +172,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       onChange={handleChange}
                     />
                   </div>
+
+                  {/* Fifth Row */}
                   <div className="col-md-6">
                     <label className="form-label">Receiver Mobile</label>
                     <input
@@ -190,4 +207,4 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
   );
 };
 
-export default BasicInfoModal;
+export default BasicInfoModal;  
