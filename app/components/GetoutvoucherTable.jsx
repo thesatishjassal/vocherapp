@@ -72,34 +72,26 @@ const GetOutvoucherTable = () => {
               <th>Voucher No</th>
               <th>Issue Slip No</th>
               <th>Sale Order No</th>
-              {/* <th>Customer Name</th> */}
-              {/* <th>Client ID</th> */}
-              {/* <th>Invoice Date</th> */}
               <th>Vehicle No</th>
               <th>Order By</th>
               <th>Sale Person</th>
+              <th>No of Packages</th>
               <th>Freight Amount</th>
-              {/* <th>Total Amount</th> */}
-              {/* <th>Remarks</th> */}
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {invouchers.map((voucher) => (
               <tr key={voucher.voucher_id}>
-                <td>{voucher.voucher_no}</td>
+                <td>{voucher.voucher_id}</td>
                 <td>{voucher.voucher_number}</td>
                 <td>{voucher.issue_slip_no}</td>
                 <td>{voucher.sale_order_no}</td>
                 <td>{voucher.vehicle_no}</td>
-                {/* <td>{voucher.client_id}</td> */}
                 <td>{voucher.ordered_by}</td>
-                {/* <td>{voucher.invoice_date}</td> */}
                 <td>{voucher.sales_person}</td>
                 <td>{voucher.number_of_packages}</td>
                 <td>{voucher.freight_amount}</td>
-                {/* <td>{voucher.total_amount}</td> */}
-                {/* <td>{voucher.remarks}</td> */}
                 <td>
                   <Link href={`/viewinv/${voucher.voucher_id}`}>
                     <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
