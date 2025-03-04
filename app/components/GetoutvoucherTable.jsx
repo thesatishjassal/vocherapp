@@ -84,7 +84,7 @@ const GetOutvoucherTable = () => {
             {invouchers.map((voucher) => (
               <tr key={voucher.voucher_id}>
                 <td>{voucher.voucher_id}</td>
-                <td>{voucher.voucher_number}</td>
+                <td>{voucher.voucher_no}</td>
                 <td>{voucher.issue_slip_no}</td>
                 <td>{voucher.sale_order_no}</td>
                 <td>{voucher.vehicle_no}</td>
