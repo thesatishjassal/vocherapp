@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/invouchers";
+const API_URL = "https://api.panvic.in/outvouchers/";
 
 const GetOutvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
@@ -60,8 +60,8 @@ const GetOutvoucherTable = () => {
             className="form-control w-25"
           />
           <div className="add_product">
-            <a className="btn btn-primary m-3" href="/addinvoice">
-              Add In-Vouchers
+            <a className="btn btn-primary m-3" href="/addoutinvoice">
+              Add Out-Vouchers
             </a>
           </div>
         </div>
@@ -69,16 +69,16 @@ const GetOutvoucherTable = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Voucher Number</th>
-              <th>Voucher Date</th>
-              <th>Transaction Type</th>
+              <th>Voucher No</th>
+              {/* <th>Issue Slip No</th> */}
+              <th>Sale Order No</th>
+              <th>Customer Name</th>
               {/* <th>Client ID</th> */}
-              <th>Invoice Number</th>
               {/* <th>Invoice Date</th> */}
-              <th>Transport Mode</th>
-              <th>Packages</th>
-              <th>Freight Status</th>
-              <th>Total Amount</th>
+              <th>Vehicle No</th>
+              <th>Sale Person</th>
+              <th>Freight Amount</th>
+              {/* <th>Total Amount</th> */}
               {/* <th>Remarks</th> */}
               <th>Actions</th>
             </tr>

@@ -89,7 +89,7 @@ export default function Home() {
 
         {/* Add Warehouse */}
         <div className="col-lg-2 col-md-2 col-12 mt-4 mt-md-0">
-          <a href="/addoutinvoice">
+          <a href="/getoutvouchers">
             {" "}
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>

@@ -1,4 +1,4 @@
-import GetInvoucherTable from "../components/GetInvoucherTable";
+import GetOutvoucherTable from "../components/GetoutvoucherTable";
 
 const GetOutVouchers = () => {
   return (
@@ -9,11 +9,11 @@ const GetOutVouchers = () => {
             <a href="/">Home</a>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
-            allinvocuhers
+            alloutvocuhers
           </li>
         </ol>
       </nav>
-      <GetInvoucherTable />
+      <GetOutvoucherTable />
     </>
   );
 };
