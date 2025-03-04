@@ -187,7 +187,6 @@ const handleSubmit = async () => {
     console.log("Submitting Invoice Items:", invoiceItems);
     for (const item of invoiceItems) {
       const itemData = {
-        voucher_id: newVoucherId, // Use invouchers.id
         product_id: item.itemcode,
         item_name: item.itemname,
         unit: item.unit,

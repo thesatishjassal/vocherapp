@@ -1,6 +1,10 @@
 "use client";
-import React, { useState } from "react";
+"use client"; // Added for client-side rendering in Next.js
+
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import OutvoucherTable from "../components/outVoucherTable";
 import BasicInfoModal from "../components/AddBasicInfo";
 import CustomerModal from "../components/customerModal";
@@ -16,6 +20,9 @@ const Addoutinvoice = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [voucherId, setVoucherId] = useState(null);
+  const [voucherSequence, setVoucherSequence] = useState(null);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleIconClick = () => {
     setOpen(!open);
@@ -36,45 +43,133 @@ const Addoutinvoice = () => {
   };
 
   const generateVoucherNumber = () => {
-    let voucherSequence = "";
     if (voucherSequence === null) return "PLOTV-Loading...";
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLOTV-${sequenceStr}`;
   };
 
+  useEffect(() => {
+    const fetchLastVoucherData = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/outvouchers/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const vouchers = await response.json();
+        console.log("Fetched vouchers:", vouchers);
+
+        // If no vouchers exist, start at 1; otherwise, use length + 1
+        if (vouchers && vouchers.length > 0) {
+          const nextVoucherId = vouchers.length + 1; // Start from length + 1
+          setVoucherId(nextVoucherId);
+
+          const lastSequence = vouchers
+            .map((voucher) => {
+              const match = voucher.voucher_no.match(/^PLOTV-(\d+)$/);
+              return match ? parseInt(match[1], 10) : 0;
+            })
+            .reduce((max, num) => Math.max(max, num), 0);
+          setVoucherSequence(lastSequence + 1);
+        } else {
+          setVoucherId(1); // Start at 1 if no vouchers
+          setVoucherSequence(1);
+        }
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+        setVoucherId(1); // Fallback to 1 on error
+        setVoucherSequence(1);
+        setSubmitStatus("Error fetching last voucher data, starting with 1");
+      }
+    };
+
+    fetchLastVoucherData();
+  }, []);
+
+  useEffect(() => {
+    if (submitStatus) {
+      if (submitStatus.includes("Error")) {
+        toast.error(submitStatus, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else {
+        toast.success(submitStatus, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    }
+  }, [submitStatus]);
+
   const handleSubmit = async () => {
+    if (!basicinfoData) {
+      setSubmitStatus("Please complete the basic info details");
+      return;
+    }
+
+    if (voucherId === null || voucherSequence === null) {
+      setSubmitStatus("Voucher data not yet loaded, please wait");
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setSubmitStatus(null);
 
     const payload = {
+      voucher_id: voucherId,
       voucher_no: generateVoucherNumber(),
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
       vehicle_no: basicinfoData?.VehicleNo || null,
-      number_of_packages: basicinfoData?.Packages || null,
+      number_of_packages: basicinfoData?.Packages
+        ? parseInt(basicinfoData.Packages, 10)
+        : null,
       ordered_by: basicinfoData?.OrderBy || null,
       sales_person: basicinfoData?.SalePerson || null,
-      freight_amount: basicinfoData?.FreightAmount || null,
+      freight_amount: basicinfoData?.FreightAmount
+        ? parseFloat(basicinfoData.FreightAmount)
+        : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
-      transaction_type: basicinfoData?.TransactionType || null,
+      remarks: null,
     };
+
+    console.log("Payload:", payload);
 
     try {
       const response = await axios.post(
         "https://api.panvic.in/outvouchers/",
-        JSON.stringify(payload),
+        payload,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-      console.log("Success:", response.data);
+      console.log("Response:", response.data);
+      setSubmitStatus("Outvoucher created successfully!");
+      setVoucherId(voucherId + 1); // Auto-increment for next submission
+      setVoucherSequence(voucherSequence + 1); // Increment sequence
     } catch (err) {
-      console.error("Error:", err);
-      setError(err.response?.data?.detail || "Failed to create outvoucher");
+      console.error("Error:", err.response?.data || err.message);
+      setError(err.response?.data || "Failed to create outvoucher");
     } finally {
       setLoading(false);
     }
@@ -144,7 +239,6 @@ const Addoutinvoice = () => {
                 alignItems: "center",
               }}
             >
-              {/* Left Column */}
               <div
                 className="tm_invoice_left"
                 style={{ flex: 1, textAlign: "left", marginTop: "-10px" }}
@@ -180,7 +274,6 @@ const Addoutinvoice = () => {
                 </p>
               </div>
 
-              {/* Right Column */}
               <div
                 className="tm_invoice_right tm_text_right"
                 style={{ flex: 1, textAlign: "right" }}
@@ -340,7 +433,7 @@ const Addoutinvoice = () => {
         </div>
         {error && (
           <div className="alert alert-danger mt-3" role="alert">
-            {error}
+            {JSON.stringify(error)}
           </div>
         )}
       </div>
