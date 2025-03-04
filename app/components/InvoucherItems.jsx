@@ -29,7 +29,7 @@ const InvoucherTable = ({ invoucherId }) => {
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this voucher.</p>;
-
+  console.log(items)
   return (
     <div>
       <table className="tm_round_border table align-items-center justify-content-center mb-0">
