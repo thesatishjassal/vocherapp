@@ -1,6 +1,4 @@
 "use client";
-"use client"; // Added for client-side rendering in Next.js
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -20,8 +18,8 @@ const Addoutinvoice = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [voucherId, setVoucherId] = useState(null);
-  const [voucherSequence, setVoucherSequence] = useState(null);
+  const [voucherId, setVoucherId] = useState(1); // Start at 1
+  const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleIconClick = () => {
@@ -43,54 +41,9 @@ const Addoutinvoice = () => {
   };
 
   const generateVoucherNumber = () => {
-    if (voucherSequence === null) return "PLOTV-Loading...";
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLOTV-${sequenceStr}`;
   };
-
-  useEffect(() => {
-    const fetchLastVoucherData = async () => {
-      try {
-        const response = await fetch("https://api.panvic.in/outvouchers/", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const vouchers = await response.json();
-        console.log("Fetched vouchers:", vouchers);
-
-        // If no vouchers exist, start at 1; otherwise, use length + 1
-        if (vouchers && vouchers.length > 0) {
-          const nextVoucherId = vouchers.length + 1; // Start from length + 1
-          setVoucherId(nextVoucherId);
-
-          const lastSequence = vouchers
-            .map((voucher) => {
-              const match = voucher.voucher_no.match(/^PLOTV-(\d+)$/);
-              return match ? parseInt(match[1], 10) : 0;
-            })
-            .reduce((max, num) => Math.max(max, num), 0);
-          setVoucherSequence(lastSequence + 1);
-        } else {
-          setVoucherId(1); // Start at 1 if no vouchers
-          setVoucherSequence(1);
-        }
-      } catch (error) {
-        console.error("Error fetching vouchers:", error);
-        setVoucherId(1); // Fallback to 1 on error
-        setVoucherSequence(1);
-        setSubmitStatus("Error fetching last voucher data, starting with 1");
-      }
-    };
-
-    fetchLastVoucherData();
-  }, []);
 
   useEffect(() => {
     if (submitStatus) {
@@ -119,11 +72,6 @@ const Addoutinvoice = () => {
   const handleSubmit = async () => {
     if (!basicinfoData) {
       setSubmitStatus("Please complete the basic info details");
-      return;
-    }
-
-    if (voucherId === null || voucherSequence === null) {
-      setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
 
@@ -165,8 +113,8 @@ const Addoutinvoice = () => {
       );
       console.log("Response:", response.data);
       setSubmitStatus("Outvoucher created successfully!");
-      setVoucherId(voucherId + 1); // Auto-increment for next submission
-      setVoucherSequence(voucherSequence + 1); // Increment sequence
+      setVoucherId(voucherId + 1); // Auto-increment voucher_id
+      setVoucherSequence(voucherSequence + 1); // Auto-increment sequence
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
       setError(err.response?.data || "Failed to create outvoucher");

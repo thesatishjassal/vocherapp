@@ -70,12 +70,13 @@ const GetOutvoucherTable = () => {
             <tr>
               <th>ID</th>
               <th>Voucher No</th>
-              {/* <th>Issue Slip No</th> */}
+              <th>Issue Slip No</th>
               <th>Sale Order No</th>
-              <th>Customer Name</th>
+              {/* <th>Customer Name</th> */}
               {/* <th>Client ID</th> */}
               {/* <th>Invoice Date</th> */}
               <th>Vehicle No</th>
+              <th>Order By</th>
               <th>Sale Person</th>
               <th>Freight Amount</th>
               {/* <th>Total Amount</th> */}
@@ -86,17 +87,18 @@ const GetOutvoucherTable = () => {
           <tbody>
             {invouchers.map((voucher) => (
               <tr key={voucher.voucher_id}>
-                <td>{voucher.voucher_id}</td>
+                <td>{voucher.voucher_no}</td>
                 <td>{voucher.voucher_number}</td>
-                <td>{voucher.voucher_date}</td>
-                <td>{voucher.transaction_type}</td>
+                <td>{voucher.issue_slip_no}</td>
+                <td>{voucher.sale_order_no}</td>
+                <td>{voucher.vehicle_no}</td>
                 {/* <td>{voucher.client_id}</td> */}
-                <td>{voucher.invoice_number}</td>
+                <td>{voucher.ordered_by}</td>
                 {/* <td>{voucher.invoice_date}</td> */}
-                <td>{voucher.mode_of_transport}</td>
+                <td>{voucher.sales_person}</td>
                 <td>{voucher.number_of_packages}</td>
-                <td>{voucher.freight_status}</td>
-                <td>{voucher.total_amount}</td>
+                <td>{voucher.freight_amount}</td>
+                {/* <td>{voucher.total_amount}</td> */}
                 {/* <td>{voucher.remarks}</td> */}
                 <td>
                   <Link href={`/viewinv/${voucher.voucher_id}`}>
