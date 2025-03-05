@@ -93,7 +93,7 @@ const GetOutvoucherTable = () => {
                 <td>{voucher.number_of_packages}</td>
                 <td>{voucher.freight_amount}</td>
                 <td>
-                  <Link href={`/viewinv/${voucher.voucher_id}`}>
+                  <Link href={`/viewotv/${voucher.voucher_id}`}>
                     <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
                       <i className="fas fa-eye"></i>
                     </u>
