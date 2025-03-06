@@ -1,7 +1,7 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import FindProduct from "./FindPropduct"; // Import FindProduct component
 
-const OutvocuherTable = ({ items = [] }) => {
+const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
     itemcode: "",
@@ -13,7 +13,7 @@ const OutvocuherTable = ({ items = [] }) => {
   });
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
-  
+
   const inputRefs = {
     itemcode: useRef(null),
     itemname: useRef(null),
@@ -23,16 +23,20 @@ const OutvocuherTable = ({ items = [] }) => {
     comments: useRef(null),
   };
 
-  // Add new row to the table
+  // Add new row and send data to parent
   const handleAddRow = () => {
     if (newRow.itemcode && newRow.itemname && newRow.qty && newRow.unit) {
-      setRows((prevRows) => [
-        ...prevRows,
+      const updatedRows = [
+        ...rows,
         {
-          id: prevRows.length + 1,
+          id: rows.length + 1,
           ...newRow,
         },
-      ]);
+      ];
+
+      setRows(updatedRows);
+      onRowsUpdate(updatedRows); // Send updated rows to parent
+
       setNewRow({
         itemcode: "",
         itemname: "",
@@ -47,7 +51,7 @@ const OutvocuherTable = ({ items = [] }) => {
     }
   };
 
-  // Handle Enter key for navigation between inputs
+  // Handle Enter key for navigation
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -59,7 +63,7 @@ const OutvocuherTable = ({ items = [] }) => {
     }
   };
 
-  // Handle field changes dynamically
+  // Handle field changes
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
 
@@ -69,7 +73,7 @@ const OutvocuherTable = ({ items = [] }) => {
     }
   };
 
-  // Filter product list based on query
+  // Filter product list
   const filterProducts = (query, field) => {
     const filtered = items.filter((item) => {
       if (field === "itemcode") {
@@ -82,9 +86,8 @@ const OutvocuherTable = ({ items = [] }) => {
     setProductList(filtered);
   };
 
-  // Handle product selection from modal
+  // Handle product selection
   const handleProductSelect = (product) => {
-    console.log(product);
     setNewRow((prev) => ({
       ...prev,
       itemcode: product.itemcode,
@@ -208,10 +211,7 @@ const OutvocuherTable = ({ items = [] }) => {
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
-        productList={{
-          PassItemcode: newRow.itemcode,
-          PassItemname: newRow.itemname,
-        }}
+        productList={productList}
         handleProductSelect={handleProductSelect}
       />
     </div>

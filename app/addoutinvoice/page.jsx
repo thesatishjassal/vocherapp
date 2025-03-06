@@ -24,8 +24,8 @@ const Addoutinvoice = () => {
   const [voucherData, setVoucherData] = useState([]);
 
   const handleRowsUpdate = (updatedRows) => {
-    console.log("Updated rows received in parent:", updatedRows);
-    setVoucherData(updatedRows);
+    console.log("Updated rows:", updatedRows);
+    setVoucherRows(updatedRows);
   };
   
   const handleIconClick = () => {
@@ -336,8 +336,9 @@ const Addoutinvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <OutvoucherTable items={[]} onUpdateRows={handleRowsUpdate} />
+                  <OutvoucherTable items={[]} onRowsUpdate={handleRowsUpdate} />
                 </div>
+                <pre>{JSON.stringify(voucherRows, null, 2)}</pre>
               </div>
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
