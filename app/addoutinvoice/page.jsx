@@ -57,25 +57,20 @@ const Addoutinvoice = () => {
       try {
         const response = await fetch("https://api.panvic.in/outvouchers/", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
-
+    
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+    
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
+          // Get the last voucher number correctly
           const lastVoucher = vouchers.reduce((max, voucher) =>
-            parseInt(voucher.voucher_id) > parseInt(max.voucher_id)
-              ? voucher
-              : max
+            parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
           );
-          const nextVoucherId = lastVoucher.voucher_id + 1;
-          setVoucherId(nextVoucherId);
-
+    
           const lastSequence = vouchers
             .map((voucher) => {
               const match = voucher.voucher_no
@@ -84,18 +79,20 @@ const Addoutinvoice = () => {
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
+    
+          setVoucherId(lastVoucher.voucher_id + 1);
           setVoucherSequence(lastSequence + 1);
         } else {
-          setVoucherId("1");
+          setVoucherId(1);
           setVoucherSequence(1);
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error);
-        setVoucherId("1");
+        setVoucherId(1);
         setVoucherSequence(1);
-        setSubmitStatus("Error fetching last voucher data, starting with 1");
       }
     };
+    
 
     fetchLastVoucherData();
   }, []);
