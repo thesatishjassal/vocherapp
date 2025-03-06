@@ -21,7 +21,13 @@ const Addoutinvoice = () => {
   const [voucherId, setVoucherId] = useState(1); // Star at 1
   const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [voucherData, setVoucherData] = useState([]);
 
+  const handleRowsUpdate = (updatedRows) => {
+    console.log("Updated rows received in parent:", updatedRows);
+    setVoucherData(updatedRows);
+  };
+  
   const handleIconClick = () => {
     setOpen(!open);
   };
@@ -330,7 +336,7 @@ const Addoutinvoice = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <OutvoucherTable />
+                  <OutvoucherTable items={[]} onUpdateRows={handleRowsUpdate} />
                 </div>
               </div>
               <div className="tm_invoice_footer my-2">

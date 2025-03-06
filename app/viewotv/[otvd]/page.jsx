@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import InvoucherTable from "../../components/InvoucherItems";
+import OutvoucherTable from "../../components/viewOutvocuherTable";
 
 const INVOCHER_API_URL = "https://api.panvic.in/outvouchers";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
@@ -169,7 +169,7 @@ const OutvoucherDetail = () => {
             <p>
               <b className="tm_primary_color">Product Info:</b>
             </p>
-            <InvoucherTable invoucherId={otvd} />
+            <OutvoucherTable invoucherId={otvd} />
             {/* Total Amount */}
             <div className="tm_invoice_footer my-2">
               <div className="tm_right_footer">
