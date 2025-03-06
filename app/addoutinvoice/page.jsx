@@ -21,7 +21,7 @@ const Addoutinvoice = () => {
   const [voucherId, setVoucherId] = useState(1); // Star at 1
   const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [voucherData, setVoucherData] = useState([]);
+  const [voucherRows , setVoucherRows] = useState([]);
 
   const handleRowsUpdate = (updatedRows) => {
     console.log("Updated rows:", updatedRows);
