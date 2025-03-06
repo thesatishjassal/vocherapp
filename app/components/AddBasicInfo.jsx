@@ -13,7 +13,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
     FreightAmount: "",
     ReceiverName: "",
     ContactNumber: "",
-    TransactionType: "Transfer" // Added default value for TransactionType
+    transaction_types: "Transfer" // Added default value for transaction_types
   });
 
   const handleChange = (e) => {
@@ -86,9 +86,9 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                   <div className="col-md-6">
                     <label className="form-label">Transaction Type</label>
                     <select
-                      name="TransactionType"
+                      name="transaction_types"
                       className="form-select"
-                      value={formData.TransactionType}
+                      value={formData.transaction_types}
                       onChange={handleChange}
                       required
                     >

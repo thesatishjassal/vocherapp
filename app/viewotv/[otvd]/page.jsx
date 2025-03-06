@@ -85,7 +85,7 @@ const OutvoucherDetail = () => {
                 </div>
                 <p className="tm_invoice_number">
                   Voucher No:{" "}
-                  <b className="tm_primary_color">#{voucher.voucherNo}</b>
+                  <b className="tm_primary_color">#{voucher.voucher_no}</b>
                 </p>
               </div>
             </div>
@@ -95,12 +95,12 @@ const OutvoucherDetail = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number">
-                  Transaction Type: <b>{voucher.transaction_type}</b>
+                  Transaction Type: <b>{voucher && voucher.transaction_types}</b>
                 </p>
-                <p className="tm_invoice_date">
+                {/* <p className="tm_invoice_date">
                   Date:{" "}
-                  <b className="tm_primary_color">{voucher.invoice_date}</b>
-                </p>
+                  <b className="tm_primary_color">{voucher && voucher.transport}</b>
+                </p> */}
               </div>
             </div>
 
@@ -125,28 +125,47 @@ const OutvoucherDetail = () => {
                       <br />
                       GST NO: <b>{client.gst_number}</b>
                     </p>
-                    Freight: <b>{voucher && voucher.freight_status}</b>
                   </div>
                 </div>
               )}
-              <div className="tm_invoice_right tm_text_right">
-                <p>
-                  <b className="tm_primary_color">Receiver Details:</b>
+              <div
+                className="tm_invoice_right tm_text_right"
+                style={{ flex: 1, textAlign: "right" }}
+              >
+                <p className="tm_mb2">
+                  <b className="tm_primary_color">Basic Details:</b>
+                  <button
+                    type="button"
+                    className="btn modalaction_btn no-print"
+                    onClick={() => setInfoModal(true)}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
-                <p>
-                  Invoice No: <b>{voucher.invoice_number}</b>
-                  <br />
-                  Invoice Date: <b>{voucher.invoice_date}</b>
-                  <br />
-                  Number of Packages: <b>{voucher.number_of_packages}</b>
-                  <br />
-                  Transport: <b>{voucher.mode_of_transport}</b>
-                  <br />
-                </p>
+                Issue Slip No:
+                <b> {voucher && voucher.issue_slip_no}</b> <br />
+                Sale Order No:
+                <b> {voucher && voucher.sale_order_no} </b>
+                <br />
+                Transport: <b>{voucher && voucher.transport}</b> <br />
+                Vehicle No: <b>{voucher && voucher.vehicle_no}</b> <br />
               </div>
             </div>
 
-            {/* Product Info */}
+            <div className="d-flex py-2 px-0 no-top-border">
+              <div className="flex-grow-1 py-0 pl-0 no-top-border">
+                Package <b>{voucher && voucher.number_of_packages}</b>
+              </div>
+              <div className="flex-grow-1 py-0 no-top-border">
+                Order BY: <b>{voucher && voucher.ordered_by}</b>
+              </div>
+              <div className="flex-grow-1 py-0 no-top-border">
+                Sale Person: <b>{voucher && voucher.sales_person}</b>
+              </div>
+              <div className="flex-grow-1 py-0 no-top-border">
+                Freight Amount: <b>{voucher && voucher.freight_amount}</b>
+              </div>
+            </div>
             <p>
               <b className="tm_primary_color">Product Info:</b>
             </p>

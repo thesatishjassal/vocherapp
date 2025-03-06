@@ -6,7 +6,7 @@ export function middleware(req) {
     // "/addclient",
   
     "/report",
-    "/dashboard"
+    // "/dashboard"
   ];
 
   const userDetails = req.cookies.get("user_details")?.value;
@@ -23,5 +23,5 @@ export function middleware(req) {
 
 // Apply middleware only to the specified routes
 export const config = {
-  matcher: ["/products",  "/report", "/dashboard"],
+  matcher: ["/products",  "/report", ],
 };

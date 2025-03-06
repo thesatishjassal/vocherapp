@@ -18,7 +18,7 @@ const Addoutinvoice = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [voucherId, setVoucherId] = useState(1); // Start at 1
+  const [voucherId, setVoucherId] = useState(1); // Star at 1
   const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
   const [submitStatus, setSubmitStatus] = useState(null);
 
@@ -150,7 +150,7 @@ const Addoutinvoice = () => {
         : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
-      client_id: selectedCustomer?.id || null,
+      client_id: selectedCustomer?.id,
       remarks: null,
     };
   
@@ -163,7 +163,7 @@ const Addoutinvoice = () => {
   
       console.log("Response:", response.data);
       setSubmitStatus("Outvoucher created successfully!");
-  
+      window.location.href = "/getoutvouchers";
       // Update sequence only after successful response
       setVoucherId((prev) => prev + 1);
       setVoucherSequence((prev) => prev + 1);
