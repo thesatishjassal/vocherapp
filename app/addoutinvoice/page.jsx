@@ -184,7 +184,7 @@ const Addoutinvoice = () => {
         voucher_id: createdVoucherId,
         product_id: row.itemcode,
         item_name: row.itemname,
-        quantity: row.qty,  // ✅ FIXED: Changed "qty" to "quantity"
+        quantity: parseInt(row.qty, 10),  // ✅ FIXED: Ensure quantity is a number
         unit: row.unit,
         rackcode: row.rackcode,
       }));
@@ -215,6 +215,7 @@ const Addoutinvoice = () => {
       setLoading(false);
     }
   };
+  
   
   return (
     <div className="card tm_container my-4">
