@@ -181,10 +181,10 @@ const Addoutinvoice = () => {
   
       // Define itemsPayload AFTER we have a valid voucher_id
       const itemsPayload = voucherRows.map((row) => ({
-        voucher_id: createdVoucherId, // Use new voucher ID
+        voucher_id: createdVoucherId,
         product_id: row.itemcode,
         item_name: row.itemname,
-        qty: row.qty,
+        quantity: row.qty,  // ✅ FIXED: Changed "qty" to "quantity"
         unit: row.unit,
         rackcode: row.rackcode,
       }));
@@ -216,8 +216,6 @@ const Addoutinvoice = () => {
     }
   };
   
-  
-
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
