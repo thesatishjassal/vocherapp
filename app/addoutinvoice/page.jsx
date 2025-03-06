@@ -139,6 +139,7 @@ const Addoutinvoice = () => {
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
+      transaction_types: basicinfoData?.transaction_types || null,
       vehicle_no: basicinfoData?.VehicleNo || null,
       number_of_packages: basicinfoData?.Packages
         ? parseInt(basicinfoData.Packages, 10)
@@ -317,11 +318,11 @@ const Addoutinvoice = () => {
               <div className="flex-grow-1 py-0 no-top-border">
                 Sale Person: <b>{basicinfoData && basicinfoData.SalePerson}</b>
               </div>
-              <div className="flex-grow-1 py-0 no-top-border">
-                Freight Amount:{" "}
                 <b>{basicinfoData && basicinfoData.FreightAmount}</b>
               </div>
             </div>
+              <div className="flex-grow-1 py-0 no-top-border">
+                Freight Amount:{" "}
 
             <p className="tm_mb2">
               <b className="tm_primary_color">Product info:</b>
