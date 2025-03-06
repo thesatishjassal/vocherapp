@@ -96,6 +96,7 @@ const Addoutinvoice = () => {
         : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
+      client_id: selectedClient && selectedClient.id || null,
       remarks: null,
     };
 
