@@ -41,10 +41,12 @@ const Addoutinvoice = () => {
   };
 
   const generateVoucherNumber = () => {
+    if (voucherSequence === null) return "PLOTV-Loading...";
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLOTV-${sequenceStr}`;
   };
 
+ 
   useEffect(() => {
     if (submitStatus) {
       if (submitStatus.includes("Error")) {
@@ -69,6 +71,8 @@ const Addoutinvoice = () => {
     }
   }, [submitStatus]);
 
+  const voucher_no = generateVoucherNumber()
+   
   const handleSubmit = async () => {
     if (!basicinfoData) {
       setSubmitStatus("Please complete the basic info details");
@@ -78,10 +82,10 @@ const Addoutinvoice = () => {
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-
+   
     const payload = {
       voucher_id: voucherId,
-      voucher_no: generateVoucherNumber(),
+      voucher_no:  voucher_no,
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
