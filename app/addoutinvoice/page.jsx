@@ -133,16 +133,15 @@ const Addoutinvoice = () => {
     }
     if (voucherId === null || voucherSequence === null) {
       setSubmitStatus("Voucher data not yet loaded, please wait");
-      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
       return;
     }
-
+  
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-
-    const newVoucherNo = generateVoucherNumber(); // Ensure fresh number
-
+  
+    const newVoucherNo = generateVoucherNumber();
+  
     const voucherPayload = {
       voucher_id: voucherId,
       voucher_no: newVoucherNo,
@@ -151,61 +150,53 @@ const Addoutinvoice = () => {
       transport: basicinfoData?.Transport || null,
       transaction_types: basicinfoData?.transaction_types || null,
       vehicle_no: basicinfoData?.VehicleNo || null,
-      number_of_packages: basicinfoData?.Packages
-        ? parseInt(basicinfoData.Packages, 10)
-        : null,
+      number_of_packages: basicinfoData?.Packages ? parseInt(basicinfoData.Packages, 10) : null,
       ordered_by: basicinfoData?.OrderBy || null,
       sales_person: basicinfoData?.SalePerson || null,
-      freight_amount: basicinfoData?.FreightAmount
-        ? parseFloat(basicinfoData.FreightAmount)
-        : null,
+      freight_amount: basicinfoData?.FreightAmount ? parseFloat(basicinfoData.FreightAmount) : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
       client_id: selectedCustomer?.id,
       remarks: null,
     };
-
-    console.log("Voucher Payload:", voucherPayload);
-
+  
     try {
       // First request: Create Outvoucher
-      const voucherResponse = await axios.post(
-        "https://api.panvic.in/outvouchers/",
-        JSON.stringify(itemsPayload),
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
+      const voucherResponse = await axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
+        headers: { "Content-Type": "application/json" },
+      });
+  
       console.log("Outvoucher Created:", voucherResponse.data);
-      // Extract the created voucher_id from response
+  
+      // Extract created voucher_id from response
       const createdVoucherId = voucherResponse.data.voucher_id;
-      // Second request: Create Outvoucher Items
+  
+      // Define itemsPayload AFTER we have a valid voucher_id
       const itemsPayload = voucherRows.map((row) => ({
-        voucher_id: createdVoucherId, // Use the new voucher ID
-        // item_id: row.item_id,
+        voucher_id: createdVoucherId, // Use new voucher ID
         product_id: row.itemcode,
         item_name: row.itemname,
         qty: row.qty,
         unit: row.unit,
         rackcode: row.rackcode,
       }));
-
+  
       console.log("Items Payload:", itemsPayload);
-
+  
+      // Second request: Create Outvoucher Items
       await axios.post(
         `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
-        JSON.stringify(itemsPayload),
+        itemsPayload,
         {
           headers: { "Content-Type": "application/json" },
         }
       );
-
+  
       console.log("Outvoucher Items Created Successfully");
-
+  
       setSubmitStatus("Outvoucher and Items created successfully!");
       window.location.href = "/getoutvouchers";
-
+  
       // Update sequence only after successful response
       setVoucherId((prev) => prev + 1);
       setVoucherSequence((prev) => prev + 1);
@@ -216,6 +207,7 @@ const Addoutinvoice = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="card tm_container my-4">
