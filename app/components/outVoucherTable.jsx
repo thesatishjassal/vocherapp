@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import FindProduct from "./FindPropduct"; // Import FindProduct component
 
-const OutvocuherTable = ({ items = [], onUpdateRows }) => {
+const OutvocuherTable = ({ items = [] }) => {
   const [rows, setRows] = useState([]);
   const [newRow, setNewRow] = useState({
     itemcode: "",
@@ -11,7 +11,6 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
     rackcode: "",
     comments: "",
   });
-
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
   
@@ -24,19 +23,16 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
     comments: useRef(null),
   };
 
-  // Add new row to the table and update parent
+  // Add new row to the table
   const handleAddRow = () => {
     if (newRow.itemcode && newRow.itemname && newRow.qty && newRow.unit) {
-      const updatedRows = [
-        ...rows,
+      setRows((prevRows) => [
+        ...prevRows,
         {
-          id: rows.length + 1,
+          id: prevRows.length + 1,
           ...newRow,
         },
-      ];
-      setRows(updatedRows);
-      onUpdateRows(updatedRows); // Pass updated rows to parent component
-      
+      ]);
       setNewRow({
         itemcode: "",
         itemname: "",
@@ -45,24 +41,50 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
         rackcode: "",
         comments: "",
       });
-
       inputRefs.itemcode.current.focus();
     } else {
       alert("Please fill in all required fields.");
     }
   };
 
+  // Handle Enter key for navigation between inputs
+  const handleKeyDown = (e, nextField) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (nextField && inputRefs[nextField]?.current) {
+        inputRefs[nextField].current.focus();
+      } else {
+        handleAddRow();
+      }
+    }
+  };
+
   // Handle field changes dynamically
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
+
     if (["itemcode", "itemname"].includes(field) && value.trim()) {
       setShowModal(true);
-      filterProducts(value);
+      filterProducts(value, field);
     }
+  };
+
+  // Filter product list based on query
+  const filterProducts = (query, field) => {
+    const filtered = items.filter((item) => {
+      if (field === "itemcode") {
+        return item.code.toLowerCase().includes(query.toLowerCase());
+      } else if (field === "itemname") {
+        return item.name.toLowerCase().includes(query.toLowerCase());
+      }
+      return false;
+    });
+    setProductList(filtered);
   };
 
   // Handle product selection from modal
   const handleProductSelect = (product) => {
+    console.log(product);
     setNewRow((prev) => ({
       ...prev,
       itemcode: product.itemcode,
@@ -111,6 +133,7 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
                 name="itemcode"
                 value={newRow.itemcode}
                 onChange={(e) => handleFieldChange("itemcode", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "itemname")}
                 placeholder="Enter item code"
                 className="form-control input-small"
                 ref={inputRefs.itemcode}
@@ -122,6 +145,7 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
                 name="itemname"
                 value={newRow.itemname}
                 onChange={(e) => handleFieldChange("itemname", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "qty")}
                 placeholder="Enter item name"
                 className="form-control"
                 ref={inputRefs.itemname}
@@ -132,6 +156,7 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
                 type="text"
                 name="unit"
                 value={newRow.unit}
+                onChange={(e) => handleFieldChange("unit", e.target.value)}
                 placeholder="Enter unit"
                 className="form-control input-small"
                 ref={inputRefs.unit}
@@ -143,6 +168,7 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
                 type="text"
                 name="rackcode"
                 value={newRow.rackcode}
+                onChange={(e) => handleFieldChange("rackcode", e.target.value)}
                 placeholder="Rackcode"
                 className="form-control input-small"
                 ref={inputRefs.rackcode}
@@ -155,17 +181,20 @@ const OutvocuherTable = ({ items = [], onUpdateRows }) => {
                 name="qty"
                 value={newRow.qty}
                 onChange={(e) => handleFieldChange("qty", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, "comments")}
                 placeholder="Qty"
                 className="form-control input-small"
                 ref={inputRefs.qty}
               />
             </td>
+
             <td>
               <input
                 type="text"
                 name="comments"
                 value={newRow.comments}
                 onChange={(e) => handleFieldChange("comments", e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, null)}
                 placeholder="Comments"
                 className="form-control input-small"
                 ref={inputRefs.comments}
