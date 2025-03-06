@@ -46,7 +46,50 @@ const Addoutinvoice = () => {
     return `PLOTV-${sequenceStr}`;
   };
 
- 
+  useEffect(() => {
+    const fetchLastVoucherData = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/outvouchers/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const vouchers = await response.json();
+        if (vouchers && vouchers.length > 0) {
+          const lastVoucher = vouchers.reduce((max, voucher) =>
+            parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
+          );
+          const nextVoucherId = lastVoucher.voucher_id + 1;
+          setVoucherId(nextVoucherId);
+
+          const lastSequence = vouchers
+            .map((voucher) => {
+              const match = voucher.voucher_number.match(/^PLOTV-(\d+)$/);
+              return match ? parseInt(match[1], 10) : 0;
+            })
+            .reduce((max, num) => Math.max(max, num), 0);
+          setVoucherSequence(lastSequence + 1);
+        } else {
+          setVoucherId("1");
+          setVoucherSequence(1);
+        }
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+        setVoucherId("1");
+        setVoucherSequence(1);
+        setSubmitStatus("Error fetching last voucher data, starting with 1");
+      }
+    };
+
+    fetchLastVoucherData();
+  }, []);
+
   useEffect(() => {
     if (submitStatus) {
       if (submitStatus.includes("Error")) {
@@ -78,7 +121,12 @@ const Addoutinvoice = () => {
       setSubmitStatus("Please complete the basic info details");
       return;
     }
-
+    if (voucherId === null || voucherSequence === null) {
+      setSubmitStatus("Voucher data not yet loaded, please wait");
+      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
+      return;
+    }
+  
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
