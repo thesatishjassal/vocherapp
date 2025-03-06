@@ -156,7 +156,7 @@ const Addoutinvoice = () => {
       freight_amount: basicinfoData?.FreightAmount ? parseFloat(basicinfoData.FreightAmount) : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
-      client_id: selectedCustomer?.id,
+      client_id: selectedCustomer?.id || null,
       remarks: null,
     };
   
@@ -170,6 +170,14 @@ const Addoutinvoice = () => {
   
       // Extract created voucher_id from response
       const createdVoucherId = voucherResponse.data.voucher_id;
+      if (!createdVoucherId) {
+        throw new Error("Failed to retrieve voucher_id from response.");
+      }
+  
+      // Validate voucherRows before making the second API call
+      if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
+        throw new Error("Voucher items are empty. Cannot proceed with creating outvoucher items.");
+      }
   
       // Define itemsPayload AFTER we have a valid voucher_id
       const itemsPayload = voucherRows.map((row) => ({
@@ -183,10 +191,10 @@ const Addoutinvoice = () => {
   
       console.log("Items Payload:", itemsPayload);
   
-      // Second request: Create Outvoucher Items
+      // Second request: Create Outvoucher Items (Wrap itemsPayload inside an object)
       await axios.post(
         `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
-        itemsPayload,
+        { items: itemsPayload },  // ✅ Fix: Send an object instead of an array
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -198,15 +206,16 @@ const Addoutinvoice = () => {
       window.location.href = "/getoutvouchers";
   
       // Update sequence only after successful response
-      setVoucherId((prev) => prev + 1);
-      setVoucherSequence((prev) => prev + 1);
+      setVoucherId((prev) => (prev !== null ? prev + 1 : 1));
+      setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
-      setError(err.response?.data || "Failed to create outvoucher and items");
+      setError(err.response?.data || { message: "Failed to create outvoucher and items" });
     } finally {
       setLoading(false);
     }
   };
+  
   
 
   return (
