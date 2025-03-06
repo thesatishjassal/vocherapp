@@ -21,13 +21,13 @@ const Addoutinvoice = () => {
   const [voucherId, setVoucherId] = useState(1); // Star at 1
   const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [voucherRows , setVoucherRows] = useState([]);
+  const [voucherRows, setVoucherRows] = useState([]);
 
   const handleRowsUpdate = (updatedRows) => {
     console.log("Updated rows:", updatedRows);
     setVoucherRows(updatedRows);
   };
-  
+
   const handleIconClick = () => {
     setOpen(!open);
   };
@@ -69,14 +69,18 @@ const Addoutinvoice = () => {
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
           const lastVoucher = vouchers.reduce((max, voucher) =>
-            parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
+            parseInt(voucher.voucher_id) > parseInt(max.voucher_id)
+              ? voucher
+              : max
           );
           const nextVoucherId = lastVoucher.voucher_id + 1;
           setVoucherId(nextVoucherId);
 
           const lastSequence = vouchers
             .map((voucher) => {
-              const match = voucher.voucher_no ? voucher.voucher_no.match(/^PLOTV-(\d+)$/) : null;
+              const match = voucher.voucher_no
+                ? voucher.voucher_no.match(/^PLOTV-(\d+)$/)
+                : null;
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
@@ -120,8 +124,8 @@ const Addoutinvoice = () => {
     }
   }, [submitStatus]);
 
-  const voucher_no = generateVoucherNumber()
-   
+  const voucher_no = generateVoucherNumber();
+
   const handleSubmit = async () => {
     if (!basicinfoData) {
       setSubmitStatus("Please complete the basic info details");
@@ -132,16 +136,16 @@ const Addoutinvoice = () => {
       console.log("Voucher data not loaded:", { voucherId, voucherSequence });
       return;
     }
-  
+
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-  
+
     const newVoucherNo = generateVoucherNumber(); // Ensure fresh number
-  
-    const payload = {
+
+    const voucherPayload = {
       voucher_id: voucherId,
-      voucher_no: newVoucherNo,  // Use dynamically generated value
+      voucher_no: newVoucherNo,
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
@@ -160,29 +164,58 @@ const Addoutinvoice = () => {
       client_id: selectedCustomer?.id,
       remarks: null,
     };
-  
-    console.log("Payload:", payload);
-  
+
+    console.log("Voucher Payload:", voucherPayload);
+
     try {
-      const response = await axios.post("https://api.panvic.in/outvouchers/", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
-  
-      console.log("Response:", response.data);
-      setSubmitStatus("Outvoucher created successfully!");
+      // First request: Create Outvoucher
+      const voucherResponse = await axios.post(
+        "https://api.panvic.in/outvouchers/",
+        voucherPayload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("Outvoucher Created:", voucherResponse.data);
+      // Extract the created voucher_id from response
+      const createdVoucherId = voucherResponse.data.voucher_id;
+      // Second request: Create Outvoucher Items
+      const itemsPayload = voucherRows.map((row) => ({
+        voucher_id: createdVoucherId, // Use the new voucher ID
+        // item_id: row.item_id,
+        product_id: row.itemcode,
+        item_name: row.itemname,
+        qty: row.qty,
+        unit: row.unit,
+        rackcode: row.rackcode,
+      }));
+
+      console.log("Items Payload:", itemsPayload);
+
+      await axios.post(
+        `https://api.panvic.in/outvouchers/${createdVoucherId}/items`,
+        itemsPayload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("Outvoucher Items Created Successfully");
+
+      setSubmitStatus("Outvoucher and Items created successfully!");
       window.location.href = "/getoutvouchers";
+
       // Update sequence only after successful response
       setVoucherId((prev) => prev + 1);
       setVoucherSequence((prev) => prev + 1);
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
-      setError(err.response?.data || "Failed to create outvoucher");
+      setError(err.response?.data || "Failed to create outvoucher and items");
     } finally {
       setLoading(false);
     }
   };
-  
-  
 
   return (
     <div className="card tm_container my-4">
@@ -211,7 +244,7 @@ const Addoutinvoice = () => {
                 <p className="tm_invoice_number tm_m0">
                   Transaction Types:{" "}
                   <b className="tm_primary_color">
-                    {basicinfoData && basicinfoData.TransactionType || "N/A"}
+                    {(basicinfoData && basicinfoData.TransactionType) || "N/A"}
                   </b>
                 </p>
                 <p className="tm_invoice_date tm_m0">
@@ -270,15 +303,13 @@ const Addoutinvoice = () => {
                   />
                 )}
                 <p style={{ textAlign: "justify" }}>
-                  Name:{" "}
-                  <b>{selectedCustomer?.client_name || "Not Selected"}</b>{" "}
+                  Name: <b>{selectedCustomer?.client_name || "Not Selected"}</b>{" "}
                   <br />
                   Address: <b>{selectedCustomer?.address || "N/A"}</b> <br />
                   City: <b>{selectedCustomer?.city || "N/A"}</b>, State:{" "}
                   <b>{selectedCustomer?.state || "N/A"}</b> | Pincode:{" "}
                   <b>{selectedCustomer?.pincode || "N/A"}</b> <br />
-                  Phone: <b>{selectedCustomer?.client_phone || "N/A"}</b>{" "}
-                  <br />
+                  Phone: <b>{selectedCustomer?.client_phone || "N/A"}</b> <br />
                   GST NO: <b>{selectedCustomer?.gst_number || "N/A"}</b>
                 </p>
               </div>
@@ -308,9 +339,13 @@ const Addoutinvoice = () => {
                 Sale Order No:
                 <b> {basicinfoData && basicinfoData.SaleOrderNo} </b>
                 <br />
-                Transport: <b>{basicinfoData && basicinfoData.Transport}</b>{" "}
+                Transport: <b>
+                  {basicinfoData && basicinfoData.Transport}
+                </b>{" "}
                 <br />
-                Vehicle No: <b>{basicinfoData && basicinfoData.VehicleNo}</b>{" "}
+                Vehicle No: <b>
+                  {basicinfoData && basicinfoData.VehicleNo}
+                </b>{" "}
                 <br />
               </div>
             </div>
@@ -324,12 +359,11 @@ const Addoutinvoice = () => {
               <div className="flex-grow-1 py-0 no-top-border">
                 Sale Person: <b>{basicinfoData && basicinfoData.SalePerson}</b>
               </div>
-                <b>{basicinfoData && basicinfoData.FreightAmount}</b>
-              </div>
+              <b>{basicinfoData && basicinfoData.FreightAmount}</b>
             </div>
-              <div className="flex-grow-1 py-0 no-top-border">
-                Freight Amount:{" "}
-
+          </div>
+          <div className="flex-grow-1 py-0 no-top-border">
+            Freight Amount:{" "}
             <p className="tm_mb2">
               <b className="tm_primary_color">Product info:</b>
             </p>
