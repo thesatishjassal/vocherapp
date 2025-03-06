@@ -194,7 +194,7 @@ const Addoutinvoice = () => {
       console.log("Items Payload:", itemsPayload);
 
       await axios.post(
-        `https://api.panvic.in//outvouchers//${createdVoucherId}/items/`,
+        `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
         itemsPayload,
         {
           headers: { "Content-Type": "application/json" },
