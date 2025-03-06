@@ -70,7 +70,7 @@ const Addoutinvoice = () => {
 
           const lastSequence = vouchers
             .map((voucher) => {
-              const match = voucher.voucher_number ? voucher.voucher_number.match(/^PLOTV-(\d+)$/) : null;
+              const match = voucher.voucher_no ? voucher.voucher_no.match(/^PLOTV-(\d+)$/) : null;
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
@@ -174,6 +174,7 @@ const Addoutinvoice = () => {
       setLoading(false);
     }
   };
+  
   
 
   return (
