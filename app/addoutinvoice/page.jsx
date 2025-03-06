@@ -171,7 +171,7 @@ const Addoutinvoice = () => {
       // First request: Create Outvoucher
       const voucherResponse = await axios.post(
         "https://api.panvic.in/outvouchers/",
-        voucherPayload,
+        JSON.stringify(itemsPayload),
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -195,7 +195,7 @@ const Addoutinvoice = () => {
 
       await axios.post(
         `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
-        itemsPayload,
+        JSON.stringify(itemsPayload),
         {
           headers: { "Content-Type": "application/json" },
         }
