@@ -145,21 +145,7 @@ const InvoucherDetail = () => {
                 </p>
               </div>
             </div>
-            <div className="d-flex py-2 px-0 no-top-border">
-              <div className="flex-grow-1 py-0 pl-0 no-top-border">
-                Package <b>{basicinfoData && basicinfoData.Packages}</b>
-              </div>
-              <div className="flex-grow-1 py-0 no-top-border">
-                Order BY: <b>{basicinfoData && basicinfoData.OrderBy}</b>
-              </div>
-              <div className="flex-grow-1 py-0 no-top-border">
-                Sale Person: <b>{basicinfoData && basicinfoData.SalePerson}</b>
-              </div>
-              <div className="flex-grow-1 py-0 no-top-border">
-                Freight Amount:{" "}
-                <b>{basicinfoData && basicinfoData.FreightAmount}</b>
-              </div>
-            </div>
+
             {/* Product Info */}
             <p>
               <b className="tm_primary_color">Product Info:</b>
