@@ -130,10 +130,12 @@ const Addoutinvoice = () => {
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-   
+  
+    const newVoucherNo = generateVoucherNumber(); // Ensure fresh number
+  
     const payload = {
       voucher_id: voucherId,
-      voucher_no:  voucher_no,
+      voucher_no: newVoucherNo,  // Use dynamically generated value
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
@@ -148,26 +150,23 @@ const Addoutinvoice = () => {
         : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
-      client_id: selectedCustomer && selectedCustomer.id || null,
+      client_id: selectedCustomer?.id || null,
       remarks: null,
     };
-
+  
     console.log("Payload:", payload);
-
+  
     try {
-      const response = await axios.post(
-        "https://api.panvic.in/outvouchers/",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post("https://api.panvic.in/outvouchers/", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+  
       console.log("Response:", response.data);
       setSubmitStatus("Outvoucher created successfully!");
-      setVoucherId(voucherId + 1); // Auto-increment voucher_id
-      setVoucherSequence(voucherSequence + 1); // Auto-increment sequence
+  
+      // Update sequence only after successful response
+      setVoucherId((prev) => prev + 1);
+      setVoucherSequence((prev) => prev + 1);
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
       setError(err.response?.data || "Failed to create outvoucher");
@@ -175,6 +174,7 @@ const Addoutinvoice = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="card tm_container my-4">
