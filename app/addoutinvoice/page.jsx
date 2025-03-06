@@ -177,15 +177,23 @@ const Addoutinvoice = () => {
       }
   
       // Define itemsPayload AFTER we have a valid voucher_id
+      // const itemsPayload = voucherRows.map((row) => ({
+      //   voucher_id: createdVoucherId,
+      //   product_id: row.itemcode,
+      //   item_name: row.itemname,
+      //   quantity: parseInt(row.qty, 10),  // ✅ FIXED: Ensure quantity is a number
+      //   unit: row.unit,
+      //   rackcode: row.rxackcode,
+      // }));
       const itemsPayload = voucherRows.map((row) => ({
         voucher_id: createdVoucherId,
         product_id: row.itemcode,
         item_name: row.itemname,
-        quantity: parseInt(row.qty, 10),  // ✅ FIXED: Ensure quantity is a number
+        quantity: Number(row.qty) || 0,  // Ensure quantity is a number
         unit: row.unit,
         rackcode: row.rackcode,
       }));
-  
+      
       console.log("Items Payload:", itemsPayload);
   
       // Second request: Create Outvoucher Items (Wrap itemsPayload inside an object)
