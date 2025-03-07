@@ -131,12 +131,16 @@ const Addoutinvoice = () => {
       setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
+    if (!productsFetched) {
+      setSubmitStatus("Waiting for product data to load.");
+      setLoading(false);
+      return;
+    }
   
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-
-    const validProducts = await fetch('https://api.panvic.in/products/').then(res => res.json());
+  
     const newVoucherNo = generateVoucherNumber();
   
     const voucherPayload = {
@@ -159,7 +163,7 @@ const Addoutinvoice = () => {
   
     try {
       // First request: Create Outvoucher
-      const voucherResponse = await axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
+      const voucherResponse = await Axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
         headers: { "Content-Type": "application/json" },
       });
   
@@ -184,11 +188,7 @@ const Addoutinvoice = () => {
       if (invalidRows) {
         throw new Error("All item fields must be filled.");
       }
-      if (!product) {
-            setSubmitStatus(`Error: Product with itemcode ${row.itemcode} does not exist.`);
-            setLoading(false);
-            return;
-      }
+  
       for (const row of voucherRows) {
         const itemData = {
           voucher_id: createdVoucherId,
@@ -197,13 +197,14 @@ const Addoutinvoice = () => {
           unit: row.unit,
           rackcode: row.rackcode,
           quantity: Number(row.qty) || 0,
+          comments: null,
         };
   
         // Second request: Create Outvoucher Items
         const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
         console.log("Submitting item to:", itemUrl, "with data:", itemData);
   
-        const itemsResponse = await axios.post(itemUrl, itemData, {
+        const itemsResponse = await Axios.post(itemUrl, itemData, {
           headers: { "Content-Type": "application/json" },
         });
   
@@ -226,7 +227,6 @@ const Addoutinvoice = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
