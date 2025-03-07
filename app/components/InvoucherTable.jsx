@@ -118,6 +118,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
 
   return (
     <div>
+    <div className="table-responsive">
       <table className="table align-items-center justify-content-center mb-0">
         <thead>
           <tr>
@@ -273,6 +274,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <FindProduct
         showModal={showModal}

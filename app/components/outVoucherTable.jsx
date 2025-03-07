@@ -104,108 +104,110 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
 
   return (
     <div>
-      <table className="table align-items-center justify-content-center mb-0">
-        <thead>
-          <tr>
-            <th>SR NO</th>
-            <th>Item Code</th>
-            <th>Item Name</th>
-            <th>Unit</th>
-            <th>Rackcode</th>
-            <th>Qty</th>
-            <th>Comments</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={row.id}>
-              <td>{index + 1}</td>
-              <td>{row.itemcode}</td>
-              <td>{row.itemname}</td>
-              <td>{row.unit}</td>
-              <td>{row.rackcode}</td>
-              <td>{row.qty}</td>
-              <td>{row.comments}</td>
+       <div className="table-responsive">
+        <table className="table align-items-center justify-content-center mb-0 ">
+          <thead>
+            <tr>
+              <th>SR NO</th>
+              <th>Item Code</th>
+              <th>Item Name</th>
+              <th>Unit</th>
+              <th>Rackcode</th>
+              <th>Qty</th>
+              <th>Comments</th>
             </tr>
-          ))}
-          <tr className="no-print">
-            <td>#</td>
-            <td>
-              <input
-                type="text"
-                name="itemcode"
-                value={newRow.itemcode}
-                onChange={(e) => handleFieldChange("itemcode", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "itemname")}
-                placeholder="Enter item code"
-                className="form-control input-small"
-                ref={inputRefs.itemcode}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="itemname"
-                value={newRow.itemname}
-                onChange={(e) => handleFieldChange("itemname", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "qty")}
-                placeholder="Enter item name"
-                className="form-control"
-                ref={inputRefs.itemname}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="unit"
-                value={newRow.unit}
-                onChange={(e) => handleFieldChange("unit", e.target.value)}
-                placeholder="Enter unit"
-                className="form-control input-small"
-                ref={inputRefs.unit}
-                disabled
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="rackcode"
-                value={newRow.rackcode}
-                onChange={(e) => handleFieldChange("rackcode", e.target.value)}
-                placeholder="Rackcode"
-                className="form-control input-small"
-                ref={inputRefs.rackcode}
-                disabled
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                name="qty"
-                value={newRow.qty}
-                onChange={(e) => handleFieldChange("qty", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "comments")}
-                placeholder="Qty"
-                className="form-control input-small"
-                ref={inputRefs.qty}
-              />
-            </td>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.id}>
+                <td>{index + 1}</td>
+                <td>{row.itemcode}</td>
+                <td>{row.itemname}</td>
+                <td>{row.unit}</td>
+                <td>{row.rackcode}</td>
+                <td>{row.qty}</td>
+                <td>{row.comments}</td>
+              </tr>
+            ))}
+            <tr className="no-print">
+              <td>#</td>
+              <td>
+                <input
+                  type="text"
+                  name="itemcode"
+                  value={newRow.itemcode}
+                  onChange={(e) => handleFieldChange("itemcode", e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, "itemname")}
+                  placeholder="Enter item code"
+                  className="form-control input-small"
+                  ref={inputRefs.itemcode}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  name="itemname"
+                  value={newRow.itemname}
+                  onChange={(e) => handleFieldChange("itemname", e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, "qty")}
+                  placeholder="Enter item name"
+                  className="form-control"
+                  ref={inputRefs.itemname}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  name="unit"
+                  value={newRow.unit}
+                  onChange={(e) => handleFieldChange("unit", e.target.value)}
+                  placeholder="Enter unit"
+                  className="form-control input-small"
+                  ref={inputRefs.unit}
+                  disabled
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  name="rackcode"
+                  value={newRow.rackcode}
+                  onChange={(e) => handleFieldChange("rackcode", e.target.value)}
+                  placeholder="Rackcode"
+                  className="form-control input-small"
+                  ref={inputRefs.rackcode}
+                  disabled
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  name="qty"
+                  value={newRow.qty}
+                  onChange={(e) => handleFieldChange("qty", e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, "comments")}
+                  placeholder="Qty"
+                  className="form-control input-small"
+                  ref={inputRefs.qty}
+                />
+              </td>
 
-            <td>
-              <input
-                type="text"
-                name="comments"
-                value={newRow.comments}
-                onChange={(e) => handleFieldChange("comments", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, null)}
-                placeholder="Comments"
-                className="form-control input-small"
-                ref={inputRefs.comments}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <td>
+                <input
+                  type="text"
+                  name="comments"
+                  value={newRow.comments}
+                  onChange={(e) => handleFieldChange("comments", e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, null)}
+                  placeholder="Comments"
+                  className="form-control input-small"
+                  ref={inputRefs.comments}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       {/* FindProduct Modal */}
       <FindProduct

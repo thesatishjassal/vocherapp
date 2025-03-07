@@ -86,7 +86,7 @@ const GetOutvoucherTable = () => {
                 <td>{voucher.voucher_id}</td>
                 <td>{voucher.voucher_no}</td>
                 <td>{voucher.issue_slip_no}</td>
-                <td>{voucher.sale_order_no}</td>
+                {/* <td>{voucher.sale_order_no}</td> */}
                 <td>{voucher.vehicle_no}</td>
                 <td>{voucher.ordered_by}</td>
                 <td>{voucher.sales_person}</td>
