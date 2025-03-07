@@ -135,7 +135,8 @@ const Addoutinvoice = () => {
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-  
+
+    const validProducts = await fetch('https://api.panvic.in/products/').then(res => res.json());
     const newVoucherNo = generateVoucherNumber();
   
     const voucherPayload = {
@@ -183,7 +184,11 @@ const Addoutinvoice = () => {
       if (invalidRows) {
         throw new Error("All item fields must be filled.");
       }
-  
+      if (!product) {
+            setSubmitStatus(`Error: Product with itemcode ${row.itemcode} does not exist.`);
+            setLoading(false);
+            return;
+      }
       for (const row of voucherRows) {
         const itemData = {
           voucher_id: createdVoucherId,
