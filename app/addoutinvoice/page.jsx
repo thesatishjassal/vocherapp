@@ -196,45 +196,45 @@ const Addoutinvoice = () => {
       //   unit: row.unit,
       //   rackcode: row.rxackcode,
       // }));
-      const itemsPayload = [];
+      // const itemsPayload = [];
       for (const row of voucherRows) {
         const itemData = {
           voucher_id: createdVoucherId,
           product_id: row.itemcode,
           item_name: row.itemname,
-          quantity: Number(row.qty) || 0, // Ensure quantity is a number
           unit: row.unit,
           rackcode: row.rackcode,
+          quantity: Number(row.qty) || 0, // Ensure quantity is a number
         };
-        itemsPayload.push(itemData);
+        // itemsPayload.push(itemData);
+
+        console.log("Items Payload:", itemData);
+        // Second request: Create Outvoucher Items (Wrap itemsPayload inside an object)
+        const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
+        console.log("Submitting item to:", itemUrl, "with data:", itemData);
+
+        const itemsResponse = await fetch(itemUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(itemData), // ✅ Ensure it's sent as an object
+        });
+      
+        if (!itemsResponse.ok) {
+          const errorData = await itemsResponse.json();
+          console.error("Item submission failed:", errorData);
+          throw new Error(
+            `HTTP error submitting item! status: ${
+              itemsResponse.status
+            } - ${JSON.stringify(errorData)}`
+          );
+        }
+
+        const itemsResult = await itemsResponse.json();
+        console.log("Item submitted successfully:", itemsResult);
+        console.log("Outvoucher Items Created Successfully");
       }
-      console.log("Items Payload:", itemsPayload);
-      // Second request: Create Outvoucher Items (Wrap itemsPayload inside an object)
-      const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
-      console.log("Submitting item to:", itemUrl, "with data:", itemsPayload);
-
-      const itemsResponse = await fetch(itemUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items: itemsPayload }), // ✅ Ensure it's sent as an object
-      });
-
-      if (!itemsResponse.ok) {
-        const errorData = await itemsResponse.json();
-        console.error("Item submission failed:", errorData);
-        throw new Error(
-          `HTTP error submitting item! status: ${
-            itemsResponse.status
-          } - ${JSON.stringify(errorData)}`
-        );
-      }
-
-      const itemsResult = await itemsResponse.json();
-      console.log("Item submitted successfully:", itemsResult);
-      console.log("Outvoucher Items Created Successfully");
-
       setSubmitStatus("Outvoucher and Items created successfully!");
       window.location.href = "/getoutvouchers";
 
