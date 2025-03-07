@@ -225,7 +225,7 @@ const Addoutinvoice = () => {
           product_id: row.itemcode,
           item_name: row.itemname,
           unit: row.unit,
-          rackcode: row.rackcode,
+          rack_code: row.rackcode,
           quantity: Number(row.qty) || 0,
           comments: null,
         };
