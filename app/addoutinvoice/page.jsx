@@ -69,6 +69,7 @@ const Addoutinvoice = () => {
 
       const productsData = await response.json();
       const ids = productsData.map(product => product.itemcode);
+      
       setProductIds(new Set(ids));
       setProductsFetched(true);
     } catch (error) {

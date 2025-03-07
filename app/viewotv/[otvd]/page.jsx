@@ -169,7 +169,7 @@ const OutvoucherDetail = () => {
             <p>
               <b className="tm_primary_color">Product Info:</b>
             </p>
-            <OutvoucherTable invoucherId={otvd} />
+            <OutvoucherTable voucher_id={otvd} />
             {/* Total Amount */}
             <div className="tm_invoice_footer my-2">
               <div className="tm_right_footer">

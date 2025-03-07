@@ -2,21 +2,23 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const OutvoucherTable = ({ vouvher_id }) => {
+const OutvoucherTable = ({ voucher_id }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!vouvher_id) return;
-
+    if (!voucher_id) return;
+    
     const fetchItems = async () => {
       try {
         const response = await axios.get(
-          `https://api.panvic.in/outvouchers/${vouvher_id}/items/`,
+          `https://api.panvic.in/outvouchers/${voucher_id}/items/`,
           { withCredentials: true }
         );
-
+        
+        console.log(voucher_id)
         setItems(response.data);
+        console.log(response.data)
       } catch (error) {
         toast.error("Failed to fetch voucher items!");
       } finally {
@@ -25,8 +27,8 @@ const OutvoucherTable = ({ vouvher_id }) => {
     };
 
     fetchItems();
-  }, [vouvher_id]);
-
+  }, [voucher_id]);
+  
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this voucher.</p>;
 
@@ -48,11 +50,11 @@ const OutvoucherTable = ({ vouvher_id }) => {
           {items.map((item, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{item.itemcode}</td>
-              <td>{item.itemname}</td>
+              <td>{item.product_id}</td>
+              <td>{item.item_name}</td>
               <td>{item.unit}</td>
-              <td>{item.rackcode}</td>
-              <td>{item.qty}</td>
+              <td>{item.rack_code}</td>
+              <td>{item.quantity}</td>
               <td>{item.comments}</td>
             </tr>
           ))}
