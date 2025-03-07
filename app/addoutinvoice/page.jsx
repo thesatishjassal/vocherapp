@@ -228,7 +228,7 @@ const Addoutinvoice = () => {
         }
   
         setSubmitStatus("Outvoucher and Items created successfully!");
-        window.location.href = "/getoutvouchers";
+        // window.location.href = "/getoutvouchers";
       };
   
       postItems(); // Start the retry mechanism
