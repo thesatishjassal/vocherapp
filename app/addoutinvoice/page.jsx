@@ -233,7 +233,7 @@ const Addoutinvoice = () => {
         const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
         console.log("Submitting item to:", itemUrl, "with data:", itemData);
   
-        const itemsResponse = await Axios.post(itemUrl, itemData, {
+        const itemsResponse = await axios.post(itemUrl, itemData, {
           headers: { "Content-Type": "application/json" },
         });
   
