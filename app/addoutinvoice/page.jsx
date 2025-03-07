@@ -52,6 +52,33 @@ const Addoutinvoice = () => {
     return `PLOTV-${sequenceStr}`;
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("https://api.panvic.in/products/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const productsData = await response.json();
+      const ids = productsData.map(product => product.itemcode);
+      setProductIds(new Set(ids));
+      setProductsFetched(true);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setSubmitStatus("Error fetching product data.");
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [])
+
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
