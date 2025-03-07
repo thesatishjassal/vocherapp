@@ -24,6 +24,7 @@ const Addoutinvoice = () => {
   const [voucherRows, setVoucherRows] = useState([]);
   const [productsFetched, setProductsFetched] = useState(false);
   const [productIds, setProductIds] = useState(new Set());
+
   const handleRowsUpdate = (updatedRows) => {
     console.log("Updated rows:", updatedRows);
     setVoucherRows(updatedRows);
@@ -191,7 +192,7 @@ const Addoutinvoice = () => {
   
     try {
       // First request: Create Outvoucher
-      const voucherResponse = await Axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
+      const voucherResponse = await axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
         headers: { "Content-Type": "application/json" },
       });
   
