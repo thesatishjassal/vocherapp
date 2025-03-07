@@ -122,8 +122,6 @@ const Addoutinvoice = () => {
     }
   }, [submitStatus]);
 
-  const voucher_no = generateVoucherNumber();
-
   const handleSubmit = async () => {
     if (!basicinfoData) {
       setSubmitStatus("Please complete the basic info details");
@@ -133,13 +131,13 @@ const Addoutinvoice = () => {
       setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
-
+  
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-
+  
     const newVoucherNo = generateVoucherNumber();
-
+  
     const voucherPayload = {
       voucher_id: voucherId,
       voucher_no: newVoucherNo,
@@ -148,110 +146,104 @@ const Addoutinvoice = () => {
       transport: basicinfoData?.Transport || null,
       transaction_types: basicinfoData?.transaction_types || null,
       vehicle_no: basicinfoData?.VehicleNo || null,
-      number_of_packages: basicinfoData?.Packages
-        ? parseInt(basicinfoData.Packages, 10)
-        : null,
+      number_of_packages: basicinfoData?.Packages ? parseInt(basicinfoData.Packages, 10) : null,
       ordered_by: basicinfoData?.OrderBy || null,
       sales_person: basicinfoData?.SalePerson || null,
-      freight_amount: basicinfoData?.FreightAmount
-        ? parseFloat(basicinfoData.FreightAmount)
-        : null,
+      freight_amount: basicinfoData?.FreightAmount ? parseFloat(basicinfoData.FreightAmount) : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
       client_id: selectedCustomer?.id || null,
       remarks: null,
     };
-
+  
     try {
-      // First request: Create Outvoucher
+      // First API call to create Outvoucher
       const voucherResponse = await axios.post(
         "https://api.panvic.in/outvouchers/",
         voucherPayload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
-
+  
       console.log("Outvoucher Created:", voucherResponse.data);
-
-      // Extract created voucher_id from response
-      const createdVoucherId = voucherResponse.data.voucher_id;
+  
+      // Extract the newly created voucher_id
+      let createdVoucherId = voucherResponse.data.voucher_id;
+  
       if (!createdVoucherId) {
         throw new Error("Failed to retrieve voucher_id from response.");
       }
-
-      // Validate voucherRows before making the second API call
-      if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
-        throw new Error(
-          "Voucher items are empty. Cannot proceed with creating outvoucher items."
-        );
-      }
-
-      // Define itemsPayload AFTER we have a valid voucher_id
-      // const itemsPayload = voucherRows.map((row) => ({
-      //   voucher_id: createdVoucherId,
-      //   product_id: row.itemcode,
-      //   item_name: row.itemname,
-      //   quantity: parseInt(row.qty, 10),  // ✅ FIXED: Ensure quantity is a number
-      //   unit: row.unit,
-      //   rackcode: row.rxackcode,
-      // }));
-      // const itemsPayload = [];
-      for (const row of voucherRows) {
-        const itemData = {
-          voucher_id: createdVoucherId,
-          product_id: row.itemcode,
-          item_name: row.itemname,
-          unit: row.unit,
-          rackcode: row.rackcode,
-          quantity: Number(row.qty) || 0, // Ensure quantity is a number
-        };
-        // itemsPayload.push(itemData);
-
-        console.log("Items Payload:", itemData);
-        // Second request: Create Outvoucher Items (Wrap itemsPayload inside an object)
-        const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
-        console.log("Submitting item to:", itemUrl, "with data:", itemData);
-
-        const itemsResponse = await fetch(itemUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(itemData), // ✅ Ensure it's sent as an object
-        });
-      
-        if (!itemsResponse.ok) {
-          const errorData = await itemsResponse.json();
-          console.error("Item submission failed:", errorData);
-          throw new Error(
-            `HTTP error submitting item! status: ${
-              itemsResponse.status
-            } - ${JSON.stringify(errorData)}`
-          );
+  
+      // Retry mechanism for posting items
+      const postItems = async (retryCount = 0) => {
+        if (retryCount > 5) {
+          console.error("Max retries reached. Failed to post outvoucher items.");
+          setSubmitStatus("Failed to post voucher items. Please try again.");
+          return;
         }
-
-        const itemsResult = await itemsResponse.json();
-        console.log("Item submitted successfully:", itemsResult);
-        console.log("Outvoucher Items Created Successfully");
-      }
-      setSubmitStatus("Outvoucher and Items created successfully!");
-      window.location.href = "/getoutvouchers";
-
+  
+        if (!createdVoucherId) {
+          console.warn(`Retrying to fetch voucher_id (attempt ${retryCount + 1})`);
+          setTimeout(() => postItems(retryCount + 1), 3000); // Retry after 3 seconds
+          return;
+        }
+  
+        // Ensure voucherRows are valid
+        if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
+          console.error("Voucher items are empty. Cannot proceed.");
+          return;
+        }
+  
+        for (const row of voucherRows) {
+          const itemData = {
+            voucher_id: createdVoucherId,
+            product_id: row.itemcode,
+            item_name: row.itemname,
+            unit: row.unit,
+            rackcode: row.rackcode,
+            quantity: Number(row.qty) || 0, // Ensure quantity is a number
+          };
+  
+          console.log("Items Payload:", itemData);
+  
+          // Second API call to create Outvoucher Items
+          const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
+  
+          try {
+            const itemsResponse = await fetch(itemUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(itemData),
+            });
+  
+            if (!itemsResponse.ok) {
+              throw new Error(`HTTP error: ${itemsResponse.status}`);
+            }
+  
+            console.log("Item submitted successfully:", await itemsResponse.json());
+          } catch (error) {
+            console.error("Error submitting item:", error);
+          }
+        }
+  
+        setSubmitStatus("Outvoucher and Items created successfully!");
+        window.location.href = "/getoutvouchers";
+      };
+  
+      postItems(); // Start the retry mechanism
+  
       // Update sequence only after successful response
       setVoucherId((prev) => (prev !== null ? prev + 1 : 1));
       setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
-      setError(
-        err.response?.data || {
-          message: "Failed to create outvoucher and items",
-        }
-      );
+      setError(err.response?.data || { message: "Failed to create outvoucher and items" });
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="card tm_container my-4">

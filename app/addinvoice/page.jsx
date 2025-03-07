@@ -175,7 +175,7 @@ const handleSubmit = async () => {
     console.log("Invoice submission response:", invoiceResult);
 
     // Step 2: Extract the correct ID
-    const newVoucherId = invoiceResult.id;
+    const newVoucherId = invoiceResult.voucher_id;
     console.log("New Voucher ID (from id):", newVoucherId);
 
     if (!newVoucherId) {
