@@ -8,7 +8,6 @@ const QuotatTable = ({
   ShowHideFiltercolModal,
   onClose,
 }) => {
-  console.log(onClose);
   const [rows, setRows] = useState([]);
   const [FiltercolModal, setFiltercolModal] = useState(false);
   const [newRow, setNewRow] = useState({
@@ -135,14 +134,15 @@ const QuotatTable = ({
   };
 
   const handleProductSelect = (product) => {
+    console.log(product);
     setNewRow((prev) => ({
       ...prev,
-      itemCode: product.value,
-      itemName: product.name,
+      itemCode: product.itemcode,
+      itemName: product.itemname,
       unit: product.unit,
-      mrp: product.mrp,
+      mrp: product.price,
       brand: product.brand,
-      image: product.image,
+      image: product.thumbnail,
     }));
     setShowModal(false);
     setTimeout(() => {
@@ -222,8 +222,8 @@ const QuotatTable = ({
                   <img
                     src={
                       row.image === ""
-                        ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHZqj-XReJ2R76nji51cZl4ETk6-eHRmZBRw&s"
-                        : row.image
+                        ? ""  
+                        : `https://api.panvic.in${row.image}`
                     }
                     alt=""
                     className="product_img"
