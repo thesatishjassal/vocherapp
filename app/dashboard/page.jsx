@@ -104,7 +104,7 @@ export default function Home() {
         </div>
 
         <div className="col-lg-2 col-md-4 col-6 mb-3">
-          <a href="/quotation">
+          <a href="/getquotation">
             <div className="card">
               <span className="mask opacity-10 border-radius-lg"></span>
               <div className="card-body p-3 position-relative text-center">
