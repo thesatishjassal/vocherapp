@@ -1,5 +1,4 @@
-import GetquotationTables from "../components/GetquotationTables";
-import GetOutvoucherTable from "../components/GetquotationTables";
+import GetOutvoucherTable from "../components/GetoutvoucherTable";
 
 const GetOutVouchers = () => {
   return (
