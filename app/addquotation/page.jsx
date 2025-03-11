@@ -103,7 +103,7 @@ const Quotation = () => {
         }
       } catch (error) {
         console.error("Error fetching quotations:", error);
-        toast.error("Failed to save quotation. Please try again.");
+        // Fallback to initial values if fetch fails
         setQuotationId(1);
         setQuotationSequence(1);
       }
@@ -115,7 +115,7 @@ const Quotation = () => {
   // Function to handle POST request to save the quotation
   const handleSaveQuotation = async () => {
     if (QuotationSequence === null) {
-      toast.warning("Quotation number is still loading. Please wait.");
+      alert("Quotation number is still loading. Please wait.");
       return;
     }
 
@@ -155,7 +155,7 @@ const Quotation = () => {
       );
 
       console.log("Quotation saved successfully:", response.data);
-      const savedQuotationId = response.data.quotation_id; // Assuming the API returns the quotation ID
+      const savedQuotationId = response.data.id; // Assuming the API returns the quotation ID
 
       // Step 2: Save each item in rowsData to the quotation
       if (rowsData.length > 0) {
@@ -201,11 +201,11 @@ const Quotation = () => {
       setQuotationSequence(QuotationSequence + 1);
       setQuotationId(quotationId + 1);
       // Optionally reset state or update UI after successful save
-      toast.success("Quotation saved successfully!");
+      alert("Quotation saved successfully!");
       window.location.href = "/getquotation";
     } catch (error) {
       console.error("Error saving quotation:", error);
-      toast.error("Failed to save quotation. Please try again.");
+      alert("Failed to save quotation. Please try again.");
     }
   };
 
