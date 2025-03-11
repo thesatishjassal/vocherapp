@@ -14,7 +14,7 @@ const GetOutVouchers = () => {
           </li>
         </ol>
       </nav>
-      <GetquotationTables />
+      <GetOutvoucherTable />
     </>
   );
 };
