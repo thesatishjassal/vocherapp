@@ -1,10 +1,11 @@
 "use client";
 import InvoucherTable from "../components/InvoucherTable";
 import QuotaionInfo from "../components/QuotaionInfo";
-import { useState } from "react";
 import CustomerModal from "../components/customerModal";
 import QuotationTable from "../components/QuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
+import React, { useState, useEffect } from "react";
+import axios from "axios"; // Import Axios
 
 const Quotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -12,8 +13,10 @@ const Quotation = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [FiltercolModal, setFiltercolModal] = useState(false);
   const [ShowHideFiltercolModal, setShowHideFilterModal] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null); // Changed to null for better initialization
   const [quotationInfo, setQuotationInfo] = useState(null);
+  const [quotationId, setQuotationId] = useState(1); // Start at 1
+  const [QuotationSequence, setQuotationSequence] = useState(null); // Start as null to indicate loading
 
   const handleQuotationConfirm = (data) => {
     setQuotationInfo(data); // Store received quotation info
@@ -24,6 +27,7 @@ const Quotation = () => {
     setShowModalClientDetails(false); // Close the modal when this function is called
     setShowHideFilterModal(false); // Close the modal when this function is called
   };
+
   // Callback to receive the updated totalAmount from the child
   const handleTotalAmountChange = (newTotalAmount) => {
     setTotalAmount(newTotalAmount);
@@ -34,6 +38,116 @@ const Quotation = () => {
     setSelectedCustomer(selectedClient);
     // Use the selected client data as needed
   };
+
+  const generateQuotationNumber = () => {
+    if (QuotationSequence === null) return "PLQOT-Loading...";
+    const sequenceStr = QuotationSequence.toString().padStart(3, "0");
+    return `PLQOT-${sequenceStr}`;
+  };
+
+  useEffect(() => {
+    const fetchLastQuotationData = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/quotation/", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const quotations = await response.json();
+        console.log("Fetched quotations:", quotations); // Debug: Log fetched data
+
+        if (quotations && quotations.length > 0) {
+          // Find the highest sequence number from quotation_no (e.g., PLQOT-XXX)
+          const lastSequence = quotations
+            .map((voucher) => {
+              const match = voucher.quotation_no
+                ? voucher.quotation_no.match(/^PLQOT-(\d+)$/)
+                : null;
+              return match ? parseInt(match[1], 10) : 0;
+            })
+            .reduce((max, num) => Math.max(max, num), 0);
+
+          console.log("Last sequence number:", lastSequence); // Debug: Log last sequence
+
+          // Increment the sequence and set state
+          const nextSequence = lastSequence + 1;
+          setQuotationSequence(nextSequence);
+          setQuotationId(quotations.length + 1); // Assuming quotation_id is sequential
+        } else {
+          // If no quotations exist, start from 1
+          setQuotationId(1);
+          setQuotationSequence(1);
+        }
+      } catch (error) {
+        console.error("Error fetching quotations:", error);
+        // Fallback to initial values if fetch fails
+        setQuotationId(1);
+        setQuotationSequence(1);
+      }
+    };
+
+    fetchLastQuotationData();
+  }, []);
+
+  // Function to handle POST request to save the quotation
+  const handleSaveQuotation = async () => {
+    if (QuotationSequence === null) {
+      alert("Quotation number is still loading. Please wait.");
+      return;
+    }
+
+    try {
+      // Collect data from state and UI elements
+      const remarks = document.querySelector(".tm_remarks_box")?.value || "";
+      const warrantyGuarantee =
+        document.querySelector('input[placeholder="Warranty/Guarantee"]')
+          ?.value || "1 year warranty against manufacturing defects";
+
+      // Prepare the data payload for the API
+      const quotationData = {
+        quotation_no: generateQuotationNumber(), // e.g., PLQOT-001
+        salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
+        subject: quotationInfo?.Subject || "Quotation for Products/Services",
+        amount_including_gst: totalAmount, // Total amount including GST
+        without_gst: totalAmount / 1.18, // Assuming 18% GST, adjust as needed
+        gst_amount: totalAmount - totalAmount / 1.18, // GST amount
+        amount_with_gst: totalAmount, // Same as amount_including_gst
+        warranty_guarantee: warrantyGuarantee,
+        remarks: remarks,
+        status: true, // Assuming active status
+        client_id: selectedCustomer?.client_id || 3, // Use selected client ID or fallback to a default
+      };
+
+      console.log("Quotation data to be sent:", quotationData); // Debug: Log data before sending
+
+      // Make the POST request using Axios
+      const response = await axios.post(
+        "https://api.panvic.in/quotation/",
+        quotationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Quotation saved successfully:", response.data);
+      // Increment the sequence for the next quotation
+      setQuotationSequence(QuotationSequence + 1);
+      setQuotationId(quotationId + 1);
+      // Optionally reset state or update UI after successful save
+      alert("Quotation saved successfully!");
+      window.location.href = "/getquotation";
+    } catch (error) {
+      console.error("Error saving quotation:", error);
+      alert("Failed to save quotation. Please try again.");
+    }
+  };
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -50,7 +164,10 @@ const Quotation = () => {
                   QUOTATION
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Quotation No: <b className="tm_primary_color">QN-01</b>
+                  Quotation No:{" "}
+                  <b className="tm_primary_color">
+                    {generateQuotationNumber()}
+                  </b>
                 </p>
               </div>
             </div>
@@ -58,11 +175,9 @@ const Quotation = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_date tm_m0">
-                  Date:{" "}
+                  Date:
                   <b className="tm_primary_color">
-                    {" "}
-                    {new Date().toLocaleDateString("en-GB")}{" "}
-                    {/* Format: DD/MM/YYYY */}
+                    {new Date().toLocaleDateString("en-GB")}
                   </b>
                 </p>
               </div>
@@ -116,7 +231,10 @@ const Quotation = () => {
                     type="button"
                     className="btn modalaction_btn no-print"
                     onClick={() => setInfoModal(true)}
-                  > <i className="fa-solid fa-pen-to-square"></i></button>
+                  >
+                    {" "}
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
                 </p>
                 Address:{" "}
                 <b>
@@ -139,7 +257,7 @@ const Quotation = () => {
               }}
             >
               <p className="tm_mb2">
-                Subject: &nbsp;
+                Subject:  
                 {quotationInfo && (
                   <b className="tm_primary_color">{quotationInfo.Subject}</b>
                 )}
@@ -307,6 +425,14 @@ const Quotation = () => {
               </svg>
             </span>
             <span className="tm_btn_text">Download</span>
+          </button>
+          {/* Add a Save button to trigger the POST request */}
+          <button
+            type="button"
+            onClick={handleSaveQuotation}
+            className="tm_invoice_btn tm_color3"
+          >
+            <span className="tm_btn_text">Save Quotation</span>
           </button>
         </div>
       </div>
