@@ -6,6 +6,21 @@ const QuotationItemsTable = ({ quotation_id }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState({
+    srNo: true,
+    customerCode: true,
+    customerDescription: true,
+    itemCode: true,
+    itemName: true,
+    unit: true,
+    brand: true,
+    qty: true,
+    price: true,
+    discount: true,
+    mrp: true,
+  });
+
   useEffect(() => {
     if (!quotation_id) return;
 
@@ -30,41 +45,61 @@ const QuotationItemsTable = ({ quotation_id }) => {
     fetchItems();
   }, [quotation_id]);
 
+  // Toggle visibility of columns
+  const handleCheckboxChange = (column) => {
+    setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
 
   return (
     <div className="overflow-x-auto">
+      {/* Column visibility checkboxes */}
+      <div className="mb-4 flex flex-wrap gap-4 no-print">
+        <label><input type="checkbox" checked={visibleColumns.srNo} onChange={() => handleCheckboxChange('srNo')} /> SR NO</label>
+        <label><input type="checkbox" checked={visibleColumns.customerCode} onChange={() => handleCheckboxChange('customerCode')} /> Customer Code</label>
+        <label><input type="checkbox" checked={visibleColumns.customerDescription} onChange={() => handleCheckboxChange('customerDescription')} /> Customer Description</label>
+        <label><input type="checkbox" checked={visibleColumns.itemCode} onChange={() => handleCheckboxChange('itemCode')} /> Item Code</label>
+        <label><input type="checkbox" checked={visibleColumns.itemName} onChange={() => handleCheckboxChange('itemName')} /> Item Name</label>
+        <label><input type="checkbox" checked={visibleColumns.unit} onChange={() => handleCheckboxChange('unit')} /> Unit</label>
+        <label><input type="checkbox" checked={visibleColumns.brand} onChange={() => handleCheckboxChange('brand')} /> Brand</label>
+        <label><input type="checkbox" checked={visibleColumns.qty} onChange={() => handleCheckboxChange('qty')} /> Qty</label>
+        <label><input type="checkbox" checked={visibleColumns.price} onChange={() => handleCheckboxChange('price')} /> Price</label>
+        <label><input type="checkbox" checked={visibleColumns.discount} onChange={() => handleCheckboxChange('discount')} /> Discount</label>
+        <label><input type="checkbox" checked={visibleColumns.mrp} onChange={() => handleCheckboxChange('mrp')} /> MRP</label>
+      </div>
+
       <table className="tm_round_border table align-items-center justify-content-center mb-0">
         <thead>
           <tr>
-            <th>SR NO</th>
-            <th>Customer Code</th>
-            <th>Customer Description</th>
-            <th>Item Code</th>
-            <th>Item Name</th>
-            <th>Unit</th>
-            <th>Brand</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Discount</th>
-            <th>MRP</th>
+            {visibleColumns.srNo && <th>SR NO</th>}
+            {visibleColumns.customerCode && <th>Customer Code</th>}
+            {visibleColumns.customerDescription && <th>Customer Description</th>}
+            {visibleColumns.itemCode && <th>Item Code</th>}
+            {visibleColumns.itemName && <th>Item Name</th>}
+            {visibleColumns.unit && <th>Unit</th>}
+            {visibleColumns.brand && <th>Brand</th>}
+            {visibleColumns.qty && <th>Qty</th>}
+            {visibleColumns.price && <th>Price</th>}
+            {visibleColumns.discount && <th>Discount</th>}
+            {visibleColumns.mrp && <th>MRP</th>}
           </tr>
         </thead>
         <tbody>
           {items.map((item, index) => (
             <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{item.customercode}</td>
-              <td>{item.customerdescription}</td>
-              <td>{item.itemcode}</td>
-              <td>{item.item_name}</td>
-              <td>{item.unit}</td>
-              <td>{item.brand}</td>
-              <td>{item.quantity}</td>
-              <td>{item.price}</td>
-              <td>{item.discount}</td>
-              <td>{item.mrp}</td>
+              {visibleColumns.srNo && <td>{index + 1}</td>}
+              {visibleColumns.customerCode && <td>{item.customercode}</td>}
+              {visibleColumns.customerDescription && <td>{item.customerdescription}</td>}
+              {visibleColumns.itemCode && <td>{item.itemcode}</td>}
+              {visibleColumns.itemName && <td>{item.item_name}</td>}
+              {visibleColumns.unit && <td>{item.unit}</td>}
+              {visibleColumns.brand && <td>{item.brand}</td>}
+              {visibleColumns.qty && <td>{item.quantity}</td>}
+              {visibleColumns.price && <td>{item.price}</td>}
+              {visibleColumns.discount && <td>{item.discount}</td>}
+              {visibleColumns.mrp && <td>{item.mrp}</td>}
             </tr>
           ))}
         </tbody>
