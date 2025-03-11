@@ -9,6 +9,7 @@ const CategoryTable = () => {
   const [categories, setCategories] = useState([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // ✅ Search term state
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -61,6 +62,11 @@ const CategoryTable = () => {
     }
   };
 
+  // ✅ Filter categories based on search term
+  const filteredCategories = categories.filter((cat) =>
+    cat.catname.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="card">
       {showCategoryModal && (
@@ -76,10 +82,13 @@ const CategoryTable = () => {
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         <div className="d-flex justify-content-between align-items-center mb-3">
+          {/* ✅ Controlled input for search */}
           <input
             type="text"
             placeholder="Search categories"
             className="form-control w-25"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button
             className="btn btn-primary"
@@ -98,31 +107,40 @@ const CategoryTable = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat) => (
-              <tr key={cat.id}>
-                <td>{cat.id}</td>
-                <td>{cat.catname}</td>
-                <td>{cat.slug}</td>
-                <td>
-                  <u
-                    className="text-primary mx-2"
-                    title="Edit"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleEdit(cat)}
-                  >
-                    <i className="fas fa-edit"></i>
-                  </u>
-                  <u
-                    className="text-danger"
-                    title="Delete"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(cat.id)}
-                  >
-                    <i className="fas fa-trash"></i>
-                  </u>
+            {/* ✅ Render filtered categories */}
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((cat) => (
+                <tr key={cat.id}>
+                  <td>{cat.id}</td>
+                  <td>{cat.catname}</td>
+                  <td>{cat.slug}</td>
+                  <td>
+                    <u
+                      className="text-primary mx-2"
+                      title="Edit"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleEdit(cat)}
+                    >
+                      <i className="fas fa-edit"></i>
+                    </u>
+                    <u
+                      className="text-danger"
+                      title="Delete"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleDelete(cat.id)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </u>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No categories found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

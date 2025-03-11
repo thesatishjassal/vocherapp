@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req) {
   const protectedRoutes = [
-    "/products",
+    // "/products",
     // "/addclient",
   
     "/report",
@@ -23,5 +23,5 @@ export function middleware(req) {
 
 // Apply middleware only to the specified routes
 export const config = {
-  matcher: ["/products",  "/report", ],
+  matcher: ["/report" ],
 };

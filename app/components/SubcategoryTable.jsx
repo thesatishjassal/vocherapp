@@ -8,6 +8,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SubcategoryTable = () => {
   const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]); // for filtered data
+  const [searchTerm, setSearchTerm] = useState(""); // search state
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
 
   // Fetch subcategories from API
@@ -17,6 +19,7 @@ const SubcategoryTable = () => {
         withCredentials: true,
       });
       setCategories(response.data);
+      setFilteredCategories(response.data); // Initialize filtered data
     } catch (error) {
       console.error("Error fetching subcategories:", error);
       toast.error("Failed to load subcategories!");
@@ -38,12 +41,14 @@ const SubcategoryTable = () => {
     if (!window.confirm("Are you sure you want to delete this subcategory?")) {
       return;
     }
-  
+
     try {
       const response = await axios.delete(`${API_URL}/subcategory/${subcategoryId}`);
-      
+
       if (response.status === 200) {
-        setCategories((prev) => prev.filter((subcat) => subcat.id !== subcategoryId));
+        const updatedCategories = categories.filter((subcat) => subcat.id !== subcategoryId);
+        setCategories(updatedCategories);
+        setFilteredCategories(updatedCategories); // update filtered list too
         toast.success("Subcategory deleted successfully!");
       } else {
         console.error("Unexpected response:", response);
@@ -62,7 +67,19 @@ const SubcategoryTable = () => {
       }
     }
   };
-  
+
+  // Handle search/filter functionality
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = categories.filter(
+      (cat) =>
+        cat.subcatname.toLowerCase().includes(value) ||
+        cat.catname.toLowerCase().includes(value) ||
+        cat.slug.toLowerCase().includes(value)
+    );
+    setFilteredCategories(filtered);
+  };
 
   return (
     <div className="card">
@@ -77,8 +94,10 @@ const SubcategoryTable = () => {
           {/* Search Input */}
           <input
             type="text"
-            placeholder="Search by Client or Project"
+            placeholder="Search Subcategory, Category, Slug"
             className="form-control w-25"
+            value={searchTerm}
+            onChange={handleSearch}
           />
           <div className="add_product">
             <button
@@ -100,8 +119,8 @@ const SubcategoryTable = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.length > 0 ? (
-              categories.map((cat, index) => (
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((cat, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{cat.subcatname}</td>
