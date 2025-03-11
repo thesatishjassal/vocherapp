@@ -1,12 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const GSTCalculator = ({ totalAmount }) => {
+const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
   const [gstType, setGstType] = useState("include"); // 'include' or 'exclude'
 
   const gstAmount = (totalAmount * gstPercentage) / 100;
   const totalWithGST =
     gstType === "exclude" ? totalAmount + gstAmount : totalAmount;
+  const withoutGST = gstType === "exclude" ? totalAmount : totalAmount / (1 + gstPercentage / 100);
+
+  // Pass calculated values to parent whenever they change
+  useEffect(() => {
+    if (onGSTChange) {
+      onGSTChange({
+        gstAmount: gstAmount || 0, // Default to 0 if null/undefined
+        totalWithGST: totalWithGST || 0, // Default to 0 if null/undefined
+        withoutGST: withoutGST || 0, // Default to 0 if null/undefined
+        gstPercentage,
+        gstType,
+      });
+    }
+  }, [gstAmount, totalWithGST, withoutGST, gstPercentage, gstType, onGSTChange]);
 
   return (
     <div className="row p-4">

@@ -7,6 +7,7 @@ const QuotatTable = ({
   onTotalAmountChange,
   ShowHideFiltercolModal,
   onClose,
+  onRowsChange,
 }) => {
   const [rows, setRows] = useState([]);
   const [FiltercolModal, setFiltercolModal] = useState(false);
@@ -25,7 +26,8 @@ const QuotatTable = ({
   });
   const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [productList, setProductList] = useState([]);
+  const [productList, setProductList] = useState([]); // Full product list
+  const [filteredProducts, setFilteredProducts] = useState([]); // Filtered product list
   const [columns, setColumns] = useState({
     customerCode: true,
     customerDescription: true,
@@ -51,6 +53,27 @@ const QuotatTable = ({
     discount: useRef(null),
     image: useRef(null),
   };
+
+  // Fetch products from API on component mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/products/");
+        if (!response.ok) throw new Error("Failed to fetch products");
+        const data = await response.json();
+        const updatedData = data.map((item) => ({
+          ...item,
+          unit: item.unit || "Piece",
+        }));
+        setProductList(updatedData);
+        setFilteredProducts(updatedData); // Initially, show all products
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const calculateAmount = (qty, mrp, discount) => {
     const discountAmount = (mrp * qty * (discount || 0)) / 100;
@@ -129,21 +152,35 @@ const QuotatTable = ({
     setNewRow((prev) => ({ ...prev, [field]: value }));
     if (["itemCode", "itemName"].includes(field) && value.trim()) {
       setShowModal(true);
-      filterProducts(value);
+      filterProducts(field, value); // Filter products based on input
     }
   };
 
+  // Implement filterProducts function
+  const filterProducts = (field, value) => {
+    const filtered = productList.filter((product) => {
+      if (field === "itemCode") {
+        return product.itemcode.toLowerCase().includes(value.toLowerCase());
+      } else if (field === "itemName") {
+        return product.itemname.toLowerCase().includes(value.toLowerCase());
+      }
+      return true;
+    });
+    setFilteredProducts(filtered);
+  };
+
   const handleProductSelect = (product) => {
-    console.log(product);
-    setNewRow((prev) => ({
-      ...prev,
-      itemCode: product.itemcode,
-      itemName: product.itemname,
-      unit: product.unit,
-      mrp: product.price,
-      brand: product.brand,
-      image: product.thumbnail,
-    }));
+    if (product) {
+      setNewRow((prev) => ({
+        ...prev,
+        itemCode: product.itemcode,
+        itemName: product.itemname,
+        unit: product.unit,
+        mrp: product.price,
+        brand: product.brand,
+        image: product.thumbnail,
+      }));
+    }
     setShowModal(false);
     setTimeout(() => {
       inputRefs.qty.current?.focus();
@@ -188,12 +225,20 @@ const QuotatTable = ({
     if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
   }, [rows, onTotalAmountChange]);
 
+  // Pass the updated rows data to the parent component
+  useEffect(() => {
+    if (onRowsChange) {
+      onRowsChange(rows);
+    }
+  }, [rows, onRowsChange]);
+
   return (
     <div>
-        <ShowHideFilter className="no-print"
-          columns={columns}
-          onChange={handleColumnVisibilityChange}
-        />
+      <ShowHideFilter
+        className="no-print"
+        columns={columns}
+        onChange={handleColumnVisibilityChange}
+      />
 
       <table className="table align-items-center justify-content-center mb-0">
         <thead>
@@ -222,7 +267,7 @@ const QuotatTable = ({
                   <img
                     src={
                       row.image === ""
-                        ? ""  
+                        ? ""
                         : `https://api.panvic.in${row.image}`
                     }
                     alt=""
@@ -393,6 +438,7 @@ const QuotatTable = ({
         showModal={showModal}
         setShowModal={setShowModal}
         handleProductSelect={handleProductSelect}
+        products={filteredProducts} // Pass filtered products to FindProduct
       />
     </div>
   );

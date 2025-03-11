@@ -17,6 +17,14 @@ const Quotation = () => {
   const [quotationInfo, setQuotationInfo] = useState(null);
   const [quotationId, setQuotationId] = useState(1); // Start at 1
   const [QuotationSequence, setQuotationSequence] = useState(null); // Start as null to indicate loading
+  const [rowsData, setRowsData] = useState([]); // State to store rows data
+  const [gstDetails, setGstDetails] = useState({
+    gstAmount: 0,
+    totalWithGST: 0,
+    withoutGST: 0,
+    gstPercentage: 0,
+    gstType: "include",
+  }); // State to store GST details
 
   const handleQuotationConfirm = (data) => {
     setQuotationInfo(data); // Store received quotation info
@@ -33,10 +41,21 @@ const Quotation = () => {
     setTotalAmount(newTotalAmount);
   };
 
+  const handleRowsChange = (rows) => {
+    setRowsData(rows); // Store the rows data in the parent component's state
+    console.log("Updated Rows Data:", rows); // Log or use the data as needed
+  };
+
   const handleClientConfirm = (selectedClient) => {
     console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
     // Use the selected client data as needed
+  };
+
+  // Callback to receive GST details from GSTCalculator
+  const handleGSTChange = (details) => {
+    setGstDetails(details);
+    console.log("GST Details Received:", details);
   };
 
   const generateQuotationNumber = () => {
@@ -107,15 +126,15 @@ const Quotation = () => {
         document.querySelector('input[placeholder="Warranty/Guarantee"]')
           ?.value || "1 year warranty against manufacturing defects";
 
-      // Prepare the data payload for the API
+      // Prepare the data payload for the API with GST details
       const quotationData = {
         quotation_no: generateQuotationNumber(), // e.g., PLQOT-001
         salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
         subject: quotationInfo?.Subject || "Quotation for Products/Services",
-        amount_including_gst: totalAmount, // Total amount including GST
-        without_gst: totalAmount / 1.18, // Assuming 18% GST, adjust as needed
-        gst_amount: totalAmount - totalAmount / 1.18, // GST amount
-        amount_with_gst: totalAmount, // Same as amount_including_gst
+        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0, // Use totalWithGST, rounded to integer
+        without_gst: Math.round(gstDetails.withoutGST) || 0, // Use withoutGST, rounded to integer
+        gst_amount: Math.round(gstDetails.gstAmount) || 0, // Use gstAmount, rounded to integer
+        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0, // Same as amount_including_gst
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
         status: true, // Assuming active status
@@ -136,6 +155,48 @@ const Quotation = () => {
       );
 
       console.log("Quotation saved successfully:", response.data);
+      const savedQuotationId = response.data.id; // Assuming the API returns the quotation ID
+
+      // Step 2: Save each item in rowsData to the quotation
+      if (rowsData.length > 0) {
+        const itemPromises = rowsData.map(async (item) => {
+          const itemData = {
+            quotation_id: savedQuotationId, // Use the ID from the saved quotation
+            product_id: item.itemCode, // Assuming itemCode is the product_id
+            customercode: item.customerCode || "N/A", // Use customerCode or fallback
+            customerdescription: item.customerDescription || "N/A", // Use customerDescription or fallback
+            image: item.image || "https://example.com/default-image.jpg", // Use image or fallback
+            itemcode: item.itemCode, // Use itemCode
+            brand: item.brand || "N/A", // Use brand or fallback
+            mrp: parseFloat(item.mrp) || 0, // Ensure mrp is a number
+            price: parseFloat(item.amount) || 0, // Use amount as price
+            quantity: parseInt(item.qty, 10) || 0, // Ensure quantity is an integer
+            discount: parseFloat(item.discount) || 0, // Ensure discount is a number
+            item_name: item.itemName || "N/A", // Use itemName or fallback
+            unit: item.unit || "pcs", // Use unit or fallback to 'pcs'
+          };
+
+          console.log("Item data to be sent:", itemData); // Debug: Log item data
+
+          // Make the POST request to add the item
+          return axios.post(
+            `https://api.panvic.in/quotation/${savedQuotationId}/items/`,
+            itemData,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        });
+
+        // Wait for all item POST requests to complete
+        const itemResponses = await Promise.all(itemPromises);
+        console.log("All items saved successfully:", itemResponses);
+      } else {
+        console.log("No items to save.");
+      }
+
       // Increment the sequence for the next quotation
       setQuotationSequence(QuotationSequence + 1);
       setQuotationId(quotationId + 1);
@@ -270,6 +331,7 @@ const Quotation = () => {
                     FiltercolModal={FiltercolModal}
                     ShowHideFiltercolModal={ShowHideFiltercolModal}
                     onClose={closeModal}
+                    onRowsChange={handleRowsChange}
                     onTotalAmountChange={handleTotalAmountChange}
                   />
                   {showModalClientDetails && ( // Conditionally render the modal
@@ -292,7 +354,7 @@ const Quotation = () => {
                 </div>
 
                 <div className="tm_right_footer">
-                  <GSTCalculator totalAmount={totalAmount} />
+                  <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
                 </div>
               </div>
             </div>
