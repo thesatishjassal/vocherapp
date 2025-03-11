@@ -14,7 +14,9 @@ const GetQuotationTables = () => {
     const fetchQuotations = async () => {
       try {
         const response = await axios.get(API_URL, { withCredentials: true });
-        setQuotations(response.data);
+        // Sort quotations by quotation_id descending (latest first)
+        const sortedQuotations = response.data.sort((a, b) => b.quotation_id - a.quotation_id);
+        setQuotations(sortedQuotations);
       } catch (error) {
         toast.error("Failed to load quotations!");
         console.error("Fetch error:", error);
