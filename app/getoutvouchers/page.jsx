@@ -1,4 +1,5 @@
-import GetOutvoucherTable from "../components/GetoutvoucherTable";
+import GetquotationTables from "../components/GetquotationTables";
+import GetOutvoucherTable from "../components/GetquotationTables";
 
 const GetOutVouchers = () => {
   return (
@@ -13,7 +14,7 @@ const GetOutVouchers = () => {
           </li>
         </ol>
       </nav>
-      <GetOutvoucherTable />
+      <GetquotationTables />
     </>
   );
 };
