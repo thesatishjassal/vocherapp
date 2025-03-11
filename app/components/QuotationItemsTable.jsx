@@ -56,8 +56,8 @@ const QuotationItemsTable = ({ quotation_id }) => {
   return (
     <div className="overflow-x-auto">
       {/* Column visibility checkboxes */}
-      <div className="mb-4 flex flex-wrap gap-4 no-print">
-        <label><input type="checkbox" checked={visibleColumns.srNo} onChange={() => handleCheckboxChange('srNo')} /> SR NO</label>
+      <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
+        <input type="checkbox" checked={visibleColumns.srNo} onChange={() => handleCheckboxChange('srNo')} /> <label>SR NO</label>
         <label><input type="checkbox" checked={visibleColumns.customerCode} onChange={() => handleCheckboxChange('customerCode')} /> Customer Code</label>
         <label><input type="checkbox" checked={visibleColumns.customerDescription} onChange={() => handleCheckboxChange('customerDescription')} /> Customer Description</label>
         <label><input type="checkbox" checked={visibleColumns.itemCode} onChange={() => handleCheckboxChange('itemCode')} /> Item Code</label>
