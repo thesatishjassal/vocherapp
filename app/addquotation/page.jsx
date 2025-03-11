@@ -426,13 +426,11 @@ const Quotation = () => {
             </span>
             <span className="tm_btn_text">Download</span>
           </button>
-          {/* Add a Save button to trigger the POST request */}
-          <button
-            type="button"
-            onClick={handleSaveQuotation}
-            className="tm_invoice_btn tm_color3"
-          >
-            <span className="tm_btn_text">Save Quotation</span>
+          <button id="tm_download_btn" className="tm_invoice_btn tm_color2"  onClick={handleSaveQuotation}>
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-upload"></i>
+            </span>
+            <span className="tm_btn_text">Publish</span>
           </button>
         </div>
       </div>
