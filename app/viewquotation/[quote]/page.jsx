@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
+import QuotationItemsTable from "../../components/QuotationItemsTable";
 
 const viewquotation = () => {
   const { quote } = useParams();
@@ -126,9 +127,9 @@ const viewquotation = () => {
                 </p>
                 Address:
                 <b>
-                  Nakodar Road Beside Silver OAK Appartments  <br /> Jalandhar City,
-                  Punjab-144003
-                </b>  
+                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
+                  City, Punjab-144003
+                </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>}
@@ -156,12 +157,7 @@ const viewquotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  {/* <QuotationTable
-                    FiltercolModal={FiltercolModal}
-                    ShowHideFiltercolModal={ShowHideFiltercolModal}
-                    onClose={closeModal}
-                    onTotalAmountChange={handleTotalAmountChange}
-                  /> */}
+                  <QuotationItemsTable quotation_id={quote} />
                 </div>
               </div>
               <div className="tm_invoice_footer my-2">
@@ -200,10 +196,7 @@ const viewquotation = () => {
                 Validity : <b>15 days from the date of quotation.</b>
               </p>
               <p className="m-0">
-                Warranty/Guarantee :
-                <b>
-                  as per company norms.
-                </b>
+                Warranty/Guarantee :<b>as per company norms.</b>
               </p>
               <p>
                 Responsibility :
