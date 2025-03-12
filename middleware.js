@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req) {
   const protectedRoutes = [
-    // "/products",
-    // "/addclient",
-  
-    "/report",
-    // "/dashboard"
   ];
 
   const userDetails = req.cookies.get("user_details")?.value;
@@ -23,5 +18,5 @@ export function middleware(req) {
 
 // Apply middleware only to the specified routes
 export const config = {
-  matcher: ["/report" ],
+  matcher: [ ],
 };
