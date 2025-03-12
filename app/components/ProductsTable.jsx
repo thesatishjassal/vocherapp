@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
+import ExcelUploaderModal from "./ExcelUploader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -13,11 +14,14 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [showModalExcel, setShowModalExcel] = useState(false);
 
   const truncateText = (text, wordLimit = 8) => {
     if (!text) return "";
     const words = text.split(" ");
-    return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(" ") + "..."
+      : text;
   };
 
   const handleModalClose = () => {
@@ -53,7 +57,8 @@ const ProductsTable = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -98,20 +103,29 @@ const ProductsTable = () => {
 
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode]
-          .some((field) => field?.toLowerCase().includes(searchQuery))
+        [
+          product.itemname,
+          product.hsncode,
+          product.category,
+          product.subcategory,
+          product.itemcode,
+        ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
     }
 
     if (filterCategory) {
-      filtered = filtered.filter((product) => product.category === filterCategory);
+      filtered = filtered.filter(
+        (product) => product.category === filterCategory
+      );
     }
 
     setFilteredProducts(filtered);
   }, [products, searchQuery, filterCategory]);
 
   // Get unique categories for filter dropdown
-  const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
+  const categories = Array.from(
+    new Set(products.map((product) => product.category))
+  ).filter(Boolean);
 
   return (
     <div className="card">
@@ -154,14 +168,22 @@ const ProductsTable = () => {
           >
             <option value="">All Categories</option>
             {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
+              <option key={idx} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
-
           <button
-            className="btn btn-primary"
-            onClick={() => handleModalOpen()}
+            className="btn btn-success btn-md m-0"
+            onClick={() => setShowModalExcel(true)}
           >
+            Add Excel
+          </button>
+          <ExcelUploaderModal
+            show={showModalExcel}
+            onClose={() => setShowModalExcel(false)}
+          />
+          <button className="btn btn-primary btn-md" onClick={() => handleModalOpen()}>
             Add Product
           </button>
         </div>
@@ -201,7 +223,11 @@ const ProductsTable = () => {
                       ) : (
                         <i
                           className="plus-icon"
-                          style={{ fontSize: "24px", color: "#007bff", cursor: "pointer" }}
+                          style={{
+                            fontSize: "24px",
+                            color: "#007bff",
+                            cursor: "pointer",
+                          }}
                           onClick={() => handleImageModalOpen(product)}
                         >
                           +
@@ -219,20 +245,35 @@ const ProductsTable = () => {
                     <td>
                       <i
                         className="edit-icon"
-                        style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }}
+                        style={{
+                          fontSize: "18px",
+                          marginRight: "10px",
+                          cursor: "pointer",
+                          color: "#28a745",
+                        }}
                         onClick={() => handleModalOpen(product)}
-                      >✏️</i>
+                      >
+                        ✏️
+                      </i>
                       <i
                         className="delete-icon"
-                        style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }}
+                        style={{
+                          fontSize: "18px",
+                          cursor: "pointer",
+                          color: "#dc3545",
+                        }}
                         onClick={() => handleDeleteProduct(product.id)}
-                      >🗑️</i>
+                      >
+                        🗑️
+                      </i>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center">No products found.</td>
+                  <td colSpan="11" className="text-center">
+                    No products found.
+                  </td>
                 </tr>
               )}
             </tbody>
