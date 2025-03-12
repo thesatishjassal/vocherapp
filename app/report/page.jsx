@@ -6,6 +6,7 @@ import SubcategoryTable from "../components/SubcategoryTable";
 import OutvoucherReport from "../components/outvocuherReport";
 import ProductsReport from '../components/productsReport';
 import InvoucherReoprt from '../components/InvoucherReoprt';
+import QuotationReportsTable from "../components/QuotationReportsTable";
 
 const Report = () => {
   const [showModal, setShowModal] = useState(false);
@@ -48,6 +49,14 @@ const Report = () => {
             Outvocuher Report
           </button>
         </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "QuotationReports" ? "active" : ""}`}
+            onClick={() => setActiveTab("QuotationReports")}
+          >
+            Outvocuher Report
+          </button>
+        </li>
       </ul>
 
       {/* Tab Content */}
@@ -65,6 +74,11 @@ const Report = () => {
         {activeTab === "subcategory" && (
           <div className="tab-pane fade show active">
            <OutvoucherReport />
+          </div>
+        )}
+        {activeTab === "QuotationReports" && (
+          <div className="tab-pane fade show active">
+           <QuotationReportsTable />
           </div>
         )}
       </div>

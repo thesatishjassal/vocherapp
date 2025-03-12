@@ -40,7 +40,9 @@ const GetQuotationTables = () => {
       });
 
       if (response.status === 204 || response.status === 200) {
-        setQuotations((prev) => prev.filter((q) => q.quotation_id !== quotationId));
+        setQuotations((prev) =>
+          prev.filter((q) => q.quotation_id !== quotationId)
+        );
         toast.success("Quotation deleted successfully!");
       } else {
         throw new Error("Unexpected response status");
@@ -68,8 +70,10 @@ const GetQuotationTables = () => {
     .sort((a, b) => {
       if (sortOrder === "latest") return b.quotation_id - a.quotation_id;
       if (sortOrder === "oldest") return a.quotation_id - b.quotation_id;
-      if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
-      if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
+      if (sortOrder === "amount_high")
+        return b.amount_with_gst - a.amount_with_gst;
+      if (sortOrder === "amount_low")
+        return a.amount_with_gst - b.amount_with_gst;
       return 0;
     });
 
@@ -81,57 +85,56 @@ const GetQuotationTables = () => {
 
       <div className="card-body py-0 pt-0 pb-2">
         {/* Filters */}
-{/* Filters */}
-<div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  {/* Search Input - Left Aligned */}
-  <input
-    type="text"
-    placeholder="Search by Salesperson or Subject"
-    className="form-control w-auto"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-  />
+        {/* Filters */}
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          {/* Search Input - Left Aligned */}
+          <input
+            type="text"
+            placeholder="Search by Salesperson or Subject"
+            className="form-control w-auto"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
-  {/* Filters & Actions - Right Aligned */}
-  <div className="d-flex flex-wrap align-items-center gap-2">
-    <select
-      className="form-select w-auto"
-      value={statusFilter}
-      onChange={(e) => setStatusFilter(e.target.value)}
-    >
-      <option value="all">All Status</option>
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-    </select>
+          {/* Filters & Actions - Right Aligned */}
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <select
+              className="form-select w-auto"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
 
-    <select
-      className="form-select w-auto"
-      value={sortOrder}
-      onChange={(e) => setSortOrder(e.target.value)}
-    >
-      <option value="latest">Latest First</option>
-      <option value="oldest">Oldest First</option>
-      <option value="amount_high">Amount High to Low</option>
-      <option value="amount_low">Amount Low to High</option>
-    </select>
+            <select
+              className="form-select w-auto"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="latest">Latest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="amount_high">Amount High to Low</option>
+              <option value="amount_low">Amount Low to High</option>
+            </select>
 
-    <button
-      className="btn btn-secondary"
-      onClick={() => {
-        setSearchQuery("");
-        setStatusFilter("all");
-        setSortOrder("latest");
-      }}
-    >
-      Clear Filters
-    </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                setSortOrder("latest");
+              }}
+            >
+              Clear Filters
+            </button>
 
-    <a className="btn btn-primary" href="/addquotation">
-      Add Quotation
-    </a>
-  </div>
-</div>
-
+            <a className="btn btn-primary" href="/addquotation">
+              Add Quotation
+            </a>
+          </div>
+        </div>
 
         {/* Table */}
         <table className="table align-items-center mb-0">
