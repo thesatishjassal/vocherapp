@@ -14,6 +14,7 @@ export function middleware(req) {
     "/getquotation",
     "/addquotation",
     "/viewquotation",
+    "/dashboard"
   ];
 
   const userDetails = req.cookies.get("user_details")?.value;
@@ -46,5 +47,6 @@ export const config = {
     "/addquotation",
     "/viewquotation",
     "/viewquotation/:path*",
+     "/dashboard"
   ],
 };
