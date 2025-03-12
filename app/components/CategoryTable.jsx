@@ -64,7 +64,7 @@ const CategoryTable = () => {
 
   // ✅ Filter categories based on search term
   const filteredCategories = categories.filter((cat) =>
-    cat.catname.toLowerCase().includes(searchTerm.toLowerCase())
+    cat.catname && cat.catname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
