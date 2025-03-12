@@ -42,9 +42,9 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
       toast.warn("Please fill in all fields!", { position: "top-right" });
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
       let response;
       if (categoryData) {
@@ -77,16 +77,13 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
       onClose();
     } catch (err) {
       console.error("Submit Error:", err.response || err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Something went wrong!";
-      toast.error(errorMessage, { position: "top-right" });
+      toast.error(err.response?.data?.message || "Something went wrong!", { position: "top-right" });
     } finally {
       setLoading(false);
     }
   };
 
+  
   return (
     <div
       className={`modal fade ${show ? "show" : ""}`}
@@ -114,7 +111,6 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
                 placeholder="Enter category name"
                 value={category.catname}
                 onChange={handleChange}
-                disabled={loading}
               />
             </div>
             <div className="mb-3">
@@ -129,12 +125,7 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
             </div>
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={loading}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
             <button
@@ -143,13 +134,7 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading
-                ? categoryData
-                  ? "Updating..."
-                  : "Saving..."
-                : categoryData
-                ? "Update Category"
-                : "Save Category"}
+              {loading ? (categoryData ? "Updating..." : "Saving...") : categoryData ? "Update Category" : "Save Category"}
             </button>
           </div>
         </div>
