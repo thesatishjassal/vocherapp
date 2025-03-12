@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
+import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
 
@@ -9,13 +10,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [showModalExcel, setShowModalExcel] = useState(false);
 
+  // Truncate long text
   const truncateText = (text, wordLimit = 8) => {
     if (!text) return "";
     const words = text.split(" ");
@@ -24,14 +27,19 @@ const ProductsTable = () => {
       : text;
   };
 
-  const handleModalClose = () => {
-    setShowModal(false);
+  // Modal Handlers
+  const handleAddModalClose = () => setShowAddModal(false);
+  const handleUpdateModalClose = () => setShowUpdateModal(false);
+  const handleImageModalClose = () => setShowImageModal(false);
+
+  const handleAddModalOpen = () => {
     setSelectedProduct(null);
+    setShowAddModal(true);
   };
 
-  const handleModalOpen = (product = null) => {
+  const handleUpdateModalOpen = (product) => {
     setSelectedProduct(product);
-    setShowModal(true);
+    setShowUpdateModal(true);
   };
 
   const handleImageModalOpen = (product) => {
@@ -39,10 +47,7 @@ const ProductsTable = () => {
     setShowImageModal(true);
   };
 
-  const handleImageModalClose = () => {
-    setShowImageModal(false);
-  };
-
+  // Add or Update product in state
   const handleAddOrUpdateProduct = (updatedProduct) => {
     setProducts((prev) => {
       const index = prev.findIndex((p) => p.id === updatedProduct.id);
@@ -53,12 +58,13 @@ const ProductsTable = () => {
       }
       return [...prev, updatedProduct];
     });
-    setShowModal(false);
+    setShowAddModal(false);
+    setShowUpdateModal(false);
   };
 
+  // Delete product
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -67,6 +73,7 @@ const ProductsTable = () => {
     }
   };
 
+  // Image upload handler
   const handleImageUpload = (productId, newImage) => {
     setProducts((prev) =>
       prev.map((product) =>
@@ -75,14 +82,11 @@ const ProductsTable = () => {
     );
   };
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value.toLowerCase());
-  };
+  // Search and Category Filter
+  const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
+  const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
 
-  const handleCategoryFilter = (e) => {
-    setFilterCategory(e.target.value);
-  };
-
+  // Fetch products initially
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -93,39 +97,25 @@ const ProductsTable = () => {
         console.error("Error fetching products:", error);
       }
     };
-
     fetchProducts();
-  }, []);
-
+  }, [selectedProduct]);
+  // Apply filters
   useEffect(() => {
-    // Filter logic on search and category filter
     let filtered = products;
-
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [
-          product.itemname,
-          product.hsncode,
-          product.category,
-          product.subcategory,
-          product.itemcode,
-        ].some((field) => field?.toLowerCase().includes(searchQuery))
+        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode]
+          .some((field) => field?.toLowerCase().includes(searchQuery))
       );
     }
-
     if (filterCategory) {
-      filtered = filtered.filter(
-        (product) => product.category === filterCategory
-      );
+      filtered = filtered.filter((product) => product.category === filterCategory);
     }
-
     setFilteredProducts(filtered);
   }, [products, searchQuery, filterCategory]);
 
-  // Get unique categories for filter dropdown
-  const categories = Array.from(
-    new Set(products.map((product) => product.category))
-  ).filter(Boolean);
+  // Extract unique categories
+  const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
 
   return (
     <div className="card">
@@ -133,15 +123,26 @@ const ProductsTable = () => {
         <h6>Manage Products</h6>
       </div>
 
-      {showModal && (
+      {/* Add Product Modal */}
+      {showAddModal && (
         <AddProductForm
-          show={showModal}
-          onClose={handleModalClose}
+          show={showAddModal}
+          onClose={handleAddModalClose}
           onSave={handleAddOrUpdateProduct}
-          product={selectedProduct}
         />
       )}
 
+      {/* Update Product Modal */}
+      {showUpdateModal && selectedProduct && (
+        <UpdateProductForm
+          show={showUpdateModal}
+          onClose={handleUpdateModalClose}
+          onSave={handleAddOrUpdateProduct}
+          productId={selectedProduct.id} // Pass only the ID
+        />
+      )}
+
+      {/* Image Upload Modal */}
       {showImageModal && (
         <ImageUploadModal
           show={showImageModal}
@@ -151,6 +152,13 @@ const ProductsTable = () => {
         />
       )}
 
+      {/* Excel Uploader Modal */}
+      <ExcelUploaderModal
+        show={showModalExcel}
+        onClose={() => setShowModalExcel(false)}
+      />
+
+      {/* Search and Filter Controls */}
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-3 gap-2">
           <input
@@ -160,7 +168,6 @@ const ProductsTable = () => {
             value={searchQuery}
             onChange={handleSearch}
           />
-
           <select
             className="form-select w-25"
             value={filterCategory}
@@ -168,28 +175,16 @@ const ProductsTable = () => {
           >
             <option value="">All Categories</option>
             {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>
-                {cat}
-              </option>
+              <option key={idx} value={cat}>{cat}</option>
             ))}
           </select>
-          <button
-            className="btn btn-success btn-md m-0"
-            onClick={() => setShowModalExcel(true)}
-          >
-            Add Excel
-          </button>
-          <ExcelUploaderModal
-            show={showModalExcel}
-            onClose={() => setShowModalExcel(false)}
-          />
-          <button className="btn btn-primary btn-md" onClick={() => handleModalOpen()}>
-            Add Product
-          </button>
+          <button className="btn btn-success btn-md" onClick={() => setShowModalExcel(true)}>Add Excel</button>
+          <button className="btn btn-primary btn-md" onClick={handleAddModalOpen}>Add Product</button>
         </div>
 
+        {/* Products Table */}
         <div className="table-responsive">
-          <table className="table align-items-center justify-content-center mb-0">
+          <table className="table align-items-center mb-0">
             <thead>
               <tr>
                 <th>Id</th>
@@ -207,8 +202,8 @@ const ProductsTable = () => {
             </thead>
             <tbody>
               {filteredProducts.length > 0 ? (
-                filteredProducts.map((product, index) => (
-                  <tr key={index}>
+                filteredProducts.map((product) => (
+                  <tr key={product.id}>
                     <td>{product.id}</td>
                     <td>
                       {product.thumbnail ? (
@@ -221,17 +216,7 @@ const ProductsTable = () => {
                           onClick={() => handleImageModalOpen(product)}
                         />
                       ) : (
-                        <i
-                          className="plus-icon"
-                          style={{
-                            fontSize: "24px",
-                            color: "#007bff",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleImageModalOpen(product)}
-                        >
-                          +
-                        </i>
+                        <i className="plus-icon" style={{ fontSize: "24px", color: "#007bff", cursor: "pointer" }} onClick={() => handleImageModalOpen(product)}>+</i>
                       )}
                     </td>
                     <td>{product.hsncode}</td>
@@ -243,38 +228,13 @@ const ProductsTable = () => {
                     <td>{product.quantity}</td>
                     <td>{product.rackcode}</td>
                     <td>
-                      <i
-                        className="edit-icon"
-                        style={{
-                          fontSize: "18px",
-                          marginRight: "10px",
-                          cursor: "pointer",
-                          color: "#28a745",
-                        }}
-                        onClick={() => handleModalOpen(product)}
-                      >
-                        ✏️
-                      </i>
-                      <i
-                        className="delete-icon"
-                        style={{
-                          fontSize: "18px",
-                          cursor: "pointer",
-                          color: "#dc3545",
-                        }}
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        🗑️
-                      </i>
+                      <i className="edit-icon" style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }} onClick={() => handleUpdateModalOpen(product)}>✏️</i>
+                      <i className="delete-icon" style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }} onClick={() => handleDeleteProduct(product.id)}>🗑️</i>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No products found.
-                  </td>
-                </tr>
+                <tr><td colSpan="11" className="text-center">No products found.</td></tr>
               )}
             </tbody>
           </table>
