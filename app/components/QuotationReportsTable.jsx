@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 
 const API_URL = "https://api.panvic.in/quotation/";
@@ -13,12 +12,11 @@ const QuotationReportsTable = () => {
   const [quotations, setQuotations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [salespersonFilter, setSalespersonFilter] = useState("all");
-  const [subjectFilter, setSubjectFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("latest");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  // Fetch Quotations
   useEffect(() => {
     const fetchQuotations = async () => {
       try {
@@ -35,45 +33,50 @@ const QuotationReportsTable = () => {
     fetchQuotations();
   }, []);
 
-  // Handle Export to Excel
+  // Export to Excel
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(quotations);
+    const ws = XLSX.utils.json_to_sheet(filteredQuotations);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Quotations");
-    XLSX.writeFile(wb, "Quotations.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Filtered Quotations");
+    XLSX.writeFile(wb, "Filtered_Quotations.xlsx");
   };
 
   // Filter and Sort Logic
   const filteredQuotations = quotations
     .filter((q) => {
       const matchesSearch =
-        q.salesperson.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        q.subject.toLowerCase().includes(searchQuery.toLowerCase());
+        q.salesperson?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.quotation_no?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesSalesperson =
-        salespersonFilter === "all" || q.salesperson === salespersonFilter;
-
-      const matchesSubject =
-        subjectFilter === "all" || q.subject === subjectFilter;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && q.status) ||
+        (statusFilter === "inactive" && !q.status);
 
       const matchesDate =
         (!fromDate || new Date(q.voucher_date) >= new Date(fromDate)) &&
         (!toDate || new Date(q.voucher_date) <= new Date(toDate));
 
-      return (
-        matchesSearch && matchesSalesperson && matchesSubject && matchesDate
-      );
+      return matchesSearch && matchesStatus && matchesDate;
     })
     .sort((a, b) => {
       if (sortOrder === "latest") return b.quotation_id - a.quotation_id;
       if (sortOrder === "oldest") return a.quotation_id - b.quotation_id;
+      if (sortOrder === "amount_high")
+        return Number(b.amount_with_gst) - Number(a.amount_with_gst);
+      if (sortOrder === "amount_low")
+        return Number(a.amount_with_gst) - Number(b.amount_with_gst);
       return 0;
     });
 
   return (
     <div className="card">
-      <div className="card-header pb-0">
+      <div className="card-header pb-0 d-flex justify-content-between align-items-center">
         <h6>Manage Quotations</h6>
+        <button className="btn btn-success btn-sm" onClick={exportToExcel}>
+          Export to Excel
+        </button>
       </div>
       <div className="card-body py-0 pt-0 pb-2">
         {/* Filter Section */}
@@ -82,15 +85,15 @@ const QuotationReportsTable = () => {
           <div className="col-12 col-md-3">
             <input
               type="text"
-              placeholder="Search by Salesperson or Subject"
+              placeholder="Search by No, Salesperson, Subject"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="form-control"
             />
           </div>
 
-          {/* Salesperson Filter */}
-          <div className="col-12 col-md-1">
+          {/* Status Filter */}
+          <div className="col-12 col-md-2">
             <select
               className="form-select"
               value={statusFilter}
@@ -103,7 +106,7 @@ const QuotationReportsTable = () => {
           </div>
 
           {/* Sort Order Filter */}
-          <div className="col-12 col-md-3">
+          <div className="col-12 col-md-2">
             <select
               className="form-select"
               value={sortOrder}
@@ -121,8 +124,8 @@ const QuotationReportsTable = () => {
             <input
               type="date"
               className="form-control"
-              placeholder="From Date"
-              // onChange handler can be added if needed
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
             />
           </div>
 
@@ -131,8 +134,8 @@ const QuotationReportsTable = () => {
             <input
               type="date"
               className="form-control"
-              placeholder="To Date"
-              // onChange handler can be added if needed
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
             />
           </div>
 
@@ -144,18 +147,17 @@ const QuotationReportsTable = () => {
                 setSearchQuery("");
                 setStatusFilter("all");
                 setSortOrder("latest");
-                // reset date fields if needed
+                setFromDate("");
+                setToDate("");
               }}
               title="Clear Filters"
             >
               Clear
             </button>
           </div>
-
-          {/* Add Quotation Button */}
-     
         </div>
 
+        {/* Table Section */}
         <div className="table-responsive">
           <table className="table align-items-center mb-0">
             <thead>

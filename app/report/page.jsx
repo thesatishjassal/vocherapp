@@ -30,7 +30,7 @@ const Report = () => {
             className={`nav-link ${activeTab === "products" ? "active" : ""}`}
             onClick={() => setActiveTab("products")}
           >
-            Products
+            Products Reoprts
           </button>
         </li>
         <li className="nav-item">
@@ -38,7 +38,7 @@ const Report = () => {
             className={`nav-link ${activeTab === "category" ? "active" : ""}`}
             onClick={() => setActiveTab("category")}
           >
-            Invoucher Reoprt
+            Invoucher Reoprts
           </button>
         </li>
         <li className="nav-item">
@@ -46,7 +46,7 @@ const Report = () => {
             className={`nav-link ${activeTab === "subcategory" ? "active" : ""}`}
             onClick={() => setActiveTab("subcategory")}
           >
-            Outvocuher Report
+            Outvocuher Reports
           </button>
         </li>
         <li className="nav-item">
@@ -54,7 +54,7 @@ const Report = () => {
             className={`nav-link ${activeTab === "QuotationReports" ? "active" : ""}`}
             onClick={() => setActiveTab("QuotationReports")}
           >
-            Outvocuher Report
+            Quotation Reports
           </button>
         </li>
       </ul>
