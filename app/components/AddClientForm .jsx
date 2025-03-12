@@ -17,7 +17,7 @@ const validationSchema = Yup.object({
   client_phone: Yup.string().required("Contact Number is required"),
   client_email: Yup.string().email("Invalid email format").required("Email is required"),
   client_type: Yup.string().required("Client Type is required"),
-  buisnessname: Yup.string().required("Business Name is required"),
+  businessname: Yup.string().required("Business Name is required"),
   pincode: Yup.string().required("Pincode is required"),
   city: Yup.string().required("City is required"),
   state: Yup.string().required("State is required"),
@@ -35,7 +35,7 @@ const AddClientForm = () => {
       client_phone: "",
       client_email: "",
       client_type: "",
-      buisnessname: "",
+      businessname: "",
       pincode: "",
       city: "",
       state: "",
@@ -126,12 +126,12 @@ const AddClientForm = () => {
                               <div className="col-md-6">
                                 <input
                                   type="text"
-                                  name="buisnessname"
+                                  name="businessname"
                                   placeholder="Business Name"
-                                  value={formik.values.buisnessname}
+                                  value={formik.values.businessname}
                                   onChange={handleChange}
                                   className={`form-control mb-0 ${
-                                    formik.touched.buisnessname && formik.errors.buisnessname
+                                    formik.touched.businessname && formik.errors.businessname
                                       ? "border-danger"
                                       : ""
                                   }`}
