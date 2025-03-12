@@ -15,7 +15,7 @@ const Report = () => {
 
   return (
     <>
-      <div className="mini_banner warehouse">
+      <div className="mini_banner reports">
         <div className="content_box">
           <div>
             <h2 className="title">Reports</h2>
