@@ -15,7 +15,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://freedesignfile.com/upload/2023/09/Businessman-3D-professions-icon-vector.jpg"
+                    src="/assets/img/Businessman-3D-professions-icon-vector.jpg"
                     alt=""
                     className="client_img"
                   />
@@ -34,7 +34,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://cdn3d.iconscout.com/3d/premium/thumb/product-3d-icon-download-in-png-blend-fbx-gltf-file-formats--tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png?f=webp"
+                    src="/assets/img/tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png"
                     alt=""
                     className="client_img"
                   />
@@ -53,7 +53,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://cdn3d.iconscout.com/3d/premium/thumb/receipt-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png?f=webp"
+                    src="/assets/img/file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png"
                     alt=""
                     className="client_img"
                   />
@@ -72,7 +72,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://cdn3d.iconscout.com/3d/premium/thumb/order-list-3d-icon-download-in-png-blend-fbx-gltf-file-formats--logistic-checklist-currier-product-pack-e-commerce-shopping-icons-6159358.png"
+                    src="/assets/img/commerce-shopping-icons-6159358.webp"
                     alt=""
                     className="client_img"
                   />
@@ -91,7 +91,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://cdn3d.iconscout.com/3d/premium/thumb/business-report-3d-icon-download-in-png-blend-fbx-gltf-file-formats--document-clipboard-data-pack-icons-9291057.png?f=webp"
+                    src="/assets/img/business-report-3d-icon.webp"
                     alt=""
                     className="client_img"
                   />
@@ -110,7 +110,7 @@ export default function Home() {
               <div className="card-body p-3 position-relative text-center">
                 <div className="icon_wrapper">
                   <img
-                    src="https://cdn3d.iconscout.com/3d/premium/thumb/invoice-3d-illustration-download-in-png-blend-fbx-gltf-file-formats--bill-transaction-payment-purchase-business-pack-illustrations-3928170.png"
+                    src="/assets/img/transaction-payment-purchase-business.webp"
                     alt=""
                     className="client_img"
                   />
