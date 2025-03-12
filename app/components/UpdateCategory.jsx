@@ -4,39 +4,39 @@ import { toast } from "react-toastify";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
-  const [category, setCategory] = useState({
-    catname: "",
-    slug: "",
-  });
-
+const UpdateCategory = ({ show, onClose, onSave, categoryData }) => {
+    console.log(categoryData)
+  const [category, setCategory] = useState({ catname: "", slug: "" });
   const [loading, setLoading] = useState(false);
 
+  // Set category data on modal open
   useEffect(() => {
     if (categoryData) {
       setCategory(categoryData);
     } else {
       setCategory({ catname: "", slug: "" });
     }
-  }, [categoryData]);
+  }, [categoryData, show]);
 
-  const generateSlug = (name) => {
-    return name
+  // Slug generation
+  const generateSlug = (name) =>
+    name
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .trim();
-  };
 
+  // Handle input change and auto slug
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCategory((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "catname" ? { slug: generateSlug(value) } : {}),
+      ...(name === "catname" && { slug: generateSlug(value) }),
     }));
   };
 
+  // Handle Add / Update Submit
   const handleSubmit = async () => {
     if (!category.catname || !category.slug) {
       toast.warn("Please fill in all fields!", { position: "top-right" });
@@ -47,11 +47,10 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
 
     try {
       let response;
-      if (categoryData) {
-        if (!categoryData.id) {
-          throw new Error("Category ID is missing for update!");
-        }
-        // Edit Category
+
+      if (categoryData && categoryData.id) {
+        console.log(categoryData)
+        // Update Category
         response = await axios.put(
           `${API_URL}/category/${categoryData.id}`,
           category,
@@ -63,25 +62,20 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
         toast.success("Category updated successfully!", { position: "top-right" });
       } else {
         // Add Category
-        response = await axios.post(
-          `${API_URL}/category/`,
-          category,
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
+        response = await axios.post(`${API_URL}/category/`, category, {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        });
         toast.success("Category added successfully!", { position: "top-right" });
       }
-      await onSave(response.data, !!categoryData); // Wait for onSave to finish
+
+      onSave(response.data, !!categoryData); // Return data and isUpdate status
       onClose();
     } catch (err) {
       console.error("Submit Error:", err.response || err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Something went wrong!";
-      toast.error(errorMessage, { position: "top-right" });
+      toast.error(err.response?.data?.message || "Something went wrong!", {
+        position: "top-right",
+      });
     } finally {
       setLoading(false);
     }
@@ -100,11 +94,14 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{categoryData ? "Edit Category" : "Add Category"}</h5>
+            <h5 className="modal-title">
+              {categoryData ? "Edit Category" : "Add Category"}
+            </h5>
             <button type="button" className="btn-close" onClick={onClose}>
               ×
             </button>
           </div>
+
           <div className="modal-body">
             <div className="mb-3">
               <input
@@ -114,7 +111,6 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
                 placeholder="Enter category name"
                 value={category.catname}
                 onChange={handleChange}
-                disabled={loading}
               />
             </div>
             <div className="mb-3">
@@ -128,13 +124,9 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
               />
             </div>
           </div>
+
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={loading}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
             <button
@@ -158,4 +150,4 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
   );
 };
 
-export default CategoryModal;
+export default UpdateCategory;
