@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req) {
   const protectedRoutes = [
+    "/products",
+    "/addclient",
+    "/getinvouchers",
+    "/viewinv",
+    "/getoutvouchers",
+    "/viewotv",
+    "/addoutinvoice",
+    "/addinvoice",
+    "/report",
+    "/getquotation",
+    "/addquotation",
+    "/viewquotation",
   ];
 
   const userDetails = req.cookies.get("user_details")?.value;
@@ -18,5 +30,21 @@ export function middleware(req) {
 
 // Apply middleware only to the specified routes
 export const config = {
-  matcher: [ ],
+  matcher: [
+    "/products",
+    "/addclient",
+    "/getinvouchers",
+    "/viewinv",
+    "/viewinv/:path*",
+    "/getoutvouchers",
+    "/viewotv",
+    "/viewotv/:path*",
+    "/addoutinvoice",
+    "/addinvoice",
+    "/report",
+    "/getquotation",
+    "/addquotation",
+    "/viewquotation",
+    "/viewquotation/:path*",
+  ],
 };
