@@ -1,6 +1,66 @@
+"use client";
+import { useEffect, useState } from "react";
 import DynamicGreeting from "../components/getGreeting";
+import axios from "axios";
 
 export default function Home() {
+  const [outVoucherLength, setOutVoucherLength] = useState(0);
+  const [inVoucherLength, setInVoucherLength] = useState(0);
+  const [productsLength, setProductsLength] = useState(0);
+  const [quotationLength, setQuotationLength] = useState(0);
+  const [clientsLength, setClientsLength] = useState(0);
+
+  useEffect(() => {
+    // Fetch Out Vouchers
+    axios
+      .get("https://api.panvic.in/clients/")
+      .then((response) => {
+        setClientsLength(response.data.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching out vouchers:", error);
+      });
+
+    axios
+      .get("https://api.panvic.in/outvouchers/")
+      .then((response) => {
+        setOutVoucherLength(response.data.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching out vouchers:", error);
+      });
+
+    // Fetch In Vouchers
+    axios
+      .get("https://api.panvic.in/invouchers/")
+      .then((response) => {
+        setInVoucherLength(response.data.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching in vouchers:", error);
+      });
+
+    // Fetch Products
+    axios
+      .get("https://api.panvic.in/products/")
+      .then((response) => {
+        setProductsLength(response.data.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching products:", error);
+      });
+
+    // Fetch Quotations
+    axios
+      .get("https://api.panvic.in/quotation/")
+      .then((response) => {
+        setQuotationLength(response.data.length);
+      })
+      .catch((error) => {
+        console.error("Error fetching quotations:", error);
+      });
+  }, []);
+
   return (
     <>
       <div className="row welcome">
@@ -21,7 +81,7 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Add Clients</h5>
-                <span className="count text-sm">1600</span>
+                <span className="count text-sm">{clientsLength}</span>
               </div>
             </div>
           </a>
@@ -40,7 +100,7 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
-                <span className="count text-sm">100</span>
+                <span className="count text-sm">{productsLength}</span>
               </div>
             </div>
           </a>
@@ -59,7 +119,7 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Add In Voucher</h5>
-                <span className="count text-sm">100</span>
+                <span className="count text-sm">{inVoucherLength}</span>
               </div>
             </div>
           </a>
@@ -78,7 +138,7 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Out Voucher</h5>
-                <span className="count text-sm">100</span>
+                <span className="count text-sm">{outVoucherLength}</span>
               </div>
             </div>
           </a>
@@ -97,7 +157,13 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Make Reports</h5>
-                <span className="count text-sm">100</span>
+                <span className="count text-sm">
+                  {clientsLength +
+                    inVoucherLength +
+                    outVoucherLength +
+                    quotationLength +
+                    productsLength}
+                </span>
               </div>
             </div>
           </a>
@@ -116,7 +182,7 @@ export default function Home() {
                   />
                 </div>
                 <h5 className="font-weight-bolder mb-0 mt-3">Quotation</h5>
-                <span className="count text-sm">100</span>
+                <span className="count text-sm">{quotationLength}</span>
               </div>
             </div>
           </a>
@@ -134,114 +200,7 @@ export default function Home() {
               </div>
             </div>
             <div className="card-body pb-2">
-              <div className="table-responsive">
-                <table className="table align-items-center justify-content-center mb-0  ">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Product Name</th>
-                      <th scope="col">Quantity</th>
-                      <th scope="col">Category</th>
-                      <th scope="col">Rack</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Fan Item */}
-                    <tr>
-                      <td>1</td>
-                      <td>Fan</td>
-                      <td>15</td>
-                      <td>Electronics</td>
-                      <td>A1</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-
-                    {/* Fancy Lights Item */}
-                    <tr>
-                      <td>2</td>
-                      <td>Fancy Lights</td>
-                      <td>30</td>
-                      <td>Electronics</td>
-                      <td>A2</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-
-                    {/* Geexer Item */}
-                    <tr>
-                      <td>3</td>
-                      <td>Geexer</td>
-                      <td>10</td>
-                      <td>Electronics</td>
-                      <td>A3</td>
-                      <td>
-                        <span className="badge bg-danger">Not Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-
-                    {/* Bolard Item */}
-                    <tr>
-                      <td>4</td>
-                      <td>Bolard</td>
-                      <td>8</td>
-                      <td>Electronics</td>
-                      <td>A4</td>
-                      <td>
-                        <span className="badge bg-success">Available</span>
-                      </td>
-                      <div className="d-flex ">
-                        <button className="btn action_icons">
-                          <i className="fa fa-eye"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button className="btn action_icons">
-                          <i className="fa fa-trash"></i>
-                        </button>
-                      </div>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <div className="table-responsive"></div>
             </div>
           </div>
         </div>
