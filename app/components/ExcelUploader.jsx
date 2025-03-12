@@ -31,7 +31,7 @@ const ExcelUploaderModal = ({ show, onClose }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://127.0.0.1:8000/import-products/', formData, {
+      const response = await axios.post('https://api.panvic.in/import-products/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
