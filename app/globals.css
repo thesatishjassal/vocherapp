@@ -550,3 +550,7 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield; /* For Firefox */
 }
+img.thumnail {
+  width: 100%;
+  max-width: 50px;
+}

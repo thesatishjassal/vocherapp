@@ -16,7 +16,7 @@ const GetInvoucherTable = () => {
         const response = await axios.get(API_URL, {
           withCredentials: true,
         });
-        setInvouchers(response.data);
+        setInvouchers(response.data.reverse());
       } catch (error) {
         toast.error("Failed to load vouchers!");
       }

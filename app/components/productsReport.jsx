@@ -10,21 +10,18 @@ const ProductsReport = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStock, setFilterStock] = useState("");
+  const [filterBrand, setFilterBrand] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  // Text truncation
-  const truncateText = (text, wordLimit = 8) => {
-    if (!text) return "";
-    const words = text.split(" ");
-    return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
-  };
-
-  // Search & Filter Handlers
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
   const handleStockFilter = (e) => setFilterStock(e.target.value);
+  const handleBrandFilter = (e) => setFilterBrand(e.target.value);
+  const handleStartDateChange = (e) => setStartDate(e.target.value);
+  const handleEndDateChange = (e) => setEndDate(e.target.value);
 
-  // Export to Excel
   const handleExportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredProducts);
     const wb = XLSX.utils.book_new();
@@ -32,7 +29,6 @@ const ProductsReport = () => {
     XLSX.writeFile(wb, "products_report.xlsx");
   };
 
-  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -46,7 +42,6 @@ const ProductsReport = () => {
     fetchProducts();
   }, []);
 
-  // Filter and sort logic
   useEffect(() => {
     let filtered = products;
 
@@ -67,6 +62,19 @@ const ProductsReport = () => {
       );
     }
 
+    if (filterBrand) {
+      filtered = filtered.filter((product) => product.brand === filterBrand);
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      filtered = filtered.filter((product) => {
+        const productDate = new Date(product.createdAt);
+        return productDate >= start && productDate <= end;
+      });
+    }
+
     if (sortConfig.key) {
       filtered = [...filtered].sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
@@ -76,12 +84,11 @@ const ProductsReport = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [products, searchQuery, filterCategory, filterStock, sortConfig]);
+  }, [products, searchQuery, filterCategory, filterStock, filterBrand, startDate, endDate, sortConfig]);
 
-  // Get unique categories
   const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
+  const brands = Array.from(new Set(products.map((product) => product.brand))).filter(Boolean);
 
-  // Sorting Handler
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
@@ -96,7 +103,6 @@ const ProductsReport = () => {
       </div>
 
       <div className="card-body">
-        {/* Filters */}
         <div className="d-flex flex-wrap gap-2 mb-3">
           <div className="flex-grow-1 min-w-[200px]">
             <label className="form-label">Search</label>
@@ -118,6 +124,15 @@ const ProductsReport = () => {
             </select>
           </div>
           <div className="min-w-[150px]">
+            <label className="form-label">Brand</label>
+            <select className="form-select" value={filterBrand} onChange={handleBrandFilter}>
+              <option value="">All Brands</option>
+              {brands.map((brand, idx) => (
+                <option key={idx} value={brand}>{brand}</option>
+              ))}
+            </select>
+          </div>
+          <div className="min-w-[150px]">
             <label className="form-label">Stock</label>
             <select className="form-select" value={filterStock} onChange={handleStockFilter}>
               <option value="">All Stock</option>
@@ -125,19 +140,22 @@ const ProductsReport = () => {
               <option value="out">Out of Stock</option>
             </select>
           </div>
+          <div className="min-w-[150px]">
+            <label className="form-label">Start Date</label>
+            <input type="date" className="form-control" value={startDate} onChange={handleStartDateChange} />
+          </div>
+          <div className="min-w-[150px]">
+            <label className="form-label">End Date</label>
+            <input type="date" className="form-control" value={endDate} onChange={handleEndDateChange} />
+          </div>
         </div>
 
-        {/* Table */}
         <div className="table-responsive">
           <table className="table table-hover align-items-center mb-0">
             <thead>
               <tr>
-                {["id", "thumbnail", "hsncode", "itemcode", "itemname", "category", "brand", "model", "price", "quantity"].map((header) => (
-                  <th
-                    key={header}
-                    onClick={() => handleSort(header)}
-                    style={{ cursor: "pointer", whiteSpace: "nowrap" }}
-                  >
+                {["id", "thumbnail", "hsncode", "itemcode", "itemname", "category", "brand", "model", "price", "quantity", "createdAt"].map((header) => (
+                  <th key={header} onClick={() => handleSort(header)} style={{ cursor: "pointer", whiteSpace: "nowrap" }}>
                     {header.toUpperCase()} {sortConfig.key === header ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                   </th>
                 ))}
@@ -148,25 +166,17 @@ const ProductsReport = () => {
                 filteredProducts.map((product, index) => (
                   <tr key={index}>
                     <td>{product.id}</td>
-                    <td>
-                      {product.thumbnail ? (
-                        <img
-                          src={`${API_URL}${product.thumbnail}`}
-                          alt={product.itemname}
-                          width="50"
-                          height="50"
-                          className="rounded"
-                        />
-                      ) : "-"}
-                    </td>
+                    <td><img src={`https://api.panvic.in${product.thumbnail}`} alt="" className="thumnail" /></td>
                     <td>{product.hsncode}</td>
                     <td>{product.itemcode}</td>
-                    <td>{truncateText(product.itemname)}</td>
+                    <td>{product.itemname}</td>
                     <td>{product.category}</td>
                     <td>{product.brand}</td>
                     <td>{product.model}</td>
                     <td>₹{product.price}</td>
                     <td>{product.quantity > 0 ? product.quantity : <span className="text-danger">Out of Stock</span>}</td>
+
+                    <td>{product.createdAt}</td>
                   </tr>
                 ))
               ) : (
@@ -176,21 +186,6 @@ const ProductsReport = () => {
           </table>
         </div>
       </div>
-
-      {/* Minimal responsive styling */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .form-label {
-            font-size: 0.8rem;
-          }
-          th, td {
-            font-size: 0.8rem;
-          }
-          .min-w-[150px], .min-w-[200px] {
-            flex: 1 1 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

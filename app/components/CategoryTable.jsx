@@ -17,7 +17,7 @@ const CategoryTable = () => {
         const response = await axios.get(`${API_URL}/category/`, {
           withCredentials: true,
         });
-        setCategories(response.data);
+        setCategories(response.data.reverse());
       } catch (error) {
         toast.error("Failed to load categories!");
       }

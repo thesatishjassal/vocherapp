@@ -6,18 +6,64 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 
 const API_URL = "https://api.panvic.in/quotation/";
+const CLIENTS_API_URL = "https://api.panvic.in/clients/";
 
 const GetQuotationTables = () => {
+  // State variables
   const [quotations, setQuotations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilters, setStatusFilters] = useState({
+    active: true, // Default to "Active" checked
+    mature: false,
+    lost: false,
+  });
   const [sortOrder, setSortOrder] = useState("latest");
 
+  // Function to fetch all clients and create a lookup map
+  const fetchAllClients = async () => {
+    try {
+      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      console.log("Raw Clients Data:", response.data);
+
+      // Create a map of client_id to businessname
+      const clientsMap = response.data.reduce((acc, client) => {
+        acc[client.id] = client.businessname; // Use 'id' and 'businessname' as per your JSON
+        return acc;
+      }, {});
+
+      console.log("Clients Map:", clientsMap);
+      return clientsMap;
+    } catch (error) {
+      console.error("Failed to fetch clients:", error);
+      toast.error("Failed to load client data!");
+      return {};
+    }
+  };
+
+  // Fetch quotations on component mount and set default status to "Active"
   useEffect(() => {
     const fetchQuotations = async () => {
       try {
-        const response = await axios.get(API_URL, { withCredentials: true });
-        const sortedQuotations = response.data.sort(
+        const [quotationsResponse, clientsMap] = await Promise.all([
+          axios.get(API_URL, { withCredentials: true }),
+          fetchAllClients(),
+        ]);
+
+        console.log("Raw Quotations Data:", quotationsResponse.data);
+
+        const quotationsWithClientNames = quotationsResponse.data.map((q) => {
+          const businessname = clientsMap[q.client_id] || null;
+          console.log(
+            `Quotation ID ${q.quotation_id} - Client ID: ${q.client_id}, Client Name: ${businessname}`
+          );
+          return {
+            ...q,
+            client_name: businessname,
+            status: "Active", // Set default status to "Active" for all quotations
+          };
+        });
+
+        const sortedQuotations = quotationsWithClientNames.sort(
           (a, b) => b.quotation_id - a.quotation_id
         );
         setQuotations(sortedQuotations);
@@ -30,7 +76,7 @@ const GetQuotationTables = () => {
     fetchQuotations();
   }, []);
 
-  // Handle Delete
+  // Handle quotation delete
   const handleDelete = async (quotationId) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return;
 
@@ -53,17 +99,50 @@ const GetQuotationTables = () => {
     }
   };
 
-  // Filter and Sort Logic
+  // Handle status change (update status via dropdown)
+  const handleStatusChange = (quotationId, newStatus) => {
+    setQuotations((prev) =>
+      prev.map((q) =>
+        q.quotation_id === quotationId ? { ...q, status: newStatus } : q
+      )
+    );
+    toast.success(`Status updated to ${newStatus}`);
+  };
+
+  // Handle checkbox change
+  const handleCheckboxChange = (status) => {
+    setStatusFilters((prev) => ({
+      ...prev,
+      [status]: !prev[status],
+    }));
+  };
+
+  // Calculate counts for each status
+  const statusCounts = quotations.reduce(
+    (acc, q) => {
+      const status = q.status ? String(q.status).toLowerCase() : "";
+      if (status === "active") acc.active += 1;
+      if (status === "mature") acc.mature += 1;
+      if (status === "lost") acc.lost += 1;
+      return acc;
+    },
+    { active: 0, mature: 0, lost: 0 }
+  );
+
+  // Filter and sort quotations
   const filteredQuotations = quotations
     .filter((q) => {
       const matchesSearch =
+        q.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.salesperson.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.subject.toLowerCase().includes(searchQuery.toLowerCase());
 
+      const status = q.status ? String(q.status).toLowerCase() : "";
+      const selectedStatuses = Object.keys(statusFilters).filter(
+        (key) => statusFilters[key]
+      );
       const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "active" && q.status) ||
-        (statusFilter === "inactive" && !q.status);
+        selectedStatuses.length === 0 || selectedStatuses.includes(status);
 
       return matchesSearch && matchesStatus;
     })
@@ -77,6 +156,21 @@ const GetQuotationTables = () => {
       return 0;
     });
 
+  // Function to get badge class based on status
+  const getBadgeClass = (status) => {
+    const statusStr = status ? String(status).toLowerCase() : "";
+    switch (statusStr) {
+      case "active":
+        return "badge bg-success";
+      case "mature":
+        return "badge bg-primary";
+      case "lost":
+        return "badge bg-danger";
+      default:
+        return "badge bg-secondary";
+    }
+  };
+
   return (
     <div className="card">
       <div className="card-header pb-0">
@@ -85,28 +179,57 @@ const GetQuotationTables = () => {
 
       <div className="card-body py-0 pt-0 pb-2">
         {/* Filters */}
-        {/* Filters */}
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-          {/* Search Input - Left Aligned */}
+          {/* Search Input */}
           <input
             type="text"
-            placeholder="Search by Salesperson or Subject"
+            placeholder="Search by Salesperson or Subject or Businessname"
             className="form-control w-auto"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
 
-          {/* Filters & Actions - Right Aligned */}
+          {/* Filter & Actions */}
           <div className="d-flex flex-wrap align-items-center gap-2">
-            <select
-              className="form-select w-auto"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            {/* Status Checkboxes with Counts */}
+            <div className="d-flex gap-2">
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="activeCheckbox"
+                  checked={statusFilters.active}
+                  onChange={() => handleCheckboxChange("active")}
+                />
+                <label className="form-check-label" htmlFor="activeCheckbox">
+                  Active ({statusCounts.active})
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="matureCheckbox"
+                  checked={statusFilters.mature}
+                  onChange={() => handleCheckboxChange("mature")}
+                />
+                <label className="form-check-label" htmlFor="matureCheckbox">
+                  Mature ({statusCounts.mature})
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="lostCheckbox"
+                  checked={statusFilters.lost}
+                  onChange={() => handleCheckboxChange("lost")}
+                />
+                <label className="form-check-label" htmlFor="lostCheckbox">
+                  Lost ({statusCounts.lost})
+                </label>
+              </div>
+            </div>
 
             <select
               className="form-select w-auto"
@@ -123,7 +246,7 @@ const GetQuotationTables = () => {
               className="btn btn-secondary"
               onClick={() => {
                 setSearchQuery("");
-                setStatusFilter("all");
+                setStatusFilters({ active: true, mature: false, lost: false });
                 setSortOrder("latest");
               }}
             >
@@ -136,11 +259,12 @@ const GetQuotationTables = () => {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Quotations Table */}
         <table className="table align-items-center mb-0">
           <thead>
             <tr>
               <th>ID</th>
+              <th>Client Name</th>
               <th>Quotation No</th>
               <th>Salesperson</th>
               <th>Subject</th>
@@ -157,6 +281,7 @@ const GetQuotationTables = () => {
               filteredQuotations.map((q) => (
                 <tr key={q.quotation_id}>
                   <td>{q.quotation_id}</td>
+                  <td>{q.client_name || "N/A"}</td>
                   <td>{q.quotation_no}</td>
                   <td>{q.salesperson}</td>
                   <td>{q.subject}</td>
@@ -164,7 +289,11 @@ const GetQuotationTables = () => {
                   <td>{q.without_gst}</td>
                   <td>{q.gst_amount}</td>
                   <td>{q.amount_with_gst}</td>
-                  <td>{q.status ? "Active" : "Inactive"}</td>
+                  <td>
+                    <span className={getBadgeClass(q.status)}>
+                      {q.status || "N/A"}
+                    </span>
+                  </td>
                   <td>
                     <Link href={`/viewquotation/${q.quotation_id}`}>
                       <u
@@ -176,19 +305,30 @@ const GetQuotationTables = () => {
                       </u>
                     </Link>
                     <u
-                      className="text-danger"
+                      className="text-danger me-2"
                       title="Delete"
                       style={{ cursor: "pointer" }}
                       onClick={() => handleDelete(q.quotation_id)}
                     >
                       <i className="fas fa-trash"></i>
                     </u>
+                    <select
+                      className="form-select form-select-sm d-inline w-75"
+                      value={q.status || ""}
+                      onChange={(e) =>
+                        handleStatusChange(q.quotation_id, e.target.value)
+                      }
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Mature">Mature</option>
+                      <option value="Lost">Lost</option>
+                    </select>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="text-center">
+                <td colSpan="11" className="text-center">
                   No quotations found.
                 </td>
               </tr>
