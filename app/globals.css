@@ -270,6 +270,10 @@ img.logo {
   max-width: 55px;
   margin: 0 auto;
 }
+.navbar {
+  box-shadow: 0 2px 12px #00000029;
+  background-color: #2e282b !important;
+}
 .card span.count {
   position: absolute;
   top: -6px;
@@ -308,15 +312,16 @@ p.bottom_lablel {
   margin-bottom: 4px;
   font-weight: 600;
   font-size: 16px;
+  color: #fff;
 }
 
 .profile p {
   line-height: 1;
   font-size: 14px;
-  opacity: .6;
+  opacity: 0.6;
   margin: 0;
+  color: #fff;
 }
-
 .profile .img-box {
     position: relative;
     width: 48px;
