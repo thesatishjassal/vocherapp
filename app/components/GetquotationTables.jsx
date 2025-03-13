@@ -304,14 +304,6 @@ const GetQuotationTables = () => {
                         <i className="fas fa-eye"></i>
                       </u>
                     </Link>
-                    <u
-                      className="text-danger me-2"
-                      title="Delete"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleDelete(q.quotation_id)}
-                    >
-                      <i className="fas fa-trash"></i>
-                    </u>
                     <select
                       className="form-select form-select-sm d-inline w-75"
                       value={q.status || ""}
