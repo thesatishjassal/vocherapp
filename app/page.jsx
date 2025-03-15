@@ -1,13 +1,12 @@
+"use client"
 import { useEffect } from "react";
 
 const Welcome = () => {
   useEffect(() => {
     if (window.location.hostname === "www.panvik.in") {
-      setTimeout(() => {
-        window.location.href = "https://www.panvik.com/";
-      }, 2000); // 2000ms = 2 seconds
+      window.location.href = "https://www.panvik.com/";
     }
-  }, []); // Empty dependency array, runs only once on mount
+  }, [window.location.hostname]);
 
   return <h3>Welcome!</h3>;
 };
