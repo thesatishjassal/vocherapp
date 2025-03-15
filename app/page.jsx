@@ -3,9 +3,11 @@ import { useEffect } from "react";
 const Welcome = () => {
   useEffect(() => {
     if (window.location.hostname === "www.panvik.in") {
-      window.location.href = "https://www.panvik.com/";
+      setTimeout(() => {
+        window.location.href = "https://www.panvik.com/";
+      }, 2000); // 2000ms = 2 seconds
     }
-  }, [window.location.hostname]);
+  }, []); // Empty dependency array, runs only once on mount
 
   return <h3>Welcome!</h3>;
 };
