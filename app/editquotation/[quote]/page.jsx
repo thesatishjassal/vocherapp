@@ -1,9 +1,9 @@
 "use client";
-import InvoucherTable from "../components/InvoucherTable";
-import QuotaionInfo from "../components/QuotaionInfo";
-import CustomerModal from "../components/customerModal";
-import QuotationTable from "../components/QuotationTable";
-import GSTCalculator from "../components/GSTCalculator";
+import InvoucherTable from "../../components/InvoucherTable";
+import QuotaionInfo from "../../components/QuotaionInfo";
+import CustomerModal from "../../components/customerModal";
+import QuotationTable from "../../components/QuotationTable";
+import GSTCalculator from "../../components/GSTCalculator";
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import Axios
 import { toast } from "react-toastify";
