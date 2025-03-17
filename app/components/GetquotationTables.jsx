@@ -295,6 +295,15 @@ const GetQuotationTables = () => {
                     </span>
                   </td>
                   <td>
+                  <Link href={`/editquotation/${q.quotation_id}`}>
+                      <u
+                        className="text-primary me-2"
+                        title="View"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <i className="fas fa-pen"></i>
+                      </u>
+                    </Link>
                     <Link href={`/viewquotation/${q.quotation_id}`}>
                       <u
                         className="text-primary me-2"
