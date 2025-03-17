@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
+import axios from "axios"; // Import axios for API calls
+import { toast } from "react-toastify"; // Import toast for notifications (optional)
 
 const QuotatTable = ({
   items = [],
@@ -90,7 +92,7 @@ const QuotatTable = ({
 
         // Map API data to the rows state format
         const mappedRows = data.map((item, index) => ({
-          id: item.id || index + 1, // Use item.id or fallback to index
+          id: item.id || index + 1, // Use item.id from API or fallback to index
           customerCode: item.customercode || "",
           customerDescription: item.customerdescription || "",
           itemCode: item.itemcode || "",
@@ -100,7 +102,7 @@ const QuotatTable = ({
           unit: item.unit || "",
           mrp: item.mrp || "",
           discount: item.discount || "",
-          amount: item.price || 0, // Use price as amount (you can adjust this logic if needed)
+          amount: item.price || 0, // Use price as amount
           image: item.image || "",
         }));
 
@@ -143,7 +145,7 @@ const QuotatTable = ({
         setRows((prevRows) => [
           ...prevRows,
           {
-            id: prevRows.length + 1,
+            id: prevRows.length + 1, // Temporary ID for new rows
             ...newRow,
             amount,
           },
@@ -247,14 +249,40 @@ const QuotatTable = ({
     setEditRowIndex(index); // Set the index for the row being edited
   };
 
-  const handleDeleteRow = (index) => {
-    const amountToSubtract = rows[index].amount;
-    setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-    setTotalAmount((prevTotal) => {
-      const updatedTotal = prevTotal - amountToSubtract;
-      if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
-      return updatedTotal;
-    });
+  // Updated handleDeleteRow to call the API
+  const handleDeleteRow = async (index) => {
+    const row = rows[index];
+    const itemId = row.id; // Use the id from the row
+    const amountToSubtract = row.amount;
+
+    try {
+      // Make DELETE request to the API
+      const response = await axios.delete(
+        `https://api.panvic.in/quotation/${qouteId}/items/${itemId}`,
+        {
+          withCredentials: true, // Include credentials if needed for authentication
+        }
+      );
+      console.log("Delete response:", response.data);
+
+      // Update the frontend state after successful deletion
+      setRows((prevRows) => prevRows.filter((_, i) => i !== index));
+      setTotalAmount((prevTotal) => {
+        const updatedTotal = prevTotal - amountToSubtract;
+        if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
+        return updatedTotal;
+      });
+
+      // Optional: Show success notification
+      toast.success("Item deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      if (error.response?.status === 404) {
+        toast.error("Item not found on server.");
+      } else {
+        toast.error("Failed to delete item. Please try again.");
+      }
+    }
   };
 
   useEffect(() => {
@@ -378,7 +406,7 @@ const QuotatTable = ({
               <input
                 type="text"
                 name="itemCode"
-                value={newRow.itemCode}
+                value={newRow.itemCode} // Fixed: Changed 'row.itemCode' to 'newRow.itemCode'
                 onChange={(e) => handleFieldChange("itemCode", e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, "itemName")}
                 placeholder="Item code"
