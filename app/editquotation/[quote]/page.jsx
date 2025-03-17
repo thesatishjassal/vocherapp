@@ -2,7 +2,7 @@
 import InvoucherTable from "../../components/InvoucherTable";
 import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
-import QuotationTable from "../../components/QuotationTable";
+import EdiQuotatTable from "../../components/EditQuotatTable";
 import GSTCalculator from "../../components/GSTCalculator";
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import Axios
@@ -27,8 +27,62 @@ const EditQuotation = () => {
     gstPercentage: 0,
     gstType: "include",
   }); // State to store GST details
-  const { edquote } = useParams();
-  console.log("edquote", edquote);
+  const { quote } = useParams();
+  console.log("quote", quote);
+
+  const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+  const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  const [quotation, setQuotation] = useState(null);
+  const [client, setClient] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!quote) return;
+
+    const fetchQuotation = async () => {
+      try {
+        const response = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
+          withCredentials: true,
+        });
+        console.log(response.data);
+        if (response.data) {
+          setQuotation(response.data);
+
+          // If the voucher contains a clientId, fetch client details
+          if (response.data.client_id) {
+            fetchClient(response.data.client_id);
+          }
+        } else {
+          toast.error("No quotation found!");
+        }
+      } catch (error) {
+        toast.error("Failed to load quotation details!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuotation();
+  }, [quote]);
+
+  const fetchClient = async (client_id) => {
+    try {
+      const response = await axios.get(CLIENT_API_URL, {
+        withCredentials: true,
+      });
+
+      const filteredClient = response.data.find((c) => c.id === client_id);
+      console.log(filteredClient);
+      if (filteredClient) {
+        setClient(filteredClient);
+      } else {
+        toast.error("Client not found!");
+      }
+    } catch (error) {
+      toast.error("Failed to load client details!");
+    }
+  };
+
   const handleQuotationConfirm = (data) => {
     setQuotationInfo(data); // Store received quotation info
     console.log("Quotation Info Received:", data);
@@ -246,69 +300,39 @@ const EditQuotation = () => {
                 </p>
               </div>
             </div>
-            <div
-              className="tm_invoice_head tm_mb10"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              {/* Left Column */}
-              <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">Customer Details:</b>{" "}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setShowModalClientDetails(true)} // Open modal from child
+            <div className="tm_invoice_head tm_mb10">
+              {/* Client Details */}
+              {client && (
+                <div className="tm_invoice_head tm_mb10">
+                  <div
+                    className="tm_invoice_left mt-0"
+                    style={{ flex: 1, textAlign: "left" }}
                   >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                </p>
-                <p style={{ textAlign: "justify" }}>
-                  Name:{" "}
-                  <b>{selectedCustomer && selectedCustomer.client_name}</b>{" "}
-                  <br />
-                  City: <b>{selectedCustomer && selectedCustomer.city}</b>{" "}
-                  <br />
-                </p>
-              </div>
-
-              {/* Right Column */}
+                    <p className="tm_mb2">
+                      <b className="tm_primary_color">Supplier Details:</b>
+                    </p>
+                    <p style={{ textAlign: "justify" }}>
+                      Name: <b>{client.client_name}</b> <br />
+                      City: <b>{client.city}</b>
+                    </p>
+                  </div>
+                </div>
+              )}
               <div
                 className="tm_invoice_right tm_text_right"
                 style={{ flex: 1, textAlign: "right" }}
               >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
-                  {InfoModal && (
-                    <QuotaionInfo
-                      setInfoModal={setInfoModal}
-                      onConfirm={handleQuotationConfirm}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setInfoModal(true)}
-                  >
-                    {" "}
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
                 </p>
-                Address:{" "}
+                Address:
                 <b>
-                  Nakodar Road Beside Silver OAK Appartments Jalandhar City,
-                  Punjab-144003
+                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
+                  City, Punjab-144003
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                Salesperson:{" "}
-                {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
+                Salesperson: {quotation && <b>{quotation.salesperson}</b>}
                 <br />
               </div>
             </div>
@@ -321,21 +345,22 @@ const EditQuotation = () => {
               }}
             >
               <p className="tm_mb2">
-                Subject:  
-                {quotationInfo && (
-                  <b className="tm_primary_color">{quotationInfo.Subject}</b>
+                Subject: &nbsp;
+                {quotation && (
+                  <b className="tm_primary_color">{quotation.subject}</b>
                 )}
-              </p>
+              </p>  
             </div>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <QuotationTable
+                  <EdiQuotatTable
                     FiltercolModal={FiltercolModal}
                     ShowHideFiltercolModal={ShowHideFiltercolModal}
                     onClose={closeModal}
                     onRowsChange={handleRowsChange}
                     onTotalAmountChange={handleTotalAmountChange}
+                    qouteId={quote}
                   />
                   {showModalClientDetails && ( // Conditionally render the modal
                     <CustomerModal
@@ -349,7 +374,7 @@ const EditQuotation = () => {
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <textarea
-                    className="form-control tm_remarks_box no-print"
+                    className="form-control tm_remarks_box no-print opacity-0"
                     placeholder="Enter remarks here..."
                     rows="1"
                     cols="30"
