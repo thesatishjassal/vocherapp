@@ -330,7 +330,7 @@ const EditQuotation = () => {
                 </div>
               </div>
             </div>
-            <hr />
+            <hr />x
             <p>
               <b>
                 <i>

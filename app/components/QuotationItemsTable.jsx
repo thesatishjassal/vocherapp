@@ -1,12 +1,12 @@
+"use client"
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const QuotationItemsTable = ({ quotation_id }) => {
+const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
     customerCode: true,
@@ -26,14 +26,28 @@ const QuotationItemsTable = ({ quotation_id }) => {
 
     const fetchItems = async () => {
       try {
-        const response = await axios.get(
-          `https://api.panvic.in/quotation/${quotation_id}/items/`,
-          { withCredentials: true }
-        );
+        let response;
+        if (selectedRevision) {
+          // Fetch from history API and filter by edited_at
+          response = await axios.get(
+            `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
+            { withCredentials: true }
+          );
+          const filteredItems = response.data.filter(
+            (item) => item.edited_at === selectedRevision.edited_at
+          );
+          setItems(filteredItems);
+        } else {
+          // Fetch current items if no revision is selected
+          response = await axios.get(
+            `https://api.panvic.in/quotation/${quotation_id}/items/`,
+            { withCredentials: true }
+          );
+          setItems(response.data);
+        }
 
         console.log("Fetched Quotation ID:", quotation_id);
         console.log("Quotation Items:", response.data);
-        setItems(response.data);
       } catch (error) {
         console.error("Error fetching quotation items:", error);
         toast.error("Failed to fetch quotation items!");
@@ -43,9 +57,8 @@ const QuotationItemsTable = ({ quotation_id }) => {
     };
 
     fetchItems();
-  }, [quotation_id]);
+  }, [quotation_id, selectedRevision]);
 
-  // Toggle visibility of columns
   const handleCheckboxChange = (column) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
@@ -55,19 +68,95 @@ const QuotationItemsTable = ({ quotation_id }) => {
 
   return (
     <div className="overflow-x-auto">
-      {/* Column visibility checkboxes */}
       <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
-        <input type="checkbox" checked={visibleColumns.srNo} onChange={() => handleCheckboxChange('srNo')} /> <label>SR NO</label>
-        <label><input type="checkbox" checked={visibleColumns.customerCode} onChange={() => handleCheckboxChange('customerCode')} /> Customer Code</label>
-        <label><input type="checkbox" checked={visibleColumns.customerDescription} onChange={() => handleCheckboxChange('customerDescription')} /> Customer Description</label>
-        <label><input type="checkbox" checked={visibleColumns.itemCode} onChange={() => handleCheckboxChange('itemCode')} /> Item Code</label>
-        <label><input type="checkbox" checked={visibleColumns.itemName} onChange={() => handleCheckboxChange('itemName')} /> Item Name</label>
-        <label><input type="checkbox" checked={visibleColumns.unit} onChange={() => handleCheckboxChange('unit')} /> Unit</label>
-        <label><input type="checkbox" checked={visibleColumns.brand} onChange={() => handleCheckboxChange('brand')} /> Brand</label>
-        <label><input type="checkbox" checked={visibleColumns.qty} onChange={() => handleCheckboxChange('qty')} /> Qty</label>
-        <label><input type="checkbox" checked={visibleColumns.price} onChange={() => handleCheckboxChange('price')} /> Price</label>
-        <label><input type="checkbox" checked={visibleColumns.discount} onChange={() => handleCheckboxChange('discount')} /> Discount</label>
-        <label><input type="checkbox" checked={visibleColumns.mrp} onChange={() => handleCheckboxChange('mrp')} /> MRP</label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.srNo}
+            onChange={() => handleCheckboxChange("srNo")}
+          />{" "}
+          SR NO
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.customerCode}
+            onChange={() => handleCheckboxChange("customerCode")}
+          />{" "}
+          Customer Code
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.customerDescription}
+            onChange={() => handleCheckboxChange("customerDescription")}
+          />{" "}
+          Customer Description
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.itemCode}
+            onChange={() => handleCheckboxChange("itemCode")}
+          />{" "}
+          Item Code
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.itemName}
+            onChange={() => handleCheckboxChange("itemName")}
+          />{" "}
+          Item Name
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.unit}
+            onChange={() => handleCheckboxChange("unit")}
+          />{" "}
+          Unit
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.brand}
+            onChange={() => handleCheckboxChange("brand")}
+          />{" "}
+          Brand
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.qty}
+            onChange={() => handleCheckboxChange("qty")}
+          />{" "}
+          Qty
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.price}
+            onChange={() => handleCheckboxChange("price")}
+          />{" "}
+          Price
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.discount}
+            onChange={() => handleCheckboxChange("discount")}
+          />{" "}
+          Discount
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.mrp}
+            onChange={() => handleCheckboxChange("mrp")}
+          />{" "}
+          MRP
+        </label>
       </div>
 
       <table className="tm_round_border table align-items-center justify-content-center mb-0">
