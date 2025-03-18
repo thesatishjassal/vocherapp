@@ -1,13 +1,13 @@
-"use client";
+"use client"
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useParams } from "next/navigation";
 import InvoucherTable from "../../components/InvoucherTable";
 import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
 import EdiQuotatTable from "../../components/EditQuotatTable";
 import GSTCalculator from "../../components/GSTCalculator";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { useParams } from "next/navigation";
 
 const EditQuotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -32,6 +32,7 @@ const EditQuotation = () => {
 
   const QUOTATION_API_URL = "https://api.panvic.in/quotation";
   const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +45,6 @@ const EditQuotation = () => {
         const response = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
           withCredentials: true,
         });
-        console.log(response.data);
         if (response.data) {
           setQuotation(response.data);
           if (response.data.client_id) {
@@ -65,12 +65,8 @@ const EditQuotation = () => {
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
-        withCredentials: true,
-      });
-
+      const response = await axios.get(CLIENT_API_URL, { withCredentials: true });
       const filteredClient = response.data.find((c) => c.id === client_id);
-      console.log(filteredClient);
       if (filteredClient) {
         setClient(filteredClient);
       } else {
@@ -78,6 +74,19 @@ const EditQuotation = () => {
       }
     } catch (error) {
       toast.error("Failed to load client details!");
+    }
+  };
+
+  // Fetch existing items from history to determine the latest version
+  const fetchExistingItems = async (quotationId) => {
+    try {
+      const response = await axios.get(`${HISTORY_API_URL}?quotation_id=${quotationId}`, {
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching existing items:", error);
+      return [];
     }
   };
 
@@ -110,18 +119,30 @@ const EditQuotation = () => {
     console.log("GST Details Received:", details);
   };
 
-  // Function to handle saving the quotation and items
+  // Generate versionname based on quotation_no and existing versions
+  const generateVersionName = (quotationNo, existingItems) => {
+    const prefix = quotationNo; // e.g., "PLQOT-047"
+    const existingVersions = existingItems
+      .filter((item) => item.versionname && item.versionname.startsWith(prefix))
+      .map((item) => item.versionname.split("-").pop()); // Extract suffix like "A", "B", etc.
+
+    let nextSuffix = "A";
+    if (existingVersions.length > 0) {
+      const lastVersion = existingVersions.sort().pop(); // Get the latest suffix (e.g., "B")
+      nextSuffix = String.fromCharCode(lastVersion.charCodeAt(0) + 1); // Increment to next letter (e.g., "C")
+    }
+    return `${prefix}-${nextSuffix}`; // e.g., "PLQOT-047-A" or "PLQOT-047-C"
+  };
+
   const handleSaveQuotation = async () => {
     try {
-      // Collect data from state and UI elements
       const remarks = document.querySelector(".tm_remarks_box")?.value || "";
       const warrantyGuarantee =
-        document.querySelector('input[placeholder="Warranty/Guarantee"]')
-          ?.value || "1 year warranty against manufacturing defects";
+        document.querySelector('input[placeholder="Warranty/Guarantee"]')?.value ||
+        "1 year warranty against manufacturing defects";
 
-      // Prepare the data payload for the quotation API
       const quotationData = {
-        quotation_no: quote, // e.g., PLQOT-001
+        quotation_no: quote,
         salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
         subject: quotationInfo?.Subject || "Quotation for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
@@ -131,76 +152,68 @@ const EditQuotation = () => {
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
         status: true,
-        client_id: selectedCustomer?.client_id || 3, // Fallback to a default client_id if none selected
+        client_id: selectedCustomer?.client_id || 3,
       };
 
       console.log("Quotation data to be sent:", quotationData);
 
-      // Step 1: Update the quotation using PUT request
+      // Step 1: Update the quotation
       const quotationResponse = await axios.put(
         `${QUOTATION_API_URL}/${quote}`,
         quotationData,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // Include credentials if needed
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         }
       );
-
       console.log("Quotation updated successfully:", quotationResponse.data);
 
-      // Step 2: Save all items in rowsData as a list in a single PUT request
+      // Step 2: Save items with versionname
       if (rowsData.length > 0) {
+        // Fetch existing items to determine the next version
+        const existingItems = await fetchExistingItems(quote);
+        const versionName = generateVersionName(quote, existingItems);
+
         const itemsData = rowsData.map((item) => ({
-          quotation_id: quote, // Use the quotation ID
-          product_id: item.itemCode, // Assuming itemCode is the product_id
+          quotation_id: quote,
+          product_id: item.itemCode,
           customercode: item.customerCode || "N/A",
           customerdescription: item.customerDescription || "N/A",
           image: item.image || "https://example.com/default-image.jpg",
           itemcode: item.itemCode,
           brand: item.brand || "N/A",
           mrp: parseFloat(item.mrp) || 0,
-          price: parseFloat(item.amount) || 0, // Use amount as price
+          price: parseFloat(item.amount) || 0,
           quantity: parseInt(item.qty, 10) || 0,
           discount: parseFloat(item.discount) || 0,
           item_name: item.itemName || "N/A",
           unit: item.unit || "pcs",
+          versionname: versionName, // Add the generated versionname
         }));
 
         console.log("Items data to be sent as a list:", itemsData);
 
-        // Make the PUT request to update the items (sending the list)
         const itemsResponse = await axios.put(
           `${QUOTATION_API_URL}/${quote}/items/`,
-          itemsData, // Send the list of items
+          itemsData,
           {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true, // Include credentials if needed
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
           }
         );
-
         console.log("All items updated successfully:", itemsResponse.data);
       } else {
         console.log("No items to save.");
       }
 
-      // Increment the sequence for the next quotation (optional)
-      // setQuotationSequence(QuotationSequence + 1);
       setQuotationId(quotationId + 1);
-
-      // Show success message and redirect
       toast.success("Quotation and items saved successfully!");
       window.location.href = "/getquotation";
     } catch (error) {
       console.error("Error saving quotation or items:", error);
       if (error.response) {
         console.error("API Error Response:", error.response.data);
-        toast.error(
-          `Failed to save: ${error.response.data.detail || "Unknown error"}`
-        );
+        toast.error(`Failed to save: ${error.response.data.detail || "Unknown error"}`);
       } else {
         toast.error("Failed to save quotation or items. Please try again.");
       }
@@ -223,10 +236,7 @@ const EditQuotation = () => {
                   QUOTATION
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Quotation No:{" "}
-                  <b className="tm_primary_color">
-                    {/* {generateQuotationNumber()} */}
-                  </b>
+                  Quotation No: <b className="tm_primary_color">{quote}</b>
                 </p>
               </div>
             </div>
@@ -234,21 +244,14 @@ const EditQuotation = () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_date tm_m0">
-                  Date:
-                  <b className="tm_primary_color">
-                    {new Date().toLocaleDateString("en-GB")}
-                  </b>
+                  Date: <b className="tm_primary_color">{new Date().toLocaleDateString("en-GB")}</b>
                 </p>
               </div>
             </div>
             <div className="tm_invoice_head tm_mb10">
-              {/* Client Details */}
               {client && (
                 <div className="tm_invoice_head tm_mb10">
-                  <div
-                    className="tm_invoice_left mt-0"
-                    style={{ flex: 1, textAlign: "left" }}
-                  >
+                  <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                     <p className="tm_mb2">
                       <b className="tm_primary_color">Supplier Details:</b>
                     </p>
@@ -259,37 +262,20 @@ const EditQuotation = () => {
                   </div>
                 </div>
               )}
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
+              <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                 </p>
-                Address:
-                <b>
-                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
-                  City, Punjab-144003
-                </b>
+                Address: <b>Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar City, Punjab-144003</b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>}
                 <br />
               </div>
             </div>
-            <div
-              className="d-flex mb-2"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <div className="d-flex mb-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <p className="tm_mb2">
-                Subject:  
-                {quotation && (
-                  <b className="tm_primary_color">{quotation.subject}</b>
-                )}
+                Subject: {quotation && <b className="tm_primary_color">{quotation.subject}</b>}
               </p>
             </div>
             <div className="tm_table tm_style1 tm_mb30">
@@ -304,11 +290,7 @@ const EditQuotation = () => {
                     qouteId={quote}
                   />
                   {showModalClientDetails && (
-                    <CustomerModal
-                      onClose={closeModal}
-                      client={showModalClientDetails}
-                      onConfirm={handleClientConfirm}
-                    />
+                    <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
                   )}
                 </div>
               </div>
@@ -321,150 +303,55 @@ const EditQuotation = () => {
                     cols="30"
                   ></textarea>
                 </div>
-
                 <div className="tm_right_footer">
-                  <GSTCalculator
-                    totalAmount={totalAmount}
-                    onGSTChange={handleGSTChange}
-                  />
+                  <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
                 </div>
               </div>
             </div>
-            <hr />x
+            <hr />
             <p>
               <b>
-                <i>
-                  Thank You for considering us for your needs. Here is the
-                  proposal as you requested.
-                </i>
+                <i>Thank You for considering us for your needs. Here is the proposal as you requested.</i>
               </b>
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              <p>
-                GST: <b>Including in above prices as per applicable.</b>
-              </p>
-              <p>
-                Payment Terms: <b>100% in advance with order.</b>
-              </p>
-              <p>
-                Validity: <b>15 days from the date of quotation.</b>
-              </p>
+              <p>GST: <b>Including in above prices as per applicable.</b></p>
+              <p>Payment Terms: <b>100% in advance with order.</b></p>
+              <p>Validity: <b>15 days from the date of quotation.</b></p>
               <p className="m-0">
-                Warranty/Guarantee:{" "}
-                <b>
-                  as per company norms.{" "}
-                  <input
-                    type="text"
-                    placeholder="Warranty/Guarantee"
-                    className="form-control m-0"
-                  />{" "}
-                  <br />
-                </b>
+                Warranty/Guarantee: <b>as per company norms. <input type="text" placeholder="Warranty/Guarantee" className="form-control m-0" /></b>
               </p>
-              <p>
-                Responsibility:{" "}
-                <b>
-                  Our responsibility for material counting ceases immediately
-                  after delivery.
-                </b>
-              </p>
-              <p>
-                Installation & Fixing:{" "}
-                <b>
-                  If required, for any electrical job, we will arrange a
-                  technician at extra cost. Installation will take 4-5 days from
-                  the date of order.
-                </b>
-              </p>
-              <p>
-                Freight Charges: <b>Extra as per actual.</b>
-              </p>
-              <p>
-                Bank Details:{" "}
-                <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code:
-                  ICIC0001510, Jalandhar.
-                  <br /> We hope you will find our offer in quotation and look
-                  forward to your positive response. Please feel free to contact
-                  us for any queries.
-                </b>
-              </p>
+              <p>Responsibility: <b>Our responsibility for material counting ceases immediately after delivery.</b></p>
+              <p>Installation & Fixing: <b>If required, for any electrical job, we will arrange a technician at extra cost. Installation will take 4-5 days from the date of order.</b></p>
+              <p>Freight Charges: <b>Extra as per actual.</b></p>
+              <p>Bank Details: <b>PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar.<br /> We hope you will find our offer in quotation and look forward to your positive response. Please feel free to contact us for any queries.</b></p>
               <hr />
-              <p>
-                For: Panvik Lighting. This is a computer-generated document,
-                hence signature is not required.
-              </p>
+              <p>For: Panvik Lighting. This is a computer-generated document, hence signature is not required.</p>
             </div>
           </div>
         </div>
         <div className="tm_invoice_btns tm_hide_print">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
+          <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
             <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <rect
-                  x="128"
-                  y="240"
-                  width="256"
-                  height="208"
-                  rx="24.32"
-                  ry="24.32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></rect>
-                <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <circle cx="392" cy="184" r="24" fill="currentColor"></circle>
+              <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
+                <path d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
+                <rect x="128" y="240" width="256" height="208" rx="24.32" ry="24.32" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
+                <path d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
+                <circle cx="392" cy="184" r="24" fill="currentColor" />
               </svg>
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  d="M320 336h76c55 0 100-21.21 100-75.6s-53-73.47-96-75.6C391.11 99.74 329 48 256 48c-69 0-113.44 45.79-128 91.2-60 5.7-112 35.88-112 98.4S70 336 136 336h56M192 400.1l64 63.9 64-63.9M256 224v224.03"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
+              <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
+                <path d="M320 336h76c55 0 100-21.21 100-75.6s-53-73.47-96-75.6C391.11 99.74 329 48 256 48c-69 0-113.44 45.79-128 91.2-60 5.7-112 35.88-112 98.4S70 336 136 336h56M192 400.1l64 63.9 64-63.9M256 224v224.03" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32" />
               </svg>
             </span>
             <span className="tm_btn_text">Download</span>
           </button>
-          <button
-            id="tm_publish_btn"
-            className="tm_invoice_btn tm_color2"
-            onClick={handleSaveQuotation}
-          >
+          <button id="tm_publish_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveQuotation}>
             <span className="tm_btn_icon">
               <i className="fa-solid fa-upload"></i>
             </span>
