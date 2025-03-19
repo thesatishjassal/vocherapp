@@ -204,7 +204,7 @@ const OutvoucherReport = ({ handleExport }) => {
 
         {/* ✅ Table */}
         <div className="table-responsive">
-          <table className="table table-hover align-items-center mb-0">
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
                 <th>ID</th>
