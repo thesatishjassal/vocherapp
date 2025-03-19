@@ -13,7 +13,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
     FreightAmount: "",
     ReceiverName: "",
     ContactNumber: "",
-    transaction_types: "Transfer" // Added default value for transaction_types
+    transaction_types: "Transfer",
   });
 
   const handleChange = (e) => {
@@ -39,10 +39,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
           tabIndex="-1"
           aria-labelledby="basicInfoModalLabel"
           aria-hidden="true"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-          }}
+          style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-3">
@@ -61,7 +58,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
               <div className="modal-body">
                 <form onSubmit={handleSubmit} className="row g-3">
                   {/* First Row */}
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Issue Slip No</label>
                     <input
                       type="text"
@@ -71,7 +68,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Sale Order No</label>
                     <input
                       type="text"
@@ -82,8 +79,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Transaction Type Row */}
-                  <div className="col-md-6">
+                  {/* Second Row */}
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Transaction Type</label>
                     <select
                       name="transaction_types"
@@ -97,7 +94,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       <option value="To customer">To customer</option>
                     </select>
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Transport</label>
                     <input
                       type="text"
@@ -108,8 +105,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Second Row */}
-                  <div className="col-md-6">
+                  {/* Third Row */}
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Vehicle No</label>
                     <input
                       type="text"
@@ -119,7 +116,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Packages</label>
                     <input
                       type="text"
@@ -130,8 +127,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Third Row */}
-                  <div className="col-md-6">
+                  {/* Fourth Row */}
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Order By</label>
                     <input
                       type="text"
@@ -141,7 +138,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Sale Person</label>
                     <input
                       type="text"
@@ -152,8 +149,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Fourth Row */}
-                  <div className="col-md-6">
+                  {/* Fifth Row */}
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Freight Amount</label>
                     <input
                       type="number"
@@ -163,7 +160,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                       required
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Receiver Name</label>
                     <input
                       type="text"
@@ -173,8 +170,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Fifth Row */}
-                  <div className="col-md-6">
+                  {/* Sixth Row */}
+                  <div className="col-6 col-md-6">
                     <label className="form-label">Receiver Mobile</label>
                     <input
                       type="text"
@@ -184,8 +181,8 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
-                  {/* Form Footer */}
-                  <div className="modal-footer">
+                  {/* Modal Footer */}
+                  <div className="modal-footer d-flex justify-content-end gap-2">
                     <button
                       type="button"
                       className="btn btn-secondary"
@@ -207,4 +204,4 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
   );
 };
 
-export default BasicInfoModal;  
+export default BasicInfoModal;
