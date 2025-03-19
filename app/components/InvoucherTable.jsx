@@ -16,7 +16,6 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     amount: "",
     comments: "",
   });
-
   const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
@@ -46,21 +45,12 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     if (newRow.itemcode && newRow.itemname && quantity && rate) {
       const amount = calculateAmount(quantity, rate, discount_percentage, additional_discount_percentage);
 
-      const updatedRows = [
-        ...rows,
-        {
-          id: rows.length + 1,
-          ...newRow,
-          amount,
-        },
-      ];
-
+      const updatedRows = [...rows, { id: rows.length + 1, ...newRow, amount }];
       setRows(updatedRows);
+
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal + amount;
-        if (onTotalAmountChange) {
-          onTotalAmountChange(updatedTotal, updatedRows);
-        }
+        if (onTotalAmountChange) onTotalAmountChange(updatedTotal, updatedRows);
         return updatedTotal;
       });
 
@@ -77,19 +67,19 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         comments: "",
       });
 
-      inputRefs.itemcode.current.focus();
+      setTimeout(() => inputRefs.itemcode.current?.focus(), 0);
     } else {
       alert("Please fill in all required fields.");
     }
   };
 
   const handleKeyDown = (e, nextField) => {
-    if (e.key === "Enter" || e.which === 13) { // Support for tablet keyboards
+    if (e.key === "Enter" || e.which === 13) { // Works for tablets & desktops
       e.preventDefault();
       if (nextField && inputRefs[nextField]?.current) {
         inputRefs[nextField].current.focus();
       } else {
-        handleAddRow();
+        handleAddRow(); // Ensure row is added on Enter
       }
     }
   };
@@ -110,67 +100,63 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
       rackcode: product.rackcode,
     }));
     setShowModal(false);
-    setTimeout(() => {
-      inputRefs.quantity.current?.focus();
-    }, 0);
+    setTimeout(() => inputRefs.quantity.current?.focus(), 0);
   };
 
   return (
-    <div>
-      <div className="table-responsive">
-        <table className="table align-items-center justify-content-center mb-0">
-          <thead>
-            <tr>
-              <th>SR NO</th>
-              <th>Product ID</th>
-              <th>Item Name</th>
-              <th>Unit</th>
-              <th>Rack Code</th>
-              <th>Quantity</th>
-              <th>Rate</th>
-              <th>Disc %</th>
-              <th>Add. Disc %</th>
-              <th>Amount</th>
-              <th>Comments</th>
+    <div className="table-responsive">
+      <table className="table align-items-center justify-content-center mb-0">
+        <thead>
+          <tr>
+            <th>SR NO</th>
+            <th>Product ID</th>
+            <th>Item Name</th>
+            <th>Unit</th>
+            <th>Rack Code</th>
+            <th>Quantity</th>
+            <th>Rate</th>
+            <th>Disc %</th>
+            <th>Add. Disc %</th>
+            <th>Amount</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={row.id}>
+              <td>{index + 1}</td>
+              <td>{row.itemcode}</td>
+              <td>{row.itemname}</td>
+              <td>{row.unit}</td>
+              <td>{row.rackcode}</td>
+              <td>{row.quantity}</td>
+              <td>{row.rate}</td>
+              <td>{row.discount_percentage}</td>
+              <td>{row.additional_discount_percentage}</td>
+              <td>{row.amount.toFixed(2)}</td>
+              <td>{row.comments}</td>
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={row.id}>
-                <td>{index + 1}</td>
-                <td>{row.itemcode}</td>
-                <td>{row.itemname}</td>
-                <td>{row.unit}</td>
-                <td>{row.rackcode}</td>
-                <td>{row.quantity}</td>
-                <td>{row.rate}</td>
-                <td>{row.discount_percentage}</td>
-                <td>{row.additional_discount_percentage}</td>
-                <td>{row.amount.toFixed(2)}</td>
-                <td>{row.comments}</td>
-              </tr>
+          ))}
+          <tr className="no-print">
+            {Object.keys(newRow).map((field, index, fields) => (
+              <td key={field}>
+                <input
+                  type={["quantity", "rate", "discount_percentage", "additional_discount_percentage", "amount"].includes(field) ? "number" : "text"}
+                  name={field}
+                  value={newRow[field]}
+                  onChange={(e) => handleFieldChange(field, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, fields[index + 1])}
+                  onKeyUp={(e) => handleKeyDown(e, fields[index + 1])} // Works for tablets
+                  placeholder={field.replace(/_/g, " ").toUpperCase()}
+                  className="form-control input-small"
+                  ref={inputRefs[field]}
+                  disabled={["unit", "rackcode", "amount"].includes(field)}
+                />
+              </td>
             ))}
-            <tr className="no-print">
-              {Object.keys(inputRefs).map((field, index, fields) => (
-                <td key={field}>
-                  <input
-                    type={["quantity", "rate", "discount_percentage", "additional_discount_percentage", "amount"].includes(field) ? "number" : "text"}
-                    name={field}
-                    value={newRow[field]}
-                    onChange={(e) => handleFieldChange(field, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, fields[index + 1])}
-                    onKeyPress={(e) => handleKeyDown(e, fields[index + 1])} // Added support for tablet
-                    placeholder={field.replace(/_/g, " ").toUpperCase()}
-                    className="form-control input-small"
-                    ref={inputRefs[field]}
-                    disabled={["unit", "rackcode", "amount"].includes(field)}
-                  />
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        </tbody>
+      </table>
 
       <FindProduct
         showModal={showModal}
