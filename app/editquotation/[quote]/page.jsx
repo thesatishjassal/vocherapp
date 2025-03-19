@@ -122,7 +122,7 @@ const EditQuotation = () => {
       // Prepare the data payload for the quotation API
       const quotationData = {
         quotation_no: quote, // e.g., PLQOT-001
-        salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
+        salesperson: quotationInfo?.salesperson || "Salesperson",
         subject: quotationInfo?.Subject || "Quotation for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
         without_gst: Math.round(gstDetails.withoutGST) || 0,
