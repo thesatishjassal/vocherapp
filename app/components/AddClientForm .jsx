@@ -123,7 +123,7 @@ const AddClientForm = () => {
                           {/* Business Details Field Group */}
                           <fieldset className="col-12">
                             <div className="row g-3">
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="businessname" className="form-label">
                                   Business Name
                                 </label>
@@ -146,7 +146,7 @@ const AddClientForm = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="gst_number" className="form-label">
                                   GST Number
                                 </label>
@@ -169,7 +169,7 @@ const AddClientForm = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="address" className="form-label">
                                   Address
                                 </label>
@@ -190,7 +190,7 @@ const AddClientForm = () => {
                                   <div className="invalid-feedback">{formik.errors.address}</div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="pincode" className="form-label">
                                   Pincode
                                 </label>
@@ -211,7 +211,7 @@ const AddClientForm = () => {
                                   <div className="invalid-feedback">{formik.errors.pincode}</div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="city" className="form-label">
                                   City
                                 </label>
@@ -230,7 +230,7 @@ const AddClientForm = () => {
                                   <div className="invalid-feedback">{formik.errors.city}</div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="state" className="form-label">
                                   State
                                 </label>
@@ -255,7 +255,7 @@ const AddClientForm = () => {
                           {/* Contact Details Field Group */}
                           <fieldset className="col-12">
                             <div className="row g-3">
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="client_name" className="form-label">
                                   Client Name
                                 </label>
@@ -278,7 +278,7 @@ const AddClientForm = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="client_phone" className="form-label">
                                   Contact Number
                                 </label>
@@ -301,7 +301,7 @@ const AddClientForm = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="client_email" className="form-label">
                                   Email Address
                                 </label>
@@ -324,7 +324,7 @@ const AddClientForm = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="col-12 col-md-6">
+                              <div className="col-6 col-md-6">
                                 <label htmlFor="client_type" className="form-label">
                                   Client Type
                                 </label>
