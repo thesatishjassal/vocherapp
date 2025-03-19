@@ -173,14 +173,14 @@ const GetQuotationTables = () => {
             </select>
 
             <button
-              className="btn btn-secondary clear-btn"
+              className="btn btn-secondary"
               onClick={() => {
                 setSearchQuery("");
                 setStatusFilters({ active: true, mature: false, lost: false });
                 setSortOrder("latest");
               }}
             >
-              Clear Filters
+              Clear
             </button>
 
             <a className="btn btn-primary add-btn" href="/addquotation">

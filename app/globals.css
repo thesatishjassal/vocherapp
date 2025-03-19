@@ -575,12 +575,14 @@ img.thumnail {
 }
 
 /* Tablet responsiveness (768px - 1024px) */
-@media (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1024px) {
   .filters-container {
     flex-direction: column;
     align-items: stretch;
   }
-
+  .container{
+    padding: 0 !important;
+  }
   .search-input {
     width: 100%;
     max-width: none;
@@ -605,7 +607,8 @@ img.thumnail {
     margin-bottom: 10px;
   }
 
-  th, td {
+  th,
+  td {
     font-size: 0.9rem;
     padding: 8px;
   }
@@ -613,6 +616,19 @@ img.thumnail {
   .action-column select {
     width: 100%;
     font-size: 0.85rem;
+  }
+
+  /* Remove left and right padding/margin for table container */
+
+  .table-responsive {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  table {
+    width: 100% !important;
+    margin: 0 !important;
   }
 }
 
@@ -622,7 +638,8 @@ img.thumnail {
     font-size: 0.85rem;
   }
 
-  th, td {
+  th,
+  td {
     padding: 6px;
   }
 
