@@ -97,7 +97,8 @@ const GetOutvoucherTable = () => {
             </a>
           </div>
         </div>
-        <table className="table align-items-center mb-0">
+        <div className="table-responsive">
+        <table className="tm_round_border table align-items-center justify-content-center mb-0">
           <thead>
             <tr>
               <th onClick={() => handleSort("voucher_id")} style={{ cursor: "pointer" }}>ID</th>
@@ -151,6 +152,7 @@ const GetOutvoucherTable = () => {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

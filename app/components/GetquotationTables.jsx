@@ -191,7 +191,7 @@ const GetQuotationTables = () => {
 
         {/* Responsive Table */}
         <div className="table-responsive">
-          <table className="table align-items-center mb-0">
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
                 <th className="d-none d-md-table-cell">ID</th>
