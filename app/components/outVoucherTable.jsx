@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import FindProduct from "./FindPropduct"; // Import FindProduct component
 
 const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
@@ -13,6 +13,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
   });
   const [showModal, setShowModal] = useState(false);
   const [productList, setProductList] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   const inputRefs = {
     itemcode: useRef(null),
@@ -23,7 +24,14 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     comments: useRef(null),
   };
 
-  // Add new row and send data to parent
+  useEffect(() => {
+    // Detect screen size
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleAddRow = () => {
     if (newRow.itemcode && newRow.itemname && newRow.qty && newRow.unit) {
       const updatedRows = [
@@ -35,7 +43,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
       ];
 
       setRows(updatedRows);
-      onRowsUpdate(updatedRows); // Send updated rows to parent
+      onRowsUpdate(updatedRows);
 
       setNewRow({
         itemcode: "",
@@ -51,7 +59,6 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     }
   };
 
-  // Handle Enter key for navigation
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -63,7 +70,6 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     }
   };
 
-  // Handle field changes
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
 
@@ -73,7 +79,6 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     }
   };
 
-  // Filter product list
   const filterProducts = (query, field) => {
     const filtered = items.filter((item) => {
       if (field === "itemcode") {
@@ -86,7 +91,6 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     setProductList(filtered);
   };
 
-  // Handle product selection
   const handleProductSelect = (product) => {
     setNewRow((prev) => ({
       ...prev,
@@ -104,8 +108,8 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
 
   return (
     <div>
-       <div className="table-responsive">
-        <table className="table align-items-center justify-content-center mb-0 ">
+      <div className="table-responsive">
+        <table className="table align-items-center justify-content-center mb-0">
           <thead>
             <tr>
               <th>SR NO</th>
@@ -208,6 +212,13 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
           </tbody>
         </table>
       </div>
+
+      {/* Add Row Button (Visible on mobile/tablet) */}
+      {isMobile && (
+        <button className="btn btn-primary my-3 w-100" onClick={handleAddRow}>
+          Add Row
+        </button>
+      )}
 
       {/* FindProduct Modal */}
       <FindProduct
