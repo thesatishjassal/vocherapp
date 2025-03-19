@@ -162,7 +162,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
                   className="btn-close"
                   onClick={() => setShowAddModal(false)}
                   aria-label="Close"
-                ></button>
+                ><i class="fa-solid fa-xmark"></i></button>
               </div>
               <div className="modal-body p-4">
                 <div className="row g-3">
