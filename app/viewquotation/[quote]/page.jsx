@@ -78,7 +78,7 @@ const ViewQuotation = () => {
   const handleRevisionChange = (e) => {
     const revisionId = parseInt(e.target.value);
     const selected = revisionHistory.find((rev) => rev.id === revisionId);
-    setSelectedRevision(selected);
+    setSelectedRevision(selected || null);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -103,7 +103,8 @@ const ViewQuotation = () => {
                   IN QUOTATION
                 </div>
                 <p className="tm_invoice_number">
-                  Quotation No: <b className="tm_primary_color">#{quotation.quotation_id}</b>
+                  Quotation No:{" "}
+                  <b className="tm_primary_color">#{quotation.quotation_id}</b>
                 </p>
               </div>
             </div>
@@ -118,12 +119,17 @@ const ViewQuotation = () => {
                 onChange={handleRevisionChange}
                 value={selectedRevision?.id || ""}
               >
-                <option value="">Latest Version</option>
-                {revisionHistory.map((rev) => (
-                  <option key={rev.id} value={rev.id}>
-                    Edited on: {new Date(rev.edited_at).toLocaleString()}
+                {revisionHistory.length === 0 ? (
+                  <option value="">Latest Version</option>
+                ) : (
+                  <option
+                    key={revisionHistory[0].id}
+                    value={revisionHistory[0].id}
+                  >
+                    Edited on:{" "}
+                    {new Date(revisionHistory[0].edited_at).toLocaleString()}
                   </option>
-                ))}
+                )}
               </select>
             </div>
 
@@ -138,7 +144,10 @@ const ViewQuotation = () => {
 
             <div className="tm_invoice_head tm_mb10">
               {client && (
-                <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
+                <div
+                  className="tm_invoice_left mt-0"
+                  style={{ flex: 1, textAlign: "left" }}
+                >
                   <p className="tm_mb2">
                     <b className="tm_primary_color">Supplier Details:</b>
                   </p>
@@ -148,13 +157,17 @@ const ViewQuotation = () => {
                   </p>
                 </div>
               )}
-              <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
+              <div
+                className="tm_invoice_right tm_text_right"
+                style={{ flex: 1, textAlign: "right" }}
+              >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                 </p>
                 Address:
                 <b>
-                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar City, Punjab-144003
+                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
+                  City, Punjab-144003
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
@@ -190,31 +203,36 @@ const ViewQuotation = () => {
               <div className="tm_right_footer">
                 <table>
                   <tbody>
-                    {quotation && quotation.without_gst !== 0 ? <tr>
-                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                        <p className="m-0">Without GST:</p>
-                      </td>
-                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {(quotation.without_gst || 0).toFixed(2)}
-                      </td>
-                    </tr> : null}
-                    {quotation && quotation.gst_amount !== 0 ? <tr>
-                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                        <p className="m-0">GST Amount:</p>
-                      </td>
-                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {(quotation.gst_amount || 0).toFixed(2)}
-                      </td>
-                    </tr> : null}
-                    {quotation && quotation.amount_with_gst !== 0 ? <tr>
-                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
-                        <p className="m-0">Total Amount with GST:</p>
-                      </td>
-                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {(quotation.amount_with_gst || 0).toFixed(2)}
-                      </td>
-                    </tr> : null}
-                    
+                    {quotation && quotation.without_gst !== 0 ? (
+                      <tr>
+                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                          <p className="m-0">Without GST:</p>
+                        </td>
+                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                          {(quotation.without_gst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    ) : null}
+                    {quotation && quotation.gst_amount !== 0 ? (
+                      <tr>
+                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                          <p className="m-0">GST Amount:</p>
+                        </td>
+                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                          {(quotation.gst_amount || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    ) : null}
+                    {quotation && quotation.amount_with_gst !== 0 ? (
+                      <tr>
+                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
+                          <p className="m-0">Total Amount with GST:</p>
+                        </td>
+                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                          {(quotation.amount_with_gst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    ) : null}
                   </tbody>
                 </table>
               </div>
@@ -242,7 +260,8 @@ const ViewQuotation = () => {
               <p className="m-0">
                 Warranty/Guarantee :
                 <b>
-                  as per company norms. {quotation && quotation.warranty_guarantee}
+                  as per company norms.{" "}
+                  {quotation && quotation.warranty_guarantee}
                 </b>
               </p>
               <p>
