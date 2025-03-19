@@ -108,7 +108,7 @@ const ViewQuotation = () => {
               </div>
             </div>
 
-            <div className="tm_mb20">
+            <div className="tm_mb20 no-print">
               <label htmlFor="revisionSelect" className="tm_primary_color">
                 Select Revision:
               </label>
@@ -125,12 +125,6 @@ const ViewQuotation = () => {
                   </option>
                 ))}
               </select>
-              {selectedRevision && (
-                <p className="mt-2">
-                  Selected Revision Edited At:{" "}
-                  <b>{new Date(selectedRevision.edited_at).toLocaleString()}</b>
-                </p>
-              )}
             </div>
 
             <div className="tm_invoice_info tm_mb20 m-0">
