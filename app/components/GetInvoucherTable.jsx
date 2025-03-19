@@ -9,93 +9,129 @@ const API_URL = "https://api.panvic.in/invouchers/";
 
 const GetInvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchInvouchers = async () => {
       try {
-        const response = await axios.get(API_URL, { withCredentials: true });
+        const response = await axios.get(API_URL, {
+          withCredentials: true,
+        });
         setInvouchers(response.data.reverse());
       } catch (error) {
         toast.error("Failed to load vouchers!");
       }
     };
+
     fetchInvouchers();
   }, []);
 
   const handleDelete = async (voucherId) => {
     if (!confirm("Are you sure you want to delete this voucher?")) return;
+
     try {
-      const response = await axios.delete(`${API_URL}/${voucherId}`, { withCredentials: true });
-      if (response.status === 200 || response.status === 204) {
-        setInvouchers((prev) => prev.filter((voucher) => voucher.voucher_id !== voucherId));
+      const response = await axios.delete(`${API_URL}/${voucherId}`, {
+        withCredentials: true,
+      });
+
+      if (response.status === 204 || response.status === 200) {
+        setInvouchers((prevInvouchers) =>
+          prevInvouchers.filter((voucher) => voucher.voucher_id !== voucherId)
+        );
         toast.success("Voucher deleted successfully!");
+      } else {
+        throw new Error("Unexpected response status");
       }
     } catch (error) {
       toast.error(`Failed to delete voucher: ${error.message}`);
+      console.error("Delete error:", error);
     }
   };
 
-  const filteredInvouchers = invouchers.filter((voucher) =>
-    voucher.voucher_number.toLowerCase().includes(search.toLowerCase())
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearchKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
+  };
+
+  const filteredVouchers = invouchers.filter((voucher) =>
+    voucher.voucher_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    voucher.invoice_number.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-        <input
-          type="text"
-          placeholder="Search by Voucher Number"
-          className="border p-2 rounded w-full md:w-1/3"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Link href="/addinvoice" className="bg-blue-500 text-white px-4 py-2 rounded mt-2 md:mt-0">
-          Add In-Vouchers
-        </Link>
+    <div className="card">
+      <div className="card-header pb-0">
+        <h6>Manage Invouchers</h6>
       </div>
-      <div className="table-responsive">
+      <div className="card-body py-0 pt-0 pb-2">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <input
+            type="text"
+            placeholder="Search by Client or Project"
+            className="form-control w-25"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
+          />
+          <div className="add_product">
+            <a className="btn btn-primary m-3" href="/addinvoice">
+              Add In-Vouchers
+            </a>
+          </div>
+        </div>
+        <div className="table-responsive">
         <table className="tm_round_border table align-items-center justify-content-center mb-0">
           <thead>
-            <tr >
-              <th className="p-2">ID</th>
-              <th className="p-2">Voucher Number</th>
-              <th className="p-2">Voucher Date</th>
-              <th className="p-2">Transaction Type</th>
-              <th className="p-2">Invoice Number</th>
-              <th className="p-2">Transport Mode</th>
-              <th className="p-2">Packages</th>
-              <th className="p-2">Freight Status</th>
-              <th className="p-2">Total Amount</th>
-              <th className="p-2">Actions</th>
+            <tr>
+              <th>ID</th>
+              <th>Voucher Number</th>
+              <th>Voucher Date</th>
+              <th>Transaction Type</th>
+              <th>Invoice Number</th>
+              <th>Transport Mode</th>
+              <th>Packages</th>
+              <th>Freight Status</th>
+              <th>Total Amount</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredInvouchers.map((voucher) => (
-              <tr key={voucher.voucher_id} >
-                <td className="p-2 text-center">{voucher.voucher_id}</td>
-                <td className="p-2 text-center">{voucher.voucher_number}</td>
-                <td className="p-2 text-center">{voucher.voucher_date}</td>
-                <td className="p-2 text-center">{voucher.transaction_type}</td>
-                <td className="p-2 text-center">{voucher.invoice_number}</td>
-                <td className="p-2 text-center">{voucher.mode_of_transport}</td>
-                <td className="p-2 text-center">{voucher.number_of_packages}</td>
-                <td className="p-2 text-center">{voucher.freight_status}</td>
-                <td className="p-2 text-center">{voucher.total_amount}</td>
-                <td className="p-2 text-center flex gap-4 justify-center">
+            {filteredVouchers.map((voucher) => (
+              <tr key={voucher.voucher_id}>
+                <td>{voucher.voucher_id}</td>
+                <td>{voucher.voucher_number}</td>
+                <td>{voucher.voucher_date}</td>
+                <td>{voucher.transaction_type}</td>
+                <td>{voucher.invoice_number}</td>
+                <td>{voucher.mode_of_transport}</td>
+                <td>{voucher.number_of_packages}</td>
+                <td>{voucher.freight_status}</td>
+                <td>{voucher.total_amount}</td>
+                <td>
                   <Link href={`/viewinv/${voucher.voucher_id}`}>
-                    <i className="fas fa-eye text-blue-500 cursor-pointer"></i>
+                    <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
+                      <i className="fas fa-eye"></i>
+                    </u>
                   </Link>
-                  &nbsp; &nbsp;
-                  <i
-                    className="fas fa-trash text-red-500 cursor-pointer"
+                  <u
+                    className="text-danger"
+                    title="Delete"
+                    style={{ cursor: "pointer" }}
                     onClick={() => handleDelete(voucher.voucher_id)}
-                  ></i>
+                  >
+                    <i className="fas fa-trash"></i>
+                  </u>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>  
       </div>
     </div>
   );
