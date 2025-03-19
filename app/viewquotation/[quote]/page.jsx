@@ -6,11 +6,11 @@ import { toast } from "react-toastify";
 import QuotationItemsTable from "../../components/QuotationItemsTable";
 
 const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
+const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+const CLIENT_API_URL = "https://api.panvic.in/clients/";
 
 const ViewQuotation = () => {
   const { quote } = useParams();
-  const QUOTATION_API_URL = "https://api.panvic.in/quotation";
-  const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,9 +63,7 @@ const ViewQuotation = () => {
     try {
       const response = await axios.get(
         `${HISTORY_API_URL}?quotation_id=${quotationId}`,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       setRevisionHistory(response.data);
       if (response.data.length > 0) {
@@ -86,6 +84,9 @@ const ViewQuotation = () => {
   if (loading) return <p>Loading...</p>;
   if (!quotation) return <p>No quotation found!</p>;
 
+  // Use selectedRevision if available, otherwise fall back to quotation
+  const displayData = selectedRevision || quotation || {};
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -102,8 +103,7 @@ const ViewQuotation = () => {
                   IN QUOTATION
                 </div>
                 <p className="tm_invoice_number">
-                  Quotation No:
-                  <b className="tm_primary_color">#{quotation.quotation_id}</b>
+                  Quotation No: <b className="tm_primary_color">#{quotation.quotation_id}</b>
                 </p>
               </div>
             </div>
@@ -138,10 +138,7 @@ const ViewQuotation = () => {
 
             <div className="tm_invoice_head tm_mb10">
               {client && (
-                <div
-                  className="tm_invoice_left mt-0"
-                  style={{ flex: 1, textAlign: "left" }}
-                >
+                <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                   <p className="tm_mb2">
                     <b className="tm_primary_color">Supplier Details:</b>
                   </p>
@@ -151,17 +148,13 @@ const ViewQuotation = () => {
                   </p>
                 </div>
               )}
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
+              <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                 </p>
                 Address:
                 <b>
-                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
-                  City, Punjab-144003
+                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar City, Punjab-144003
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
@@ -183,11 +176,54 @@ const ViewQuotation = () => {
               </div>
             </div>
 
+            <div className="tm_invoice_footer my-2">
+              <div className="tm_left_footer px-0">
+                <textarea
+                  className="form-control tm_remarks_box no-print opacity-0"
+                  placeholder="Enter remarks here..."
+                  rows="1"
+                  cols="30"
+                  defaultValue={displayData.remarks || ""}
+                ></textarea>
+              </div>
+
+              <div className="tm_right_footer">
+                <table>
+                  <tbody>
+                    {quotation && quotation.without_gst !== 0 ? <tr>
+                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                        <p className="m-0">Without GST:</p>
+                      </td>
+                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {(quotation.without_gst || 0).toFixed(2)}
+                      </td>
+                    </tr> : null}
+                    {quotation && quotation.gst_amount !== 0 ? <tr>
+                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                        <p className="m-0">GST Amount:</p>
+                      </td>
+                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {(quotation.gst_amount || 0).toFixed(2)}
+                      </td>
+                    </tr> : null}
+                    {quotation && quotation.amount_with_gst !== 0 ? <tr>
+                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
+                        <p className="m-0">Total Amount with GST:</p>
+                      </td>
+                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {(quotation.amount_with_gst || 0).toFixed(2)}
+                      </td>
+                    </tr> : null}
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <p>
               <b>
                 <i>
-                  Thank You for considering us for your needs. Here is the
-                  proposal as you requested.
+                  Thank You for considering us for your needs. Here is the proposal as you requested.
                 </i>
               </b>
             </p>
@@ -195,23 +231,23 @@ const ViewQuotation = () => {
         </div>
       </div>
       <div className="tm_invoice_btns">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
-            <span className="tm_btn_icon">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="tm_invoice_btn tm_color1"
+        >
+          <span className="tm_btn_icon">
             <i className="fa-solid fa-print"></i>
-            </span>
-            <span className="tm_btn_text">Print</span>
-          </button>
-          <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
-            <span className="tm_btn_icon">
+          </span>
+          <span className="tm_btn_text">Print</span>
+        </button>
+        <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
+          <span className="tm_btn_icon">
             <i className="fa-brands fa-whatsapp"></i>
-            </span>
-            <span className="tm_btn_text">Share</span>
-          </button>
-        </div>
+          </span>
+          <span className="tm_btn_text">Share</span>
+        </button>
+      </div>
     </div>
   );
 };
