@@ -214,11 +214,11 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
       </div>
 
       {/* Add Row Button (Visible on mobile/tablet) */}
-      {isMobile && (
+      {/* {isMobile && (
         <button className="btn btn-primary my-3 w-100" onClick={handleAddRow}>
           Add Row
         </button>
-      )}
+      )} */}
 
       {/* FindProduct Modal */}
       <FindProduct
