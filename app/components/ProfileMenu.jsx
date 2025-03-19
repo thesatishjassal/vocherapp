@@ -34,7 +34,7 @@ const ProfileMenu = () => {
     // Remove user details from cookies
     Cookies.remove("user_details");
     // Redirect to the login page
-    router.push("/");
+    router.push("/login");
   };
 
   return (

@@ -59,6 +59,7 @@ const LoginForm = () => {
             JSON.stringify(response.data.user_details),
             { expires: 1 }
           ); // expires in 1 day
+          console.log("User details stored in cookies:", response.data.user_details);
           Cookies.set("session_id", response.data.session_id, { expires: 1 });
         }
 

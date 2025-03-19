@@ -14,8 +14,8 @@ const Header = () => {
       // Parse and set the user details if the cookie exists
       setUserDetails(JSON.parse(userDetailsCookie));
     }
-  }, []);
-
+  }, [userDetails]);
+  console.log(userDetails)
   return (
     <nav className="navbar sticky-top bg-body-tertiary no-print">
       <div className="container">
@@ -32,14 +32,7 @@ const Header = () => {
             {userDetails ? (
               <ProfileMenu userDetails={userDetails} />
             ) : (
-              <div className="btn-group" role="group" aria-label="Login and Signup">
-                <a href="/login" className="btn btn-success">
-                  Login
-                </a>
-                <a href="/signup" className="btn btn-primary">
-                  Signup
-                </a>
-              </div>
+              ""
             )}
           </li>
         </ul>
