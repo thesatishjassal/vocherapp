@@ -1,12 +1,13 @@
 "use client";
+
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ClientDetailsModal from "../components/ClientDetailsModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import GetClients from "./getClients";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Validation schema with Yup
@@ -43,16 +44,14 @@ const AddClientForm = () => {
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        console.log("Form values:", values);
         const response = await axios.post(`${API_URL}/clients/`, values);
         toast.success("Client added successfully!");
-
         setClients((prevClients) => [...prevClients, response.data]);
-        resetForm(); // Reset form on success
+        resetForm();
         setShowModal(false);
       } catch (error) {
         console.error("Add client error:", error);
-        if (error.response.data.detail === "Phone Number already exists!") {
+        if (error.response?.data?.detail === "Phone Number already exists!") {
           toast.error("Phone Number already exists!");
         } else {
           toast.error("Failed to add client. Please try again.");
@@ -66,25 +65,28 @@ const AddClientForm = () => {
   };
 
   return (
-    <div className="container mt-2 px-0">
-      <div className="row container mx-auto my-3 p-0">
+    <div className="container mt-4 px-0">
+      <div className="row mx-auto p-0">
         <div className="col-12 p-0">
-          <div className="card mb-4">
-            <div className="card-header pb-0">
-              <h6>Client Invoices</h6>
+          <div className="card shadow-sm mb-4 rounded-3">
+            <div className="card-header p-3">
+              <h6 className="mb-0">Client Invoices</h6>
             </div>
-            <div className="card-body py-0 pt-0 pb-2">
-              <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="card-body p-4">
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
                 <input
                   type="text"
                   placeholder="Search by Client or Project"
-                  className="form-control w-25"
-                  value={formik.values.searchTerm}
+                  className="form-control"
+                  name="searchTerm"
+                  value={formik.values.searchTerm || ""}
                   onChange={formik.handleChange}
+                  aria-label="Search by Client or Project"
                 />
                 <button
-                  className="btn add_warehouse btn-primary"
+                  className="btn btn-primary"
                   onClick={() => setShowModal(true)}
+                  aria-label="Add New Client"
                 >
                   Add New
                 </button>
@@ -96,15 +98,16 @@ const AddClientForm = () => {
                   id="staticBackdrop"
                   tabIndex="-1"
                   aria-labelledby="staticBackdropLabel"
-                  aria-hidden="true"
+                  aria-hidden={!showModal}
                   style={{
                     display: "block",
                     backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    transition: "opacity 0.3s",
                   }}
                 >
-                  <div className="modal-dialog addclientform">
-                    <div className="modal-content">
-                      <div className="modal-header">
+                  <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content rounded-4">
+                      <div className="modal-header border-0 p-4">
                         <h1 className="modal-title fs-5" id="staticBackdropLabel">
                           Add New Client
                         </h1>
@@ -113,180 +116,259 @@ const AddClientForm = () => {
                           className="btn-close"
                           onClick={() => setShowModal(false)}
                           aria-label="Close"
-                        >
-                          ×
-                        </button>
+                        ></button>
                       </div>
-                      <div className="modal-body py-3">
-                        <form onSubmit={formik.handleSubmit} className="row g-2">
+                      <div className="modal-body p-4">
+                        <form onSubmit={formik.handleSubmit} className="row g-3">
                           {/* Business Details Field Group */}
                           <fieldset className="col-12">
-                            <legend className="fs-5 my-2">Business Details</legend>
-                            <div className="row">
-                              <div className="col-md-6">
+                            <div className="row g-3">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="businessname" className="form-label">
+                                  Business Name
+                                </label>
                                 <input
                                   type="text"
+                                  id="businessname"
                                   name="businessname"
-                                  placeholder="Business Name"
+                                  placeholder="Enter Business Name"
                                   value={formik.values.businessname}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.businessname && formik.errors.businessname
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.businessname && formik.errors.businessname && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.businessname}
+                                  </div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="gst_number" className="form-label">
+                                  GST Number
+                                </label>
                                 <input
                                   type="text"
+                                  id="gst_number"
                                   name="gst_number"
-                                  placeholder="GST Number"
+                                  placeholder="Enter GST Number"
                                   value={formik.values.gst_number}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.gst_number && formik.errors.gst_number
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.gst_number && formik.errors.gst_number && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.gst_number}
+                                  </div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="address" className="form-label">
+                                  Address
+                                </label>
                                 <input
                                   type="text"
+                                  id="address"
                                   name="address"
-                                  placeholder="Address"
+                                  placeholder="Enter Address"
                                   value={formik.values.address}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.address && formik.errors.address
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.address && formik.errors.address && (
+                                  <div className="invalid-feedback">{formik.errors.address}</div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="pincode" className="form-label">
+                                  Pincode
+                                </label>
                                 <input
                                   type="text"
+                                  id="pincode"
                                   name="pincode"
-                                  placeholder="Pincode"
+                                  placeholder="Enter Pincode"
                                   value={formik.values.pincode}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.pincode && formik.errors.pincode
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.pincode && formik.errors.pincode && (
+                                  <div className="invalid-feedback">{formik.errors.pincode}</div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="city" className="form-label">
+                                  City
+                                </label>
                                 <input
                                   type="text"
+                                  id="city"
                                   name="city"
-                                  placeholder="City"
+                                  placeholder="Enter City"
                                   value={formik.values.city}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
-                                    formik.touched.city && formik.errors.city
-                                      ? "border-danger"
-                                      : ""
+                                  className={`form-control ${
+                                    formik.touched.city && formik.errors.city ? "is-invalid" : ""
                                   }`}
                                 />
+                                {formik.touched.city && formik.errors.city && (
+                                  <div className="invalid-feedback">{formik.errors.city}</div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="state" className="form-label">
+                                  State
+                                </label>
                                 <input
                                   type="text"
+                                  id="state"
                                   name="state"
-                                  placeholder="State"
+                                  placeholder="Enter State"
                                   value={formik.values.state}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
-                                    formik.touched.state && formik.errors.state
-                                      ? "border-danger"
-                                      : ""
+                                  className={`form-control ${
+                                    formik.touched.state && formik.errors.state ? "is-invalid" : ""
                                   }`}
                                 />
+                                {formik.touched.state && formik.errors.state && (
+                                  <div className="invalid-feedback">{formik.errors.state}</div>
+                                )}
                               </div>
                             </div>
                           </fieldset>
 
                           {/* Contact Details Field Group */}
                           <fieldset className="col-12">
-                            <legend className="fs-5 my-2">Contact Details</legend>
-                            <div className="row">
-                              <div className="col-md-6">
+                            <div className="row g-3">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="client_name" className="form-label">
+                                  Client Name
+                                </label>
                                 <input
                                   type="text"
+                                  id="client_name"
                                   name="client_name"
-                                  placeholder="Client Name"
+                                  placeholder="Enter Client Name"
                                   value={formik.values.client_name}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.client_name && formik.errors.client_name
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.client_name && formik.errors.client_name && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.client_name}
+                                  </div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="client_phone" className="form-label">
+                                  Contact Number
+                                </label>
                                 <input
                                   type="tel"
+                                  id="client_phone"
                                   name="client_phone"
-                                  placeholder="Contact Number"
+                                  placeholder="Enter Contact Number"
                                   value={formik.values.client_phone}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.client_phone && formik.errors.client_phone
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.client_phone && formik.errors.client_phone && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.client_phone}
+                                  </div>
+                                )}
                               </div>
-                              <div className="col-md-6">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="client_email" className="form-label">
+                                  Email Address
+                                </label>
                                 <input
                                   type="email"
+                                  id="client_email"
                                   name="client_email"
-                                  placeholder="Email Address"
+                                  placeholder="Enter Email Address"
                                   value={formik.values.client_email}
                                   onChange={handleChange}
-                                  className={`form-control mb-0 ${
+                                  className={`form-control ${
                                     formik.touched.client_email && formik.errors.client_email
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 />
+                                {formik.touched.client_email && formik.errors.client_email && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.client_email}
+                                  </div>
+                                )}
                               </div>
-                              <div className="col-md-6 mt-2">
+                              <div className="col-12 col-md-6">
+                                <label htmlFor="client_type" className="form-label">
+                                  Client Type
+                                </label>
                                 <select
+                                  id="client_type"
                                   name="client_type"
                                   value={formik.values.client_type}
                                   onChange={handleChange}
                                   className={`form-select ${
                                     formik.touched.client_type && formik.errors.client_type
-                                      ? "border-danger"
+                                      ? "is-invalid"
                                       : ""
                                   }`}
                                 >
-                                  <option disabled>Select Client Type</option>
-                                  <option value="Retail">Vendor</option>
-                                  <option value="Wholesale">Customer</option>
+                                  <option value="">Select Client Type</option>
+                                  <option value="Vendor">Vendor</option>
+                                  <option value="Customer">Customer</option>
                                   <option value="Other">Other</option>
                                 </select>
+                                {formik.touched.client_type && formik.errors.client_type && (
+                                  <div className="invalid-feedback">
+                                    {formik.errors.client_type}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </fieldset>
 
                           {/* Form Footer */}
-                          <div className="modal-footer col-12">
-                            <div className="text-end">
+                          <div className="modal-footer border-0 p-4">
+                            <div className="d-flex justify-content-end gap-2">
                               <button
                                 type="button"
-                                className="btn btn-secondary ms-2"
+                                className="btn btn-secondary"
                                 onClick={() => setShowModal(false)}
+                                aria-label="Cancel"
                               >
                                 Cancel
                               </button>
-                              <button type="submit" className="btn btn-success">
+                              <button
+                                type="submit"
+                                className="btn btn-success"
+                                aria-label="Add Client"
+                              >
                                 Add Client
                               </button>
                             </div>
@@ -301,6 +383,7 @@ const AddClientForm = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
