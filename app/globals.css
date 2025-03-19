@@ -588,18 +588,6 @@ img.thumnail {
     max-width: none;
     margin-bottom: 10px;
   }
-
-  .filter-actions {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .status-filters {
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
   .sort-select,
   .clear-btn,
   .add-btn {
@@ -617,9 +605,6 @@ img.thumnail {
     width: 100%;
     font-size: 0.85rem;
   }
-
-  /* Remove left and right padding/margin for table container */
-
 
   .table-responsive {
     margin-left: 0 !important;
@@ -646,11 +631,5 @@ img.thumnail {
   th,
   td {
     padding: 6px;
-  }
-
-  .action-column {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
   }
 }
