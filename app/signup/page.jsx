@@ -11,6 +11,7 @@ const RegisterForm = () => {
     name: "",
     phone: "",
     password: "",
+    role: "", // Added role field
   });
 
   const router = useRouter();
@@ -52,10 +53,8 @@ const RegisterForm = () => {
       router.push("/dashboard");
     } catch (error) {
       toast.dismiss(loadingToastId); // Ensure the loading toast is removed before error handling
-      // console.log("Registration error:", error);
       if (error) {
         if (error.response.data.message === "Phone Number already exists!") {
-        
           toast.error("Phone Number already exists!");
         } else {
           toast.error(error.response.data.detail || "An error occurred!");
@@ -112,14 +111,36 @@ const RegisterForm = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  <div className="mb-3">
+                    <select
+                      className="form-select"
+                      name="role"
+                      value={formValues.role}
+                      onChange={handleInputChange}
+                      aria-label="Role"
+                    >
+                      <option value="" disabled>Select Role</option>
+                      <option value="Sales Executive">Sales Executive</option>
+                      <option value="Stock Manager">Stock Manager</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Architect">Architect</option>
+                    </select>
+                  </div>
                   <div className="form-check form-switch">
-                    <input className="form-check-input" type="checkbox" id="rememberMe" />
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="rememberMe"
+                    />
                     <label className="form-check-label" htmlFor="rememberMe">
                       Remember me
                     </label>
                   </div>
                   <div className="text-center">
-                    <button type="submit" className="btn bg-gradient-info w-100 mt-4 mb-0">
+                    <button
+                      type="submit"
+                      className="btn bg-gradient-info w-100 mt-4 mb-0"
+                    >
                       Register
                     </button>
                   </div>
@@ -128,7 +149,10 @@ const RegisterForm = () => {
               <div className="card-footer text-center pt-0 px-lg-2 px-1">
                 <p className="mb-4 text-sm mx-auto">
                   Already have an account?{" "}
-                  <a href="/login" className="text-info text-gradient font-weight-bold">
+                  <a
+                    href="/login"
+                    className="text-info text-gradient font-weight-bold"
+                  >
                     Log in
                   </a>
                 </p>
