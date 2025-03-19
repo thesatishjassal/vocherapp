@@ -110,13 +110,13 @@ const GetClients = () => {
               <td>{client.client_type}</td>
               <td>
                 <div className="d-flex">
-                  <button
+                  {/* <button
                     className="btn btn-sm btn-outline-primary action-icons me-2"
                     title="Edit"
                     onClick={() => console.log("Edit client", client.id)}
                   >
                     <i className="fa fa-edit"></i>
-                  </button>
+                  </button> */}
                   <button
                     className="btn btn-sm btn-outline-danger action-icons"
                     title="Delete"
