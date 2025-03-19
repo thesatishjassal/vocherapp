@@ -588,6 +588,7 @@ img.thumnail {
     max-width: none;
     margin-bottom: 10px;
   }
+
   .sort-select,
   .clear-btn,
   .add-btn {
@@ -631,39 +632,5 @@ img.thumnail {
   th,
   td {
     padding: 6px;
-  }
-}
-@media screen and (max-width: 1024px) {
-  .tm_container {
-    padding: 15px;
-  }
-
-  .tm_invoice_head {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .tm_invoice_left, .tm_invoice_right {
-    width: 100%;
-    text-align: center;
-  }
-
-  .tm_table_responsive {
-    overflow-x: auto;
-    display: block;
-  }
-
-  .tm_invoice_btns {
-    gap: 10px;
-    text-align: center;
-  }
-
-  .tm_invoice_btn {
-    width: 100%;
-  }
-
-  select.form-select {
-    width: 100%;
   }
 }
