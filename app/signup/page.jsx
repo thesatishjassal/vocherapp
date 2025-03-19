@@ -130,7 +130,7 @@ const RegisterForm = () => {
                       <option value="" disabled>Select Your Role</option>
                       <option value="Sales Executive">Sales Executive</option>
                       <option value="Stock Manager">Stock Manager</option>
-                      <option value="Admin">Admin</option>
+                      {/* <option value="Admin">Admin</option> */}
                       <option value="Architect">Architect</option>
                     </select>
                     {formik.touched.role && formik.errors.role && (
