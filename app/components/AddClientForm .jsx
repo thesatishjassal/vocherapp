@@ -69,7 +69,7 @@ const AddClientForm = () => {
       <div className="row mx-auto p-0">
         <div className="col-12 p-0">
           <div className="card shadow-sm mb-4 rounded-3">
-            <div className="card-header p-3">
+            <div className="card-header  text-white p-3">
               <h6 className="mb-0">Client Invoices</h6>
             </div>
             <div className="card-body p-4">
@@ -77,14 +77,14 @@ const AddClientForm = () => {
                 <input
                   type="text"
                   placeholder="Search by Client or Project"
-                  className="form-control"
+                  className="form-control w-100 w-md-auto"
                   name="searchTerm"
                   value={formik.values.searchTerm || ""}
                   onChange={formik.handleChange}
                   aria-label="Search by Client or Project"
                 />
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary w-100 w-md-auto"
                   onClick={() => setShowModal(true)}
                   aria-label="Add New Client"
                 >
