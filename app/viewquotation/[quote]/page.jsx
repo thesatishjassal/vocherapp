@@ -242,7 +242,7 @@ const ViewQuotation = () => {
               <p className="m-0">
                 Warranty/Guarantee :
                 <b>
-                  as per company norms.
+                  as per company norms. {quotation && quotation.warranty_guarantee}
                 </b>
               </p>
               <p>
@@ -282,7 +282,7 @@ const ViewQuotation = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="tm_invoice_btns">
         <button
           type="button"
