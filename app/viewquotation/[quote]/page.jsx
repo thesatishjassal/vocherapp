@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
@@ -40,13 +40,14 @@ const ViewQuotation = () => {
         setLoading(false);
       }
     };
-    console.log(quotation)
     fetchQuotation();
   }, [quote]);
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, { withCredentials: true });
+      const response = await axios.get(CLIENT_API_URL, {
+        withCredentials: true,
+      });
       const filteredClient = response.data.find((c) => c.id === client_id);
       if (filteredClient) {
         setClient(filteredClient);
@@ -60,9 +61,12 @@ const ViewQuotation = () => {
 
   const fetchRevisionHistory = async (quotationId) => {
     try {
-      const response = await axios.get(`${HISTORY_API_URL}?quotation_id=${quotationId}`, {
-        withCredentials: true,
-      });
+      const response = await axios.get(
+        `${HISTORY_API_URL}?quotation_id=${quotationId}`,
+        {
+          withCredentials: true,
+        }
+      );
       setRevisionHistory(response.data);
       if (response.data.length > 0) {
         setSelectedRevision(response.data[0]); // Default to latest revision
@@ -140,37 +144,37 @@ const ViewQuotation = () => {
 
             <div className="tm_invoice_head tm_mb10">
               {client && (
-                <div className="tm_invoice_head tm_mb10">
-                  <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
-                    <p className="tm_mb2">
-                      <b className="tm_primary_color">Supplier Details:</b>
-                    </p>
-                    <p style={{ textAlign: "justify" }}>
-                      Name: <b>{client.client_name}</b> <br />
-                      City: <b>{client.city}</b>
-                    </p>
-                  </div>
+                <div
+                  className="tm_invoice_left mt-0"
+                  style={{ flex: 1, textAlign: "left" }}
+                >
+                  <p className="tm_mb2">
+                    <b className="tm_primary_color">Supplier Details:</b>
+                  </p>
+                  <p>
+                    Name: <b>{client.client_name}</b> <br />
+                    City: <b>{client.city}</b>
+                  </p>
                 </div>
               )}
-              <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
+              <div
+                className="tm_invoice_right tm_text_right"
+                style={{ flex: 1, textAlign: "right" }}
+              >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                 </p>
                 Address:
                 <b>
-                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar City, Punjab-144003
+                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
+                  City, Punjab-144003
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>}
-                <br />
               </div>
             </div>
-            <div className="d-flex mb-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <p className="tm_mb2">
-                Subject: {quotation && <b className="tm_primary_color">{quotation.subject}</b>}
-              </p>
-            </div>
+
             <p>
               <b className="tm_primary_color">Product Info:</b>
             </p>
@@ -183,61 +187,37 @@ const ViewQuotation = () => {
                   />
                 </div>
               </div>
-              <div className="tm_invoice_footer my-2">
-                <div className="tm_left_footer px-0"></div>
-                <div className="tm_right_footer"></div>
-              </div>
             </div>
-            <hr />
+
             <p>
               <b>
-                <i>Thank You for considering us for your needs. Here is the proposal as you requested.</i>
+                <i>
+                  Thank You for considering us for your needs. Here is the
+                  proposal as you requested.
+                </i>
               </b>
             </p>
-            <div className="term_box">
-              <h6>Terms and Conditions:</h6>
-              <p>GST: <b>Including in above prices as per applicable.</b></p>
-              <p>Payment Terms: <b>100% in advance with order.</b></p>
-              <p>Validity: <b>15 days from the date of quotation.</b></p>
-              <p className="m-0">Warranty/Guarantee: <b>as per company norms.</b></p>
-              <p>Responsibility: <b>Our responsibility for material counting ceases immediately after delivery.</b></p>
-              <p>Installation & Fixing: <b>If required, for any electrical job, we will arrange a technician at extra cost. Installation will take 4-5 days from the date of order.</b></p>
-              <p>Freight Charges: <b>Extra as per actual.</b></p>
-              <p>Bank Details: <b>PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar.<br /> We hope you will find our offer in quotation and look forward to your positive response. Please feel free to contact us for any queries.</b></p>
-              <hr />
-              <p>For:- Panvik Lighting This is a computer generated document, hence signature is not required.</p>
-            </div>
-            <div className="tm_invoice_btns tm_hide_print">
-              <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
-                <span className="tm_btn_text">Print</span>
-              </button>
-              <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
-                <span className="tm_btn_text">
-                  <img src="https://static.vecteezy.com/system/resources/previews/042/127/116/non_2x/whatsapp-square-logo-on-a-transparent-background-free-png.png" alt="" className="share_icon" />
-                </span>
-              </button>
-            </div>
           </div>
         </div>
-        <div className="tm_invoice_btns tm_hide_print">
-          <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
+      </div>
+      <div className="tm_invoice_btns">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="tm_invoice_btn tm_color1"
+          >
             <span className="tm_btn_icon">
-              <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512">
-                <path d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
-                <rect x="128" y="240" width="256" height="208" rx="24.32" ry="24.32" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
-                <path d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32" />
-                <circle cx="392" cy="184" r="24" fill="currentColor" />
-              </svg>  
+            <i className="fa-solid fa-print"></i>
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
-              <img src="/assets/img/whatsapp-square.webp" alt="" className="share_icon" />
+            <i className="fa-brands fa-whatsapp"></i>
             </span>
+            <span className="tm_btn_text">Share</span>
           </button>
         </div>
-      </div>
     </div>
   );
 };
