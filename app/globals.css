@@ -620,6 +620,7 @@ img.thumnail {
 
   /* Remove left and right padding/margin for table container */
 
+
   .table-responsive {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -637,7 +638,11 @@ img.thumnail {
   .table-responsive {
     font-size: 0.85rem;
   }
-
+  @media (width >= 576px) {
+    .container-sm, .container {
+        max-width: 100% !important;
+    }
+  }
   th,
   td {
     padding: 6px;
