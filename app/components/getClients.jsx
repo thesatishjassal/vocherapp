@@ -63,70 +63,74 @@ const GetClients = () => {
   };
 
   return (
-    <table className="table align-items-center justify-content-center mb-0">
-      <thead>
-        <tr>
-          {[
-            { label: "ID", key: "id" },
-            { label: "Business Name", key: "buisnessname" },
-            { label: "GST Number", key: "gst_number" },
-            { label: "Address", key: "address" },
-            { label: "City", key: "city" },
-            { label: "State", key: "state" },
-            { label: "Pincode", key: "pincode" },
-            { label: "Client Name", key: "client_name" },
-            { label: "Client Phone", key: "client_phone" },
-            { label: "Client Type", key: "client_type" },
-          ].map((col) => (
-            <th
-              key={col.key}
-              className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-              onClick={() => toggleSort(col.key)}
-              style={{ cursor: "pointer" }}
-            >
-              {col.label} {sortField === col.key && (sortOrder === "asc" ? "↑" : "↓")}
+    <div className="table-responsive">
+      <table className="tm_round_border table align-items-center justify-content-center mb-0">
+        <thead>
+          <tr>
+            {[
+              { label: "ID", key: "id" },
+              { label: "Business Name", key: "businessname" },
+              { label: "GST Number", key: "gst_number" },
+              { label: "Address", key: "address" },
+              { label: "City", key: "city" },
+              { label: "State", key: "state" },
+              { label: "Pincode", key: "pincode" },
+              { label: "Client Name", key: "client_name" },
+              { label: "Client Phone", key: "client_phone" },
+              { label: "Client Type", key: "client_type" },
+            ].map((col) => (
+              <th
+                key={col.key}
+                className={`text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ${
+                  col.key === "id" ? "d-none d-md-table-cell" : ""
+                } ${col.key === "gst_number" || col.key === "pincode" ? "d-none d-lg-table-cell" : ""}`}
+                onClick={() => toggleSort(col.key)}
+                style={{ cursor: "pointer" }}
+              >
+                {col.label} {sortField === col.key && (sortOrder === "asc" ? "↑" : "↓")}
+              </th>
+            ))}
+            <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+              Actions
             </th>
-          ))}
-          <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {sortedClients.map((client) => (
-          <tr key={client.id}>
-            <td>{client.id}</td>
-            <td>{client.businessname}</td>
-            <td>{client.gst_number}</td>
-            <td>{client.address}</td>
-            <td>{client.city}</td>
-            <td>{client.state}</td>
-            <td>{client.pincode}</td>
-            <td>{client.client_name}</td>
-            <td>{client.client_phone}</td>
-            <td>{client.client_type}</td>
-            <td>
-              <div className="d-flex">
-                <button
-                  className="btn action_icons me-2"
-                  title="Edit"
-                  onClick={() => console.log("Edit client", client.id)}
-                >
-                  <i className="fa fa-edit"></i>
-                </button>
-                <button
-                  className="btn action_icons"
-                  title="Delete"
-                  onClick={() => handleDelete(client.id)}
-                >
-                  <i className="fa fa-trash"></i>
-                </button>
-              </div>
-            </td>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {sortedClients.map((client) => (
+            <tr key={client.id}>
+              <td className="d-none d-md-table-cell">{client.id}</td>
+              <td>{client.businessname}</td>
+              <td className="d-none d-lg-table-cell">{client.gst_number}</td>
+              <td>{client.address}</td>
+              <td>{client.city}</td>
+              <td>{client.state}</td>
+              <td className="d-none d-lg-table-cell">{client.pincode}</td>
+              <td>{client.client_name}</td>
+              <td>{client.client_phone}</td>
+              <td>{client.client_type}</td>
+              <td>
+                <div className="d-flex">
+                  <button
+                    className="btn btn-sm btn-outline-primary action-icons me-2"
+                    title="Edit"
+                    onClick={() => console.log("Edit client", client.id)}
+                  >
+                    <i className="fa fa-edit"></i>
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline-danger action-icons"
+                    title="Delete"
+                    onClick={() => handleDelete(client.id)}
+                  >
+                    <i className="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
