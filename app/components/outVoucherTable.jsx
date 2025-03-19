@@ -1,3 +1,4 @@
+"use client";
 import React, { useRef, useEffect, useState } from "react";
 import FindProduct from "./FindPropduct"; // Import FindProduct component
 
@@ -12,6 +13,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     comments: "",
   });
   const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); // New state for add row modal
   const [productList, setProductList] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -53,7 +55,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
         rackcode: "",
         comments: "",
       });
-      inputRefs.itemcode.current.focus();
+      setShowAddModal(false); // Close the modal after adding
     } else {
       alert("Please fill in all required fields.");
     }
@@ -133,93 +135,142 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
                 <td>{row.comments}</td>
               </tr>
             ))}
-            <tr className="no-print">
-              <td>#</td>
-              <td>
-                <input
-                  type="text"
-                  name="itemcode"
-                  value={newRow.itemcode}
-                  onChange={(e) => handleFieldChange("itemcode", e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, "itemname")}
-                  placeholder="Enter item code"
-                  className="form-control input-small"
-                  ref={inputRefs.itemcode}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  name="itemname"
-                  value={newRow.itemname}
-                  onChange={(e) => handleFieldChange("itemname", e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, "qty")}
-                  placeholder="Enter item name"
-                  className="form-control"
-                  ref={inputRefs.itemname}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  name="unit"
-                  value={newRow.unit}
-                  onChange={(e) => handleFieldChange("unit", e.target.value)}
-                  placeholder="Enter unit"
-                  className="form-control input-small"
-                  ref={inputRefs.unit}
-                  disabled
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  name="rackcode"
-                  value={newRow.rackcode}
-                  onChange={(e) => handleFieldChange("rackcode", e.target.value)}
-                  placeholder="Rackcode"
-                  className="form-control input-small"
-                  ref={inputRefs.rackcode}
-                  disabled
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  name="qty"
-                  value={newRow.qty}
-                  onChange={(e) => handleFieldChange("qty", e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, "comments")}
-                  placeholder="Qty"
-                  className="form-control input-small"
-                  ref={inputRefs.qty}
-                />
-              </td>
-
-              <td>
-                <input
-                  type="text"
-                  name="comments"
-                  value={newRow.comments}
-                  onChange={(e) => handleFieldChange("comments", e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, null)}
-                  placeholder="Comments"
-                  className="form-control input-small"
-                  ref={inputRefs.comments}
-                />
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Add Row Button (Visible on mobile/tablet) */}
-      {isMobile && (
-        <button className="btn btn-primary my-3 w-100" onClick={handleAddRow}>
-          Add Row
-        </button>
-      )}
+      {/* Button to open the Add Row Modal */}
 
+
+      {/* Add Row Modal */}
+      {showAddModal && (
+        <div
+          className="modal fade show"
+          tabIndex="-1"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            transition: "opacity 0.3s",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0 p-4">
+                <h1 className="modal-title fs-5">Add New Item</h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowAddModal(false)}
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="row g-3">
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="itemcode"
+                      value={newRow.itemcode}
+                      onChange={(e) => handleFieldChange("itemcode", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "itemname")}
+                      placeholder="Enter item code"
+                      className="form-control"
+                      ref={inputRefs.itemcode}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="itemname"
+                      value={newRow.itemname}
+                      onChange={(e) => handleFieldChange("itemname", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "qty")}
+                      placeholder="Enter item name"
+                      className="form-control"
+                      ref={inputRefs.itemname}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="unit"
+                      value={newRow.unit}
+                      onChange={(e) => handleFieldChange("unit", e.target.value)}
+                      placeholder="Enter unit"
+                      className="form-control"
+                      ref={inputRefs.unit}
+                      disabled
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="rackcode"
+                      value={newRow.rackcode}
+                      onChange={(e) => handleFieldChange("rackcode", e.target.value)}
+                      placeholder="Rackcode"
+                      className="form-control"
+                      ref={inputRefs.rackcode}
+                      disabled
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="number"
+                      name="qty"
+                      value={newRow.qty}
+                      onChange={(e) => handleFieldChange("qty", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "comments")}
+                      placeholder="Qty"
+                      className="form-control"
+                      ref={inputRefs.qty}
+                    />
+                  </div>
+                  <div className="col-12">
+                    <input
+                      type="text"
+                      name="comments"
+                      value={newRow.comments}
+                      onChange={(e) => handleFieldChange("comments", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      placeholder="Comments"
+                      className="form-control"
+                      ref={inputRefs.comments}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer border-0 p-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowAddModal(false)}
+                  aria-label="Cancel"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleAddRow}
+                  aria-label="Add Item"
+                >
+                  Add Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="mt-3">
+        <button
+          className={`btn btn-primary w-100 ${isMobile ? "mb-3" : ""}`}
+          onClick={() => setShowAddModal(true)}
+          aria-label="Add New Row"
+        >
+          Add New Row
+        </button>
+      </div>
       {/* FindProduct Modal */}
       <FindProduct
         showModal={showModal}

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
@@ -26,6 +27,7 @@ const QuotatTable = ({
   });
   const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); // New state for add row modal
   const [productList, setProductList] = useState([]); // Full product list
   const [filteredProducts, setFilteredProducts] = useState([]); // Filtered product list
   const [columns, setColumns] = useState({
@@ -113,7 +115,7 @@ const QuotatTable = ({
       }
 
       setTotalAmount((prevTotal) => {
-        const updatedTotal = prevTotal + amount;
+        const updatedTotal = editRowIndex !== null ? rows.reduce((sum, row) => sum + row.amount, 0) + amount - rows[editRowIndex].amount : prevTotal + amount;
         if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
         return updatedTotal;
       });
@@ -131,7 +133,7 @@ const QuotatTable = ({
         amount: "",
         image: "",
       });
-      inputRefs.customerCode.current.focus();
+      setShowAddModal(false); // Close the modal after adding
     } else {
       alert("Please fill in all required fields.");
     }
@@ -207,6 +209,7 @@ const QuotatTable = ({
       image: row.image,
     });
     setEditRowIndex(index); // Set the index for the row being edited
+    setShowAddModal(true); // Open the modal for editing
   };
 
   const handleDeleteRow = (index) => {
@@ -303,136 +306,193 @@ const QuotatTable = ({
               </td>
             </tr>
           ))}
-          <tr className="no-print">
-            <td>#</td>
-            <td>
-              <img src={newRow.image} alt="" className="product_img" />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="customerCode"
-                value={newRow.customerCode}
-                onChange={(e) =>
-                  handleFieldChange("customerCode", e.target.value)
-                }
-                onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                placeholder="Cust Code"
-                className="form-control input-small"
-                ref={inputRefs.customerCode}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="customerDescription"
-                value={newRow.customerDescription}
-                onChange={(e) =>
-                  handleFieldChange("customerDescription", e.target.value)
-                }
-                onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                placeholder="Cust Desc"
-                className="form-control input-small"
-                ref={inputRefs.customerDescription}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="itemCode"
-                value={newRow.itemCode}
-                onChange={(e) => handleFieldChange("itemCode", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                placeholder="Item code"
-                className="form-control input-small"
-                ref={inputRefs.itemCode}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="itemName"
-                value={newRow.itemName}
-                onChange={(e) => handleFieldChange("itemName", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "qty")}
-                placeholder="Item name"
-                className="form-control"
-                ref={inputRefs.itemName}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="brand"
-                value={newRow.brand}
-                onChange={(e) => handleFieldChange("brand", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "qty")}
-                placeholder="Brand"
-                className="form-control"
-                ref={inputRefs.brand}
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="unit"
-                value={newRow.unit}
-                onChange={(e) => handleFieldChange("unit", e.target.value)}
-                placeholder="unit"
-                className="form-control input-small"
-                ref={inputRefs.unit}
-                disabled
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                name="mrp"
-                value={newRow.mrp}
-                onChange={(e) => handleFieldChange("mrp", e.target.value)}
-                placeholder="MRP"
-                className="form-control input-small"
-                ref={inputRefs.mrp}
-                disabled
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                name="qty"
-                value={newRow.qty}
-                onChange={(e) => handleFieldChange("qty", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "discount")}
-                placeholder="Qty"
-                className="form-control input-small"
-                ref={inputRefs.qty}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                name="discount"
-                value={newRow.discount}
-                onChange={(e) => handleFieldChange("discount", e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, "amount")}
-                placeholder="Discount (%)"
-                className="form-control input-small"
-                ref={inputRefs.discount}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                name="amount"
-                value={newRow.amount}
-                disabled
-                placeholder="Amount"
-                className="form-control input-small"
-              />
-            </td>
-          </tr>
         </tbody>
       </table>
+
+      {/* Add Row Modal */}
+      {showAddModal && (
+        <div
+          className="modal fade show"
+          tabIndex="-1"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            transition: "opacity 0.3s",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0 p-4">
+                <h1 className="modal-title fs-5">
+                  {editRowIndex !== null ? "Edit Item" : "Add New Item"}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditRowIndex(null); // Reset edit mode on close
+                  }}
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="row g-3">
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="customerCode"
+                      value={newRow.customerCode}
+                      onChange={(e) =>
+                        handleFieldChange("customerCode", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
+                      placeholder="Cust Code"
+                      className="form-control"
+                      ref={inputRefs.customerCode}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="customerDescription"
+                      value={newRow.customerDescription}
+                      onChange={(e) =>
+                        handleFieldChange("customerDescription", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "itemCode")}
+                      placeholder="Cust Desc"
+                      className="form-control"
+                      ref={inputRefs.customerDescription}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="itemCode"
+                      value={newRow.itemCode}
+                      onChange={(e) => handleFieldChange("itemCode", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "itemName")}
+                      placeholder="Item code"
+                      className="form-control"
+                      ref={inputRefs.itemCode}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="itemName"
+                      value={newRow.itemName}
+                      onChange={(e) => handleFieldChange("itemName", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "brand")}
+                      placeholder="Item name"
+                      className="form-control"
+                      ref={inputRefs.itemName}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="brand"
+                      value={newRow.brand}
+                      onChange={(e) => handleFieldChange("brand", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "qty")}
+                      placeholder="Brand"
+                      className="form-control"
+                      ref={inputRefs.brand}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="number"
+                      name="qty"
+                      value={newRow.qty}
+                      onChange={(e) => handleFieldChange("qty", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "discount")}
+                      placeholder="Qty"
+                      className="form-control"
+                      ref={inputRefs.qty}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="unit"
+                      value={newRow.unit}
+                      onChange={(e) => handleFieldChange("unit", e.target.value)}
+                      placeholder="Unit"
+                      className="form-control"
+                      ref={inputRefs.unit}
+                      disabled
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      name="mrp"
+                      value={newRow.mrp}
+                      onChange={(e) => handleFieldChange("mrp", e.target.value)}
+                      placeholder="MRP"
+                      className="form-control"
+                      ref={inputRefs.mrp}
+                      disabled
+                    />
+                  </div>
+                  <div className="col-6">
+                    <input
+                      type="number"
+                      name="discount"
+                      value={newRow.discount}
+                      onChange={(e) => handleFieldChange("discount", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      placeholder="Discount (%)"
+                      className="form-control"
+                      ref={inputRefs.discount}
+                    />
+                  </div>
+                  {newRow.image && (
+                    <div className="col-12">
+                      <img src={newRow.image} alt="Preview" className="img-fluid" style={{ maxHeight: "100px" }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="modal-footer border-0 p-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditRowIndex(null); // Reset edit mode on cancel
+                  }}
+                  aria-label="Cancel"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleAddRow}
+                  aria-label={editRowIndex !== null ? "Update Item" : "Add Item"}
+                >
+                  {editRowIndex !== null ? "Update Item" : "Add Item"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Button to open the Add Row Modal */}
+      <div className="mt-3">
+        <button
+          className="btn btn-primary w-100"
+          onClick={() => setShowAddModal(true)}
+          aria-label="Add New Row"
+        >
+          Add New Row
+        </button>
+      </div>
 
       <FindProduct
         showModal={showModal}
