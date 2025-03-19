@@ -412,7 +412,6 @@ const Addoutinvoice = () => {
                 <div className="tm_table_responsive">
                   <OutvoucherTable items={[]} onRowsUpdate={handleRowsUpdate} />
                 </div>
-                <pre>{JSON.stringify(voucherRows, null, 2)}</pre>
               </div>
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
