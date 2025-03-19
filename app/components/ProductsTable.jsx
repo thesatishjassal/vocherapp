@@ -72,7 +72,6 @@ const ProductsTable = () => {
       console.error("Error deleting product:", error);
     }
   };
-
   // Image upload handler
   const handleImageUpload = (productId, newImage) => {
     setProducts((prev) =>

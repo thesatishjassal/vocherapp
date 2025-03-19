@@ -223,13 +223,66 @@ const ViewQuotation = () => {
             <p>
               <b>
                 <i>
-                  Thank You for considering us for your needs. Here is the proposal as you requested.
+                  Thank You for considering us for your needs. Here is the
+                  purposal as you requested.
                 </i>
               </b>
             </p>
+            <div className="term_box">
+              <h6>Terms and Conditions:</h6>
+              <p>
+                GST : <b>Including in above prices as per applicable..</b>
+              </p>
+              <p>
+                Payment Terms : <b>100% in advance with order.</b>
+              </p>
+              <p>
+                Validity : <b>15 days from the date of quotation.</b>
+              </p>
+              <p className="m-0">
+                Warranty/Guarantee :
+                <b>
+                  as per company norms.
+                </b>
+              </p>
+              <p>
+                Responsibility :
+                <b>
+                  Our responsibility for material counting ceases immediately
+                  after delivery.
+                </b>
+              </p>
+              <p>
+                Installation & Fixing :
+                <b>
+                  If required, for any electrical job, we will arrange a
+                  technician at extra cost. Installation will take 4-5 days from
+                  the date of dorder.
+                </b>
+              </p>
+              <p>
+                Freight Charges : <b>Extra as per actual.</b>
+              </p>
+              <p>
+                Bank Details :
+                <b>
+                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
+                  Code: ICIC0001510, Jalandhar.
+                  <br /> We hope you will find our offer in quotation and look
+                  forward to your positive response. Please feel free to contact
+                  us for any queries.
+                </b>
+              </p>
+              <hr />
+              <p>
+                For:- Panvik Lighting This is a computer generated
+                document,hence signature is not required.
+              </p>
+            </div>
           </div>
         </div>
       </div>
+      
       <div className="tm_invoice_btns">
         <button
           type="button"
