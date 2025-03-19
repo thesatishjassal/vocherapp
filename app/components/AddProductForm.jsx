@@ -9,19 +9,19 @@ import "react-toastify/dist/ReactToastify.css";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const productSchema = yup.object().shape({
-  hsncode: yup.string().required(),
-  itemcode: yup.string().required(),
-  itemname: yup.string().required(),
-  description: yup.string().required(),
-  category: yup.string().required(),
-  subcategory: yup.string().required(),
-  price: yup.string().required(),
-  quantity: yup.string().required(),
-  rackcode: yup.string().required(),
-  size: yup.string().required(),
-  color: yup.string().required(),
-  model: yup.string().required(),
-  brand: yup.string().required(),
+  hsncode: yup.string().required("HSN Code is required"),
+  itemcode: yup.string().required("Item Code is required"),
+  itemname: yup.string().required("Item Name is required"),
+  description: yup.string().required("Description is required"),
+  category: yup.string().required("Category is required"),
+  subcategory: yup.string().required("Subcategory is required"),
+  price: yup.string().required("Price is required"),
+  quantity: yup.string().required("Quantity is required"),
+  rackcode: yup.string().required("Rack Code is required"),
+  size: yup.string().required("Size is required"),
+  color: yup.string().required("Color is required"),
+  model: yup.string().required("Model is required"),
+  brand: yup.string().required("Brand is required"),
 });
 
 const AddProductForm = ({ show, onClose, onSave }) => {
@@ -77,8 +77,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         throw new Error(responseData.message || "Failed to add product");
       }
 
-      console.log("API Response:", responseData); // Debug log
-      onSave(responseData); // Pass full response object
+      console.log("API Response:", responseData);
+      onSave(responseData);
       toast.success("Product added successfully!", { position: "top-right" });
       reset();
     } catch (error) {
@@ -102,7 +102,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5">Add New Product</h1>
-            <button type="button" className="btn-close" onClick={onClose}><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" className="btn-close" onClick={onClose}>
+              <i className="fa-solid fa-xmark"></i>
+            </button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
@@ -120,7 +122,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "brand",
                 "unit",
               ].map((field) => (
-                <div className="col-md-6" key={field}>  
+                <div className="col-6" key={field}>
                   <input
                     type="text"
                     {...register(field)}
@@ -133,7 +135,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </div>
               ))}
 
-              <div className="col-md-6">
+              <div className="col-6">
                 <select
                   {...register("category")}
                   className={`form-control ${errors.category ? "border-danger" : ""}`}
@@ -150,12 +152,12 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 )}
               </div>
 
-              <div className="col-md-6">
+              <div className="col-6">
                 <select
                   {...register("subcategory")}
                   className={`form-control ${errors.subcategory ? "border-danger" : ""}`}
                 >
-                  <option value="">Select subcategory</option>
+                  <option value="">Select Subcategory</option>
                   {filteredSubCategories.map((sub) => (
                     <option key={sub.id} value={sub.subcatname}>
                       {sub.subcatname}
