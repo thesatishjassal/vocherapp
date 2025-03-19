@@ -83,7 +83,7 @@ const SubcategoryModal = ({ show, onClose = () => {} }) => {
           <div className="modal-header">
             <h5 className="modal-title">Add Subcategory</h5>
             <button type="button" className="btn-close" onClick={onClose}>
-              ×
+            <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
           <div className="modal-body">

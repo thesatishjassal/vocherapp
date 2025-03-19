@@ -124,7 +124,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5">Update Product</h1>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button type="button" className="btn-close" onClick={onClose}><i class="fa-solid fa-xmark"></i></button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">

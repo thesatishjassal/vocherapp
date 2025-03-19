@@ -100,7 +100,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
           <div className="modal-header">
             <h5 className="modal-title">Upload Product Image</h5>
             <button type="button" className="btn-close" onClick={onClose}>
-              ×
+            <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 

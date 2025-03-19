@@ -98,7 +98,7 @@ const UpdateCategory = ({ show, onClose, onSave, categoryData }) => {
               {categoryData ? "Edit Category" : "Add Category"}
             </h5>
             <button type="button" className="btn-close" onClick={onClose}>
-              ×
+            <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 

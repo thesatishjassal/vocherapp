@@ -48,7 +48,7 @@ const RackModal = ({ showModal, handleModalToggle, addNewRack, warehouses }) => 
               className="btn-close"
               onClick={handleModalToggle}
               aria-label="Close"
-            ></button>
+            ><i class="fa-solid fa-xmark"></i></button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleAddRack} className="row g-2">

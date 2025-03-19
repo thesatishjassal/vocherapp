@@ -108,7 +108,7 @@ const AddInvoucher = ({ show, onClose, onSave, voucherData }) => {
             <h5 className="modal-title">
               {voucherData ? "Edit Voucher" : "Add Voucher"}
             </h5>
-            <button type="button" className="btn-close" onClick={onClose} aria-label="Close" />
+            <button type="button" className="btn-close" onClick={onClose} aria-label="Close" /><i class="fa-solid fa-xmark"></i>
           </div>
           <div className="modal-body">
             <div className="row mb-3">
