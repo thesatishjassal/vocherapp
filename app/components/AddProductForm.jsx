@@ -64,30 +64,34 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const onSubmit = async (data) => {
     try {
-      const payload = { ...data };
-      const response = await fetch(`${API_URL}/products/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch(`${API_URL}/products/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
 
-      const responseData = await response.json();
+        const responseData = await response.json();
 
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to add product");
-      }
+        console.log("API Response:", responseData); // Debugging
 
-      console.log("API Response:", responseData);
-      onSave(responseData);
-      toast.success("Product added successfully!", { position: "top-right" });
-      reset();
+        if (!response.ok) {
+            throw new Error(responseData.message || "Failed to add product");
+        }
+
+        toast.success(responseData.message || "Product added successfully!", {
+            position: "top-right",
+        });
+
+        onSave(responseData);
+        reset();
     } catch (error) {
-      console.error("Error:", error.message);
-      toast.error(error.message || "Error adding product", {
-        position: "top-right",
-      });
+        console.error("Error:", error);
+        toast.error(error.message || "Error adding product", {
+            position: "top-right",
+        });
     }
-  };
+};
+
 
   return (
     <div
