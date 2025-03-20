@@ -47,7 +47,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
-        const resSubCategories = await fetch("https://api.panvic.in/subcategory/");
+        const resSubCategories = await fetch(
+          "https://api.panvic.in/subcategory/"
+        );
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
@@ -64,34 +66,30 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const onSubmit = async (data) => {
     try {
-        const response = await fetch(`${API_URL}/products/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
+      const response = await fetch(`${API_URL}/products/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-        const responseData = await response.json();
+      const responseData = await response.json();
+      console.log("API Response:", responseData); // Debugging
+      // if (!response.ok) {
+      //     throw new Error(responseData.message || "Failed to add product");
+      // }
+      toast.success(responseData.message || "Product added successfully!", {
+        position: "top-right",
+      });
 
-        console.log("API Response:", responseData); // Debugging
-
-        if (!response.ok) {
-            throw new Error(responseData.message || "Failed to add product");
-        }
-
-        toast.success(responseData.message || "Product added successfully!", {
-            position: "top-right",
-        });
-
-        onSave(responseData);
-        reset();
+      onSave(responseData);
+      reset();
     } catch (error) {
-        console.error("Error:", error);
-        toast.error(error.message || "Error adding product", {
-            position: "top-right",
-        });
+      console.error("Error:", error);
+      toast.error(error.message || "Error adding product", {
+        position: "top-right",
+      });
     }
-};
-
+  };
 
   return (
     <div
@@ -130,11 +128,15 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   <input
                     type="text"
                     {...register(field)}
-                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                    className={`form-control ${
+                      errors[field] ? "border-danger" : ""
+                    }`}
                     placeholder={field.replace(/([A-Z])/g, " $1").trim()}
                   />
                   {errors[field] && (
-                    <small className="text-danger">{errors[field].message}</small>
+                    <small className="text-danger">
+                      {errors[field].message}
+                    </small>
                   )}
                 </div>
               ))}
@@ -142,7 +144,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <div className="col-6">
                 <select
                   {...register("category")}
-                  className={`form-control ${errors.category ? "border-danger" : ""}`}
+                  className={`form-control ${
+                    errors.category ? "border-danger" : ""
+                  }`}
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -152,14 +156,18 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   ))}
                 </select>
                 {errors.category && (
-                  <small className="text-danger">{errors.category.message}</small>
+                  <small className="text-danger">
+                    {errors.category.message}
+                  </small>
                 )}
               </div>
 
               <div className="col-6">
                 <select
                   {...register("subcategory")}
-                  className={`form-control ${errors.subcategory ? "border-danger" : ""}`}
+                  className={`form-control ${
+                    errors.subcategory ? "border-danger" : ""
+                  }`}
                 >
                   <option value="">Select Subcategory</option>
                   {filteredSubCategories.map((sub) => (
@@ -169,7 +177,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   ))}
                 </select>
                 {errors.subcategory && (
-                  <small className="text-danger">{errors.subcategory.message}</small>
+                  <small className="text-danger">
+                    {errors.subcategory.message}
+                  </small>
                 )}
               </div>
 
