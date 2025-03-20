@@ -80,7 +80,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       toast.success(responseData.message || "Product added successfully!", {
         position: "top-right",
       });
-
+      window.location.reload();
       onSave(responseData);
       reset();
     } catch (error) {
