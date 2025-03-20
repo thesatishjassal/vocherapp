@@ -77,7 +77,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       // if (!response.ok) {
       //     throw new Error(responseData.message || "Failed to add product");
       // }
-      toast.success(responseData.message || "Product added successfully!", {
+      toast.success("Product added successfully!", {
         position: "top-right",
       });
       window.location.reload();
