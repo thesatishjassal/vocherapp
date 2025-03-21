@@ -11,6 +11,7 @@ export default function Home() {
   const [quotationLength, setQuotationLength] = useState(0);
   const [clientsLength, setClientsLength] = useState(0);
   const [userDetails, setUserDetails] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     // Get user details from cookies
@@ -31,7 +32,7 @@ export default function Home() {
   const role = userDetails?.role || "";
   const isSalesExecutiveOrArchitect = role === "Sales Executive" || role === "Architect";
   const isStockManager = role === "Stock Manager";
-  const isAdmin = role === "Admin";
+  const isAdmin = role === "Admin" || "admin";
 
   return (
     <>
