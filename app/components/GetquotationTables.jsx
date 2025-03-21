@@ -12,13 +12,12 @@ const GetQuotationTables = () => {
   const [quotations, setQuotations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilters, setStatusFilters] = useState({
-    active: true,
+    active: false,
     mature: false,
     lost: false,
   });
   const [sortOrder, setSortOrder] = useState("latest");
 
-  // Fetch clients and quotations logic remains unchanged
   const fetchAllClients = async () => {
     try {
       const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
@@ -43,7 +42,7 @@ const GetQuotationTables = () => {
         const quotationsWithClientNames = quotationsResponse.data.map((q) => ({
           ...q,
           client_name: clientsMap[q.client_id] || null,
-          status: "Active",
+          status: q.status || "Active", // Default to "Active" if status is missing
         }));
         const sortedQuotations = quotationsWithClientNames.sort(
           (a, b) => b.quotation_id - a.quotation_id
@@ -60,25 +59,39 @@ const GetQuotationTables = () => {
   const handleDelete = async (quotationId) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return;
     try {
-      const response = await axios.delete(`${API_URL}${quotationId}/`, {
-        withCredentials: true,
-      });
+      const response = await axios.delete(
+        `https://api.panvic.in/quotation/${quotationId}/`,
+        { withCredentials: true }
+      );
       if (response.status === 204 || response.status === 200) {
         setQuotations((prev) => prev.filter((q) => q.quotation_id !== quotationId));
         toast.success("Quotation deleted successfully!");
       }
     } catch (error) {
       toast.error(`Failed to delete quotation: ${error.message}`);
+      console.error("Delete error:", error);
     }
   };
 
-  const handleStatusChange = (quotationId, newStatus) => {
-    setQuotations((prev) =>
-      prev.map((q) =>
-        q.quotation_id === quotationId ? { ...q, status: newStatus } : q
-      )
-    );
-    toast.success(`Status updated to ${newStatus}`);
+  const handleStatusChange = async (quotationId, newStatus) => {
+    try {
+      const response = await axios.put(
+        `https://api.panvic.in/quotation/${quotationId}/`,
+        { status: newStatus },
+        { withCredentials: true }
+      );
+      if (response.status === 200 || response.status === 201) {
+        setQuotations((prev) =>
+          prev.map((q) =>
+            q.quotation_id === quotationId ? { ...q, status: newStatus } : q
+          )
+        );
+        toast.success(`Status updated to ${newStatus}`);
+      }
+    } catch (error) {
+      toast.error(`Failed to update status: ${error.message}`);
+      console.error("Status update error:", error);
+    }
   };
 
   const handleCheckboxChange = (status) => {
@@ -87,7 +100,7 @@ const GetQuotationTables = () => {
 
   const statusCounts = quotations.reduce(
     (acc, q) => {
-      const status = q.status?.toLowerCase() || "";
+      const status = q.status?.toLowerCase() || "active"; // Default to "active" for counting
       if (status === "active") acc.active += 1;
       if (status === "mature") acc.mature += 1;
       if (status === "lost") acc.lost += 1;
@@ -102,7 +115,7 @@ const GetQuotationTables = () => {
         (q.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         (q.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         (q.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
-      const status = q.status?.toLowerCase() || "";
+      const status = q.status?.toLowerCase() || "active"; // Default to "active" for filtering
       const selectedStatuses = Object.keys(statusFilters).filter(
         (key) => statusFilters[key]
       );
@@ -116,15 +129,19 @@ const GetQuotationTables = () => {
       return 0;
     });
 
-  const getBadgeClass = (status) => {
-    const statusStr = status?.toLowerCase() || "";
-    switch (statusStr) {
-      case "active": return "badge bg-success";
-      case "mature": return "badge bg-primary";
-      case "lost": return "badge bg-danger";
-      default: return "badge bg-secondary";
-    }
-  };
+    const getBadgeClass = (status) => {
+      const statusStr = status?.toLowerCase() || "active"; // Default to "active"
+      switch (statusStr) {
+        case "active":
+          return "badge bg-success";
+        case "mature":
+          return "badge bg-primary";
+        case "lost":
+          return "badge bg-danger";
+        default:
+          return "badge bg-success";
+      }
+    };
 
   return (
     <div className="card">
@@ -133,7 +150,6 @@ const GetQuotationTables = () => {
       </div>
 
       <div className="card-body py-0 pt-0 pb-2">
-        {/* Filters */}
         <div className="filters-container d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
           <input
             type="text"
@@ -189,7 +205,6 @@ const GetQuotationTables = () => {
           </div>
         </div>
 
-        {/* Responsive Table */}
         <div className="table-responsive">
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
@@ -222,7 +237,7 @@ const GetQuotationTables = () => {
                     <td>{q.amount_with_gst}</td>
                     <td>
                       <span className={getBadgeClass(q.status)}>
-                        {q.status || "N/A"}
+                        {q.status || "Active"} {/* Display "Active" if status is missing */}
                       </span>
                     </td>
                     <td className="action-column">
@@ -234,7 +249,7 @@ const GetQuotationTables = () => {
                       </Link>
                       <select
                         className="form-select form-select-sm d-inline w-auto"
-                        value={q.status || ""}
+                        value={q.status || "Active"} // Default to "Active" in dropdown
                         onChange={(e) => handleStatusChange(q.quotation_id, e.target.value)}
                       >
                         <option value="Active">Active</option>
