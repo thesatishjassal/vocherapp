@@ -8,6 +8,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const EditQuotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -132,7 +133,7 @@ const EditQuotation = () => {
         amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
-        status: true,
+        status: quotationInfo?.status || "active",
         client_id: selectedCustomer?.client_id || quotation?.client_id || 3,
       };
 

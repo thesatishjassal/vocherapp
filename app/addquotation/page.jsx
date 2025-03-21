@@ -27,6 +27,7 @@ const Quotation = () => {
   });
   const [remarks, setRemarks] = useState(""); // State for remarks textarea
   const [warrantyGuarantee, setWarrantyGuarantee] = useState(); // State for warranty/guarantee textarea
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const handleQuotationConfirm = (data) => {
     setQuotationInfo(data);
@@ -122,7 +123,7 @@ const Quotation = () => {
         amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
-        status: true,
+        status: "active",
         client_id: selectedCustomer?.client_id || 3,
       };
 
