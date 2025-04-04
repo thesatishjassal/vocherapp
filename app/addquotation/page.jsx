@@ -124,7 +124,7 @@ const Quotation = () => {
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
         status: "active",
-        client_id: selectedCustomer?.client_id || 3,
+        client_id: selectedCustomer?.id || 3,
       };
 
       const response = await axios.post(
