@@ -63,14 +63,28 @@ const ViewQuotation = () => {
     try {
       const response = await axios.get(
         `${HISTORY_API_URL}?quotation_id=${quotationId}`,
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
-      setRevisionHistory(response.data);
-      if (response.data.length > 0) {
-        setSelectedRevision(response.data[0]); // Default to latest revision
+
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        console.log("API Response:", response.data); // Debugging
+
+        // Sort by `edited_at` in descending order (latest first)
+        const sortedRevisions = response.data
+          .filter((revision) => revision.edited_at) // Ensure `edited_at` exists
+          .sort((a, b) => new Date(b.edited_at) - new Date(a.edited_at));
+
+        // Set to state
+        setRevisionHistory(sortedRevisions);
+        setSelectedRevision(sortedRevisions[0]); // Default to latest revision
+      } else {
+        setRevisionHistory([]); // No history found
+        setSelectedRevision(null);
       }
     } catch (error) {
-      console.error("Failed to fetch revision history:", error);
+      console.error("Error fetching revision history:", error);
       toast.error("Failed to load revision history!");
     }
   };
@@ -119,17 +133,12 @@ const ViewQuotation = () => {
                 onChange={handleRevisionChange}
                 value={selectedRevision?.id || ""}
               >
-                {revisionHistory.length === 0 ? (
-                  <option value="">Latest Version</option>
-                ) : (
-                  <option
-                    key={revisionHistory[0].id}
-                    value={revisionHistory[0].id}
-                  >
-                    Edited on:{" "}
-                    {new Date(revisionHistory[0].edited_at).toLocaleString()}
+                <option value="">Latest Version (Original Quotation)</option>
+                {revisionHistory.map((revision) => (
+                  <option key={revision.id} value={revision.id}>
+                    Edited on: {new Date(revision.edited_at).toLocaleString()}
                   </option>
-                )}
+                ))}
               </select>
             </div>
 
@@ -313,12 +322,12 @@ const ViewQuotation = () => {
           </span>
           <span className="tm_btn_text">Print</span>
         </button>
-        <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
+        {/* <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
           <span className="tm_btn_icon">
             <i className="fa-brands fa-whatsapp"></i>
           </span>
           <span className="tm_btn_text">Share</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );
