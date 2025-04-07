@@ -196,6 +196,7 @@ const ProductsTable = () => {
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Rack Code</th>
+                <th>Reorder QTY</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -226,6 +227,7 @@ const ProductsTable = () => {
                     <td>₹{product.price}</td>
                     <td>{product.quantity}</td>
                     <td>{product.rackcode}</td>
+                    <td>{product.reorderqty || 0}</td> {/* New Reorder Qty Column */}
                     <td>
                       <i className="edit-icon" style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }} onClick={() => handleUpdateModalOpen(product)}>✏️</i>
                       <i className="delete-icon" style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }} onClick={() => handleDeleteProduct(product.id)}>🗑️</i>

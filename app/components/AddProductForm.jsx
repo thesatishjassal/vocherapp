@@ -22,12 +22,15 @@ const productSchema = yup.object().shape({
   color: yup.string().required("Color is required"),
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
+  unit: yup.string().required("Unit is required"),
+  reorderEnabled: yup.boolean().default(false),
   reorderqty: yup
-    .string()
+    .number()
+    .typeError("Reorder Qty must be a number")
     .when("reorderEnabled", {
       is: true,
-      then: yup.string().required("Reorder Qty is required"),
-      otherwise: yup.string().notRequired(),
+      then: (schema) => schema.required("Reorder Qty is required"),
+      otherwise: (schema) => schema.notRequired(),
     }),
 });
 
@@ -40,6 +43,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isValid },
     watch,
   } = useForm({
@@ -71,6 +75,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setValue("reorderEnabled", reorderEnabled);
+  }, [reorderEnabled, setValue]);
 
   const filteredSubCategories = subCategories.filter(
     (sub) => sub.catname === selectedCategory
@@ -220,7 +228,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               {reorderEnabled && (
                 <div className="col-6">
                   <input
-                    type="text"
+                    type="number"
                     {...register("reorderqty")}
                     className={`form-control ${
                       errors.reorderqty ? "border-danger" : ""
