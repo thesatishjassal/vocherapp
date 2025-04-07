@@ -52,7 +52,7 @@ const BasicInfoModal = ({ setInfoModal, onConfirm }) => {
                   className="btn-close"
                   onClick={() => setInfoModal(false)}
                   aria-label="Close"
-                ><i class="fa-solid fa-xmark"></i></button>
+                ><i className="fa-solid fa-xmark"></i></button>
               </div>
 
               <div className="modal-body">

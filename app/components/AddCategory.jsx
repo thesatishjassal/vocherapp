@@ -99,7 +99,7 @@ const CategoryModal = ({ show, onClose, onSave, categoryData }) => {
           <div className="modal-header">
             <h5 className="modal-title">{categoryData ? "Edit Category" : "Add Category"}</h5>
             <button type="button" className="btn-close" onClick={onClose}>
-            <i class="fa-solid fa-xmark"></i>
+            <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
           <div className="modal-body">

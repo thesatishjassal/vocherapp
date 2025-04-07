@@ -171,15 +171,15 @@ const OutvoucherDetail = () => {
             </p>
             <OutvoucherTable voucher_id={otvd} />
             {/* Total Amount */}
-            <div class="container mt-4">
-            <div class="row">
-              <div class="col-md-6">
+            <div className="container mt-4">
+            <div className="row">
+              <div className="col-md-6">
                 <p><strong>Receiver Name:</strong> {voucher && voucher.receiver_name}</p>
                 <p><strong>Receiver Mobile:</strong>{voucher & voucher.mobile_number}</p>
               </div>
-              <div class="col-md-6 text-right">
+              <div className="col-md-6 text-right">
                 <p><strong>Manager's Signature:</strong></p>
-                <div class="border-top mt-5"></div>
+                <div className="border-top mt-5"></div>
               </div>
             </div>
           </div>

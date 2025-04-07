@@ -93,6 +93,7 @@ const ViewQuotation = () => {
     const revisionId = parseInt(e.target.value);
     const selected = revisionHistory.find((rev) => rev.id === revisionId);
     setSelectedRevision(selected || null);
+    console.log("Selected Revision:", selected); // Debugging
   };
 
   if (loading) return <p>Loading...</p>;

@@ -76,7 +76,7 @@ const ExcelUploaderModal = ({ show, onClose }) => {
             <div className="modal-header">
               <h5 className="modal-title">Upload Product Excel</h5>
               <button type="button" className="btn-close" onClick={onClose}>
-                <i class="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
 

@@ -97,7 +97,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
               className="btn-close"
               aria-label="Close"
               onClick={() => setShowModal(false)}
-            ><i class="fa-solid fa-xmark"></i></button>
+            ><i className="fa-solid fa-xmark"></i></button>
           </div>
           <div className="modal-body py-3">
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>

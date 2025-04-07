@@ -116,7 +116,7 @@ const AddClientForm = () => {
                           className="btn-close"
                           onClick={() => setShowModal(false)}
                           aria-label="Close"
-                        ><i class="fa-solid fa-xmark"></i></button>
+                        ><i className="fa-solid fa-xmark"></i></button>
                       </div>
                       <div className="modal-body p-4">
                         <form onSubmit={formik.handleSubmit} className="row g-3">

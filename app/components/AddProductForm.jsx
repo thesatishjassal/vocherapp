@@ -22,9 +22,20 @@ const productSchema = yup.object().shape({
   color: yup.string().required("Color is required"),
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
+  reorderqty: yup
+    .string()
+    .when("reorderEnabled", {
+      is: true,
+      then: yup.string().required("Reorder Qty is required"),
+      otherwise: yup.string().notRequired(),
+    }),
 });
 
 const AddProductForm = ({ show, onClose, onSave }) => {
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [reorderEnabled, setReorderEnabled] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -34,10 +45,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   } = useForm({
     resolver: yupResolver(productSchema),
     mode: "onChange",
+    defaultValues: {
+      reorderEnabled: false,
+    },
   });
 
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
   const selectedCategory = watch("category");
 
   useEffect(() => {
@@ -66,17 +78,19 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
   const onSubmit = async (data) => {
     try {
+      const payload = {
+        ...data,
+        reorderEnabled,
+        reorderqty: reorderEnabled ? data.reorderqty : "",
+      };
+
       const response = await fetch(`${API_URL}/products/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       const responseData = await response.json();
-      console.log("API Response:", responseData); // Debugging
-      // if (!response.ok) {
-      //     throw new Error(responseData.message || "Failed to add product");
-      // }
       toast.success("Product added successfully!", {
         position: "top-right",
       });
@@ -141,6 +155,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </div>
               ))}
 
+              {/* Category */}
               <div className="col-6">
                 <select
                   {...register("category")}
@@ -162,6 +177,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 )}
               </div>
 
+              {/* Subcategory */}
               <div className="col-6">
                 <select
                   {...register("subcategory")}
@@ -183,6 +199,43 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 )}
               </div>
 
+              {/* Reorder Switch */}
+              <div className="col-6 d-flex align-items-center gap-2">
+                <label className="form-check-label me-2">
+                  Enable Reorder Qty
+                </label>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="reorderSwitch"
+                    checked={reorderEnabled}
+                    onChange={() => setReorderEnabled(!reorderEnabled)}
+                  />
+                </div>
+              </div>
+
+              {/* Reorder Qty Input */}
+              {reorderEnabled && (
+                <div className="col-6">
+                  <input
+                    type="text"
+                    {...register("reorderqty")}
+                    className={`form-control ${
+                      errors.reorderqty ? "border-danger" : ""
+                    }`}
+                    placeholder="Reorder Quantity"
+                  />
+                  {errors.reorderqty && (
+                    <small className="text-danger">
+                      {errors.reorderqty.message}
+                    </small>
+                  )}
+                </div>
+              )}
+
+              {/* Submit */}
               <div className="col-12">
                 <button
                   type="submit"
