@@ -160,7 +160,7 @@ const GetSalesTable = () => {
           />
 
           <div className="filter-actions d-flex flex-column flex-md-row align-items-start gap-2">
-            <div className="status-filters d-flex flex-wrap gap-2">
+            {/* <div className="status-filters d-flex flex-wrap gap-2">
               {["active", "mature", "lost"].map((status) => (
                 <div className="form-check" key={status}>
                   <input
@@ -175,8 +175,7 @@ const GetSalesTable = () => {
                   </label>
                 </div>
               ))}
-            </div>
-
+            </div> */}
             <select
               className="form-select sort-select"
               value={sortOrder}
@@ -199,8 +198,8 @@ const GetSalesTable = () => {
               Clear
             </button>
 
-            <a className="btn btn-primary add-btn" href="/addquotation">
-              Add Quotation
+            <a className="btn btn-primary add-btn" href="/addsalesorder">
+              + Sale Order
             </a>
           </div>
         </div>
@@ -239,9 +238,9 @@ const GetSalesTable = () => {
                       </span>
                     </td>
                     <td className="action-column">
-                      <Link href={`/editquotation/${q.quotation_id}`}>
+                      {/* <Link href={`/editquotation/${q.quotation_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>
-                      </Link>
+                      </Link> */}
                       <Link href={`/viewsales/${q.quotation_id}`}>
                         <i className="fas fa-eye text-primary me-2" title="View"></i>
                       </Link>
@@ -250,9 +249,9 @@ const GetSalesTable = () => {
                         value={q.status || "Active"} // Default to "Active" in dropdown
                         onChange={(e) => handleStatusChange(q.quotation_id, e.target.value)}
                       >
-                        <option value="Active">Active</option>
-                        <option value="Mature">Mature</option>
-                        <option value="Lost">Lost</option>
+                        <option value="Active">Hold</option>
+                        <option value="Mature">Return</option>
+                        <option value="Lost">Deliverd</option>
                       </select>
                     </td>
                   </tr>
@@ -260,7 +259,7 @@ const GetSalesTable = () => {
               ) : (
                 <tr>
                   <td colSpan="11" className="text-center">
-                    No quotations found.
+                    No Sales Order found.
                   </td>
                 </tr>
               )}
