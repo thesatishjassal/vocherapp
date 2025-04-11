@@ -21,16 +21,32 @@ export default function Home() {
     }
 
     // Fetch data from APIs
-    axios.get("https://api.panvic.in/clients/").then((response) => setClientsLength(response.data.length)).catch((error) => console.error("Error fetching clients:", error));
-    axios.get("https://api.panvic.in/outvouchers/").then((response) => setOutVoucherLength(response.data.length)).catch((error) => console.error("Error fetching out vouchers:", error));
-    axios.get("https://api.panvic.in/invouchers/").then((response) => setInVoucherLength(response.data.length)).catch((error) => console.error("Error fetching in vouchers:", error));
-    axios.get("https://api.panvic.in/products/").then((response) => setProductsLength(response.data.length)).catch((error) => console.error("Error fetching products:", error));
-    axios.get("https://api.panvic.in/quotation/").then((response) => setQuotationLength(response.data.length)).catch((error) => console.error("Error fetching quotations:", error));
+    axios
+      .get("https://api.panvic.in/clients/")
+      .then((response) => setClientsLength(response.data.length))
+      .catch((error) => console.error("Error fetching clients:", error));
+    axios
+      .get("https://api.panvic.in/outvouchers/")
+      .then((response) => setOutVoucherLength(response.data.length))
+      .catch((error) => console.error("Error fetching out vouchers:", error));
+    axios
+      .get("https://api.panvic.in/invouchers/")
+      .then((response) => setInVoucherLength(response.data.length))
+      .catch((error) => console.error("Error fetching in vouchers:", error));
+    axios
+      .get("https://api.panvic.in/products/")
+      .then((response) => setProductsLength(response.data.length))
+      .catch((error) => console.error("Error fetching products:", error));
+    axios
+      .get("https://api.panvic.in/quotation/")
+      .then((response) => setQuotationLength(response.data.length))
+      .catch((error) => console.error("Error fetching quotations:", error));
   }, []); // Removed userDetails from dependencies to avoid infinite loop
 
   // Define visibility based on role
   const role = userDetails?.role || "";
-  const isSalesExecutiveOrArchitect = role === "Sales Executive" || role === "Architect";
+  const isSalesExecutiveOrArchitect =
+    role === "Sales Executive" || role === "Architect";
   const isStockManager = role === "Stock Manager";
   const isAdmin = role === "Admin" || "admin";
 
@@ -47,7 +63,11 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/Businessman-3D-professions-icon-vector.jpg" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/Businessman-3D-professions-icon-vector.jpg"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Add Clients</h5>
                   <span className="count text-sm">{clientsLength}</span>
@@ -64,7 +84,11 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/tag-packages-box-marketing-advertisement-pack-branding-icons-4863042.png"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
                   <span className="count text-sm">{productsLength}</span>
@@ -81,9 +105,15 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/file-formats--product-invoice-purchase-record-bill-business-pack-finance-illustrations-4280960.png"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">Add In Voucher</h5>
+                  <h5 className="font-weight-bolder mb-0 mt-3">
+                    Add In Voucher
+                  </h5>
                   <span className="count text-sm">{inVoucherLength}</span>
                 </div>
               </div>
@@ -98,7 +128,11 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/commerce-shopping-icons-6159358.webp" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/commerce-shopping-icons-6159358.webp"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Out Voucher</h5>
                   <span className="count text-sm">{outVoucherLength}</span>
@@ -115,11 +149,19 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/business-report-3d-icon.webp" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/business-report-3d-icon.webp"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Make Reports</h5>
                   <span className="count text-sm">
-                    {clientsLength + inVoucherLength + outVoucherLength + quotationLength + productsLength}
+                    {clientsLength +
+                      inVoucherLength +
+                      outVoucherLength +
+                      quotationLength +
+                      productsLength}
                   </span>
                 </div>
               </div>
@@ -134,9 +176,34 @@ export default function Home() {
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
                   <div className="icon_wrapper">
-                    <img src="/assets/img/transaction-payment-purchase-business.webp" alt="" className="client_img" />
+                    <img
+                      src="/assets/img/transaction-payment-purchase-business.webp"
+                      alt=""
+                      className="client_img"
+                    />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Quotation</h5>
+                  <span className="count text-sm">{quotationLength}</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
+
+        {(isAdmin || isSalesExecutiveOrArchitect) && (
+          <div className="col-lg-2 col-md-4 col-6 mb-3">
+            <a href="/saleorders">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/transaction-payment-purchase-business.webp"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">Sale Order</h5>
                   <span className="count text-sm">{quotationLength}</span>
                 </div>
               </div>
