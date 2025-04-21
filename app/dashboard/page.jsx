@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import DynamicGreeting from "../components/getGreeting";
 import axios from "axios";
 import Cookies from "js-cookie";
+import SalesOrder from "../addsalesorder/page";
 
 export default function Home() {
   const [outVoucherLength, setOutVoucherLength] = useState(0);
   const [inVoucherLength, setInVoucherLength] = useState(0);
   const [productsLength, setProductsLength] = useState(0);
   const [quotationLength, setQuotationLength] = useState(0);
+  const [salesorders, setSalesorder] = useState(0);
   const [clientsLength, setClientsLength] = useState(0);
   const [userDetails, setUserDetails] = useState(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -41,8 +43,14 @@ export default function Home() {
       .get("https://api.panvic.in/quotation/")
       .then((response) => setQuotationLength(response.data.length))
       .catch((error) => console.error("Error fetching quotations:", error));
-  }, []); // Removed userDetails from dependencies to avoid infinite loop
 
+      axios
+      .get("https://api.panvic.in/salesorder/")
+      .then((response) => setSalesorder(response.data.length))
+      .catch((error) => console.error("Error fetching quotations:", error));
+
+  }, []); // Removed userDetails from dependencies to avoid infinite loop
+  
   // Define visibility based on role
   const role = userDetails?.role || "";
   const isSalesExecutiveOrArchitect =
@@ -204,7 +212,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Sale Order</h5>
-                  <span className="count text-sm">{quotationLength}</span>
+                  <span className="count text-sm">{salesorders}</span>
                 </div>
               </div>
             </a>

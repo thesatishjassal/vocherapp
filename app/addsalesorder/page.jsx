@@ -65,7 +65,7 @@ const SalesOrder = () => {
   useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/quotation/", {
+        const response = await fetch("https://api.panvic.in/salesorder/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -128,7 +128,7 @@ const SalesOrder = () => {
       };
 
       const response = await axios.post(
-        "https://api.panvic.in/quotation/",
+        "https://api.panvic.in/salesorder/",
         quotationData,
         {
           headers: { "Content-Type": "application/json" },
@@ -156,7 +156,7 @@ const SalesOrder = () => {
           };
 
           return axios.post(
-            `https://api.panvic.in/quotation/${savedQuotationId}/items/`,
+            `https://api.panvic.in/salesorder/${savedQuotationId}/items/`,
             itemData,
             { headers: { "Content-Type": "application/json" } }
           );
