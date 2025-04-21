@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import QuotationItemsTable from "../../components/QuotationItemsTable";
+// import QuotationItemsTable from "../../components/QuotationItemsTable";
 import SalesItemsTable from "../../components/SalesItemsTable";
 
 const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
@@ -16,7 +16,7 @@ const ViewSales = () => {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [revisionHistory, setRevisionHistory] = useState([]);
-  const [selectedRevision, setSelectedRevision] = useState(null);
+  const [selectedRevision, setSelectedRevision]= useState(null);
 
   useEffect(() => {
     if (!sales) return;
@@ -71,7 +71,6 @@ const ViewSales = () => {
 
       if (Array.isArray(response.data) && response.data.length > 0) {
         console.log("API Response:", response.data); // Debugging
-
         // Sort by `edited_at` in descending order (latest first)
         const sortedRevisions = response.data
           .filter((revision) => revision.edited_at) // Ensure `edited_at` exists
@@ -117,7 +116,7 @@ const ViewSales = () => {
               <div className="tm_invoice_right tm_text_right">
                 <div className="tm_primary_color tm_f50 tm_text_uppercase">
                   SALES ORDERS
-                </div>
+                </div>  
                 <p className="tm_invoice_number">
                   Sale Order No:{" "}
                   <b className="tm_primary_color">#{quotation.quotation_id}</b>
@@ -191,7 +190,7 @@ const ViewSales = () => {
                 ></textarea>
               </div>
 
-              <div className="tm_right_footer">
+             <div className="tm_right_footer">
                 <table>
                   <tbody>
                     {quotation && quotation.without_gst !== 0 ? (

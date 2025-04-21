@@ -27,11 +27,10 @@ const GetClients = () => {
     }
   };
   
-  // Handle delete
-  console.log("Clients:", clients);
+  // console.log("Clients:", clients);
   const handleDelete = async (clientId) => {
     if (!confirm("Are you sure you want to delete this client?")) return;
-    console.log("Deleting client:", clientId);
+    // console.log("Deleting client:", clientId);
     try {
       const response = await axios.delete(`${API_URL}/client/${clientId}/`, {
         headers: { "Content-Type": "application/json" },
@@ -44,7 +43,7 @@ const GetClients = () => {
         throw new Error("Unexpected response status");
       }
     } catch (error) {
-      console.error("Error deleting client:", error);
+      // console.error("Error deleting client:", error);
       toast.error("Failed to delete client. Please try again.");
     }
   };
@@ -111,6 +110,7 @@ const GetClients = () => {
               <td>{client.client_type}</td>
               <td>
                 <div className="d-flex">
+                  
                   {/* <button
                     className="btn btn-sm btn-outline-primary action-icons me-2"
                     title="Edit"
@@ -118,6 +118,7 @@ const GetClients = () => {
                   >
                     <i className="fa fa-edit"></i>
                   </button> */}
+                  
                   <button
                     className="btn btn-sm btn-outline-danger action-icons"
                     title="Delete"
