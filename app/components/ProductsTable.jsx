@@ -4,12 +4,8 @@ import AddProductForm from "./AddProductForm";
 import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
-import UploadProducts from '../components/UploadProducts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const apiUrl = 'https://api.panvic.in/upload-products/';  // Your FastAPI endpoint
-const successMessage = 'Products uploaded successfully!';
-const errorMessage = 'There was an error during upload';
 
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
@@ -76,6 +72,7 @@ const ProductsTable = () => {
       console.error("Error deleting product:", error);
     }
   };
+
   // Image upload handler
   const handleImageUpload = (productId, newImage) => {
     setProducts((prev) =>
@@ -88,6 +85,67 @@ const ProductsTable = () => {
   // Search and Category Filter
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
+
+  // Export products to CSV
+  const exportToCSV = () => {
+    // Define WooCommerce-compatible headers
+    const headers = [
+      "SKU",
+      "Name",
+      "Type",
+      "Published",
+      "Is featured?",
+      "Visibility in catalog",
+      "Short description",
+      "Description",
+      "Regular price",
+      "Sale price",
+      "Stock",
+      "Categories",
+      "Images",
+    ];
+
+    // Map products to CSV rows
+    const rows = products.map((product) => [
+      product.itemcode || "", // SKU
+      product.itemname || "", // Name
+      "simple", // Type (assuming simple products)
+      1, // Published (1 for published)
+      0, // Is featured? (0 for no)
+      "visible", // Visibility in catalog
+      product.shortdescription || "", // Short description (if available)
+      product.description || "", // Description (now included)
+      product.price || "", // Regular price
+      "", // Sale price (add if available)
+      product.quantity || 0, // Stock
+      product.category || "", // Categories
+      product.thumbnail ? `${API_URL}${product.thumbnail}` : "", // Images
+    ]);
+
+    // Convert to CSV format
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((cell) =>
+            typeof cell === "string" && (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
+              ? `"${cell.replace(/"/g, '""')}"`
+              : cell
+          )
+          .join(",")
+      ),
+    ].join("\n");
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "woocommerce_products_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Fetch products initially
   useEffect(() => {
@@ -102,13 +160,19 @@ const ProductsTable = () => {
     };
     fetchProducts();
   }, [selectedProduct]);
+
   // Apply filters
   useEffect(() => {
     let filtered = products;
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode]
-          .some((field) => field?.toLowerCase().includes(searchQuery))
+        [
+          product.itemname,
+          product.hsncode,
+          product.category,
+          product.subcategory,
+          product.itemcode,
+        ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
     }
     if (filterCategory) {
@@ -118,7 +182,9 @@ const ProductsTable = () => {
   }, [products, searchQuery, filterCategory]);
 
   // Extract unique categories
-  const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
+  const categories = Array.from(
+    new Set(products.map((product) => product.category))
+  ).filter(Boolean);
 
   return (
     <div className="card">
@@ -141,7 +207,7 @@ const ProductsTable = () => {
           show={showUpdateModal}
           onClose={handleUpdateModalClose}
           onSave={handleAddOrUpdateProduct}
-          productId={selectedProduct.id} // Pass only the ID
+          productId={selectedProduct.id}
         />
       )}
 
@@ -161,12 +227,6 @@ const ProductsTable = () => {
         onClose={() => setShowModalExcel(false)}
       />
 
-      <UploadProducts 
-        apiUrl={apiUrl} 
-        successMessage={successMessage} 
-        errorMessage={errorMessage} 
-      />
-
       {/* Search and Filter Controls */}
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-3 gap-2">
@@ -184,11 +244,29 @@ const ProductsTable = () => {
           >
             <option value="">All Categories</option>
             {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
+              <option key={idx} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
-          <button className="btn btn-success btn-md" onClick={() => setShowModalExcel(true)}>Add Excel</button>
-          <button className="btn btn-primary btn-md" onClick={handleAddModalOpen}>Add Product</button>
+          <button
+            className="btn btn-info btn-md"
+            onClick={exportToCSV}
+          >
+            Export to CSV
+          </button>
+          <button
+            className="btn btn-success btn-md"
+            onClick={() => setShowModalExcel(true)}
+          >
+            Add Excel
+          </button>
+          <button
+            className="btn btn-primary btn-md"
+            onClick={handleAddModalOpen}
+          >
+            Add Product
+          </button>
         </div>
 
         {/* Products Table */}
@@ -226,7 +304,17 @@ const ProductsTable = () => {
                           onClick={() => handleImageModalOpen(product)}
                         />
                       ) : (
-                        <i className="plus-icon" style={{ fontSize: "24px", color: "#007bff", cursor: "pointer" }} onClick={() => handleImageModalOpen(product)}>+</i>
+                        <i
+                          className="plus-icon"
+                          style={{
+                            fontSize: "24px",
+                            color: "#007bff",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleImageModalOpen(product)}
+                        >
+                          +
+                        </i>
                       )}
                     </td>
                     <td>{product.hsncode}</td>
@@ -237,15 +325,40 @@ const ProductsTable = () => {
                     <td>₹{product.price}</td>
                     <td>{product.quantity}</td>
                     <td>{product.rackcode}</td>
-                    <td>{product.reorderqty || 0}</td> {/* New Reorder Qty Column */}
+                    <td>{product.reorderqty || 0}</td>
                     <td>
-                      <i className="edit-icon" style={{ fontSize: "18px", marginRight: "10px", cursor: "pointer", color: "#28a745" }} onClick={() => handleUpdateModalOpen(product)}>✏️</i>
-                      <i className="delete-icon" style={{ fontSize: "18px", cursor: "pointer", color: "#dc3545" }} onClick={() => handleDeleteProduct(product.id)}>🗑️</i>
+                      <i
+                        className="edit-icon"
+                        style={{
+                          fontSize: "18px",
+                          marginRight: "10px",
+                          cursor: "pointer",
+                          color: "#28a745",
+                        }}
+                        onClick={() => handleUpdateModalOpen(product)}
+                      >
+                        ✏️
+                      </i>
+                      <i
+                        className="delete-icon"
+                        style={{
+                          fontSize: "18px",
+                          cursor: "pointer",
+                          color: "#dc3545",
+                        }}
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        🗑️
+                      </i>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="11" className="text-center">No products found.</td></tr>
+                <tr>
+                  <td colSpan="12" className="text-center">
+                    No products found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
