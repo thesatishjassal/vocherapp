@@ -4,8 +4,12 @@ import AddProductForm from "./AddProductForm";
 import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
+import UploadProducts from '../components/UploadProducts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = 'https://api.panvic.in/upload-products/';  // Your FastAPI endpoint
+const successMessage = 'Products uploaded successfully!';
+const errorMessage = 'There was an error during upload';
 
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
@@ -155,6 +159,12 @@ const ProductsTable = () => {
       <ExcelUploaderModal
         show={showModalExcel}
         onClose={() => setShowModalExcel(false)}
+      />
+
+      <UploadProducts 
+        apiUrl={apiUrl} 
+        successMessage={successMessage} 
+        errorMessage={errorMessage} 
       />
 
       {/* Search and Filter Controls */}

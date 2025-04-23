@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import DynamicGreeting from "../components/getGreeting";
 import axios from "axios";
 import Cookies from "js-cookie";
-import SalesOrder from "../addsalesorder/page";
 
 export default function Home() {
   const [outVoucherLength, setOutVoucherLength] = useState(0);

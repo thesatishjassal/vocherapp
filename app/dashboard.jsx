@@ -61,8 +61,8 @@ const Dashboard = () => {
                             </a>
                           </li>
                         </ul>
-                      </div>
-                      <p className="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
+                   </div>
+                         <p className="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
                         +55%
                       </p>
                     </div>

@@ -5,6 +5,7 @@ import CategoryTable from "../components/CategoryTable";
 import SubcategoryTable from "../components/SubcategoryTable";
 import ProductsTable from "../components/ProductsTable";
 
+
 const Products = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);

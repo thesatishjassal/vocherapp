@@ -31,7 +31,6 @@ const SalesOrder = () => {
 
   const handleQuotationConfirm = (data) => {
     setQuotationInfo(data);
-    console.log("Quotation Info Received:", data);
   };
 
   const closeModal = () => {
@@ -48,7 +47,6 @@ const SalesOrder = () => {
   };
 
   const handleClientConfirm = (selectedClient) => {
-    console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
   };
 
