@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
@@ -103,31 +104,59 @@ const ProductsTable = () => {
       "Stock",
       "Categories",
       "Images",
+      "Attributes",
+      "Meta: hsncode",
+      "Meta: unit",
+      "Meta: rackcode",
+      "Meta: size",
+      "Meta: color",
+      "Meta: model",
+      "Meta: brand",
+      "Meta: reorderqty",
     ];
 
     // Map products to CSV rows
-    const rows = products.map((product) => [
-      product.itemcode || "", // SKU
-      product.itemname || "", // Name
-      "simple", // Type (assuming simple products)
-      1, // Published (1 for published)
-      0, // Is featured? (0 for no)
-      "visible", // Visibility in catalog
-      product.shortdescription || "", // Short description (if available)
-      product.description || "", // Description (now included)
-      product.price || "", // Regular price
-      "", // Sale price (add if available)
-      product.quantity || 0, // Stock
-      product.category || "", // Categories
-      product.thumbnail ? `${API_URL}${product.thumbnail}` : "", // Images
-    ]);
+    const rows = products.map((product) => {
+      // Format attributes as WooCommerce expects (e.g., "name:Size|value:1300MM|visible:1")
+      const attributes = [
+        `name:Size|value:${product.size || ""}|visible:1`,
+        `name:Color|value:${product.color || ""}|visible:1`,
+        `name:Model|value:${product.model || ""}|visible:1`,
+        `name:Brand|value:${product.brand || ""}|visible:1`,
+      ].join("~");
+
+      return [
+        product.itemcode || "", // SKU
+        product.itemname || "", // Name
+        "simple", // Type (assuming simple products)
+        1, // Published (1 for published)
+        0, // Is featured? (0 for no)
+        "visible", // Visibility in catalog
+        "", // Short description (add if available)
+        product.description || "", // Description
+        product.price || "", // Regular price
+        "", // Sale price (add if available)
+        product.quantity || 0, // Stock
+        `${product.category || ""}${product.subcategory ? `>${product.subcategory}` : ""}`, // Categories (e.g., "Utility>LED Downlighters")
+        product.thumbnail ? `${API_URL}${product.thumbnail}` : "", // Images
+        attributes, // Attributes (Size, Color, Model, Brand)
+        product.hsncode || "", // Meta: hsncode
+        product.unit || "", // Meta: unit
+        product.rackcode || "", // Meta: rackcode
+        product.size || "", // Meta: size
+        product.color || "", // Meta: color
+        product.model || "", // Meta: model
+        product.brand || "", // Meta: brand
+        product.reorderqty || "", // Meta: reorderqty
+      ];
+    });
 
     // Convert to CSV format
     const csvContent = [
       headers.join(","),
       ...rows.map((row) =>
         row
-          .map((cell) =>
+          .map((cell) => 
             typeof cell === "string" && (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
               ? `"${cell.replace(/"/g, '""')}"`
               : cell

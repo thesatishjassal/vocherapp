@@ -4,11 +4,13 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UploadCloud, FileCheck2 } from "lucide-react";
 
+// Optional: PropTypes for clarity and type safety
+// import PropTypes from 'prop-types';
+
 const ExcelUploaderModal = ({ show, onClose }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle file selection
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (
@@ -25,7 +27,6 @@ const ExcelUploaderModal = ({ show, onClose }) => {
     }
   };
 
-  // Handle file upload
   const handleUpload = async () => {
     if (!file) {
       toast.error("Please select an Excel file to upload");
@@ -52,7 +53,8 @@ const ExcelUploaderModal = ({ show, onClose }) => {
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(
-        error.response?.data?.detail || "File upload failed. Please try again."
+        error.response?.data?.detail ||
+          "File upload failed. Please try again."
       );
     } finally {
       setLoading(false);
@@ -69,21 +71,22 @@ const ExcelUploaderModal = ({ show, onClose }) => {
           display: show ? "block" : "none",
           backgroundColor: "rgba(0, 0, 0, 0.5)",
         }}
+        role="dialog"
       >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            {/* Modal Header */}
             <div className="modal-header">
               <h5 className="modal-title">Upload Product Excel</h5>
-              <button type="button" className="btn-close" onClick={onClose}>
-                <i className="fa-solid fa-xmark"></i>
-              </button>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={onClose}
+                aria-label="Close"
+              ></button>
             </div>
 
-            {/* Modal Body */}
             <div className="modal-body">
               <div className="mb-3 text-center">
-                {/* File Input Styled */}
                 <label
                   htmlFor="fileUpload"
                   className="d-flex flex-column align-items-center justify-content-center border rounded py-4 px-3 border-dashed"
@@ -110,7 +113,6 @@ const ExcelUploaderModal = ({ show, onClose }) => {
                   />
                 </label>
 
-                {/* Remove File Button */}
                 {file && (
                   <button
                     onClick={() => setFile(null)}
@@ -122,7 +124,6 @@ const ExcelUploaderModal = ({ show, onClose }) => {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="modal-footer">
               <button
                 type="button"
@@ -144,11 +145,13 @@ const ExcelUploaderModal = ({ show, onClose }) => {
         </div>
       </div>
 
-      {/* Toast Notifications */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
       />
     </>
   );
