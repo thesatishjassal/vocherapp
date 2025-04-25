@@ -28,7 +28,7 @@ const CSVUploadModal = ({ show, onClose }) => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/upload-csv/', {
+      const response = await fetch('https://api.panvic.in/upload-csv/', {
         method: 'POST',
         body: formData,
       });
