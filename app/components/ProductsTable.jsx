@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import AddProductForm from "./AddProductForm";
@@ -70,7 +69,8 @@ const ProductsTable = () => {
 
   // Delete product
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -142,7 +142,9 @@ const ProductsTable = () => {
         product.price || "", // Regular price
         "", // Sale price (add if available)
         product.quantity || 0, // Stock
-        `${product.category || ""}${product.subcategory ? `>${product.subcategory}` : ""}`, // Categories (e.g., "Utility>LED Downlighters")
+        `${product.category || ""}${
+          product.subcategory ? `>${product.subcategory}` : ""
+        }`, // Categories (e.g., "Utility>LED Downlighters")
         product.thumbnail ? `${API_URL}${product.thumbnail}` : "", // Images
         attributes, // Attributes (Size, Color, Model, Brand)
         product.hsncode || "", // Meta: hsncode
@@ -161,8 +163,9 @@ const ProductsTable = () => {
       headers.join(","),
       ...rows.map((row) =>
         row
-          .map((cell) => 
-            typeof cell === "string" && (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
+          .map((cell) =>
+            typeof cell === "string" &&
+            (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
               ? `"${cell.replace(/"/g, '""')}"`
               : cell
           )
@@ -210,7 +213,9 @@ const ProductsTable = () => {
       );
     }
     if (filterCategory) {
-      filtered = filtered.filter((product) => product.category === filterCategory);
+      filtered = filtered.filter(
+        (product) => product.category === filterCategory
+      );
     }
     setFilteredProducts(filtered);
   }, [products, searchQuery, filterCategory]);
@@ -263,16 +268,16 @@ const ProductsTable = () => {
 
       {/* Search and Filter Controls */}
       <div className="card-body">
-        <div className="d-flex justify-content-between align-items-center mb-3 gap-2">
+        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
           <input
             type="text"
             placeholder="Search by Name, HSN, Category..."
-            className="form-control w-50"
+            className="form-control w-100 w-md-50"
             value={searchQuery}
             onChange={handleSearch}
           />
           <select
-            className="form-select w-25"
+            className="form-select w-100 w-md-25"
             value={filterCategory}
             onChange={handleCategoryFilter}
           >
@@ -283,37 +288,28 @@ const ProductsTable = () => {
               </option>
             ))}
           </select>
-          <button
-            className="btn btn-info btn-md"
-            onClick={exportToCSV}
-          >
-            Export to CSV
+          <div className="d-flex flex-wrap gap-3 justify-content-start">
+            <button className="btn btn-info btn-md" onClick={exportToCSV}>
+              Export to CSV
+            </button>
+            <button
+              className="btn btn-success btn-md"
+              onClick={() => setShowModalExcel(true)}
+            >
+              Add Excel
+            </button>
+            <button
+              className="btn btn-success btn-md"
+              onClick={handleAddModalOpen}
+            >
+              Add Product
+            </button>
+          </div>
+          <button onClick={handleOpenModal} className="btn btn-danger btn-md">
+            Upload CSV
           </button>
-          <button
-            className="btn btn-success btn-md"
-            onClick={() => setShowModalExcel(true)}
-          >
-            Add Excel
-          </button>
-          <button
-            className="btn btn-primary btn-md"
-            onClick={handleAddModalOpen}
-          > 
-            Add Product
-          </button>
-          <div className="bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">CSV Upload App</h1>
-        <button
-          onClick={handleOpenModal}
-          className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
-        >
-          Upload CSV
-        </button>
-      </div>
 
-      <CSVUploadModal show={showModal} onClose={handleCloseModal} />
-    </div>
+          <CSVUploadModal show={showModal} onClose={handleCloseModal} />
         </div>
 
         {/* Products Table */}
@@ -339,7 +335,7 @@ const ProductsTable = () => {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id}>
-                      <td>{product.hsncode}</td>
+                    <td>{product.hsncode}</td>
                     <td>{product.itemcode}</td>
                     {/* <td>{product.id}</td> */}
                     <td>
