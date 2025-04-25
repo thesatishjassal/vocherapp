@@ -301,7 +301,7 @@ const ProductsTable = () => {
           > 
             Add Product
           </button>
-          <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+          <div className="bg-gray-100 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">CSV Upload App</h1>
         <button
@@ -321,10 +321,10 @@ const ProductsTable = () => {
           <table className="table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
-                <th>Id</th>
-                <th>Thumbnail</th>
+                {/* <th>Id</th> */}
                 <th>HSN Code</th>
                 <th>Item Code</th>
+                <th>Thumbnail</th>
                 <th>Item Name</th>
                 <th>Category</th>
                 <th>Sub-Category</th>
@@ -339,7 +339,9 @@ const ProductsTable = () => {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id}>
-                    <td>{product.id}</td>
+                      <td>{product.hsncode}</td>
+                    <td>{product.itemcode}</td>
+                    {/* <td>{product.id}</td> */}
                     <td>
                       {product.thumbnail ? (
                         <img
@@ -364,8 +366,6 @@ const ProductsTable = () => {
                         </i>
                       )}
                     </td>
-                    <td>{product.hsncode}</td>
-                    <td>{product.itemcode}</td>
                     <td>{truncateText(product.itemname)}</td>
                     <td>{product.category}</td>
                     <td>{product.subcategory}</td>
