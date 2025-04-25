@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileCheck2 } from 'lucide-react';
+import { UploadCloud, FileCheck2, X } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -48,82 +48,77 @@ const CSVUploadModal = ({ show, onClose }) => {
 
   return (
     <>
+      {/* Modal Overlay */}
       <div
-        className={`modal fade ${show ? 'show d-block' : ''}`}
-        tabIndex="-1"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-        aria-hidden={!show}
+        className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-200 ${
+          show ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
       >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
+        {/* Modal Content */}
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 transition-all">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">📁 Upload CSV File</h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X size={22} />
+            </button>
+          </div>
 
-            {/* Header */}
-            <div className="modal-header">
-              <h5 className="modal-title">Upload CSV</h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={onClose}
-                aria-label="Close"
-              ></button>
-            </div>
-
-            {/* Body */}
-            <div className="modal-body text-center">
-              <label
-                htmlFor="fileUpload"
-                className="d-flex flex-column align-items-center justify-content-center border rounded py-4 px-3 border-dashed"
-                style={{ cursor: 'pointer', background: '#f9f9f9' }}
-              >
-                {file ? (
-                  <span className="text-success fw-semibold d-flex align-items-center gap-2">
-                    <FileCheck2 size={20} /> {file.name}
-                  </span>
-                ) : (
-                  <>
-                    <UploadCloud size={36} className="text-primary mb-2" />
-                    <span className="text-muted">Click to select CSV file</span>
-                  </>
-                )}
-                <input
-                  id="fileUpload"
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="d-none"
-                />
-              </label>
-
-              {file && (
-                <button
-                  onClick={() => setFile(null)}
-                  className="btn btn-sm btn-outline-danger mt-3"
-                >
-                  Remove File
-                </button>
+          {/* Body */}
+          <div className="text-center space-y-3">
+            <label
+              htmlFor="fileUpload"
+              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-6 px-4 cursor-pointer hover:bg-gray-50 transition"
+            >
+              {file ? (
+                <span className="text-green-600 font-medium flex items-center gap-2">
+                  <FileCheck2 size={20} /> {file.name}
+                </span>
+              ) : (
+                <>
+                  <UploadCloud size={36} className="text-blue-500 mb-2" />
+                  <span className="text-gray-600 text-sm">Click to select a CSV file</span>
+                </>
               )}
-            </div>
+              <input
+                id="fileUpload"
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
 
-            {/* Footer */}
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
-                Close
-              </button>
+            {file && (
               <button
-                type="button"
-                className="btn btn-success btn-md"
-                onClick={handleUpload}
-                disabled={loading}
+                onClick={() => setFile(null)}
+                className="text-sm text-red-500 hover:text-red-600"
               >
-                {loading ? 'Uploading...' : 'Upload CSV'}
+                ❌ Remove File
               </button>
-            </div>
+            )}
+          </div>
 
+          {/* Footer */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={loading}
+              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+            >
+              {loading ? 'Uploading...' : 'Upload'}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Toast */}
+      {/* Toast Container */}
       <ToastContainer
         position="top-right"
         autoClose={2000}

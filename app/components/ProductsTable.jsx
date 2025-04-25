@@ -292,12 +292,7 @@ const ProductsTable = () => {
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
-            <button
-              className="btn btn-success btn-md"
-              onClick={() => setShowModalExcel(true)}
-            >
-              Add Excel
-            </button>
+            <CSVUploadModal show={showModal} onClose={handleCloseModal} />
             <button
               className="btn btn-success btn-md"
               onClick={handleAddModalOpen}
@@ -305,11 +300,12 @@ const ProductsTable = () => {
               Add Product
             </button>
           </div>
-          <button onClick={handleOpenModal} className="btn btn-danger btn-md">
-            Upload CSV
+          <button
+            className="btn btn-danger btn-md"
+            onClick={() => setShowModal(true)}
+          >
+            Upload CSV or Excel
           </button>
-
-          <CSVUploadModal show={showModal} onClose={handleCloseModal} />
         </div>
 
         {/* Products Table */}
@@ -371,28 +367,14 @@ const ProductsTable = () => {
                     <td>{product.reorderqty || 0}</td>
                     <td>
                       <i
-                        className="edit-icon"
-                        style={{
-                          fontSize: "18px",
-                          marginRight: "10px",
-                          cursor: "pointer",
-                          color: "#28a745",
-                        }}
+                        className="fa-solid fa-pen"
                         onClick={() => handleUpdateModalOpen(product)}
-                      >
-                        ✏️
-                      </i>
+                      ></i>
+                      <span> - </span>
                       <i
-                        className="delete-icon"
-                        style={{
-                          fontSize: "18px",
-                          cursor: "pointer",
-                          color: "#dc3545",
-                        }}
+                        className="fa-solid fa-trash pl-2"
                         onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        🗑️
-                      </i>
+                      ></i>
                     </td>
                   </tr>
                 ))
