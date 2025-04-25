@@ -48,72 +48,72 @@ const CSVUploadModal = ({ show, onClose }) => {
 
   return (
     <>
-      {/* Modal Overlay */}
+      {/* Bootstrap Modal */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-200 ${
-          show ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`modal fade ${show ? 'show d-block' : ''}`}
+        tabIndex="-1"
+        role="dialog"
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       >
-        {/* Modal Content */}
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 transition-all">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">📁 Upload CSV File</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <X size={22} />
-            </button>
-          </div>
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
 
-          {/* Body */}
-          <div className="text-center space-y-3">
-            <label
-              htmlFor="fileUpload"
-              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-6 px-4 cursor-pointer hover:bg-gray-50 transition"
-            >
-              {file ? (
-                <span className="text-green-600 font-medium flex items-center gap-2">
-                  <FileCheck2 size={20} /> {file.name}
-                </span>
-              ) : (
-                <>
-                  <UploadCloud size={36} className="text-blue-500 mb-2" />
-                  <span className="text-gray-600 text-sm">Click to select a CSV file</span>
-                </>
+            {/* Modal Header */}
+            <div className="modal-header">
+              <h5 className="modal-title">Upload CSV</h5>
+              <button type="button" className="btn-close" onClick={onClose}></button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="modal-body text-center">
+              <label htmlFor="fileUpload" className="form-label w-100 border border-dashed rounded p-4 bg-light cursor-pointer">
+                {file ? (
+                  <div className="text-success d-flex justify-content-center align-items-center gap-2">
+                    <FileCheck2 size={18} /> <span>{file.name}</span>
+                  </div>
+                ) : (
+                  <>
+                    <UploadCloud size={32} className="text-primary mb-2" />
+                    <div className="text-secondary">Select a CSV file</div>
+                  </>
+                )}
+                <input
+                  id="fileUpload"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="d-none"
+                />
+              </label>
+
+              {file && (
+                <button
+                  onClick={() => setFile(null)}
+                  className="btn btn-sm btn-link text-danger mt-2"
+                >
+                  Remove File
+                </button>
               )}
-              <input
-                id="fileUpload"
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
+            </div>
 
-            {file && (
+            {/* Modal Footer */}
+            <div className="modal-footer">
               <button
-                onClick={() => setFile(null)}
-                className="text-sm text-red-500 hover:text-red-600"
+                type="button"
+                className="btn btn-secondary"
+                onClick={onClose}
               >
-                ❌ Remove File
+                Close
               </button>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 text-sm font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUpload}
-              disabled={loading}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
-            >
-              {loading ? 'Uploading...' : 'Upload'}
-            </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleUpload}
+                disabled={loading}
+              >
+                {loading ? 'Uploading...' : 'Upload'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
