@@ -5,6 +5,7 @@ import AddProductForm from "./AddProductForm";
 import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
+import CSVUploadModal from "./CSVUpload";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -18,6 +19,10 @@ const ProductsTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [showModalExcel, setShowModalExcel] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
 
   // Truncate long text
   const truncateText = (text, wordLimit = 8) => {
@@ -293,9 +298,22 @@ const ProductsTable = () => {
           <button
             className="btn btn-primary btn-md"
             onClick={handleAddModalOpen}
-          >
+          > 
             Add Product
           </button>
+          <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">CSV Upload App</h1>
+        <button
+          onClick={handleOpenModal}
+          className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
+        >
+          Upload CSV
+        </button>
+      </div>
+
+      <CSVUploadModal show={showModal} onClose={handleCloseModal} />
+    </div>
         </div>
 
         {/* Products Table */}
