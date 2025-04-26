@@ -14,19 +14,21 @@ const ProductsTable = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Loading state
-  const [currentPage, setCurrentPage] = useState(1); // Pagination state
-  const itemsPerPage = 25; // Items per page
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
   const formatText = (text) => {
+    if (!text) return null;
     const regex = /([^:]+):([^:]+)/g;
     const parts = [];
     let match;
@@ -38,8 +40,8 @@ const ProductsTable = () => {
     }
 
     return parts.map((item, index) => (
-      <p key={index} style={{ marginBottom: 4 }}>
-        <strong>{item.key}</strong> : {item.value}
+      <p key={index} style={{ marginBottom: 4, fontSize: "14px", color: "#666" }}>
+        <strong>{item.key}</strong>: {item.value}
       </p>
     ));
   };
@@ -56,6 +58,7 @@ const ProductsTable = () => {
   const handleAddModalClose = () => setShowAddModal(false);
   const handleUpdateModalClose = () => setShowUpdateModal(false);
   const handleImageModalClose = () => setShowImageModal(false);
+  const handleDetailsModalClose = () => setShowDetailsModal(false);
 
   const handleAddModalOpen = () => {
     setSelectedProduct(null);
@@ -70,6 +73,11 @@ const ProductsTable = () => {
   const handleImageModalOpen = (product) => {
     setSelectedProduct(product);
     setShowImageModal(true);
+  };
+
+  const handleDetailsModalOpen = (product) => {
+    setSelectedProduct(product);
+    setShowDetailsModal(true);
   };
 
   // Add or Update product in state
@@ -201,7 +209,7 @@ const ProductsTable = () => {
   // Fetch products initially
   useEffect(() => {
     const fetchProducts = async () => {
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
       try {
         const response = await fetch(`${API_URL}/products/`);
         const data = await response.json();
@@ -209,7 +217,7 @@ const ProductsTable = () => {
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
-        setIsLoading(false); // Stop loading
+        setIsLoading(false);
       }
     };
     fetchProducts();
@@ -228,7 +236,7 @@ const ProductsTable = () => {
           product.itemcode,
         ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
-     } else {
+    } else {
       setFilteredProducts([]);
     }
     if (filterCategory) {
@@ -237,7 +245,7 @@ const ProductsTable = () => {
       );
     }
     setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   }, [products, searchQuery, filterCategory]);
 
   // Pagination Logic
@@ -258,6 +266,14 @@ const ProductsTable = () => {
 
   return (
     <div className="card">
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
       <div className="card-header pb-0">
         <h6>Manage Products</h6>
       </div>
@@ -299,6 +315,158 @@ const ProductsTable = () => {
 
       {/* CSV Uploader Modal */}
       <CSVUploadModal show={showModal} onClose={handleCloseModal} />
+
+      {/* Product Details Modal */}
+      {showDetailsModal && selectedProduct && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "30px 25px",
+              borderRadius: "12px",
+              width: "600px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+              animation: "fadeIn 0.3s ease-in-out",
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <h2
+              style={{
+                marginBottom: 20,
+                fontSize: "20px",
+                color: "#333",
+                textAlign: "left",
+              }}
+            >
+              Product Details
+            </h2>
+
+            <div style={{ display: "flex", gap: "20px" }}>
+              {/* Image Column */}
+              <div style={{ flex: "0 0 200px" }}>
+                {selectedProduct.thumbnail ? (
+                  <img
+                    src={`${API_URL}${selectedProduct.thumbnail}`}
+                    alt={selectedProduct.itemname}
+                    style={{
+                      width: "200px",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      marginBottom: "15px",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "200px",
+                      height: "200px",
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: "15px",
+                      fontSize: "14px",
+                      color: "#666",
+                    }}
+                  >
+                    No Image
+                  </div>
+                )}
+              </div>
+
+              {/* Details Column */}
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>ID:</strong> {selectedProduct.id}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>HSN Code:</strong> {selectedProduct.hsncode}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Item Code:</strong> {selectedProduct.itemcode}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Item Name:</strong> {selectedProduct.itemname}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Unit:</strong> {selectedProduct.unit}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Category:</strong> {selectedProduct.category}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Price:</strong> ₹{selectedProduct.price}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Quantity:</strong> {selectedProduct.quantity}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Size:</strong> {selectedProduct.size || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Color:</strong> {selectedProduct.color || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Model:</strong> {selectedProduct.model || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <i>Description</i>:
+                </p>
+                <div>{formatText(selectedProduct.description)  || "N/A"}</div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 25, display: "flex", justifyContent: "center" }}>
+              <button
+                onClick={handleDetailsModalClose}
+                style={{
+                  flex: 1,
+                  padding: "10px 0",
+                  borderRadius: "8px",
+                  backgroundColor: "#eee",
+                  border: "none",
+                  color: "#555",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "background 0.3s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#ddd")}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#eee")}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Card Body */}
       <div className="card-body">
@@ -344,8 +512,15 @@ const ProductsTable = () => {
 
         {/* Loading Spinner */}
         {isLoading ? (
-          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
-            <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: "200px" }}
+          >
+            <div
+              className="spinner-border text-primary"
+              role="status"
+              style={{ width: "3rem", height: "3rem" }}
+            >
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
@@ -360,11 +535,11 @@ const ProductsTable = () => {
                     <th>Item Code</th>
                     <th>Thumbnail</th>
                     <th>Item Name</th>
-                    <th>Description</th>
                     <th>Category</th>
+                    <th>Brand</th>
                     <th>Price</th>
                     <th>Quantity</th>
-                    <th>Reorder</th>
+                    {/* <th>Reorder</th> */}
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -399,19 +574,25 @@ const ProductsTable = () => {
                           )}
                         </td>
                         <td>{truncateText(product.itemname)}</td>
-                        <td>{formatText(product.description)}</td>
                         <td>{product.category}</td>
+                        <td>{product.brand}</td>
                         <td>₹{product.price}</td>
                         <td>{product.quantity}</td>
-                        <td>{product.reorderqty || 0}</td>
+                        {/* <td>{product.reorderqty || 0}</td> */}
                         <td>
                           <i
-                            className="fa-solid fa-pen"
+                            className="fa-solid fa-eye me-2"
+                            style={{ cursor: "pointer", color: "#17a2b8" }}
+                            onClick={() => handleDetailsModalOpen(product)}
+                          ></i>
+                          <i
+                            className="fa-solid fa-pen me-2"
+                            style={{ cursor: "pointer" }}
                             onClick={() => handleUpdateModalOpen(product)}
                           ></i>
-                          <span> - </span>
                           <i
-                            className="fa-solid fa-trash pl-2"
+                            className="fa-solid fa-trash"
+                            style={{ cursor: "pointer", color: "#dc3545" }}
                             onClick={() => handleDeleteProduct(product.id)}
                           ></i>
                         </td>
@@ -432,7 +613,9 @@ const ProductsTable = () => {
             {totalPages > 1 && (
               <nav aria-label="Page navigation" className="mt-4">
                 <ul className="pagination justify-content-center">
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -440,20 +623,28 @@ const ProductsTable = () => {
                       Previous
                     </button>
                   </li>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <li
-                      key={page}
-                      className={`page-item ${currentPage === page ? "active" : ""}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(page)}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <li
+                        key={page}
+                        className={`page-item ${
+                          currentPage === page ? "active" : ""
+                        }`}
                       >
-                        {page}
-                      </button>
-                    </li>
-                  ))}
-                  <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    )
+                  )}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(currentPage + 1)}
