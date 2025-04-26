@@ -530,7 +530,7 @@ const ProductsTable = () => {
               <table className="tm_round_border table align-items-center justify-content-center mb-0">
                 <thead>
                   <tr>
-                    <th>HSN Code</th>
+                    {/* <th>HSN Code</th> */}
                     <th>Item Code</th>
                     <th>Thumbnail</th>
                     <th>Item Name</th>
@@ -546,7 +546,7 @@ const ProductsTable = () => {
                   {paginatedProducts.length > 0 ? (
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
-                        <td>{product.hsncode}</td>
+                        {/* <td>{product.hsncode}</td> */}
                         <td>{product.itemcode}</td>
                         <td>
                           {product.thumbnail ? (
