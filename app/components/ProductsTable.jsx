@@ -19,11 +19,31 @@ const ProductsTable = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [currentPage, setCurrentPage] = useState(1); // Pagination state
+  const itemsPerPage = 25; // Items per page
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
-  // Truncate long text
+  const formatText = (text) => {
+    const regex = /([^:]+):([^:]+)/g;
+    const parts = [];
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const key = match[1].trim();
+      const value = match[2].trim();
+      parts.push({ key, value });
+    }
+
+    return parts.map((item, index) => (
+      <p key={index} style={{ marginBottom: 4 }}>
+        <strong>{item.key}</strong> : {item.value}
+      </p>
+    ));
+  };
+
   const truncateText = (text, wordLimit = 8) => {
     if (!text) return "";
     const words = text.split(" ");
@@ -69,8 +89,7 @@ const ProductsTable = () => {
 
   // Delete product
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -94,7 +113,6 @@ const ProductsTable = () => {
 
   // Export products to CSV
   const exportToCSV = () => {
-    // Define WooCommerce-compatible headers
     const headers = [
       "SKU",
       "Name",
@@ -120,9 +138,7 @@ const ProductsTable = () => {
       "Meta: reorderqty",
     ];
 
-    // Map products to CSV rows
     const rows = products.map((product) => {
-      // Format attributes as WooCommerce expects (e.g., "name:Size|value:1300MM|visible:1")
       const attributes = [
         `name:Size|value:${product.size || ""}|visible:1`,
         `name:Color|value:${product.color || ""}|visible:1`,
@@ -131,34 +147,33 @@ const ProductsTable = () => {
       ].join("~");
 
       return [
-        product.itemcode || "", // SKU
-        product.itemname || "", // Name
-        "simple", // Type (assuming simple products)
-        1, // Published (1 for published)
-        0, // Is featured? (0 for no)
-        "visible", // Visibility in catalog
-        "", // Short description (add if available)
-        product.description || "", // Description
-        product.price || "", // Regular price
-        "", // Sale price (add if available)
-        product.quantity || 0, // Stock
+        product.itemcode || "",
+        product.itemname || "",
+        "simple",
+        1,
+        0,
+        "visible",
+        "",
+        product.description || "",
+        product.price || "",
+        "",
+        product.quantity || 0,
         `${product.category || ""}${
           product.subcategory ? `>${product.subcategory}` : ""
-        }`, // Categories (e.g., "Utility>LED Downlighters")
-        product.thumbnail ? `${API_URL}${product.thumbnail}` : "", // Images
-        attributes, // Attributes (Size, Color, Model, Brand)
-        product.hsncode || "", // Meta: hsncode
-        product.unit || "", // Meta: unit
-        product.rackcode || "", // Meta: rackcode
-        product.size || "", // Meta: size
-        product.color || "", // Meta: color
-        product.model || "", // Meta: model
-        product.brand || "", // Meta: brand
-        product.reorderqty || "", // Meta: reorderqty
+        }`,
+        product.thumbnail ? `${API_URL}${product.thumbnail}` : "",
+        attributes,
+        product.hsncode || "",
+        product.unit || "",
+        product.rackcode || "",
+        product.size || "",
+        product.color || "",
+        product.model || "",
+        product.brand || "",
+        product.reorderqty || "",
       ];
     });
 
-    // Convert to CSV format
     const csvContent = [
       headers.join(","),
       ...rows.map((row) =>
@@ -173,7 +188,6 @@ const ProductsTable = () => {
       ),
     ].join("\n");
 
-    // Create and trigger download
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -187,18 +201,21 @@ const ProductsTable = () => {
   // Fetch products initially
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true); // Start loading
       try {
         const response = await fetch(`${API_URL}/products/`);
         const data = await response.json();
         setProducts(data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false); // Stop loading
       }
     };
     fetchProducts();
   }, [selectedProduct]);
 
-  // Apply filters
+  // Apply filters and reset to first page when filters change
   useEffect(() => {
     let filtered = products;
     if (searchQuery) {
@@ -211,6 +228,8 @@ const ProductsTable = () => {
           product.itemcode,
         ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
+     } else {
+      setFilteredProducts([]);
     }
     if (filterCategory) {
       filtered = filtered.filter(
@@ -218,7 +237,19 @@ const ProductsTable = () => {
       );
     }
     setFilteredProducts(filtered);
+    setCurrentPage(1); // Reset to first page on filter change
   }, [products, searchQuery, filterCategory]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   // Extract unique categories
   const categories = Array.from(
@@ -266,8 +297,12 @@ const ProductsTable = () => {
         onClose={() => setShowModalExcel(false)}
       />
 
-      {/* Search and Filter Controls */}
+      {/* CSV Uploader Modal */}
+      <CSVUploadModal show={showModal} onClose={handleCloseModal} />
+
+      {/* Card Body */}
       <div className="card-body">
+        {/* Search and Filter Controls */}
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
           <input
             type="text"
@@ -292,102 +327,145 @@ const ProductsTable = () => {
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
-            <CSVUploadModal show={showModal} onClose={handleCloseModal} />
             <button
               className="btn btn-success btn-md"
               onClick={handleAddModalOpen}
             >
               Add Product
             </button>
+            <button
+              className="btn btn-danger btn-md"
+              onClick={() => setShowModal(true)}
+            >
+              Upload CSV or Excel
+            </button>
           </div>
-          <button
-            className="btn btn-danger btn-md"
-            onClick={() => setShowModal(true)}
-          >
-            Upload CSV or Excel
-          </button>
         </div>
 
-        {/* Products Table */}
-        <div className="table-responsive">
-          <table className="tm_round_border table align-items-center justify-content-center mb-0">
-            <thead>
-              <tr>
-                {/* <th>Id</th> */}
-                <th>HSN Code</th>
-                <th>Item Code</th>
-                <th>Thumbnail</th>
-                <th>Item Name</th>
-                <th>Category</th>
-                <th>Sub-Category</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Rack Code</th>
-                <th>Reorder QTY</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <tr key={product.id}>
-                    <td>{product.hsncode}</td>
-                    <td>{product.itemcode}</td>
-                    {/* <td>{product.id}</td> */}
-                    <td>
-                      {product.thumbnail ? (
-                        <img
-                          src={`${API_URL}${product.thumbnail}`}
-                          alt={product.itemname}
-                          width="50"
-                          height="50"
-                          style={{ borderRadius: "5px", cursor: "pointer" }}
-                          onClick={() => handleImageModalOpen(product)}
-                        />
-                      ) : (
-                        <i
-                          className="plus-icon"
-                          style={{
-                            fontSize: "24px",
-                            color: "#007bff",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleImageModalOpen(product)}
-                        >
-                          +
-                        </i>
-                      )}
-                    </td>
-                    <td>{truncateText(product.itemname)}</td>
-                    <td>{product.category}</td>
-                    <td>{product.subcategory}</td>
-                    <td>₹{product.price}</td>
-                    <td>{product.quantity}</td>
-                    <td>{product.rackcode}</td>
-                    <td>{product.reorderqty || 0}</td>
-                    <td>
-                      <i
-                        className="fa-solid fa-pen"
-                        onClick={() => handleUpdateModalOpen(product)}
-                      ></i>
-                      <span> - </span>
-                      <i
-                        className="fa-solid fa-trash pl-2"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      ></i>
-                    </td>
+        {/* Loading Spinner */}
+        {isLoading ? (
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
+            <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Products Table */}
+            <div className="table-responsive">
+              <table className="tm_round_border table align-items-center justify-content-center mb-0">
+                <thead>
+                  <tr>
+                    <th>HSN Code</th>
+                    <th>Item Code</th>
+                    <th>Thumbnail</th>
+                    <th>Item Name</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Reorder</th>
+                    <th>Actions</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="12" className="text-center">
-                    No products found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {paginatedProducts.length > 0 ? (
+                    paginatedProducts.map((product) => (
+                      <tr key={product.id}>
+                        <td>{product.hsncode}</td>
+                        <td>{product.itemcode}</td>
+                        <td>
+                          {product.thumbnail ? (
+                            <img
+                              src={`${API_URL}${product.thumbnail}`}
+                              alt={product.itemname}
+                              width="50"
+                              height="50"
+                              style={{ borderRadius: "5px", cursor: "pointer" }}
+                              onClick={() => handleImageModalOpen(product)}
+                            />
+                          ) : (
+                            <i
+                              className="plus-icon"
+                              style={{
+                                fontSize: "24px",
+                                color: "#007bff",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleImageModalOpen(product)}
+                            >
+                              +
+                            </i>
+                          )}
+                        </td>
+                        <td>{truncateText(product.itemname)}</td>
+                        <td>{formatText(product.description)}</td>
+                        <td>{product.category}</td>
+                        <td>₹{product.price}</td>
+                        <td>{product.quantity}</td>
+                        <td>{product.reorderqty || 0}</td>
+                        <td>
+                          <i
+                            className="fa-solid fa-pen"
+                            onClick={() => handleUpdateModalOpen(product)}
+                          ></i>
+                          <span> - </span>
+                          <i
+                            className="fa-solid fa-trash pl-2"
+                            onClick={() => handleDeleteProduct(product.id)}
+                          ></i>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="10" className="text-center">
+                        No products found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <nav aria-label="Page navigation" className="mt-4">
+                <ul className="pagination justify-content-center">
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                      Previous
+                    </button>
+                  </li>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <li
+                      key={page}
+                      className={`page-item ${currentPage === page ? "active" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    </li>
+                  ))}
+                  <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
