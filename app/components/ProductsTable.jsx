@@ -22,6 +22,8 @@ const ProductsTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 25;
 
   const handleOpenModal = () => setShowModal(true);
@@ -118,6 +120,16 @@ const ProductsTable = () => {
   // Search and Category Filter
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
+
+  // Sorting handler
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortOrder("asc");
+    }
+  };
 
   // Export products to CSV
   const exportToCSV = () => {
@@ -223,9 +235,9 @@ const ProductsTable = () => {
     fetchProducts();
   }, [selectedProduct]);
 
-  // Apply filters and reset to first page when filters change
+  // Apply filters and sorting
   useEffect(() => {
-    let filtered = products;
+    let filtered = [...products];
     if (searchQuery) {
       filtered = filtered.filter((product) =>
         [
@@ -236,17 +248,40 @@ const ProductsTable = () => {
           product.itemcode,
         ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
-    } else {
-      setFilteredProducts([]);
     }
     if (filterCategory) {
       filtered = filtered.filter(
         (product) => product.category === filterCategory
       );
     }
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        const valueA = a[sortColumn] || "";
+        const valueB = b[sortColumn] || "";
+        if (sortColumn === "price" || sortColumn === "quantity") {
+          return sortOrder === "asc"
+            ? Number(valueA) - Number(valueB)
+            : Number(valueB) - Number(valueA);
+        } else {
+          return sortOrder === "asc"
+            ? String(valueA).localeCompare(String(valueB))
+            : String(valueB).localeCompare(String(valueA));
+        }
+      });
+    }
     setFilteredProducts(filtered);
     setCurrentPage(1);
-  }, [products, searchQuery, filterCategory]);
+  }, [products, searchQuery, filterCategory, sortColumn, sortOrder]);
+
+  // Handle image modal navigation
+  useEffect(() => {
+    const handleOpenModal = (e) => {
+      setSelectedProduct(e.detail);
+      setShowImageModal(true);
+    };
+    window.addEventListener("openImageModal", handleOpenModal);
+    return () => window.removeEventListener("openImageModal", handleOpenModal);
+  }, []);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -265,12 +300,19 @@ const ProductsTable = () => {
   ).filter(Boolean);
 
   return (
-    <div className="card">
+    <div className="card" style={{ minHeight: "500px", overflow: "auto" }}>
       <style>
         {`
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
+          }
+          th {
+            cursor: pointer;
+            user-select: none;
+          }
+          th:hover {
+            background-color: #f5f5f5;
           }
         `}
       </style>
@@ -304,6 +346,20 @@ const ProductsTable = () => {
           onClose={handleImageModalClose}
           product={selectedProduct}
           onUpload={handleImageUpload}
+          products={filteredProducts}
+          currentProductId={selectedProduct?.id}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10000,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         />
       )}
 
@@ -440,7 +496,7 @@ const ProductsTable = () => {
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <i>Description</i>:
                 </p>
-                <div>{formatText(selectedProduct.description)  || "N/A"}</div>
+                <div>{formatText(selectedProduct.description) || "N/A"}</div>
               </div>
             </div>
 
@@ -530,15 +586,35 @@ const ProductsTable = () => {
               <table className="tm_round_border table align-items-center justify-content-center mb-0">
                 <thead>
                   <tr>
-                    {/* <th>HSN Code</th> */}
-                    <th>Item Code</th>
+                    <th onClick={() => handleSort("itemcode")}>
+                      Item Code{" "}
+                      {sortColumn === "itemcode" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
                     <th>Thumbnail</th>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    {/* <th>Reorder</th> */}
+                    <th onClick={() => handleSort("itemname")}>
+                      Item Name{" "}
+                      {sortColumn === "itemname" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th onClick={() => handleSort("category")}>
+                      Category{" "}
+                      {sortColumn === "category" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th onClick={() => handleSort("brand")}>
+                      Brand{" "}
+                      {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th onClick={() => handleSort("price")}>
+                      Price{" "}
+                      {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th onClick={() => handleSort("quantity")}>
+                      Quantity{" "}
+                      {sortColumn === "quantity" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -546,7 +622,6 @@ const ProductsTable = () => {
                   {paginatedProducts.length > 0 ? (
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
-                        {/* <td>{product.hsncode}</td> */}
                         <td>{product.itemcode}</td>
                         <td>
                           {product.thumbnail ? (
@@ -577,7 +652,6 @@ const ProductsTable = () => {
                         <td>{product.brand}</td>
                         <td>₹{product.price}</td>
                         <td>{product.quantity}</td>
-                        {/* <td>{product.reorderqty || 0}</td> */}
                         <td>
                           <i
                             className="fa-solid fa-eye me-2"
@@ -599,7 +673,7 @@ const ProductsTable = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="10" className="text-center">
+                      <td colSpan="8" className="text-center">
                         No products found.
                       </td>
                     </tr>
