@@ -172,7 +172,12 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
       const nextProduct = products[currentProductIndex + 1];
       console.log("Navigating to next:", nextProduct);
       window.dispatchEvent(new CustomEvent("openImageModal", { detail: nextProduct }));
-      toast.info(`Viewing ${nextProduct.itemcode}`, { autoClose: 2000 });
+      toast.info(
+        <span>
+          Viewing <strong>{nextProduct.itemcode}</strong>
+        </span>,
+        { autoClose: 2000 }
+      );
     }
   };
 
