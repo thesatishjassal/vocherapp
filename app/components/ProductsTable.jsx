@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AddProductForm from "./AddProductForm";
 import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
@@ -25,6 +25,12 @@ const ProductsTable = () => {
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 25;
+
+  // Refs to track previous filter/sort values
+  const prevSearchQuery = useRef("");
+  const prevFilterCategory = useRef("");
+  const prevSortColumn = useRef(null);
+  const prevSortOrder = useRef("asc");
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -59,7 +65,10 @@ const ProductsTable = () => {
   // Modal Handlers
   const handleAddModalClose = () => setShowAddModal(false);
   const handleUpdateModalClose = () => setShowUpdateModal(false);
-  const handleImageModalClose = () => setShowImageModal(false);
+  const handleImageModalClose = () => {
+    setShowImageModal(false);
+    setSelectedProduct(null);
+  };
   const handleDetailsModalClose = () => setShowDetailsModal(false);
 
   const handleAddModalOpen = () => {
@@ -95,6 +104,7 @@ const ProductsTable = () => {
     });
     setShowAddModal(false);
     setShowUpdateModal(false);
+    fetchProducts(); // Refetch products
   };
 
   // Delete product
@@ -103,6 +113,7 @@ const ProductsTable = () => {
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
+      fetchProducts(); // Refetch products
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -218,22 +229,24 @@ const ProductsTable = () => {
     document.body.removeChild(link);
   };
 
-  // Fetch products initially
+  // Fetch products
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/products/`);
+      const data = await response.json();
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`${API_URL}/products/`);
-        const data = await response.json();
-        setProducts(data || []);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchProducts();
-  }, [selectedProduct]);
+  }, []);
 
   // Apply filters and sorting
   useEffect(() => {
@@ -250,9 +263,7 @@ const ProductsTable = () => {
       );
     }
     if (filterCategory) {
-      filtered = filtered.filter(
-        (product) => product.category === filterCategory
-      );
+      filtered = filtered.filter((product) => product.category === filterCategory);
     }
     if (sortColumn) {
       filtered.sort((a, b) => {
@@ -269,8 +280,24 @@ const ProductsTable = () => {
         }
       });
     }
+
+    // Only reset currentPage if filters or sorting change
+    if (
+      searchQuery !== prevSearchQuery.current ||
+      filterCategory !== prevFilterCategory.current ||
+      sortColumn !== prevSortColumn.current ||
+      sortOrder !== prevSortOrder.current
+    ) {
+      setCurrentPage(1);
+    }
+
     setFilteredProducts(filtered);
-    setCurrentPage(1);
+
+    // Update previous values
+    prevSearchQuery.current = searchQuery;
+    prevFilterCategory.current = filterCategory;
+    prevSortColumn.current = sortColumn;
+    prevSortOrder.current = sortOrder;
   }, [products, searchQuery, filterCategory, sortColumn, sortOrder]);
 
   // Handle image modal navigation
@@ -348,18 +375,6 @@ const ProductsTable = () => {
           onUpload={handleImageUpload}
           products={filteredProducts}
           currentProductId={selectedProduct?.id}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 10000,
-            backgroundColor: "rgba(0,0,0,0.6)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
         />
       )}
 
@@ -638,6 +653,7 @@ const ProductsTable = () => {
                               className="plus-icon"
                               style={{
                                 fontSize: "24px",
+                                fontWeight: "900",
                                 color: "#007bff",
                                 cursor: "pointer",
                               }}

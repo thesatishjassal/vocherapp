@@ -1,18 +1,34 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
+const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentProductId }) => {
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [preview, setPreview] = useState(product?.thumbnail ? "https://api.panvic.in" + product?.thumbnail : "");
+  const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
+  // Calculate current product index for navigation
+  const currentProductIndex = products?.findIndex((p) => p.id === currentProductId) ?? -1;
+  const isFirstProduct = currentProductIndex <= 0;
+  const isLastProduct = currentProductIndex >= (products?.length ?? 0) - 1;
+
+  // Update preview when product changes
+  useEffect(() => {
+    if (product?.thumbnail) {
+      setPreview(`${API_URL}${product.thumbnail}`);
+    } else {
+      setPreview("");
+    }
+    setFile(null); // Reset file when product changes
+  }, [product]);
+
+  // Clean up blob URLs
   useEffect(() => {
     return () => {
       if (preview && preview.startsWith("blob:")) {
@@ -22,6 +38,10 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
   }, [preview]);
 
   const handleFileSelect = (selectedFile) => {
+    if (!selectedFile) {
+      toast.error("❌ No file selected!");
+      return;
+    }
     if (!selectedFile.type.startsWith("image/")) {
       toast.error("❌ Only image files are allowed!");
       return;
@@ -30,14 +50,19 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
       toast.error("⚠️ File size exceeds 2MB. Please select a smaller image.");
       return;
     }
-    setPreview(URL.createObjectURL(selectedFile));
+    console.log("Selected file:", selectedFile); // Debug
     setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
   };
 
   const handleChange = (e) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      console.log("File selected via input:", selectedFile); // Debug
+      handleFileSelect(selectedFile);
+    } else {
+      console.log("No file selected via input"); // Debug
     }
   };
 
@@ -57,8 +82,23 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      console.log("File dropped:", droppedFile); // Debug
+      handleFileSelect(droppedFile);
+    } else {
+      toast.error("❌ No valid file dropped!");
+      console.log("Drop event: No files found"); // Debug
+    }
+  };
+
+  const handleClick = () => {
+    if (fileInputRef.current) {
+      console.log("Triggering file input click"); // Debug
+      fileInputRef.current.value = null; // Clear previous file
+      fileInputRef.current.click();
+    } else {
+      console.error("File input ref not found"); // Debug
     }
   };
 
@@ -86,16 +126,33 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
 
       toast.success("✅ Image uploaded successfully!");
       onUpload(product.id, responseData.thumbnail);
-      onClose();
+      setFile(null);
+      setPreview(`${API_URL}${responseData.thumbnail}`);
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Upload error:", error.message);
       toast.error(error.message || "❌ Something went wrong!");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!show) return null;
+  const handlePrevious = () => {
+    if (!isFirstProduct && products?.length > 0) {
+      const previousProduct = products[currentProductIndex - 1];
+      console.log("Navigating to previous product:", previousProduct); // Debug
+      window.dispatchEvent(new CustomEvent("openImageModal", { detail: previousProduct }));
+    }
+  };
+
+  const handleNext = () => {
+    if (!isLastProduct && products?.length > 0) {
+      const nextProduct = products[currentProductIndex + 1];
+      console.log("Navigating to next product:", nextProduct); // Debug
+      window.dispatchEvent(new CustomEvent("openImageModal", { detail: nextProduct }));
+    }
+  };
+
+  if (!show || !product) return null;
 
   return (
     <div
@@ -106,19 +163,30 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
         left: 0,
         width: "100%",
         height: "100%",
-        zIndex: 1050,
+        zIndex: 1100, // Increased zIndex to avoid overlap
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
     >
-      <div style={{ background: "white", borderRadius: "12px", padding: "24px", width: "400px", position: "relative" }}>
+      <div
+        style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "24px",
+          width: "400px",
+          position: "relative",
+        }}
+      >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Upload Product Image</h2>
-          <button onClick={onClose} style={{ border: "none", background: "transparent", fontSize: "20px" }}>
+          <h1 style={{ fontSize: "1.25rem", fontWeight: "100" }}>
+            Upload Image for <strong>{product?.itemcode || "Product"}</strong>
+          </h1>
+          <button
+            onClick={onClose}
+            style={{ border: "none", background: "transparent", fontSize: "20px" }}
+          >
             ✕
           </button>
         </div>
@@ -128,6 +196,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onClick={handleClick}
           style={{
             border: dragActive ? "2px dashed #4caf50" : "2px dashed #ccc",
             borderRadius: "8px",
@@ -137,10 +206,9 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
             cursor: "pointer",
             transition: "all 0.3s ease",
           }}
-          onClick={() => document.getElementById("fileInput").click()}
         >
           <input
-            id="fileInput"
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={handleChange}
@@ -163,6 +231,10 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
                 objectFit: "cover",
                 borderRadius: "8px",
                 border: "1px solid #eee",
+              }}
+              onError={() => {
+                console.error("Failed to load preview image:", preview); // Debug
+                setPreview("");
               }}
             />
           </div>
@@ -195,6 +267,44 @@ const ImageUploadModal = ({ show, onClose, product, onUpload }) => {
             }}
           >
             {loading ? "Uploading..." : "Upload"}
+          </button>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "16px",
+          }}
+        >
+          <button
+            onClick={handlePrevious}
+            disabled={isFirstProduct || !products?.length}
+            style={{
+              padding: "8px 16px",
+              background: isFirstProduct || !products?.length ? "#ccc" : "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: isFirstProduct || !products?.length ? "not-allowed" : "pointer",
+            }}
+          >
+            Previous
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={isLastProduct || !products?.length}
+            style={{
+              padding: "8px 16px",
+              background: isLastProduct || !products?.length ? "#ccc" : "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: isLastProduct || !products?.length ? "not-allowed" : "pointer",
+            }}
+          >
+            Next
           </button>
         </div>
       </div>
