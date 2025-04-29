@@ -32,7 +32,7 @@ const ProductsTable = () => {
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
-  const handleOpenModal = () => setShowModal(true);
+  // Removed unused handleOpenModal function
   const handleCloseModal = () => setShowModal(false);
 
   const formatText = (text) => {
@@ -57,9 +57,7 @@ const ProductsTable = () => {
   const truncateText = (text, wordLimit = 8) => {
     if (!text) return "";
     const words = text.split(" ");
-    return words.length > wordLimit
-      ? words.slice(0, wordLimit).join(" ") + "..."
-      : text;
+    return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
   };
 
   // Modal Handlers
@@ -189,9 +187,7 @@ const ProductsTable = () => {
         product.price || "",
         "",
         product.quantity || 0,
-        `${product.category || ""}${
-          product.subcategory ? `>${product.subcategory}` : ""
-        }`,
+        `${product.category || ""}${product.subcategory ? `>${product.subcategory}` : ""}`,
         product.thumbnail ? `${API_URL}${product.thumbnail}` : "",
         attributes,
         product.hsncode || "",
@@ -210,8 +206,7 @@ const ProductsTable = () => {
       ...rows.map((row) =>
         row
           .map((cell) =>
-            typeof cell === "string" &&
-            (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
+            typeof cell === "string" && (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
               ? `"${cell.replace(/"/g, '""')}"`
               : cell
           )
@@ -253,13 +248,9 @@ const ProductsTable = () => {
     let filtered = [...products];
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [
-          product.itemname,
-          product.hsncode,
-          product.category,
-          product.subcategory,
-          product.itemcode,
-        ].some((field) => field?.toLowerCase().includes(searchQuery))
+        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode].some(
+          (field) => field?.toLowerCase().includes(searchQuery)
+        )
       );
     }
     if (filterCategory) {
@@ -270,9 +261,7 @@ const ProductsTable = () => {
         const valueA = a[sortColumn] || "";
         const valueB = b[sortColumn] || "";
         if (sortColumn === "price" || sortColumn === "quantity") {
-          return sortOrder === "asc"
-            ? Number(valueA) - Number(valueB)
-            : Number(valueB) - Number(valueA);
+          return sortOrder === "asc" ? Number(valueA) - Number(valueB) : Number(valueB) - Number(valueA);
         } else {
           return sortOrder === "asc"
             ? String(valueA).localeCompare(String(valueB))
@@ -319,12 +308,60 @@ const ProductsTable = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top on page change
+  };
+
+  // Render Dynamic Page Numbers
+  const renderPageNumbers = () => {
+    const maxPagesToShow = 5; // Show 5 page numbers at a time
+    const pages = [];
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    // Adjust startPage if endPage reaches totalPages
+    if (endPage === totalPages) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    // Add ellipsis before if not starting from page 1
+    if (startPage > 1) {
+      pages.push(
+        <li key="ellipsis-start" className="page-item disabled">
+          <span className="page-link">...</span>
+        </li>
+      );
+    }
+
+    // Render page numbers
+    for (let page = startPage; page <= endPage; page++) {
+      pages.push(
+        <li key={page} className={`page-item ${currentPage === page ? "active" : ""}`}>
+          <button
+            className="page-link"
+            onClick={() => handlePageChange(page)}
+            aria-label={`Page ${page}`}
+            aria-current={currentPage === page ? "page" : undefined}
+          >
+            {page}
+          </button>
+        </li>
+      );
+    }
+
+    // Add ellipsis after if not ending at totalPages
+    if (endPage < totalPages) {
+      pages.push(
+        <li key="ellipsis-end" className="page-item disabled">
+          <span className="page-link">...</span>
+        </li>
+      );
+    }
+
+    return pages;
   };
 
   // Extract unique categories
-  const categories = Array.from(
-    new Set(products.map((product) => product.category))
-  ).filter(Boolean);
+  const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
 
   return (
     <div className="card" style={{ minHeight: "500px", overflow: "auto" }}>
@@ -340,6 +377,86 @@ const ProductsTable = () => {
           }
           th:hover {
             background-color: #f5f5f5;
+          }
+          .pagination-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+          }
+          .pagination {
+            margin: 0;
+            gap: 5px;
+          }
+          .page-item {
+            margin: 0 2px;
+          }
+          .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+            color: #007bff;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+          }
+          .page-link:hover:not(.disabled) {
+            background-color: #e9ecef;
+            border-color: #007bff;
+          }
+          .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #fff;
+          }
+          .page-item.disabled .page-link {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #6c757d;
+            cursor: not-allowed;
+          }
+          .jump-to-page {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .jump-to-page input {
+            width: 70px;
+            height: 40px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            font-size: 14px;
+            text-align: center;
+          }
+          .jump-to-page input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+          }
+          @media (max-width: 576px) {
+            .pagination-container {
+              flex-direction: column;
+              gap: 10px;
+            }
+            .jump-to-page input {
+              width: 60px;
+              font-size: 12px;
+            }
+            .page-link {
+              min-width: 35px;
+              height: 35px;
+              font-size: 12px;
+            }
           }
         `}
       </style>
@@ -566,16 +683,10 @@ const ProductsTable = () => {
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
-            <button
-              className="btn btn-success btn-md"
-              onClick={handleAddModalOpen}
-            >
+            <button className="btn btn-success btn-md" onClick={handleAddModalOpen}>
               Add Product
             </button>
-            <button
-              className="btn btn-danger btn-md"
-              onClick={() => setShowModal(true)}
-            >
+            <button className="btn btn-danger btn-md" onClick={() => setShowModal(true)}>
               Upload CSV or Excel
             </button>
           </div>
@@ -583,15 +694,8 @@ const ProductsTable = () => {
 
         {/* Loading Spinner */}
         {isLoading ? (
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ minHeight: "200px" }}
-          >
-            <div
-              className="spinner-border text-primary"
-              role="status"
-              style={{ width: "3rem", height: "3rem" }}
-            >
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
+            <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
@@ -602,33 +706,23 @@ const ProductsTable = () => {
                 <thead>
                   <tr>
                     <th onClick={() => handleSort("itemcode")}>
-                      Item Code{" "}
-                      {sortColumn === "itemcode" &&
-                        (sortOrder === "asc" ? "↑" : "↓")}
+                      Item Code {sortColumn === "itemcode" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th>Thumbnail</th>
                     <th onClick={() => handleSort("itemname")}>
-                      Item Name{" "}
-                      {sortColumn === "itemname" &&
-                        (sortOrder === "asc" ? "↑" : "↓")}
+                      Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("category")}>
-                      Category{" "}
-                      {sortColumn === "category" &&
-                        (sortOrder === "asc" ? "↑" : "↓")}
+                      Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("brand")}>
-                      Brand{" "}
-                      {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Brand {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("price")}>
-                      Price{" "}
-                      {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Price {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("quantity")}>
-                      Quantity{" "}
-                      {sortColumn === "quantity" &&
-                        (sortOrder === "asc" ? "↑" : "↓")}
+                      Quantity {sortColumn === "quantity" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th>Actions</th>
                   </tr>
@@ -700,48 +794,78 @@ const ProductsTable = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <nav aria-label="Page navigation" className="mt-4">
-                <ul className="pagination justify-content-center">
-                  <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                      Previous
-                    </button>
-                  </li>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <li
-                        key={page}
-                        className={`page-item ${
-                          currentPage === page ? "active" : ""
-                        }`}
+              <nav aria-label="Product table pagination" className="mt-4">
+                <div className="pagination-container">
+                  <ul className="pagination justify-content-center align-items-center">
+                    {/* First Page Button */}
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        aria-label="First page"
                       >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </button>
-                      </li>
-                    )
-                  )}
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                      Next
-                    </button>
-                  </li>
-                </ul>
+                        <i className="fa-solid fa-angles-left"></i>
+                      </button>
+                    </li>
+
+                    {/* Previous Page Button */}
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        aria-label="Previous page"
+                      >
+                        <i className="fa-solid fa-angle-left"></i>
+                      </button>
+                    </li>
+
+                    {/* Dynamic Page Numbers */}
+                    {renderPageNumbers()}
+
+                    {/* Next Page Button */}
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        aria-label="Next page"
+                      >
+                        <i className="fa-solid fa-angle-right"></i>
+                      </button>
+                    </li>
+
+                    {/* Last Page Button */}
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        aria-label="Last page"
+                      >
+                        <i className="fa-solid fa-angles-right"></i>
+                      </button>
+                    </li>
+                  </ul>
+
+                  {/* Jump to Page Input */}
+                  <div className="jump-to-page">
+                    <input
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      value={currentPage}
+                      onChange={(e) => {
+                        const page = Math.min(Math.max(1, parseInt(e.target.value) || 1), totalPages);
+                        handlePageChange(page);
+                      }}
+                      className="form-control"
+                      aria-label="Jump to page"
+                      placeholder="Page"
+                    />
+                  </div>
+                </div>
               </nav>
             )}
           </>
