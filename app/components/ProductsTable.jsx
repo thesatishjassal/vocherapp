@@ -18,6 +18,7 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterImageStatus, setFilterImageStatus] = useState("all"); // New state for dropdown
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,10 +30,13 @@ const ProductsTable = () => {
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
   const prevFilterCategory = useRef("");
+  const prevFilterImageStatus = useRef("all"); // New ref for image status
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
-  // Removed unused handleOpenModal function
+  // Calculate total uploaded images
+  const uploadedImagesCount = products.filter((product) => product.thumbnail).length;
+
   const handleCloseModal = () => setShowModal(false);
 
   const formatText = (text) => {
@@ -126,9 +130,10 @@ const ProductsTable = () => {
     );
   };
 
-  // Search and Category Filter
+  // Search, Category, and Image Status Filter
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
+  const handleImageStatusFilter = (e) => setFilterImageStatus(e.target.value);
 
   // Sorting handler
   const handleSort = (column) => {
@@ -246,6 +251,8 @@ const ProductsTable = () => {
   // Apply filters and sorting
   useEffect(() => {
     let filtered = [...products];
+
+    // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter((product) =>
         [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode].some(
@@ -253,9 +260,18 @@ const ProductsTable = () => {
         )
       );
     }
+
+    // Apply category filter
     if (filterCategory) {
       filtered = filtered.filter((product) => product.category === filterCategory);
     }
+
+    // Apply image status filter
+    if (filterImageStatus === "withImages") {
+      filtered = filtered.filter((product) => product.thumbnail);
+    }
+
+    // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
         const valueA = a[sortColumn] || "";
@@ -270,10 +286,11 @@ const ProductsTable = () => {
       });
     }
 
-    // Only reset currentPage if filters or sorting change
+    // Reset currentPage if filters or sorting change
     if (
       searchQuery !== prevSearchQuery.current ||
       filterCategory !== prevFilterCategory.current ||
+      filterImageStatus !== prevFilterImageStatus.current ||
       sortColumn !== prevSortColumn.current ||
       sortOrder !== prevSortOrder.current
     ) {
@@ -285,9 +302,10 @@ const ProductsTable = () => {
     // Update previous values
     prevSearchQuery.current = searchQuery;
     prevFilterCategory.current = filterCategory;
+    prevFilterImageStatus.current = filterImageStatus;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
-  }, [products, searchQuery, filterCategory, sortColumn, sortOrder]);
+  }, [products, searchQuery, filterCategory, filterImageStatus, sortColumn, sortOrder]);
 
   // Handle image modal navigation
   useEffect(() => {
@@ -308,22 +326,20 @@ const ProductsTable = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top on page change
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Render Dynamic Page Numbers
   const renderPageNumbers = () => {
-    const maxPagesToShow = 5; // Show 5 page numbers at a time
+    const maxPagesToShow = 5;
     const pages = [];
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    // Adjust startPage if endPage reaches totalPages
     if (endPage === totalPages) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
 
-    // Add ellipsis before if not starting from page 1
     if (startPage > 1) {
       pages.push(
         <li key="ellipsis-start" className="page-item disabled">
@@ -332,7 +348,6 @@ const ProductsTable = () => {
       );
     }
 
-    // Render page numbers
     for (let page = startPage; page <= endPage; page++) {
       pages.push(
         <li key={page} className={`page-item ${currentPage === page ? "active" : ""}`}>
@@ -348,7 +363,6 @@ const ProductsTable = () => {
       );
     }
 
-    // Add ellipsis after if not ending at totalPages
     if (endPage < totalPages) {
       pages.push(
         <li key="ellipsis-end" className="page-item disabled">
@@ -443,6 +457,11 @@ const ProductsTable = () => {
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0,123,255,0.3);
           }
+          .image-count {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+          }
           @media (max-width: 576px) {
             .pagination-container {
               flex-direction: column;
@@ -457,14 +476,18 @@ const ProductsTable = () => {
               height: 35px;
               font-size: 12px;
             }
+            .image-count {
+              font-size: 12px;
+            }
           }
         `}
       </style>
       <div className="card-header pb-0">
         <h6>Manage Products</h6>
+        <p className="image-count mt-2">Total Uploaded Images: <strong>{uploadedImagesCount}</strong> </p>
       </div>
 
-      {/* Add Product Modal */}
+      {/* Modals */}
       {showAddModal && (
         <AddProductForm
           show={showAddModal}
@@ -472,8 +495,6 @@ const ProductsTable = () => {
           onSave={handleAddOrUpdateProduct}
         />
       )}
-
-      {/* Update Product Modal */}
       {showUpdateModal && selectedProduct && (
         <UpdateProductForm
           show={showUpdateModal}
@@ -482,8 +503,6 @@ const ProductsTable = () => {
           productId={selectedProduct.id}
         />
       )}
-
-      {/* Image Upload Modal */}
       {showImageModal && (
         <ImageUploadModal
           show={showImageModal}
@@ -494,17 +513,11 @@ const ProductsTable = () => {
           currentProductId={selectedProduct?.id}
         />
       )}
-
-      {/* Excel Uploader Modal */}
       <ExcelUploaderModal
         show={showModalExcel}
         onClose={() => setShowModalExcel(false)}
       />
-
-      {/* CSV Uploader Modal */}
       <CSVUploadModal show={showModal} onClose={handleCloseModal} />
-
-      {/* Product Details Modal */}
       {showDetailsModal && selectedProduct && (
         <div
           style={{
@@ -542,9 +555,7 @@ const ProductsTable = () => {
             >
               Product Details
             </h2>
-
             <div style={{ display: "flex", gap: "20px" }}>
-              {/* Image Column */}
               <div style={{ flex: "0 0 200px" }}>
                 {selectedProduct.thumbnail ? (
                   <img
@@ -577,8 +588,6 @@ const ProductsTable = () => {
                   </div>
                 )}
               </div>
-
-              {/* Details Column */}
               <div style={{ flex: 1, textAlign: "left" }}>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>ID:</strong> {selectedProduct.id}
@@ -586,7 +595,7 @@ const ProductsTable = () => {
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>HSN Code:</strong> {selectedProduct.hsncode}
                 </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <p style={{ fontSize: "14px", color: "666", marginBottom: 8 }}>
                   <strong>Item Code:</strong> {selectedProduct.itemcode}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
@@ -631,7 +640,6 @@ const ProductsTable = () => {
                 <div>{formatText(selectedProduct.description) || "N/A"}</div>
               </div>
             </div>
-
             <div style={{ marginTop: 25, display: "flex", justifyContent: "center" }}>
               <button
                 onClick={handleDetailsModalClose}
@@ -659,16 +667,16 @@ const ProductsTable = () => {
       {/* Card Body */}
       <div className="card-body">
         {/* Search and Filter Controls */}
-        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
           <input
             type="text"
             placeholder="Search by Name, HSN, Category..."
-            className="form-control w-100 w-md-50"
+            className="form-control w-40 w-md-33"
             value={searchQuery}
             onChange={handleSearch}
           />
           <select
-            className="form-select w-100 w-md-25"
+            className="form-select w-20 w-md-33"
             value={filterCategory}
             onChange={handleCategoryFilter}
           >
@@ -679,7 +687,7 @@ const ProductsTable = () => {
               </option>
             ))}
           </select>
-          <div className="d-flex flex-wrap gap-3 justify-content-start">
+          <div className="d-flex gap-2 justify-content-start">
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
@@ -797,7 +805,6 @@ const ProductsTable = () => {
               <nav aria-label="Product table pagination" className="mt-4">
                 <div className="pagination-container">
                   <ul className="pagination justify-content-center align-items-center">
-                    {/* First Page Button */}
                     <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
                       <button
                         className="page-link"
@@ -808,8 +815,6 @@ const ProductsTable = () => {
                         <i className="fa-solid fa-angles-left"></i>
                       </button>
                     </li>
-
-                    {/* Previous Page Button */}
                     <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
                       <button
                         className="page-link"
@@ -820,11 +825,7 @@ const ProductsTable = () => {
                         <i className="fa-solid fa-angle-left"></i>
                       </button>
                     </li>
-
-                    {/* Dynamic Page Numbers */}
                     {renderPageNumbers()}
-
-                    {/* Next Page Button */}
                     <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
                       <button
                         className="page-link"
@@ -835,8 +836,6 @@ const ProductsTable = () => {
                         <i className="fa-solid fa-angle-right"></i>
                       </button>
                     </li>
-
-                    {/* Last Page Button */}
                     <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
                       <button
                         className="page-link"
@@ -848,8 +847,6 @@ const ProductsTable = () => {
                       </button>
                     </li>
                   </ul>
-
-                  {/* Jump to Page Input */}
                   <div className="jump-to-page">
                     <input
                       type="number"
