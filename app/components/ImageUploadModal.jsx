@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,22 +11,21 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
 
-  // Calculate current product index for navigation
-  const currentProductIndex = products?.findIndex((p) => p.id === currentProductId) ?? -1;
-  const isFirstProduct = currentProductIndex <= 0;
-  const isLastProduct = currentProductIndex >= (products?.length ?? 0) - 1;
+  // Memoized current product index
+  const currentProductIndex = useMemo(() => {
+    return products?.findIndex((p) => p.id === currentProductId) ?? -1;
+  }, [products, currentProductId]);
   const totalProducts = products?.length ?? 0;
+  const isFirstProduct = currentProductIndex <= 0;
+  const isLastProduct = currentProductIndex >= totalProducts - 1;
 
   // Update preview when product changes
   useEffect(() => {
-    if (product?.thumbnail) {
-      setPreview(`${API_URL}${product.thumbnail}`);
-    } else {
-      setPreview("");
-    }
-    setFile(null); // Reset file when product changes
+    setPreview(product?.thumbnail ? `${API_URL}${product.thumbnail}` : "");
+    setFile(null);
   }, [product]);
 
   // Clean up blob URLs
@@ -40,28 +39,30 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
 
   const handleFileSelect = (selectedFile) => {
     if (!selectedFile) {
-      toast.error("❌ No file selected!", { autoClose: 3000 });
+      toast.error("No file selected.", { autoClose: 3000 });
       return;
     }
-    if (!selectedFile.type.startsWith("image/")) {
-      toast.error("❌ Only JPG, PNG, or GIF files are allowed!", { autoClose: 3000 });
+    if (!selectedFile.type.match(/^image\/(jpeg|png|gif)$/)) {
+      toast.error("Only JPG, PNG, or GIF files are allowed.", { autoClose: 3000 });
       return;
     }
     if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error("⚠️ File size exceeds 2MB. Please select a smaller image.", {
+      toast.error("File size exceeds 2MB. Please select a smaller image.", {
         autoClose: 3000,
       });
       return;
     }
+    console.log("Selected file:", selectedFile);
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
-    toast.success("Image selected successfully!", { autoClose: 2000 });
+    toast.info("Image selected successfully.", { autoClose: 2000 });
   };
 
   const handleChange = (e) => {
     e.preventDefault();
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      console.log("File selected via input:", selectedFile);
       handleFileSelect(selectedFile);
     }
   };
@@ -84,15 +85,17 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
     setDragActive(false);
     const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile) {
+      console.log("File dropped:", droppedFile);
       handleFileSelect(droppedFile);
     } else {
-      toast.error("❌ No valid file dropped!", { autoClose: 3000 });
+      toast.error("No valid file dropped.", { autoClose: 3000 });
     }
   };
 
   const handleClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = null; // Clear previous file
+      console.log("Triggering file input click");
+      fileInputRef.current.value = null;
       fileInputRef.current.click();
     }
   };
@@ -106,11 +109,24 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
 
   const handleSave = async () => {
     if (!file) {
-      toast.error("⚠️ Please select an image before uploading.", { autoClose: 3000 });
+      toast.error("Please select an image to upload.", { autoClose: 3000 });
       return;
     }
 
     setLoading(true);
+    setUploadProgress(0);
+
+    // Simulate progress for demo purposes
+    const interval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 300);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -123,35 +139,40 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.detail || "Failed to upload image. Please try again.");
+        throw new Error(responseData.detail || "Failed to upload image.");
       }
 
-      toast.success("Image uploaded successfully!", { autoClose: 2000 });
+      toast.success("Image uploaded successfully.", { autoClose: 2000 });
       onUpload(product.id, responseData.thumbnail);
       setFile(null);
       setPreview(`${API_URL}${responseData.thumbnail}`);
     } catch (error) {
-      toast.error(`❌ ${error.message || "Upload failed. Check your network and try again."}`, {
+      console.error("Upload error:", error.message);
+      toast.error(`Upload failed: ${error.message}. Please try again.`, {
         autoClose: 3000,
       });
     } finally {
+      clearInterval(interval);
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
   const handlePrevious = () => {
     if (!isFirstProduct && totalProducts > 0) {
       const previousProduct = products[currentProductIndex - 1];
+      console.log("Navigating to previous:", previousProduct);
       window.dispatchEvent(new CustomEvent("openImageModal", { detail: previousProduct }));
-      toast.info(`Navigated to ${previousProduct.itemcode}`, { autoClose: 2000 });
+      toast.info(`Viewing ${previousProduct.itemcode}`, { autoClose: 2000 });
     }
   };
 
   const handleNext = () => {
     if (!isLastProduct && totalProducts > 0) {
       const nextProduct = products[currentProductIndex + 1];
+      console.log("Navigating to next:", nextProduct);
       window.dispatchEvent(new CustomEvent("openImageModal", { detail: nextProduct }));
-      toast.info(`Navigated to ${nextProduct.itemcode}`, { autoClose: 2000 });
+      toast.info(`Viewing ${nextProduct.itemcode}`, { autoClose: 2000 });
     }
   };
 
@@ -170,7 +191,8 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        animation: "fadeIn 0.3s ease-in",
+        transition: "opacity 0.3s ease-in",
+        opacity: show ? 1 : 0,
       }}
       role="dialog"
       aria-labelledby="upload-modal-title"
@@ -178,14 +200,14 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
     >
       <div
         style={{
-          background: "white",
-          borderRadius: "16px",
+          background: "#ffffff",
+          borderRadius: "12px",
           padding: "24px",
           width: "100%",
-          maxWidth: "450px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-          position: "relative",
-          animation: "slideIn 0.3s ease-out",
+          maxWidth: "480px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+          transition: "transform 0.3s ease-out",
+          transform: show ? "translateY(0)" : "translateY(-20px)",
         }}
       >
         {/* Header */}
@@ -199,36 +221,41 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
         >
           <h1
             id="upload-modal-title"
-            style={{ fontSize: "1.5rem", fontWeight: "100", color: "#333" }}
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: 100,
+              color: "#1a202c",
+              margin: 0,
+            }}
           >
-            Upload Image for <strong>{product.itemcode}</strong>
+            Upload Image For : <strong>{product.itemcode}</strong>
           </h1>
           <button
             onClick={onClose}
             style={{
+              background: "none",
               border: "none",
-              background: "transparent",
-              fontSize: "24px",
-              color: "#666",
+              fontSize: "1.25rem",
+              color: "#4a5568",
               cursor: "pointer",
-              transition: "color 0.2s",
+              padding: "4px",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.color = "#333")}
-            onMouseOut={(e) => (e.currentTarget.style.color = "#666")}
+            onMouseOver={(e) => (e.currentTarget.style.color = "#2d3748")}
+            onMouseOut={(e) => (e.currentTarget.style.color = "#4a5568")}
             aria-label="Close modal"
           >
-            ✕
+            ×
           </button>
         </div>
 
-        {/* Product Navigation Info */}
+        {/* Navigation Info */}
         {totalProducts > 1 && (
           <div
             style={{
               textAlign: "center",
               marginBottom: "16px",
-              color: "#666",
-              fontSize: "0.9rem",
+              color: "#4a5568",
+              fontSize: "0.875rem",
             }}
           >
             Product {currentProductIndex + 1} of {totalProducts}
@@ -244,22 +271,28 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
           onKeyDown={handleKeyDown}
           tabIndex={0}
           role="button"
-          aria-label="Drag and drop or click to upload an image"
+          aria-label="Select or drop an image to upload"
           style={{
-            border: dragActive ? "2px dashed #4caf50" : "2px dashed #ccc",
-            borderRadius: "12px",
+            border: dragActive ? "2px dashed #3182ce" : "2px dashed #e2e8f0",
+            borderRadius: "8px",
             padding: "24px",
             textAlign: "center",
-            marginBottom: "20px",
+            background: dragActive ? "rgba(49, 130, 206, 0.05)" : "#fff",
             cursor: "pointer",
-            background: dragActive ? "rgba(76, 175, 80, 0.05)" : "transparent",
-            transition: "all 0.3s ease",
+            transition: "border-color 0.2s, background 0.2s",
+            marginBottom: "20px",
           }}
           onMouseOver={(e) => {
-            if (!dragActive) e.currentTarget.style.borderColor = "#4caf50";
+            if (!dragActive) e.currentTarget.style.borderColor = "#90cdf4";
           }}
           onMouseOut={(e) => {
-            if (!dragActive) e.currentTarget.style.borderColor = "#ccc";
+            if (!dragActive) e.currentTarget.style.borderColor = "#e2e8f0";
+          }}
+          onFocus={(e) => {
+            if (!dragActive) e.currentTarget.style.borderColor = "#3182ce";
+          }}
+          onBlur={(e) => {
+            if (!dragActive) e.currentTarget.style.borderColor = "#e2e8f0";
           }}
         >
           <input
@@ -273,22 +306,23 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
           <p
             style={{
               margin: 0,
-              color: dragActive ? "#4caf50" : "#666",
+              color: dragActive ? "#3182ce" : "#4a5568",
               fontSize: "1rem",
+              fontWeight: 500,
             }}
           >
             {dragActive
-              ? "Drop the image here..."
-              : "Drag & drop or click to upload"}
+              ? "Drop your image here"
+              : "Drag and drop or click to select an image"}
           </p>
           <p
             style={{
               margin: "8px 0 0",
-              color: "#888",
-              fontSize: "0.85rem",
+              color: "#718096",
+              fontSize: "0.875rem",
             }}
           >
-            Supported formats: JPG, PNG, GIF (Max 2MB)
+            Supported formats: JPG, PNG, GIF | Max size: 2MB
           </p>
         </div>
 
@@ -297,7 +331,7 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
           style={{
             textAlign: "center",
             marginBottom: "20px",
-            minHeight: "120px",
+            minHeight: "128px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -306,56 +340,76 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
           {preview ? (
             <img
               src={preview}
-              alt="Image preview"
+              alt="Selected image preview"
               style={{
-                width: "120px",
-                height: "120px",
+                width: "128px",
+                height: "128px",
                 objectFit: "cover",
                 borderRadius: "8px",
-                border: "1px solid #eee",
-                transition: "opacity 0.3s ease",
+                border: "1px solid #e2e8f0",
+                transition: "opacity 0.2s ease",
               }}
               onError={() => {
-                toast.error("❌ Failed to load image preview.", { autoClose: 3000 });
+                console.error("Failed to load preview:", preview);
+                toast.error("Failed to load image preview.", { autoClose: 3000 });
                 setPreview("");
               }}
             />
           ) : (
             <div
               style={{
-                width: "120px",
-                height: "120px",
-                background: "#f5f5f5",
+                width: "128px",
+                height: "128px",
+                background: "#edf2f7",
                 borderRadius: "8px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#888",
-                fontSize: "0.9rem",
-                border: "1px solid #eee",
+                color: "#718096",
+                fontSize: "0.875rem",
+                border: "1px solid #e2e8f0",
               }}
             >
-              No Image Selected
+              No Image
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+        {/* Action Buttons */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "12px",
+            marginBottom: "20px",
+            position: "relative",
+          }}
+        >
           <button
             onClick={onClose}
             style={{
               padding: "10px 20px",
-              background: "#e0e0e0",
+              background: "#edf2f7",
               border: "none",
-              borderRadius: "8px",
-              color: "#333",
+              borderRadius: "6px",
+              color: "#4a5568",
+              fontSize: "0.875rem",
+              fontWeight: 500,
               cursor: "pointer",
-              fontWeight: "500",
               transition: "background 0.2s",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#d0d0d0")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#e0e0e0")}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#e2e8f0";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "#edf2f7";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.background = "#e2e8f0";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.background = "#edf2f7";
+            }}
             aria-label="Cancel upload"
           >
             Cancel
@@ -365,38 +419,77 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
             disabled={loading || !file}
             style={{
               padding: "10px 20px",
-              background: loading || !file ? "#ccc" : "#4caf50",
-              color: "white",
+              background: loading || !file ? "#e2e8f0" : "#3182ce",
+              color: loading || !file ? "#a0aec0" : "#ffffff",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "6px",
+              fontSize: "0.875rem",
+              fontWeight: 500,
               cursor: loading || !file ? "not-allowed" : "pointer",
-              fontWeight: "500",
               transition: "background 0.2s",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
+              position: "relative",
             }}
             onMouseOver={(e) => {
-              if (!loading && file) e.currentTarget.style.background = "#45a049";
+              if (!loading && file) e.currentTarget.style.background = "#2b6cb0";
             }}
             onMouseOut={(e) => {
-              if (!loading && file) e.currentTarget.style.background = "#4caf50";
+              if (!loading && file) e.currentTarget.style.background = "#3182ce";
+            }}
+            onFocus={(e) => {
+              if (!loading && file) e.currentTarget.style.background = "#2b6cb0";
+            }}
+            onBlur={(e) => {
+              if (!loading && file) e.currentTarget.style.background = "#3182ce";
             }}
             aria-label="Upload image"
           >
-            {loading && (
-              <span
+            {loading ? (
+              <div
                 style={{
-                  border: "2px solid #fff",
-                  borderTop: "2px solid transparent",
-                  borderRadius: "50%",
-                  width: "16px",
-                  height: "16px",
-                  animation: "spin 1s linear infinite",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "24px",
+                  height: "24px",
                 }}
-              />
+              >
+                <svg viewBox="0 0 24 24" style={{ width: "100%", height: "100%" }}>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="#a0aec0"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="#3182ce"
+                    strokeWidth="3"
+                    strokeDasharray={`${(uploadProgress / 100) * 62.8} 62.8`}
+                    transform="rotate(-90 12 12)"
+                  />
+                </svg>
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: "0.75rem",
+                    color: "#4a5568",
+                  }}
+                >
+                  {uploadProgress}%
+                </span>
+              </div>
+            ) : (
+              "Upload"
             )}
-            {loading ? "Uploading..." : "Upload"}
           </button>
         </div>
 
@@ -406,33 +499,45 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginTop: "20px",
+              gap: "12px",
             }}
           >
             <button
               onClick={handlePrevious}
               disabled={isFirstProduct || !totalProducts}
               style={{
+                flex: 1,
                 padding: "10px 20px",
-                background: isFirstProduct || !totalProducts ? "#ccc" : "#007bff",
-                color: "white",
+                background: isFirstProduct || !totalProducts ? "#e2e8f0" : "#3182ce",
+                color: isFirstProduct || !totalProducts ? "#a0aec0" : "#ffffff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+                fontWeight: 500,
                 cursor: isFirstProduct || !totalProducts ? "not-allowed" : "pointer",
-                fontWeight: "500",
                 transition: "background 0.2s",
-                position: "relative",
               }}
               onMouseOver={(e) => {
-                if (!isFirstProduct && totalProducts)
-                  e.currentTarget.style.background = "#0056b3";
+                if (!isFirstProduct && totalProducts) {
+                  e.currentTarget.style.background = "#2b6cb0";
+                }
               }}
               onMouseOut={(e) => {
-                if (!isFirstProduct && totalProducts)
-                  e.currentTarget.style.background = "#007bff";
+                if (!isFirstProduct && totalProducts) {
+                  e.currentTarget.style.background = "#3182ce";
+                }
               }}
-              aria-label="Previous product"
-              title="Go to previous product"
+              onFocus={(e) => {
+                if (!isFirstProduct && totalProducts) {
+                  e.currentTarget.style.background = "#2b6cb0";
+                }
+              }}
+              onBlur={(e) => {
+                if (!isFirstProduct && totalProducts) {
+                  e.currentTarget.style.background = "#3182ce";
+                }
+              }}
+              aria-label="View previous product"
             >
               Previous
             </button>
@@ -440,26 +545,38 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
               onClick={handleNext}
               disabled={isLastProduct || !totalProducts}
               style={{
+                flex: 1,
                 padding: "10px 20px",
-                background: isLastProduct || !totalProducts ? "#ccc" : "#007bff",
-                color: "white",
+                background: isLastProduct || !totalProducts ? "#e2e8f0" : "#3182ce",
+                color: isLastProduct || !totalProducts ? "#a0aec0" : "#ffffff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: "6px",
+                fontSize: "0.875rem",
+                fontWeight: 500,
                 cursor: isLastProduct || !totalProducts ? "not-allowed" : "pointer",
-                fontWeight: "500",
                 transition: "background 0.2s",
-                position: "relative",
               }}
               onMouseOver={(e) => {
-                if (!isLastProduct && totalProducts)
-                  e.currentTarget.style.background = "#0056b3";
+                if (!isLastProduct && totalProducts) {
+                  e.currentTarget.style.background = "#2b6cb0";
+                }
               }}
               onMouseOut={(e) => {
-                if (!isLastProduct && totalProducts)
-                  e.currentTarget.style.background = "#007bff";
+                if (!isLastProduct && totalProducts) {
+                  e.currentTarget.style.background = "#3182ce";
+                }
               }}
-              aria-label="Next product"
-              title="Go to next product"
+              onFocus={(e) => {
+                if (!isLastProduct && totalProducts) {
+                  e.currentTarget.style.background = "#2b6cb0";
+                }
+              }}
+              onBlur={(e) => {
+                if (!isLastProduct && totalProducts) {
+                  e.currentTarget.style.background = "#3182ce";
+                }
+              }}
+              aria-label="View next product"
             >
               Next
             </button>
@@ -467,22 +584,9 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
         )}
       </div>
 
-      {/* Inline Styles */}
       <style>
         {`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @media (max-width: 500px) {
+          @media (max-width: 520px) {
             div[role="dialog"] > div {
               width: 90%;
               padding: 16px;
@@ -492,7 +596,10 @@ const ImageUploadModal = ({ show, onClose, product, onUpload, products, currentP
             }
             button {
               padding: 8px 16px;
-              font-size: 0.9rem;
+              font-size: 0.875rem;
+            }
+            div[role="button"] {
+              padding: 16px;
             }
           }
         `}
