@@ -51,7 +51,7 @@ const ProfileMenu = () => {
           )}
         </div>
         <div className="img-box">
-          <img src="/assets/img/avtar.png" alt="User Image" />
+          {userDetails.name == "ASHIATHOTRA" ? <img src="/assets/img/pandas_kurukure.png" alt="" /> : <img src="/assets/img/avtar.png" alt="User Image" /> }
         </div>
       </div>
       {isMenuOpen && (
