@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation"; // for redirecting
@@ -24,16 +25,18 @@ const ProfileMenu = () => {
     const userDetailsCookie = Cookies.get("user_details");
 
     if (userDetailsCookie) {
-      const user = JSON.parse(userDetailsCookie); // Parse and set user details
-      setUserDetails(user);
+      try {
+        const user = JSON.parse(userDetailsCookie); // Parse and set user details
+        setUserDetails(user);
+      } catch (err) {
+        console.error("Error parsing user_details cookie:", err);
+      }
     }
   }, []);
 
   // Logout function
   const handleLogout = () => {
-    // Remove user details from cookies
     Cookies.remove("user_details");
-    // Redirect to the login page
     router.push("/login");
   };
 
@@ -47,11 +50,15 @@ const ProfileMenu = () => {
               <p>@{userDetails.phone}</p>
             </>
           ) : (
-            <p>Loading...</p> // Show loading if user details are not available
+            <p>Loading...</p>
           )}
         </div>
         <div className="img-box">
-          <img src="/assets/img/avtar.png" alt="User Image" />
+          {userDetails?.name === "ASHIATHOTRA" ? (
+            <img src="/assets/img/pandas_kurukure.png" alt="ASHI" />
+          ) : (
+            <img src="/assets/img/avtar.png" alt="User Image" />
+          )}
         </div>
       </div>
       {isMenuOpen && (
