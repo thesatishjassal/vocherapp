@@ -153,6 +153,10 @@ const Quotation = () => {
             discount: parseFloat(item.discount) || 0,
             item_name: item.itemName || "N/A",
             unit: item.unit || "pcs",
+            without_gst: Math.round(gstDetails.withoutGST) || 0,
+            gst_amount: Math.round(gstDetails.gstAmount) || 0,
+            amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+            warranty_guarantee: warrantyGuarantee,
           };
 
           return axios.post(
@@ -162,6 +166,7 @@ const Quotation = () => {
           );
         });
         const itemResponses = await Promise.all(itemPromises);
+        console.log("Items saved successfully:", itemResponses);
       } else {
         console.log("No items to save.");
       }

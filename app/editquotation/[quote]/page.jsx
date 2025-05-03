@@ -1,6 +1,4 @@
 "use client";
-import InvoucherTable from "../../components/InvoucherTable";
-import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
 import EdiQuotatTable from "../../components/EditQuotatTable";
 import GSTCalculator from "../../components/GSTCalculator";
@@ -8,10 +6,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const EditQuotation = () => {
-  const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [FiltercolModal, setFiltercolModal] = useState(false);
@@ -165,10 +161,13 @@ const EditQuotation = () => {
           discount: parseFloat(item.discount) || 0,
           item_name: item.itemName || "N/A",
           unit: item.unit || "pcs",
+          amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+          without_gst: Math.round(gstDetails.withoutGST) || 0,
+          gst_amount: Math.round(gstDetails.gstAmount) || 0,
+          amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
         }));
 
         console.log("Items data to be sent as a list:", itemsData);
-
         const itemsResponse = await axios.put(
           `${QUOTATION_API_URL}/${quote}/items/`,
           itemsData,
@@ -177,7 +176,6 @@ const EditQuotation = () => {
             withCredentials: true,
           }
         );
-
         console.log("All items updated successfully:", itemsResponse.data);
       } else {
         console.log("No items to save.");
