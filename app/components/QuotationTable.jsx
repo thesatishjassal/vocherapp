@@ -25,11 +25,10 @@ const QuotatTable = ({
     amount: "",
     image: "",
   });
-  const [totalAmount, setTotalAmount] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false); // New state for add row modal
-  const [productList, setProductList] = useState([]); // Full product list
-  const [filteredProducts, setFilteredProducts] = useState([]); // Filtered product list
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [productList, setProductList] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [columns, setColumns] = useState({
     customerCode: true,
     customerDescription: true,
@@ -41,7 +40,7 @@ const QuotatTable = ({
     Dist: true,
     Price: true,
   });
-  const [editRowIndex, setEditRowIndex] = useState(null); // To track which row is being edited
+  const [editRowIndex, setEditRowIndex] = useState(null);
 
   const inputRefs = {
     customerCode: useRef(null),
@@ -56,6 +55,17 @@ const QuotatTable = ({
     image: useRef(null),
   };
 
+  // Sync rows with items prop
+  useEffect(() => {
+    if (items.length > 0 && rows.length === 0) {
+      setRows(items.map((item, index) => ({
+        id: index + 1,
+        ...item,
+        amount: calculateAmount(item.qty, item.mrp, item.discount),
+      })));
+    }
+  }, [items]);
+
   // Fetch products from API on component mount
   useEffect(() => {
     const fetchProducts = async () => {
@@ -68,7 +78,7 @@ const QuotatTable = ({
           unit: item.unit || "Piece",
         }));
         setProductList(updatedData);
-        setFilteredProducts(updatedData); // Initially, show all products
+        setFilteredProducts(updatedData);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
@@ -82,6 +92,15 @@ const QuotatTable = ({
     return qty * mrp - discountAmount;
   };
 
+  // Calculate total amount directly from rows
+  const totalAmount = rows.reduce((sum, row) => sum + row.amount, 0);
+
+  // Notify parent of rows and total amount changes
+  useEffect(() => {
+    if (onRowsChange) onRowsChange(rows);
+    if (onTotalAmountChange) onTotalAmountChange(totalAmount);
+  }, [rows, onRowsChange, onTotalAmountChange, totalAmount]);
+
   const handleAddRow = () => {
     const { qty, mrp, discount } = newRow;
 
@@ -89,7 +108,6 @@ const QuotatTable = ({
       const amount = calculateAmount(qty, mrp, discount);
 
       if (editRowIndex !== null) {
-        // Edit existing row
         setRows((prevRows) =>
           prevRows.map((row, index) =>
             index === editRowIndex
@@ -101,9 +119,8 @@ const QuotatTable = ({
               : row
           )
         );
-        setEditRowIndex(null); // Reset edit mode
+        setEditRowIndex(null);
       } else {
-        // Add new row
         setRows((prevRows) => [
           ...prevRows,
           {
@@ -113,12 +130,6 @@ const QuotatTable = ({
           },
         ]);
       }
-
-      setTotalAmount((prevTotal) => {
-        const updatedTotal = editRowIndex !== null ? rows.reduce((sum, row) => sum + row.amount, 0) + amount - rows[editRowIndex].amount : prevTotal + amount;
-        if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
-        return updatedTotal;
-      });
 
       setNewRow({
         customerCode: "",
@@ -133,7 +144,7 @@ const QuotatTable = ({
         amount: "",
         image: "",
       });
-      setShowAddModal(false); // Close the modal after adding
+      setShowAddModal(false);
     } else {
       alert("Please fill in all required fields.");
     }
@@ -154,11 +165,10 @@ const QuotatTable = ({
     setNewRow((prev) => ({ ...prev, [field]: value }));
     if (["itemCode", "itemName"].includes(field) && value.trim()) {
       setShowModal(true);
-      filterProducts(field, value); // Filter products based on input
+      filterProducts(field, value);
     }
   };
 
-  // Implement filterProducts function
   const filterProducts = (field, value) => {
     const filtered = productList.filter((product) => {
       if (field === "itemCode") {
@@ -208,32 +218,13 @@ const QuotatTable = ({
       amount: row.amount,
       image: row.image,
     });
-    setEditRowIndex(index); // Set the index for the row being edited
-    setShowAddModal(true); // Open the modal for editing
+    setEditRowIndex(index);
+    setShowAddModal(true);
   };
 
   const handleDeleteRow = (index) => {
-    const amountToSubtract = rows[index].amount;
     setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-    setTotalAmount((prevTotal) => {
-      const updatedTotal = prevTotal - amountToSubtract;
-      if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
-      return updatedTotal;
-    });
   };
-
-  useEffect(() => {
-    const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
-    setTotalAmount(updatedTotal);
-    if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
-  }, [rows, onTotalAmountChange]);
-
-  // Pass the updated rows data to the parent component
-  useEffect(() => {
-    if (onRowsChange) {
-      onRowsChange(rows);
-    }
-  }, [rows, onRowsChange]);
 
   return (
     <div>
@@ -258,7 +249,7 @@ const QuotatTable = ({
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
             {columns.Price && <th>Price</th>}
-            <th className="no-print">Actions</th> {/* Add Actions column */}
+            <th className="no-print">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -295,13 +286,13 @@ const QuotatTable = ({
                   className="btn action_btn no-print btn-warning"
                   onClick={() => handleEditRow(index)}
                 >
-                  <i className="fas fa-edit"></i> {/* Edit Icon */}
+                  <i className="fas fa-edit"></i>
                 </button>
                 <button
                   className="btn action_btn no-print btn-danger ml-2"
                   onClick={() => handleDeleteRow(index)}
                 >
-                  <i className="fas fa-trash"></i> {/* Delete Icon */}
+                  <i className="fas fa-trash"></i>
                 </button>
               </td>
             </tr>
@@ -331,10 +322,12 @@ const QuotatTable = ({
                   className="btn-close"
                   onClick={() => {
                     setShowAddModal(false);
-                    setEditRowIndex(null); // Reset edit mode on close
+                    setEditRowIndex(null);
                   }}
                   aria-label="Close"
-                ><i className="fa-solid fa-xmark"></i></button>
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
               </div>
               <div className="modal-body p-4">
                 <div className="row g-3">
@@ -452,7 +445,12 @@ const QuotatTable = ({
                   </div>
                   {newRow.image && (
                     <div className="col-12">
-                      <img src={newRow.image} alt="Preview" className="img-fluid" style={{ maxHeight: "100px" }} />
+                      <img
+                        src={newRow.image}
+                        alt="Preview"
+                        className="img-fluid"
+                        style={{ maxHeight: "100px" }}
+                      />
                     </div>
                   )}
                 </div>
@@ -463,7 +461,7 @@ const QuotatTable = ({
                   className="btn btn-secondary"
                   onClick={() => {
                     setShowAddModal(false);
-                    setEditRowIndex(null); // Reset edit mode on cancel
+                    setEditRowIndex(null);
                   }}
                   aria-label="Cancel"
                 >
@@ -498,7 +496,7 @@ const QuotatTable = ({
         showModal={showModal}
         setShowModal={setShowModal}
         handleProductSelect={handleProductSelect}
-        products={filteredProducts} // Pass filtered products to FindProduct
+        products={filteredProducts}
       />
     </div>
   );

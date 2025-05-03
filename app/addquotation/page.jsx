@@ -177,7 +177,7 @@ const Quotation = () => {
       window.location.href = "/getquotation";
     } catch (error) {
       console.error("Error saving quotation:", error);
-      toast.error("Failed to save quotation. Please try again.");
+      toast.error("Failed to save quotation. Please try again." , error);
     }
   };
 
