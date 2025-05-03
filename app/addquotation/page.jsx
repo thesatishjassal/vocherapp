@@ -153,10 +153,6 @@ const Quotation = () => {
             discount: parseFloat(item.discount) || 0,
             item_name: item.itemName || "N/A",
             unit: item.unit || "pcs",
-            amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-            without_gst: Math.round(gstDetails.withoutGST) || 0,
-            gst_amount: Math.round(gstDetails.gstAmount) || 0,
-            amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
           };
 
           return axios.post(
