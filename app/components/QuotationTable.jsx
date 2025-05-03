@@ -443,10 +443,11 @@ const QuotatTable = ({
                       ref={inputRefs.discount}
                     />
                   </div>
+                  
                   {newRow.image && (
                     <div className="col-12">
                       <img
-                        src={newRow.image}
+                        src={`https://api.panvic.in` + newRow.image}
                         alt="Preview"
                         className="img-fluid"
                         style={{ maxHeight: "100px" }}
