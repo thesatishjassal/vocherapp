@@ -18,7 +18,7 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [filterImageStatus, setFilterImageStatus] = useState("all"); // New state for dropdown
+  const [showNoImageOnly, setShowNoImageOnly] = useState(false); // New state for checkbox
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +30,7 @@ const ProductsTable = () => {
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
   const prevFilterCategory = useRef("");
-  const prevFilterImageStatus = useRef("all"); // New ref for image status
+  const prevShowNoImageOnly = useRef(false); // New ref for checkbox
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
@@ -130,10 +130,10 @@ const ProductsTable = () => {
     );
   };
 
-  // Search, Category, and Image Status Filter
+  // Search and Category Filter
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
-  const handleImageStatusFilter = (e) => setFilterImageStatus(e.target.value);
+  const handleNoImageFilter = (e) => setShowNoImageOnly(e.target.checked);
 
   // Sorting handler
   const handleSort = (column) => {
@@ -266,9 +266,9 @@ const ProductsTable = () => {
       filtered = filtered.filter((product) => product.category === filterCategory);
     }
 
-    // Apply image status filter
-    if (filterImageStatus === "withImages") {
-      filtered = filtered.filter((product) => product.thumbnail);
+    // Apply no-image filter
+    if (showNoImageOnly) {
+      filtered = filtered.filter((product) => !product.thumbnail);
     }
 
     // Apply sorting
@@ -290,7 +290,7 @@ const ProductsTable = () => {
     if (
       searchQuery !== prevSearchQuery.current ||
       filterCategory !== prevFilterCategory.current ||
-      filterImageStatus !== prevFilterImageStatus.current ||
+      showNoImageOnly !== prevShowNoImageOnly.current ||
       sortColumn !== prevSortColumn.current ||
       sortOrder !== prevSortOrder.current
     ) {
@@ -302,10 +302,10 @@ const ProductsTable = () => {
     // Update previous values
     prevSearchQuery.current = searchQuery;
     prevFilterCategory.current = filterCategory;
-    prevFilterImageStatus.current = filterImageStatus;
+    prevShowNoImageOnly.current = showNoImageOnly;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
-  }, [products, searchQuery, filterCategory, filterImageStatus, sortColumn, sortOrder]);
+  }, [products, searchQuery, filterCategory, showNoImageOnly, sortColumn, sortOrder]);
 
   // Handle image modal navigation
   useEffect(() => {
@@ -462,6 +462,11 @@ const ProductsTable = () => {
             color: #333;
             font-weight: 500;
           }
+          .form-check-label {
+            margin-left: 8px;
+            font-size: 14px;
+            color: #333;
+          }
           @media (max-width: 576px) {
             .pagination-container {
               flex-direction: column;
@@ -479,12 +484,17 @@ const ProductsTable = () => {
             .image-count {
               font-size: 12px;
             }
+            .form-check-label {
+              font-size: 12px;
+            }
           }
         `}
       </style>
       <div className="card-header pb-0">
         <h6>Manage Products</h6>
-        <p className="image-count mt-2">Total Uploaded Images: <strong>{uploadedImagesCount}</strong> </p>
+        <p className="image-count mt-2">
+          Total Uploaded Images: <strong>{uploadedImagesCount}</strong>
+        </p>
       </div>
 
       {/* Modals */}
@@ -687,7 +697,19 @@ const ProductsTable = () => {
               </option>
             ))}
           </select>
-          <div className="d-flex gap-2 justify-content-start">
+          <div className="d-flex gap-2 justify-content-start align-items-center">
+            <div className="form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="noImageFilter"
+                checked={showNoImageOnly}
+                onChange={handleNoImageFilter}
+              />
+              <label className="form-check-label" htmlFor="noImageFilter">
+                Show products without images
+              </label>
+            </div>
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
