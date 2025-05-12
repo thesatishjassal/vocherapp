@@ -62,7 +62,7 @@ const QuotatTable = ({
         id: index + 1,
         ...item,
         amount: calculateAmount(item.qty, item.mrp, item.discount),
-      })));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 })));
     }
   }, [items]);
 
