@@ -602,17 +602,14 @@ const ProductsTable = () => {
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>ID:</strong> {selectedProduct.id}
                 </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                {/* <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>HSN Code:</strong> {selectedProduct.hsncode}
-                </p>
+                </p> */}
                 <p style={{ fontSize: "14px", color: "666", marginBottom: 8 }}>
                   <strong>Item Code:</strong> {selectedProduct.itemcode}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Item Name:</strong> {selectedProduct.itemname}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Unit:</strong> {selectedProduct.unit}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Category:</strong> {selectedProduct.category}
@@ -621,13 +618,10 @@ const ProductsTable = () => {
                   <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Price:</strong> ₹{selectedProduct.price}
+                  <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Quantity:</strong> {selectedProduct.quantity}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+                  <strong>Model:</strong> {selectedProduct.model || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Size:</strong> {selectedProduct.size || "N/A"}
@@ -636,13 +630,19 @@ const ProductsTable = () => {
                   <strong>Color:</strong> {selectedProduct.color || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Model:</strong> {selectedProduct.model || "N/A"}
+                  <strong>Price:</strong> ₹{selectedProduct.price}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
+                  <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Quantity:</strong> {selectedProduct.quantity}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Unit:</strong> {selectedProduct.unit}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <i>Description</i>:
