@@ -8,7 +8,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 
-const Quotation = () => {
+const SwitchQuotation = () => {
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -509,4 +509,4 @@ const Quotation = () => {
   );
 };
 
-export default Quotation;
+export default SwitchQuotation;
