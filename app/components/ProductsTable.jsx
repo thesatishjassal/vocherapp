@@ -600,7 +600,7 @@ const ProductsTable = () => {
               </div>
               <div style={{ flex: 1, textAlign: "left" }}>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>ID:</strong> {selectedProduct.id}
+                  <strong>ID:</strong> {String(selectedProduct.id).padStart(5, '0')}
                 </p>
                 {/* <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>HSN Code:</strong> {selectedProduct.hsncode}
