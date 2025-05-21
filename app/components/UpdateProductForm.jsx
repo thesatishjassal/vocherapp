@@ -32,6 +32,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
     handleSubmit,
     reset,
     setValue,
+    trigger, // ✅ Add trigger here
     formState: { errors, isValid },
     watch,
   } = useForm({
@@ -55,6 +56,9 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
               setValue(key, String(data[key]));
             }
           });
+          setTimeout(() => {
+            trigger(); // ✅ Trigger form validation after setting values
+          }, 100);
         } else {
           throw new Error(data.message || "Failed to fetch product");
         }
@@ -64,7 +68,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
     };
 
     if (productId) fetchProduct();
-  }, [productId, setValue]);
+  }, [productId, setValue, trigger]);
 
   // Fetch categories and subcategories
   useEffect(() => {
@@ -124,7 +128,9 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5">Update Product</h1>
-            <button type="button" className="btn-close" onClick={onClose}><i className="fa-solid fa-xmark"></i></button>
+            <button type="button" className="btn-close" onClick={onClose}>
+              <i className="fa-solid fa-xmark"></i>
+            </button>
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
@@ -149,7 +155,9 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                     className={`form-control ${errors[name] ? "border-danger" : ""}`}
                     placeholder={placeholder}
                   />
-                  {errors[name] && <small className="text-danger">{errors[name].message}</small>}
+                  {errors[name] && (
+                    <small className="text-danger">{errors[name].message}</small>
+                  )}
                 </div>
               ))}
 
@@ -166,7 +174,9 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                     </option>
                   ))}
                 </select>
-                {errors.category && <small className="text-danger">{errors.category.message}</small>}
+                {errors.category && (
+                  <small className="text-danger">{errors.category.message}</small>
+                )}
               </div>
 
               {/* Subcategory Dropdown */}
