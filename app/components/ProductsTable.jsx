@@ -18,19 +18,21 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [showNoImageOnly, setShowNoImageOnly] = useState(false); // New state for checkbox
+  const [showNoImageOnly, setShowNoImageOnly] = useState(false);
+  const [showNullDescriptionOnly, setShowNullDescriptionOnly] = useState(false); // New state for null description filter
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
-  const itemsPerPage = 25;
+  const itemsPerPage = 300;
 
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
   const prevFilterCategory = useRef("");
-  const prevShowNoImageOnly = useRef(false); // New ref for checkbox
+  const prevShowNoImageOnly = useRef(false);
+  const prevShowNullDescriptionOnly = useRef(false); // New ref for null description filter
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
@@ -134,6 +136,7 @@ const ProductsTable = () => {
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
   const handleNoImageFilter = (e) => setShowNoImageOnly(e.target.checked);
+  const handleNullDescriptionFilter = (e) => setShowNullDescriptionOnly(e.target.checked); // New handler for null description filter
 
   // Sorting handler
   const handleSort = (column) => {
@@ -271,6 +274,11 @@ const ProductsTable = () => {
       filtered = filtered.filter((product) => !product.thumbnail);
     }
 
+    // Apply null description filter
+    if (showNullDescriptionOnly) {
+      filtered = filtered.filter((product) => product.description == "LLO-");
+    }
+
     // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
@@ -291,6 +299,7 @@ const ProductsTable = () => {
       searchQuery !== prevSearchQuery.current ||
       filterCategory !== prevFilterCategory.current ||
       showNoImageOnly !== prevShowNoImageOnly.current ||
+      showNullDescriptionOnly !== prevShowNullDescriptionOnly.current ||
       sortColumn !== prevSortColumn.current ||
       sortOrder !== prevSortOrder.current
     ) {
@@ -303,9 +312,10 @@ const ProductsTable = () => {
     prevSearchQuery.current = searchQuery;
     prevFilterCategory.current = filterCategory;
     prevShowNoImageOnly.current = showNoImageOnly;
+    prevShowNullDescriptionOnly.current = showNullDescriptionOnly;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
-  }, [products, searchQuery, filterCategory, showNoImageOnly, sortColumn, sortOrder]);
+  }, [products, searchQuery, filterCategory, showNoImageOnly, showNullDescriptionOnly, sortColumn, sortOrder]);
 
   // Handle image modal navigation
   useEffect(() => {
@@ -602,10 +612,7 @@ const ProductsTable = () => {
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>ID:</strong> {String(selectedProduct.id).padStart(5, '0')}
                 </p>
-                {/* <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>HSN Code:</strong> {selectedProduct.hsncode}
-                </p> */}
-                <p style={{ fontSize: "14px", color: "666", marginBottom: 8 }}>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Item Code:</strong> {selectedProduct.itemcode}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
@@ -710,6 +717,18 @@ const ProductsTable = () => {
                 Show products without images
               </label>
             </div>
+            <div className="form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="nullDescriptionFilter"
+                checked={showNullDescriptionOnly}
+                onChange={handleNullDescriptionFilter}
+              />
+              <label className="form-check-label" htmlFor="nullDescriptionFilter">
+                Show products with no description
+              </label>
+            </div>
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
@@ -738,23 +757,23 @@ const ProductsTable = () => {
                     <th onClick={() => handleSort("itemcode")}>
                       Item Code {sortColumn === "itemcode" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th>Thumbnail</th>
+                    <th className="no-print">Thumbnail</th>
                     <th onClick={() => handleSort("itemname")}>
                       Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("category")}>
+                    <th onClick={() => handleSort("category")} >
                       Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("brand")}>
+                    <th onClick={() => handleSort("brand")} className="no-print">
                       Brand {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("price")}>
                       Price {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("quantity")}>
+                    <th onClick={() => handleSort("quantity")} className="no-print">
                       Quantity {sortColumn === "quantity" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th>Actions</th>
+                    <th className="no-print">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -762,7 +781,7 @@ const ProductsTable = () => {
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
-                        <td>
+                        <td className="no-print">
                           {product.thumbnail ? (
                             <img
                               src={`${API_URL}${product.thumbnail}`}
@@ -787,12 +806,12 @@ const ProductsTable = () => {
                             </i>
                           )}
                         </td>
-                        <td>{truncateText(product.itemname)}</td>
+                        <td>{truncateText(product.description)}</td>
                         <td>{product.category}</td>
-                        <td>{product.brand}</td>
+                        <td className="no-print">{product.brand}</td>
                         <td>₹{product.price}</td>
-                        <td>{product.quantity}</td>
-                        <td>
+                        <td >{product.quantity}</td>
+                        <td className="no-print">
                           <i
                             className="fa-solid fa-eye me-2"
                             style={{ cursor: "pointer", color: "#17a2b8" }}
@@ -823,7 +842,7 @@ const ProductsTable = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {/* {totalPages > 1 && (
               <nav aria-label="Product table pagination" className="mt-4">
                 <div className="pagination-container">
                   <ul className="pagination justify-content-center align-items-center">
@@ -886,7 +905,7 @@ const ProductsTable = () => {
                   </div>
                 </div>
               </nav>
-            )}
+            )} */}
           </>
         )}
       </div>
