@@ -13,7 +13,7 @@ const Products = () => {
 
   return (
     <>
-      <div className="mini_banner warehouse no-print">
+      <div className="mini_banner warehouse">
         <div className="content_box">
           <div>
             <h2 className="title">Products</h2>
