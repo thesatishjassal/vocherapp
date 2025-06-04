@@ -26,7 +26,7 @@ const ProductsTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
-  const itemsPerPage = 300;
+  const itemsPerPage = 25;
 
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
@@ -757,23 +757,27 @@ const ProductsTable = () => {
                     <th onClick={() => handleSort("itemcode")}>
                       Item Code {sortColumn === "itemcode" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th className="no-print">Thumbnail</th>
+                    <th>Thumbnail</th>
                     <th onClick={() => handleSort("itemname")}>
                       Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("category")} >
+                    <th onClick={() => handleSort("category")}>
                       Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("brand")} className="no-print">
+                     <th onClick={() => handleSort("category")}>
+                      subcategory {sortColumn === "subcategory" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    
+                    <th onClick={() => handleSort("brand")}>
                       Brand {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("price")}>
                       Price {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th onClick={() => handleSort("quantity")} className="no-print">
+                    <th onClick={() => handleSort("quantity")}>
                       Quantity {sortColumn === "quantity" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    <th className="no-print">Actions</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -781,38 +785,38 @@ const ProductsTable = () => {
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
-                        <td className="no-print">
+                        <td>
                           {product.thumbnail ? (
                             <img
-                            src={`${API_URL}${product.thumbnail}`}
-                            alt={product.itemname}
-                            width="50"
-                            height="50"
-                            style={{ borderRadius: "5px", cursor: "pointer" }}
-                            onClick={() => handleImageModalOpen(product)}
+                              src={`${API_URL}${product.thumbnail}`}
+                              alt={product.itemname}
+                              width="50"
+                              height="50"
+                              style={{ borderRadius: "5px", cursor: "pointer" }}
+                              onClick={() => handleImageModalOpen(product)}
                             />
                           ) : (
                             <i
-                            className="plus-icon"
-                            style={{
-                              fontSize: "24px",
-                              fontWeight: "900",
-                              color: "#007bff",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleImageModalOpen(product)}
+                              className="plus-icon"
+                              style={{
+                                fontSize: "24px",
+                                fontWeight: "900",
+                                color: "#007bff",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleImageModalOpen(product)}
                             >
                               +
                             </i>
                           )}
                         </td>
-                          <td>{product.itemname}</td>
+                        <td>{truncateText(product.description)}</td>
                         <td>{product.category}</td>
-                        {/* <td>{truncateText(product.description)}</td> */}
-                        <td className="no-print">{product.brand}</td>
+                        <td>{product.subcategory}</td>
+                        <td>{product.brand}</td>
                         <td>₹{product.price}</td>
-                        <td >{product.quantity}</td>
-                        <td className="no-print">
+                        <td>{product.quantity}</td>
+                        <td>
                           <i
                             className="fa-solid fa-eye me-2"
                             style={{ cursor: "pointer", color: "#17a2b8" }}
@@ -843,7 +847,7 @@ const ProductsTable = () => {
             </div>
 
             {/* Pagination */}
-            {/* {totalPages > 1 && (
+            {totalPages > 1 && (
               <nav aria-label="Product table pagination" className="mt-4">
                 <div className="pagination-container">
                   <ul className="pagination justify-content-center align-items-center">
@@ -906,7 +910,7 @@ const ProductsTable = () => {
                   </div>
                 </div>
               </nav>
-            )} */}
+            )}
           </>
         )}
       </div>

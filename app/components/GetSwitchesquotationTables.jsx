@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/quotation/";
+const API_URL = "https://api.panvic.in/switches_quotation/";
 const CLIENTS_API_URL = "https://api.panvic.in/clients/";
 
 const GetSwitchQuotationTables = () => {
@@ -146,7 +146,7 @@ const GetSwitchQuotationTables = () => {
   return (
     <div className="card">
       <div className="card-header pb-0">
-        <h6>Manage Quotations</h6>
+        <h6>Manage Switch Quotations</h6>
       </div>
 
       <div className="card-body py-0 pt-0 pb-2">
@@ -160,47 +160,8 @@ const GetSwitchQuotationTables = () => {
           />
 
           <div className="filter-actions d-flex flex-column flex-md-row align-items-start gap-2">
-            <div className="status-filters d-flex flex-wrap gap-2">
-              {["active", "mature", "lost"].map((status) => (
-                <div className="form-check" key={status}>
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id={`${status}Checkbox`}
-                    checked={statusFilters[status]}
-                    onChange={() => handleCheckboxChange(status)}
-                  />
-                  <label className="form-check-label" htmlFor={`${status}Checkbox`}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)} ({statusCounts[status]})
-                  </label>
-                </div>
-              ))}
-            </div>
-
-            <select
-              className="form-select sort-select"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
-              <option value="latest">Latest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="amount_high">Amount High to Low</option>
-              <option value="amount_low">Amount Low to High</option>
-            </select>
-
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilters({ active: true, mature: false, lost: false });
-                setSortOrder("latest");
-              }}
-            >
-              Clear
-            </button>
-
             <a className="btn btn-primary add-btn" href="/addswitchquotation">
-              Add Quotation
+              Add Switch  Quotation
             </a>
           </div>
         </div>
@@ -209,20 +170,19 @@ const GetSwitchQuotationTables = () => {
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
-                <th className="d-none d-md-table-cell">ID</th>
-                <th>Client Name</th>
                 <th>Quotation No</th>
-                <th className="d-none d-lg-table-cell">Salesperson</th>
-                <th>Subject</th>
-                <th className="d-none d-md-table-cell">Amount (Incl. GST)</th>
-                <th className="d-none d-lg-table-cell">Without GST</th>
-                <th className="d-none d-lg-table-cell">GST Amount</th>
-                <th>Total with GST</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th className="d-none d-lg-table-cell">Itemcode</th>
+                <th>itemname</th>
+                <th className="d-none d-md-table-cell">White Price</th>
+                <th className="d-none d-lg-table-cell">Silver Price</th>
+                <th className="d-none d-lg-table-cell">Glaxyblack Price</th>
+                <th>Inner Outlet Caselot</th>
+                <th>Category</th>
+                <th>Brand</th>  
               </tr>
             </thead>
             <tbody>
+              
               {filteredQuotations.length > 0 ? (
                 filteredQuotations.map((q) => (
                   <tr key={q.quotation_id}>
@@ -235,11 +195,6 @@ const GetSwitchQuotationTables = () => {
                     <td className="d-none d-lg-table-cell">{q.without_gst}</td>
                     <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
                     <td>{q.amount_with_gst}</td>
-                    <td>
-                      <span className={getBadgeClass(q.status)}>
-                        {q.status || "Active"} {/* Display "Active" if status is missing */}
-                      </span>
-                    </td>
                     <td className="action-column">
                       <Link href={`/editquotation/${q.quotation_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>
@@ -262,7 +217,7 @@ const GetSwitchQuotationTables = () => {
               ) : (
                 <tr>
                   <td colSpan="11" className="text-center">
-                    No quotations found.
+                    <img src="https://assets-v2.lottiefiles.com/a/0e30b444-117c-11ee-9b0d-0fd3804d46cd/A6t16MXhTI.gif" alt="No Data" className="img-fluid" />
                   </td>
                 </tr>
               )}

@@ -114,6 +114,7 @@ body {
   vertical-align: middle;
   font-size: 12px;
   padding: 6px 2px;
+  text-transform: capitalize;
 }
 .navbar-vertical.navbar-expand-xs .navbar-collapse {
   display: block;
