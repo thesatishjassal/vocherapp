@@ -1,7 +1,7 @@
 "use client";
 import QuotationInfo from "../components/QuotaionInfo";
 import CustomerModal from "../components/customerModal";
-import QuotationTable from "../components/QuotationTable";
+import SwitchQuotatTable from "../components/SwitchQuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
@@ -346,7 +346,7 @@ const SwitchQuotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <QuotationTable
+                  <SwitchQuotatTable
                     items={rowsData}
                     onRowsChange={handleRowsChange}
                     onTotalAmountChange={handleTotalAmountChange}

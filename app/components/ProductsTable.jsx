@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useState, useRef } from "react";
 import AddProductForm from "./AddProductForm";
@@ -18,8 +19,8 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterBrand, setFilterBrand] = useState(""); // New state for brand filter
   const [showNoImageOnly, setShowNoImageOnly] = useState(false);
-  const [showNullDescriptionOnly, setShowNullDescriptionOnly] = useState(false); // New state for null description filter
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,8 +32,8 @@ const ProductsTable = () => {
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
   const prevFilterCategory = useRef("");
+  const prevFilterBrand = useRef(""); // New ref for brand filter
   const prevShowNoImageOnly = useRef(false);
-  const prevShowNullDescriptionOnly = useRef(false); // New ref for null description filter
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
@@ -132,14 +133,15 @@ const ProductsTable = () => {
     );
   };
 
-  // Search and Category Filter
+  // Search and Filter Handlers
   const handleSearch = (e) => setSearchQuery(e.target.value.toLowerCase());
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
+  const handleBrandFilter = (e) => setFilterBrand(e.target.value); // New handler for brand filter
   const handleNoImageFilter = (e) => setShowNoImageOnly(e.target.checked);
-  const handleNullDescriptionFilter = (e) => setShowNullDescriptionOnly(e.target.checked); // New handler for null description filter
 
   // Sorting handler
   const handleSort = (column) => {
+    if (column === "brand") return; // Prevent sorting by brand
     if (sortColumn === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -269,14 +271,14 @@ const ProductsTable = () => {
       filtered = filtered.filter((product) => product.category === filterCategory);
     }
 
+    // Apply brand filter
+    if (filterBrand) {
+      filtered = filtered.filter((product) => product.brand === filterBrand);
+    }
+
     // Apply no-image filter
     if (showNoImageOnly) {
       filtered = filtered.filter((product) => !product.thumbnail);
-    }
-
-    // Apply null description filter
-    if (showNullDescriptionOnly) {
-      filtered = filtered.filter((product) => product.description == "LLO-");
     }
 
     // Apply sorting
@@ -298,8 +300,8 @@ const ProductsTable = () => {
     if (
       searchQuery !== prevSearchQuery.current ||
       filterCategory !== prevFilterCategory.current ||
+      filterBrand !== prevFilterBrand.current ||
       showNoImageOnly !== prevShowNoImageOnly.current ||
-      showNullDescriptionOnly !== prevShowNullDescriptionOnly.current ||
       sortColumn !== prevSortColumn.current ||
       sortOrder !== prevSortOrder.current
     ) {
@@ -311,11 +313,11 @@ const ProductsTable = () => {
     // Update previous values
     prevSearchQuery.current = searchQuery;
     prevFilterCategory.current = filterCategory;
+    prevFilterBrand.current = filterBrand;
     prevShowNoImageOnly.current = showNoImageOnly;
-    prevShowNullDescriptionOnly.current = showNullDescriptionOnly;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
-  }, [products, searchQuery, filterCategory, showNoImageOnly, showNullDescriptionOnly, sortColumn, sortOrder]);
+  }, [products, searchQuery, filterCategory, filterBrand, showNoImageOnly, sortColumn, sortOrder]);
 
   // Handle image modal navigation
   useEffect(() => {
@@ -384,8 +386,9 @@ const ProductsTable = () => {
     return pages;
   };
 
-  // Extract unique categories
+  // Extract unique categories and brands
   const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
+  const brands = Array.from(new Set(products.map((product) => product.brand))).filter(Boolean);
 
   return (
     <div className="card" style={{ minHeight: "500px", overflow: "auto" }}>
@@ -692,18 +695,32 @@ const ProductsTable = () => {
             value={searchQuery}
             onChange={handleSearch}
           />
-          <select
-            className="form-select w-20 w-md-33"
-            value={filterCategory}
-            onChange={handleCategoryFilter}
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+          <div className="d-flex gap-3">
+            <select
+              className="form-select w-50 w-md-33"
+              value={filterCategory}
+              onChange={handleCategoryFilter}
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <select
+              className="form-select w-50 w-md-33"
+              value={filterBrand}
+              onChange={handleBrandFilter}
+            >
+              <option value="">All Brands</option>
+              {brands.map((brand, idx) => (
+                <option key={idx} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="d-flex gap-2 justify-content-start align-items-center">
             <div className="form-check">
               <input
@@ -715,18 +732,6 @@ const ProductsTable = () => {
               />
               <label className="form-check-label" htmlFor="noImageFilter">
                 Show products without images
-              </label>
-            </div>
-            <div className="form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id="nullDescriptionFilter"
-                checked={showNullDescriptionOnly}
-                onChange={handleNullDescriptionFilter}
-              />
-              <label className="form-check-label" htmlFor="nullDescriptionFilter">
-                Show products with no description
               </label>
             </div>
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
@@ -764,13 +769,10 @@ const ProductsTable = () => {
                     <th onClick={() => handleSort("category")}>
                       Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                     <th onClick={() => handleSort("category")}>
-                      subcategory {sortColumn === "subcategory" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <th onClick={() => handleSort("subcategory")}>
+                      Subcategory {sortColumn === "subcategory" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                    
-                    <th onClick={() => handleSort("brand")}>
-                      Brand {sortColumn === "brand" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
+                    <th>Brand</th>
                     <th onClick={() => handleSort("price")}>
                       Price {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
