@@ -747,6 +747,9 @@ img.thumnail {
     justify-content: space-between;
     align-items: center;
 }
+.accordion-header h2 {
+    font-size: 24px;
+}
 .loading,
 .error {
   text-align: center;
