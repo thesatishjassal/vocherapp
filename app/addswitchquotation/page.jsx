@@ -347,9 +347,6 @@ const SwitchQuotation = () => {
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <SwitchQuotatTable
-                    items={rowsData}
-                    onRowsChange={handleRowsChange}
-                    onTotalAmountChange={handleTotalAmountChange}
                   />
                   {showModalClientDetails && (
                     <CustomerModal

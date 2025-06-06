@@ -635,3 +635,152 @@ img.thumnail {
     padding: 6px;
   }
 }
+.switch-quotat-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: 'Arial', sans-serif;
+}
+
+.brand-filter {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-filter label {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.brand-filter select {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brand-filter select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.switch-quotat-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.switch-quotat-table th,
+.switch-quotat-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.switch-quotat-table th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.switch-quotat-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.qty-input {
+  width: 60px;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.qty-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.remove-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+.no-data {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 1rem;
+  color: #333;
+}
+
+.error {
+  color: #dc3545;
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .switch-quotat-table {
+    font-size: 0.85rem;
+  }
+
+  .switch-quotat-table th,
+  .switch-quotat-table td {
+    padding: 0.5rem;
+  }
+
+  .product-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .qty-input {
+    width: 50px;
+  }
+}
