@@ -9,10 +9,10 @@ const SwitchQuotatTable = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedCategories, setSelectedCategories] = useState({
-    Switches: true,
-    Sockets: true,
-    "Safety Devices": true,
-    Plates: true,
+    Switches: false,
+    Sockets: false,
+    "Safety Devices": false,
+    Plates: false,
   });
 
   const plateSubcategories = ["Blank Plate", "Blanking Plates", "Cover Plates", "Frame Plate"];
