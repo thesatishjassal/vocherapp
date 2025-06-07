@@ -12,6 +12,8 @@ const SwitchQuotatTable = () => {
     "Safety Devices": true,
     Plates: true,
   });
+  const [plateSubcategories, setPlateSubcategories] = useState([]);
+  const [selectedPlateSubcategories, setSelectedPlateSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,8 +29,17 @@ const SwitchQuotatTable = () => {
           qty: product.qty || 0,
         }));
         setProducts(productsWithQty);
+
+        // Extract unique brands
         const uniqueBrands = [...new Set(data.map((p) => p.brand).filter(Boolean))].sort();
         setBrands(uniqueBrands);
+
+        // Extract Plates subcategories
+        const plates = data.filter(p => p.category === "Plates");
+        const subcats = [...new Set(plates.map(p => p.subcategory).filter(Boolean))].sort();
+        setPlateSubcategories(subcats);
+        setSelectedPlateSubcategories(subcats); // Select all by default
+
         setLoading(false);
       } catch (err) {
         setError("Failed to load products. Please try again later.");
@@ -38,16 +49,26 @@ const SwitchQuotatTable = () => {
     fetchProducts();
   }, []);
 
-  // Filter products by brand and selected categories
+  // Filter products by brand and selected categories (and subcategories if Plates)
   useEffect(() => {
-    const filtered = products.filter(
-      (product) =>
-        product.category &&
-        selectedCategories[product.category] &&
-        (selectedBrand === "" || product.brand === selectedBrand)
-    );
+    const filtered = products.filter((product) => {
+      const categoryMatch = product.category && selectedCategories[product.category];
+      const brandMatch = selectedBrand === "" || product.brand === selectedBrand;
+
+      // If category is Plates, filter by subcategory
+      if (product.category === "Plates" && selectedCategories["Plates"]) {
+        return (
+          categoryMatch &&
+          brandMatch &&
+          selectedPlateSubcategories.includes(product.subcategory)
+        );
+      }
+
+      return categoryMatch && brandMatch;
+    });
+
     setFilteredProducts(filtered);
-  }, [products, selectedBrand, selectedCategories]);
+  }, [products, selectedBrand, selectedCategories, selectedPlateSubcategories]);
 
   // Handle category checkbox change
   const handleCategoryChange = (category) => {
@@ -64,13 +85,6 @@ const SwitchQuotatTable = () => {
     );
     setFilteredProducts(updatedProducts);
   };
-
-  // Group products by category
-  const groupedProducts = filteredProducts.reduce((acc, product) => {
-    if (product.category && !acc[product.category]) acc[product.category] = [];
-    if (product.category) acc[product.category].push(product);
-    return acc;
-  }, {});
 
   return (
     <div className="container py-4" style={{ background: "#f9f9f9" }}>
@@ -89,6 +103,7 @@ const SwitchQuotatTable = () => {
             ))}
           </select>
         </div>
+
         <div className="col-md-8 mb-2">
           <div className="d-flex flex-wrap gap-2">
             {["Switches", "Sockets", "Safety Devices", "Plates"].map((category) => (
@@ -106,68 +121,88 @@ const SwitchQuotatTable = () => {
               </div>
             ))}
           </div>
+
+          {/* Show Plates subcategories if Plates is selected */}
+          {selectedCategories["Plates"] && plateSubcategories.length > 0 && (
+            <div className="mt-2 d-flex flex-wrap gap-2">
+              {plateSubcategories.map((subcat) => (
+                <div className="form-check form-check-inline" key={subcat}>
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id={`plate-subcat-${subcat}`}
+                    checked={selectedPlateSubcategories.includes(subcat)}
+                    onChange={() => {
+                      setSelectedPlateSubcategories((prev) =>
+                        prev.includes(subcat)
+                          ? prev.filter((s) => s !== subcat)
+                          : [...prev, subcat]
+                      );
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor={`plate-subcat-${subcat}`}>
+                    {subcat}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {loading && <div className="alert alert-info">Loading...</div>}
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {["Switches", "Sockets", "Safety Devices", "Plates"].filter((cat) => selectedCategories[cat]).map((category) => (
-        <div key={category} className="mb-4">
-          <h5 className="mb-2" style={{ color: "#4b4b4b" }}>{category}</h5>
-          <div className="table-responsive">
-            <table className="table table-sm table-bordered table-hover bg-white align-middle" style={{ borderColor: "#e0e0e0" }}>
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: 60 }}>SR NO</th>
-                  {/* <th style={{ width: 120 }}>Item Code</th> */}
-                  <th>Item Name</th>
-                  <th style={{ width: 110 }}>Brand</th>
-                  <th style={{ width: 100 }}>MRP</th>
-                  <th style={{ width: 70 }}>Qty</th>
-                  <th style={{ width: 110 }}>Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupedProducts[category]?.length > 0 ? (
-                  groupedProducts[category].map((product, index) => {
-                    const mrp = typeof product.mrp === "number" ? product.mrp : 0;
-                    const qty = product.qty || 1;
-                    return (
-                      <tr key={product.id}>
-                        <td>{index + 1}</td>
-                        {/* <td>{product.itemcode || "N/A"}</td> */}
-                        <td>{product.itemname || "Unknown"}</td>
-                        <td>{product.brand || "N/A"}</td>
-                        <td>₹{product.price?.toFixed(2) || "0.00"}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="1"
-                            value={qty}
-                            onChange={(e) =>
-                              handleQtyChange(product.id, parseInt(e.target.value) || 1)
-                            }
-                            className="form-control form-control-sm text-center"
-                            style={{ width: 55 }}
-                          />
-                        </td>
-                        <td>₹{(product.price * qty).toFixed(2)}</td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="text-center text-muted py-3">
-                      No products found for {category}
+      <div className="table-responsive">
+        <table className="tm_round_border table align-items-center justify-content-center mb-0">
+          <thead className="table-light">
+            <tr>
+              <th>SR NO</th>
+              <th>Item Name</th>
+              <th>Brand</th>
+              <th>Category</th>
+              <th>MRP</th>
+              <th>Qty</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product, index) => {
+                const qty = product.qty || 1;
+                return (
+                  <tr key={product.id}>
+                    <td>{index + 1}</td>
+                    <td>{product.itemname || "Unknown"}</td>
+                    <td>{product.brand || "N/A"}</td>
+                    <td>{product.category || "N/A"}</td>
+                    <td>₹{product.price?.toFixed(2) || "0.00"}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="1"
+                        value={qty}
+                        onChange={(e) =>
+                          handleQtyChange(product.id, parseInt(e.target.value) || 1)
+                        }
+                        className="form-control form-control-sm text-center"
+                        style={{ width: 55 }}
+                      />
                     </td>
+                    <td>₹{(product.price * qty).toFixed(2)}</td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={7} className="text-center text-muted py-3">
+                  No products found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
