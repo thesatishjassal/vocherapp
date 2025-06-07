@@ -704,7 +704,7 @@ const ProductsTable = () => {
               <option value="">All Categories</option>
               {categories.map((cat, idx) => (
                 <option key={idx} value={cat}>
-                  {cat}
+                   {cat}
                 </option>
               ))}
             </select>
@@ -812,7 +812,7 @@ const ProductsTable = () => {
                             </i>
                           )}
                         </td>
-                        <td>{truncateText(product.description)}</td>
+                        <td>{product.itemname}</td>
                         <td>{product.category}</td>
                         <td>{product.subcategory}</td>
                         <td>{product.brand}</td>

@@ -767,6 +767,19 @@ img.thumnail {
     display: none;
   }
 }
+.switch-quotat-table th,
+.switch-quotat-table td {
+  border-color: #e0e0e0 !important;
+}
+.switch-quotat-table thead th {
+  background: #f4f4f4;
+  color: #333;
+  font-weight: 500;
+}
+.qty-input {
+  width: 55px;
+  text-align: center;
+}
 
 @media (max-width: 768px) {
   .switch-quotat-table {

@@ -14,7 +14,7 @@ const SwitchQuotation = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quotationInfo, setQuotationInfo] = useState(null);
-  const [quotationId, setQuotationId] = useState(1);
+  // const [quotationId, setQuotationId] = useState(1);
   const [quotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
