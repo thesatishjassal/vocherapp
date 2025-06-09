@@ -1763,9 +1763,9 @@ const SwitchQuotatTable = () => {
   };
 
   return (
-    <div className="container py-4" style={{ background: "#f9f9f9" }}>
+    <div className="container py-4">
       <div className="mb-3 row align-items-start">
-        <div className="col-md-3 mb-2">
+        <div className="col-md-2 mb-2">
           <label className="form-label mb-1">Brand:</label>
           <select
             className="form-select form-select-sm"
@@ -1779,7 +1779,7 @@ const SwitchQuotatTable = () => {
           </select>
         </div>
 
-        <div className="col-md-3 mb-2">
+        <div className="col-md-2 mb-2">
           <label className="form-label mb-1">Model:</label>
           <select
             className="form-select form-select-sm"
@@ -1794,7 +1794,7 @@ const SwitchQuotatTable = () => {
           </select>
         </div>
 
-        <div className="col-md-3 mb-2">
+        <div className="col-md-2 mb-2">
           <label className="form-label mb-1">Color:</label>
           <select
             className="form-select form-select-sm"
@@ -1808,7 +1808,7 @@ const SwitchQuotatTable = () => {
           </select>
         </div>
 
-        <div className="col-md-3 mb-2">
+        <div className="col-md-6 mb-2">
           <label className="form-label mb-1">Categories:</label>
           <div className="d-flex flex-wrap gap-2">
             {Object.keys(selectedCategories).map((category) => (
