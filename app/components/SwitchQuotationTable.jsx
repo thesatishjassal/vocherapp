@@ -55,14 +55,22 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
 
       <table className="table table-borderless">
         <tbody>
+          <tr>
+            <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+              <p className="m-0">Total Net Price:</p>
+            </td>
+            <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+              ₹{totalAmount.toFixed(2)}
+            </td>
+          </tr>
           {gstType === "exclude" && (
             <>
               <tr>
                 <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                   <p className="m-0">Without GST:</p>
                 </td>
-                <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                  {totalAmount.toFixed(2)}
+                <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none">
+                  ₹{totalAmount.toFixed(2)}
                 </td>
               </tr>
               <tr>
@@ -70,7 +78,7 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
                   <p className="m-0">GST Amt (<b>{gstPercentage}%</b>):</p>
                 </td>
                 <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none">
-                  {gstAmount.toFixed(2)}
+                  ₹{gstAmount.toFixed(2)}
                 </td>
               </tr>
             </>
@@ -82,7 +90,7 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
               </p>
             </td>
             <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-              {totalWithGST.toFixed(2)}
+              ₹{totalWithGST.toFixed(2)}
             </td>
           </tr>
         </tbody>
@@ -97,11 +105,11 @@ const SwitchQuotatTable = () => {
   const [brands] = useState(["Wipro", "L&T"]);
   const [models, setModels] = useState([]);
   const [switchSocketSubcategories, setSwitchSocketSubcategories] = useState([]);
-  const [plateSubcategories, setPlateSubcategories] = useState([]);
+  const [designerPlateSubcategories, setDesignerPlateSubcategories] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedSwitchSocketSubcategory, setSelectedSwitchSocketSubcategory] = useState("");
-  const [selectedPlateSubcategory, setSelectedPlateSubcategory] = useState("");
+  const [selectedDesignerPlateSubcategories, setSelectedDesignerPlateSubcategories] = useState([]);
   const [quotationId, setQuotationId] = useState("");
   const [gstDetails, setGstDetails] = useState({});
   const [loading, setLoading] = useState(true);
@@ -110,7 +118,8 @@ const SwitchQuotatTable = () => {
   const categoryColors = {
     Switches: "bg-primary-subtle",
     Sockets: "bg-success-subtle",
-    Plates: "bg-info-subtle",
+    "Designer Plates": "bg-info-subtle",
+    Plates: "bg-warning-subtle",
     "N/A": "bg-light",
   };
 
@@ -132,7 +141,7 @@ const SwitchQuotatTable = () => {
           ...product,
           qty: product.qty || 0,
           discount: product.discount || 0,
-          id: product.id || Math.random().toString(36).substring(2), // Fallback ID
+          id: product.id || Math.random().toString(36).substring(2),
         }));
 
         setProducts(productsWithQty);
@@ -146,11 +155,11 @@ const SwitchQuotatTable = () => {
   }, []);
 
   // Compute derived data
-  const { brandModels, switchSocketSubs, plateSubs } = useMemo(() => {
+  const { brandModels, switchSocketSubs, designerPlateSubs } = useMemo(() => {
     const brandModels = selectedBrand
       ? [...new Set(
           products
-            .filter((p) => p.brand === selectedBrand && p.model && ["Switches", "Sockets", "Plates"].includes(p.category))
+            .filter((p) => p.brand === selectedBrand && p.model && ["Switches", "Sockets", "Designer Plates", "Plates"].includes(p.category))
             .map((p) => p.model)
         )].sort()
       : [];
@@ -164,23 +173,23 @@ const SwitchQuotatTable = () => {
       ),
     ].sort();
 
-    const plateSubs = [
+    const designerPlateSubs = [
       ...new Set(
         products
-          .filter((p) => p.category === "Plates")
+          .filter((p) => p.category === "Designer Plates" && p.subcategory && p.subcategory !== "Frame Plate")
           .map((p) => p.subcategory)
           .filter((sub) => sub)
       ),
     ].sort();
 
-    return { brandModels, switchSocketSubs, plateSubs };
+    return { brandModels, switchSocketSubs, designerPlateSubs };
   }, [products, selectedBrand]);
 
   // Update models and subcategories
   useEffect(() => {
     setModels(brandModels);
     setSwitchSocketSubcategories(switchSocketSubs);
-    setPlateSubcategories(plateSubs);
+    setDesignerPlateSubcategories(designerPlateSubs);
 
     if (!brandModels.includes(selectedModel)) {
       setSelectedModel("");
@@ -188,10 +197,19 @@ const SwitchQuotatTable = () => {
     if (!switchSocketSubs.includes(selectedSwitchSocketSubcategory)) {
       setSelectedSwitchSocketSubcategory("");
     }
-    if (!plateSubs.includes(selectedPlateSubcategory)) {
-      setSelectedPlateSubcategory("");
+    if (!selectedDesignerPlateSubcategories.every((sub) => designerPlateSubs.includes(sub))) {
+      setSelectedDesignerPlateSubcategories([]);
     }
-  }, [brandModels, switchSocketSubs, plateSubs, selectedModel, selectedSwitchSocketSubcategory, selectedPlateSubcategory]);
+  }, [brandModels, switchSocketSubs, designerPlateSubs, selectedModel, selectedSwitchSocketSubcategory, selectedDesignerPlateSubcategories]);
+
+  // Handle Designer Plates checkbox changes
+  const handleDesignerPlateCheckboxChange = useCallback((subcategory) => {
+    setSelectedDesignerPlateSubcategories((prev) =>
+      prev.includes(subcategory)
+        ? prev.filter((sub) => sub !== subcategory)
+        : [...prev, subcategory]
+    );
+  }, []);
 
   // Memoized filtered products
   const filtered = useMemo(() => {
@@ -204,7 +222,7 @@ const SwitchQuotatTable = () => {
     }
 
     result = result.filter((product) =>
-      ["Switches", "Sockets", "Plates"].includes(product.category)
+      ["Switches", "Sockets", "Designer Plates", "Plates"].includes(product.category)
     );
 
     if (selectedSwitchSocketSubcategory) {
@@ -215,10 +233,19 @@ const SwitchQuotatTable = () => {
       );
     }
 
-    if (selectedPlateSubcategory) {
+    if (selectedDesignerPlateSubcategories.length > 0) {
+      // Include selected Designer Plates subcategories, exclude Regular Plates
       result = result.filter(
         (product) =>
-          product.category !== "Plates" || product.subcategory === selectedPlateSubcategory
+          (product.category === "Designer Plates" && selectedDesignerPlateSubcategories.includes(product.subcategory)) ||
+          (product.category !== "Plates" && product.category !== "Designer Plates") ||
+          (product.category === "Plates" && product.subcategory !== "Regular Plates")
+      );
+    } else {
+      // Default to Regular Plates for Plates category
+      result = result.filter(
+        (product) =>
+          product.category !== "Plates" || product.subcategory === "Regular Plates"
       );
     }
 
@@ -228,7 +255,7 @@ const SwitchQuotatTable = () => {
     selectedBrand,
     selectedModel,
     selectedSwitchSocketSubcategory,
-    selectedPlateSubcategory,
+    selectedDesignerPlateSubcategories,
   ]);
 
   // Sync filteredProducts
@@ -325,6 +352,14 @@ const SwitchQuotatTable = () => {
           border-radius: 8px;
           overflow: hidden;
         }
+        .checkbox-container {
+          max-height: 150px;
+          overflow-y: auto;
+          padding: 8px;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          background-color: #fff;
+        }
       `}</style>
 
       {loading && (
@@ -341,21 +376,7 @@ const SwitchQuotatTable = () => {
         </div>
       )}
 
-      <div className="mb-4 row align-items-center">
-        <div className="col-sm-6 col-md-3 mb-2">
-          <label className="form-label mb-1">Quotation ID:</label>
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            value={quotationId}
-            onChange={(e) => setQuotationId(e.target.value)}
-            placeholder="Enter Quotation ID"
-            aria-label="Quotation ID"
-          />
-        </div>
-      </div>
-
-      <div className="mb-4 row align-items-center">
+      <div className="mb-4 row align-items-start">
         <div className="col-sm-6 col-md-3 mb-2">
           <label className="form-label mb-1">Brand:</label>
           <select
@@ -418,25 +439,43 @@ const SwitchQuotatTable = () => {
         </div>
 
         <div className="col-sm-6 col-md-3 mb-2">
-          <label className="form-label mb-1">Plates Types:</label>
-          <select
-            className="form-select form-select-sm"
-            value={selectedPlateSubcategory}
-            onChange={(e) => setSelectedPlateSubcategory(e.target.value)}
-            disabled={!selectedBrand || !selectedModel || !plateSubcategories.length}
+          <label className="form-label mb-1">Designer Plates:</label>
+          <div
+            className="checkbox-container"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title={!selectedBrand ? "Please select a Brand first" : !selectedModel ? "Please select a Model first" : !plateSubcategories.length ? "No subcategories available" : ""}
-            aria-label="Select Plates Subcategory"
-            aria-disabled={!selectedBrand || !selectedModel || !plateSubcategories.length}
+            title={
+              !selectedBrand
+                ? "Please select a Brand first"
+                : !selectedModel
+                ? "Please select a Model first"
+                : !designerPlateSubcategories.length
+                ? "No Designer Plates available"
+                : ""
+            }
           >
-            <option value="">All Subcategories</option>
-            {plateSubcategories.map((subcat) => (
-              <option key={subcat} value={subcat}>
-                {subcat}
-              </option>
-            ))}
-          </select>
+            {designerPlateSubcategories.length > 0 ? (
+              designerPlateSubcategories.map((subcat) => (
+                <div className="form-check" key={subcat}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value={subcat}
+                    id={`designer-plate-${subcat}`}
+                    checked={selectedDesignerPlateSubcategories.includes(subcat)}
+                    onChange={() => handleDesignerPlateCheckboxChange(subcat)}
+                    disabled={!selectedBrand || !selectedModel}
+                    aria-label={`Select ${subcat}`}
+                  />
+                  <label className="form-check-label" htmlFor={`designer-plate-${subcat}`}>
+                    {subcat}
+                  </label>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted mb-0">No Designer Plates available</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -460,11 +499,11 @@ const SwitchQuotatTable = () => {
               <th scope="col">Item Name</th>
               <th scope="col">Brand</th>
               <th scope="col">Model</th>
-              {/* <th scope="col">Category</th> */}
               <th scope="col">Type</th>
               <th scope="col">MRP</th>
               <th scope="col">Qty</th>
               <th scope="col">Discount (%)</th>
+              <th scope="col">Net Price</th>
               <th scope="col">Amount</th>
             </tr>
           </thead>
@@ -474,7 +513,8 @@ const SwitchQuotatTable = () => {
                 const qty = Math.max(0, product.qty || 0);
                 const discount = Math.max(0, Math.min(100, product.discount || 0));
                 const displayPrice = product.price || 0;
-                const amount = displayPrice * qty * (1 - discount / 100);
+                const netPrice = displayPrice * (1 - discount / 100);
+                const amount = netPrice * qty;
                 const categoryClass = categoryColors[product.category || "N/A"];
 
                 return (
@@ -483,7 +523,6 @@ const SwitchQuotatTable = () => {
                     <td>{product.itemname || "Unknown"}</td>
                     <td>{product.brand || "N/A"}</td>
                     <td>{product.model || "N/A"}</td>
-                    {/* <td className={categoryClass}>{product.category || "N/A"}</td> */}
                     <td className={categoryClass}>{product.subcategory || "N/A"}</td>
                     <td>₹{displayPrice.toFixed(2)}</td>
                     <td>
@@ -509,6 +548,7 @@ const SwitchQuotatTable = () => {
                         aria-label={`Discount for ${product.itemname || "item"}`}
                       />
                     </td>
+                    <td>₹{isNaN(netPrice) ? "0.00" : netPrice.toFixed(2)}</td>
                     <td>₹{isNaN(amount) ? "0.00" : amount.toFixed(2)}</td>
                   </tr>
                 );
