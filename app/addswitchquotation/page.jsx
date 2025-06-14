@@ -368,12 +368,12 @@ const SwitchQuotation = () => {
                     onChange={(e) => setRemarks(e.target.value)}
                   ></textarea>
                 </div>
-                <div className="tm_right_footer">
+                {/* <div className="tm_right_footer">
                   <GSTCalculator
                     totalAmount={totalAmount}
                     onGSTChange={handleGSTChange}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
             <hr />
