@@ -1,0 +1,292 @@
+{
+  "venia_colors" : [
+     {
+      "item_code": "B0110",
+      "White_mrp": 125,
+      "dark_gery_mrp": 150,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0120",
+      "White_mrp": 125,
+      "dark_gery_mrp": 150,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0111",
+      "White_mrp": 200,
+      "dark_gery_mrp": 245,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0210",
+      "White_mrp": 190,
+      "dark_gery_mrp": 235,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0220",
+      "White_mrp": 195,
+      "dark_gery_mrp": 240,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0130",
+      "White_mrp": 205,
+      "dark_gery_mrp": 250,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0230",
+      "White_mrp": 255,
+      "dark_gery_mrp": 305,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0131",
+      "White_mrp": 260,
+      "dark_gery_mrp": 310,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0160",
+      "White_mrp": 205,
+      "dark_gery_mrp": 250,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0161",
+      "White_mrp": 260,
+      "dark_gery_mrp": 310,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0150",
+      "White_mrp": 240,
+      "dark_gery_mrp": 285,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0151",
+      "White_mrp": 305,
+      "dark_gery_mrp": 370,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0551",
+      "White_mrp": 575,
+      "dark_gery_mrp": 690,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0310",
+      "White_mrp": 195,
+      "dark_gery_mrp": 240,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0311",
+      "White_mrp": 270,
+      "dark_gery_mrp": 330,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B0341",
+      "White_mrp": 310,
+      "dark_gery_mrp": 375,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B1212",
+      "White_mrp": 215,
+      "dark_gery_mrp": 255,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B1332",
+      "White_mrp": 410,
+      "dark_gery_mrp": 410,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B1352",
+      "White_mrp": 490,
+      "dark_gery_mrp": 490,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B1700",
+      "White_mrp": 600,
+      "dark_gery_mrp": 600,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B1900",
+      "White_mrp": 725,
+      "dark_gery_mrp": 725,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4900",
+      "White_mrp": 190,
+      "dark_gery_mrp": 235,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4797",
+      "White_mrp": 195,
+      "dark_gery_mrp": 240,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B5200",
+      "White_mrp": 700,
+      "dark_gery_mrp": 770,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B5310",
+      "White_mrp": 765,
+      "dark_gery_mrp": 865,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4600",
+      "White_mrp": 195,
+      "dark_gery_mrp": 240,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4921",
+      "White_mrp": 1165,
+      "dark_gery_mrp": 1395,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4922",
+      "White_mrp": 2835,
+      "dark_gery_mrp": 3405,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B4500",
+      "White_mrp": 165,
+      "dark_gery_mrp": 195,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "B3900",
+      "White_mrp": 55,
+      "dark_gery_mrp": 65,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP911",
+      "White_mrp": 130,
+      "dark_gery_mrp": 160,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP922",
+      "White_mrp": 130,
+      "dark_gery_mrp": 160,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP933",
+      "White_mrp": 165,
+      "dark_gery_mrp": 195,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP944",
+      "White_mrp": 205,
+      "dark_gery_mrp": 250,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP956",
+      "White_mrp": 280,
+      "dark_gery_mrp": 330,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP968H",
+      "White_mrp": 320,
+      "dark_gery_mrp": 385,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP968S",
+      "White_mrp": 340,
+      "dark_gery_mrp": 410,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP979",
+      "White_mrp": 385,
+      "dark_gery_mrp": 470,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP97125",
+      "White_mrp": 470,
+      "dark_gery_mrp": 565,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP9716S",
+      "White_mrp": 645,
+      "dark_gery_mrp": 780,
+      "brand": "wipro",
+      "model": "venia"
+    },
+    {
+      "item_code": "BP9718S",
+      "White_mrp": 705,
+      "dark_gery_mrp": 845,
+      "brand": "wipro",
+      "model": "venia"
+    }
+ 
+  ]
+}

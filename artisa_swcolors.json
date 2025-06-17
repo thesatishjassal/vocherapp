@@ -1,0 +1,508 @@
+{
+  "artisa_swcolors": [
+    {
+      "item_code": "R0110",
+      "White_mrp": 200,
+      "silver_grey_mrp": 250,
+      "galaxy_black_mrp": 250,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R011",
+      "White_mrp": 310,
+      "silver_grey_mrp": 370,
+      "galaxy_black_mrp": 370,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0210",
+      "White_mrp": 285,
+      "silver_grey_mrp": 355,
+      "galaxy_black_mrp": 355,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0130",
+      "White_mrp": 335,
+      "silver_grey_mrp": 410,
+      "galaxy_black_mrp": 410,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0131",
+      "White_mrp": 410,
+      "silver_grey_mrp": 460,
+      "galaxy_black_mrp": 460,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0230",
+      "White_mrp": 415,
+      "silver_grey_mrp": 490,
+      "galaxy_black_mrp": 490,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0132",
+      "White_mrp": 425,
+      "silver_grey_mrp": 505,
+      "galaxy_black_mrp": 505,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0133",
+      "White_mrp": 490,
+      "silver_grey_mrp": 595,
+      "galaxy_black_mrp": 595,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0233",
+      "White_mrp": 565,
+      "silver_grey_mrp": 680,
+      "galaxy_black_mrp": 680,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0150",
+      "White_mrp": 450,
+      "silver_grey_mrp": 550,
+      "galaxy_black_mrp": 550,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0151",
+      "White_mrp": 525,
+      "silver_grey_mrp": 620,
+      "galaxy_black_mrp": 620,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0171",
+      "White_mrp": 1205,
+      "silver_grey_mrp": 1305,
+      "galaxy_black_mrp": 1305,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0310",
+      "White_mrp": 305,
+      "silver_grey_mrp": 370,
+      "galaxy_black_mrp": 370,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0311",
+      "White_mrp": 390,
+      "silver_grey_mrp": 490,
+      "galaxy_black_mrp": 490,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R0341",
+      "White_mrp": 470,
+      "silver_grey_mrp": 580,
+      "galaxy_black_mrp": 580,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF110",
+      "White_mrp": 290,
+      "silver_grey_mrp": 360,
+      "galaxy_black_mrp": 360,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF111",
+      "White_mrp": 445,
+      "silver_grey_mrp": 515,
+      "galaxy_black_mrp": 515,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF210",
+      "White_mrp": 395,
+      "silver_grey_mrp": 500,
+      "galaxy_black_mrp": 500,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF211",
+      "White_mrp": 495,
+      "silver_grey_mrp": 595,
+      "galaxy_black_mrp": 595,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF130",
+      "White_mrp": 455,
+      "silver_grey_mrp": 515,
+      "galaxy_black_mrp": 515,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF131",
+      "White_mrp": 600,
+      "silver_grey_mrp": 680,
+      "galaxy_black_mrp": 680,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF230",
+      "White_mrp": 625,
+      "silver_grey_mrp": 685,
+      "galaxy_black_mrp": 685,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF231",
+      "White_mrp": 755,
+      "silver_grey_mrp": 790,
+      "galaxy_black_mrp": 790,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF161",
+      "White_mrp": 625,
+      "silver_grey_mrp": 680,
+      "galaxy_black_mrp": 680,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF310",
+      "White_mrp": 535,
+      "silver_grey_mrp": 560,
+      "galaxy_black_mrp": 560,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RF311",
+      "White_mrp": 645,
+      "silver_grey_mrp": 675,
+      "galaxy_black_mrp": 675,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1212",
+      "White_mrp": 370,
+      "silver_grey_mrp": 435,
+      "galaxy_black_mrp": 435,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1332",
+      "White_mrp": 500,
+      "silver_grey_mrp": 625,
+      "galaxy_black_mrp": 625,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1352",
+      "White_mrp": 585,
+      "silver_grey_mrp": 715,
+      "galaxy_black_mrp": 715,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1700",
+      "White_mrp": 855,
+      "silver_grey_mrp": 1025,
+      "galaxy_black_mrp": 1025,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1920",
+      "White_mrp": 1300,
+      "silver_grey_mrp": 1540,
+      "galaxy_black_mrp": 1540,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1500",
+      "White_mrp": 1155,
+      "silver_grey_mrp": 1385,
+      "galaxy_black_mrp": 1385,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R2700",
+      "White_mrp": 1500,
+      "silver_grey_mrp": 1865,
+      "galaxy_black_mrp": 1865,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4300",
+      "White_mrp": 1365,
+      "silver_grey_mrp": 1420,
+      "galaxy_black_mrp": 1420,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4401",
+      "White_mrp": 1195,
+      "silver_grey_mrp": 1430,
+      "galaxy_black_mrp": 1430,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4797",
+      "White_mrp": 295,
+      "silver_grey_mrp": 345,
+      "galaxy_black_mrp": 345,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4900",
+      "White_mrp": 285,
+      "silver_grey_mrp": 335,
+      "galaxy_black_mrp": 335,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R5200",
+      "White_mrp": 870,
+      "silver_grey_mrp": 960,
+      "galaxy_black_mrp": 960,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R5300",
+      "White_mrp": "on_request",
+      "silver_grey_mrp": "on_request",
+      "galaxy_black_mrp": "on_request",
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R5310",
+      "White_mrp": 935,
+      "silver_grey_mrp": 1025,
+      "galaxy_black_mrp": 1025,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4921",
+      "White_mrp": 2325,
+      "silver_grey_mrp": 2545,
+      "galaxy_black_mrp": 2545,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4600",
+      "White_mrp": 365,
+      "silver_grey_mrp": 365,
+      "galaxy_black_mrp": 365,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RFL922",
+      "White_mrp": 890,
+      "silver_grey_mrp": 1010,
+      "galaxy_black_mrp": 1010,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4604",
+      "White_mrp": 680,
+      "silver_grey_mrp": 710,
+      "galaxy_black_mrp": 710,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4605",
+      "White_mrp": 370,
+      "silver_grey_mrp": 380,
+      "galaxy_black_mrp": 380,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R5500",
+      "White_mrp": 4685,
+      "silver_grey_mrp": 4820,
+      "galaxy_black_mrp": 4820,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R1542",
+      "White_mrp": 5370,
+      "silver_grey_mrp": 5415,
+      "galaxy_black_mrp": 5415,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R3900",
+      "White_mrp": 70,
+      "silver_grey_mrp": 95,
+      "galaxy_black_mrp": 95,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4931",
+      "White_mrp": 3060,
+      "silver_grey_mrp": 3605,
+      "galaxy_black_mrp": 3605,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4932",
+      "White_mrp": 4435,
+      "silver_grey_mrp": 5225,
+      "galaxy_black_mrp": 5225,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "R4912",
+      "White_mrp": 1440,
+      "silver_grey_mrp": 1875,
+      "galaxy_black_mrp": 1875,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "6A",
+      "White_mrp": 550,
+      "silver_grey_mrp": 550,
+      "galaxy_black_mrp": 670,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "6A",
+      "White_mrp": 1200,
+      "silver_grey_mrp": 1200,
+      "galaxy_black_mrp": 1450,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP911",
+      "White_mrp": 235,
+      "silver_grey_mrp": 235,
+      "galaxy_black_mrp": 385,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP922",
+      "White_mrp": 255,
+      "silver_grey_mrp": 255,
+      "galaxy_black_mrp": 415,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP933",
+      "White_mrp": 290,
+      "silver_grey_mrp": 290,
+      "galaxy_black_mrp": 465,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP944",
+      "White_mrp": 305,
+      "silver_grey_mrp": 305,
+      "galaxy_black_mrp": 505,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP966",
+      "White_mrp": 615,
+      "silver_grey_mrp": 615,
+      "galaxy_black_mrp": 1050,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP968H",
+      "White_mrp": 665,
+      "silver_grey_mrp": 665,
+      "galaxy_black_mrp": 1150,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP968",
+      "White_mrp": 790,
+      "silver_grey_mrp": 790,
+      "galaxy_black_mrp": 1315,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP9712S",
+      "White_mrp": 955,
+      "silver_grey_mrp": 955,
+      "galaxy_black_mrp": 1590,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP9716S",
+      "White_mrp": 1020,
+      "silver_grey_mrp": 1020,
+      "galaxy_black_mrp": 1725,
+      "brand": "wipro",
+      "model": "artisa"
+    },
+    {
+      "item_code": "RP9718S",
+      "White_mrp": 1105,
+      "silver_grey_mrp": 1105,
+      "galaxy_black_mrp": 1850,
+      "brand": "wipro",
+      "model": "artisa"
+    }
+  ]
+}

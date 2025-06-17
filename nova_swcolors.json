@@ -1,0 +1,476 @@
+{
+  "nova_swcolors": [
+    {
+      "item_code": "AS110",
+      "White_mrp": 145,
+      "silver_grey_mrp": 200,
+      "matt_black_mrp": 200,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS111",
+      "White_mrp": 245,
+      "silver_grey_mrp": 310,
+      "matt_black_mrp": 310,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS210",
+      "White_mrp": 230,
+      "silver_grey_mrp": 290,
+      "matt_black_mrp": 290,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS120",
+      "White_mrp": 165,
+      "silver_grey_mrp": 235,
+      "matt_black_mrp": 235,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS121",
+      "White_mrp": 260,
+      "silver_grey_mrp": 365,
+      "matt_black_mrp": 365,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS130",
+      "White_mrp": 250,
+      "silver_grey_mrp": 315,
+      "matt_black_mrp": 315,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS131",
+      "White_mrp": 310,
+      "silver_grey_mrp": 405,
+      "matt_black_mrp": 405,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS230",
+      "White_mrp": 330,
+      "silver_grey_mrp": 405,
+      "matt_black_mrp": 405,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS160",
+      "White_mrp": 260,
+      "silver_grey_mrp": 355,
+      "matt_black_mrp": 355,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS161",
+      "White_mrp": 335,
+      "silver_grey_mrp": 455,
+      "matt_black_mrp": 455,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS150",
+      "White_mrp": 385,
+      "silver_grey_mrp": 515,
+      "matt_black_mrp": 515,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS151",
+      "White_mrp": 490,
+      "silver_grey_mrp": 660,
+      "matt_black_mrp": 660,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS310",
+      "White_mrp": 240,
+      "silver_grey_mrp": 300,
+      "matt_black_mrp": 300,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS311",
+      "White_mrp": 390,
+      "silver_grey_mrp": 515,
+      "matt_black_mrp": 515,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS110CMR",
+      "White_mrp": 165,
+      "silver_grey_mrp": 225,
+      "matt_black_mrp": 225,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AS210DND",
+      "White_mrp": 250,
+      "silver_grey_mrp": 310,
+      "matt_black_mrp": 310,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A0551",
+      "White_mrp": 720,
+      "silver_grey_mrp": 915,
+      "matt_black_mrp": 915,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A0341",
+      "White_mrp": 435,
+      "silver_grey_mrp": 585,
+      "matt_black_mrp": 585,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A1212",
+      "White_mrp": 265,
+      "silver_grey_mrp": 355,
+      "matt_black_mrp": 355,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A1332",
+      "White_mrp": 430,
+      "silver_grey_mrp": 550,
+      "matt_black_mrp": 550,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A1352",
+      "White_mrp": 485,
+      "silver_grey_mrp": 600,
+      "matt_black_mrp": 600,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP911",
+      "White_mrp": 155,
+      "silver_grey_mrp": 275,
+      "matt_black_mrp": 275,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP922",
+      "White_mrp": 155,
+      "silver_grey_mrp": 275,
+      "matt_black_mrp": 275,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP933",
+      "White_mrp": 205,
+      "silver_grey_mrp": 350,
+      "matt_black_mrp": 350,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP933M",
+      "White_mrp": 205,
+      "silver_grey_mrp": 350,
+      "matt_black_mrp": 350,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP944",
+      "White_mrp": 235,
+      "silver_grey_mrp": 380,
+      "matt_black_mrp": 380,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP956",
+      "White_mrp": 295,
+      "silver_grey_mrp": 475,
+      "matt_black_mrp": 475,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP968H",
+      "White_mrp": 370,
+      "silver_grey_mrp": 595,
+      "matt_black_mrp": 595,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP9685",
+      "White_mrp": 380,
+      "silver_grey_mrp": 620,
+      "matt_black_mrp": 620,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP979",
+      "White_mrp": 485,
+      "silver_grey_mrp": 735,
+      "matt_black_mrp": 735,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP97125",
+      "White_mrp": 530,
+      "silver_grey_mrp": 840,
+      "matt_black_mrp": 840,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP9716S",
+      "White_mrp": 710,
+      "silver_grey_mrp": 1115,
+      "matt_black_mrp": 1115,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AP97185",
+      "White_mrp": 800,
+      "silver_grey_mrp": 1245,
+      "matt_black_mrp": 1245,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "Al700",
+      "White_mrp": 700,
+      "silver_grey_mrp": 885,
+      "matt_black_mrp": 885,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "Al900",
+      "White_mrp": 925,
+      "silver_grey_mrp": 1185,
+      "matt_black_mrp": 1185,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A1500",
+      "White_mrp": 855,
+      "silver_grey_mrp": 1090,
+      "matt_black_mrp": 1090,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A2700",
+      "White_mrp": 1270,
+      "silver_grey_mrp": 1655,
+      "matt_black_mrp": 1655,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4900",
+      "White_mrp": 215,
+      "silver_grey_mrp": 300,
+      "matt_black_mrp": 300,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A5200",
+      "White_mrp": 760,
+      "silver_grey_mrp": 850,
+      "matt_black_mrp": 850,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A5300",
+      "White_mrp": "on_request",
+      "silver_grey_mrp": "on_request",
+      "matt_black_mrp": "on_request",
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A5310",
+      "White_mrp": 890,
+      "silver_grey_mrp": 980,
+      "matt_black_mrp": 980,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4797",
+      "White_mrp": 225,
+      "silver_grey_mrp": 285,
+      "matt_black_mrp": 285,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4910",
+      "White_mrp": 1270,
+      "silver_grey_mrp": 1535,
+      "matt_black_mrp": 1535,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4921",
+      "White_mrp": 1350,
+      "silver_grey_mrp": 1710,
+      "matt_black_mrp": 1710,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4912",
+      "White_mrp": 1470,
+      "silver_grey_mrp": 1915,
+      "matt_black_mrp": 1915,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4931",
+      "White_mrp": 3060,
+      "silver_grey_mrp": 3605,
+      "matt_black_mrp": 3605,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A4932",
+      "White_mrp": 4435,
+      "silver_grey_mrp": 5225,
+      "matt_black_mrp": 5225,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "AFL922",
+      "White_mrp": 1025,
+      "silver_grey_mrp": 1315,
+      "matt_black_mrp": 1315,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A5500",
+      "White_mrp": 4225,
+      "silver_grey_mrp": 5670,
+      "matt_black_mrp": 5670,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "A3900",
+      "White_mrp": 60,
+      "silver_grey_mrp": 105,
+      "matt_black_mrp": 105,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "M500",
+      "White_mrp": 205,
+      "silver_grey_mrp": 270,
+      "matt_black_mrp": 270,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "M600",
+      "White_mrp": 265,
+      "silver_grey_mrp": 335,
+      "matt_black_mrp": 335,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "M603",
+      "White_mrp": 360,
+      "silver_grey_mrp": 440,
+      "matt_black_mrp": 440,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "M401",
+      "White_mrp": 430,
+      "silver_grey_mrp": 555,
+      "matt_black_mrp": 555,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "M400",
+      "White_mrp": 130,
+      "silver_grey_mrp": 325,
+      "matt_black_mrp": 325,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "6A",
+      "White_mrp": 525,
+      "silver_grey_mrp": 645,
+      "matt_black_mrp": 645,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "6A",
+      "White_mrp": 1150,
+      "silver_grey_mrp": 1415,
+      "matt_black_mrp": 1415,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "20A",
+      "White_mrp": 1015,
+      "silver_grey_mrp": 1185,
+      "matt_black_mrp": 1185,
+      "brand": "wipro",
+      "model": "nowa"
+    },
+    {
+      "item_code": "NW-PU3MBTIP66",
+      "White_mrp": 4760,
+      "silver_grey_mrp": "N/a",
+      "matt_black_mrp": "N/a",
+      "brand": "wipro",
+      "model": "nowa"
+    }
+  ]
+}

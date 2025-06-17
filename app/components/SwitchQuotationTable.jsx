@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import ArtisaSwitchColorSelector from "./ArtisaSwitchColorSelector"
 
 const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
@@ -90,7 +91,7 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
               </p>
             </td>
             <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-              ₹{totalWithGST.toFixed(2)}
+              ₹{totalAmount.toFixed(2)}
             </td>
           </tr>
         </tbody>
@@ -123,6 +124,17 @@ const SwitchQuotatTable = () => {
     "N/A": "bg-light",
   };
 
+  // Custom sequence for Designer Plates subcategories
+  const designerPlateSequence = [
+    "Aqua Green Plate",
+    "Frozen Matt Plate",
+    "Dapper Black Plate",
+    "Abstract Silver Plate",
+    "Retro Bronze Plate",
+    "Natural Teak Plate",
+    "Cherry Mahogany Plate",
+  ];
+
   // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
@@ -141,6 +153,7 @@ const SwitchQuotatTable = () => {
           ...product,
           qty: product.qty || 0,
           discount: product.discount || 0,
+          size: product.category === "Designer Plates" && product.subcategory !== "Back Grid Frames" && product.subcategory !== "Frame Plate" ? (product.size || 1) : null,
           id: product.id || Math.random().toString(36).substring(2),
         }));
 
@@ -173,14 +186,23 @@ const SwitchQuotatTable = () => {
       ),
     ].sort();
 
-    const designerPlateSubs = [
+    // Get unique Designer Plates subcategories, excluding Frame Plate
+    let designerPlateSubs = [
       ...new Set(
         products
           .filter((p) => p.category === "Designer Plates" && p.subcategory && p.subcategory !== "Frame Plate")
           .map((p) => p.subcategory)
           .filter((sub) => sub)
       ),
-    ].sort();
+    ];
+
+    // Sort according to custom sequence, append others
+    designerPlateSubs = [
+      // Include subcategories in custom sequence if they exist in data
+      ...designerPlateSequence.filter((sub) => designerPlateSubs.includes(sub)),
+      // Append other subcategories (e.g., Back Grid Frames, or any not in sequence)
+      ...designerPlateSubs.filter((sub) => !designerPlateSequence.includes(sub)).sort(),
+    ];
 
     return { brandModels, switchSocketSubs, designerPlateSubs };
   }, [products, selectedBrand]);
@@ -211,7 +233,28 @@ const SwitchQuotatTable = () => {
     );
   }, []);
 
-  // Memoized filtered products
+  // Calculate total size-based quantity for Back Grid Frames
+  const backGridFramesQty = useMemo(() => {
+    if (!selectedDesignerPlateSubcategories.length || !selectedBrand || !selectedModel) return 0;
+
+    return filteredProducts.reduce((sum, product) => {
+      if (
+        product.category === "Designer Plates" &&
+        product.subcategory !== "Back Grid Frames" &&
+        product.subcategory !== "Frame Plate" &&
+        selectedDesignerPlateSubcategories.includes(product.subcategory) &&
+        product.brand === selectedBrand &&
+        product.model === selectedModel
+      ) {
+        const qty = Math.max(0, product.qty || 0);
+        const size = Math.max(1, product.size || 1);
+        return sum + qty * size;
+      }
+      return sum;
+    }, 0);
+  }, [filteredProducts, selectedDesignerPlateSubcategories, selectedBrand, selectedModel]);
+
+  // Memoized filtered products with auto-assigned Back Grid Frames quantity
   const filtered = useMemo(() => {
     if (!selectedBrand) return [];
 
@@ -235,9 +278,11 @@ const SwitchQuotatTable = () => {
 
     if (selectedDesignerPlateSubcategories.length > 0) {
       // Include selected Designer Plates subcategories, exclude Regular Plates
+      // Include Back Grid Frames if any Designer Plates are selected
       result = result.filter(
         (product) =>
-          (product.category === "Designer Plates" && selectedDesignerPlateSubcategories.includes(product.subcategory)) ||
+          (product.category === "Designer Plates" &&
+            (selectedDesignerPlateSubcategories.includes(product.subcategory) || product.subcategory === "Back Grid Frames")) ||
           (product.category !== "Plates" && product.category !== "Designer Plates") ||
           (product.category === "Plates" && product.subcategory !== "Regular Plates")
       );
@@ -249,6 +294,18 @@ const SwitchQuotatTable = () => {
       );
     }
 
+    // Assign Back Grid Frames quantity
+    result = result.map((product) => {
+      if (
+        product.category === "Designer Plates" &&
+        product.subcategory === "Back Grid Frames" &&
+        selectedDesignerPlateSubcategories.length > 0
+      ) {
+        return { ...product, qty: backGridFramesQty };
+      }
+      return product;
+    });
+
     return result;
   }, [
     products,
@@ -256,6 +313,7 @@ const SwitchQuotatTable = () => {
     selectedModel,
     selectedSwitchSocketSubcategory,
     selectedDesignerPlateSubcategories,
+    backGridFramesQty,
   ]);
 
   // Sync filteredProducts
@@ -314,6 +372,7 @@ const SwitchQuotatTable = () => {
           ...product,
           qty: product.qty || 0,
           discount: product.discount || 0,
+          size: product.category === "Designer Plates" && product.subcategory !== "Back Grid Frames" && product.subcategory !== "Frame Plate" ? (product.size || 1) : null,
           id: product.id || Math.random().toString(36).substring(2),
         }));
 
@@ -375,6 +434,10 @@ const SwitchQuotatTable = () => {
           </div>
         </div>
       )}
+
+      <div className="mb-4 row align-items-center">
+         <ArtisaSwitchColorSelector />
+      </div>
 
       <div className="mb-4 row align-items-start">
         <div className="col-sm-6 col-md-3 mb-2">
@@ -512,19 +575,22 @@ const SwitchQuotatTable = () => {
               filteredProducts.map((product, index) => {
                 const qty = Math.max(0, product.qty || 0);
                 const discount = Math.max(0, Math.min(100, product.discount || 0));
-                const displayPrice = product.price || 0;
-                const netPrice = displayPrice * (1 - discount / 100);
+                const mrp = product.price || 0;
+                // Net Price excludes quantity: MRP * (1 - Discount/100)
+                const netPrice = mrp * (1 - discount / 100);
+                // Amount includes quantity: Net Price * Qty
                 const amount = netPrice * qty;
                 const categoryClass = categoryColors[product.category || "N/A"];
+                const isBackGridFrame = product.category === "Designer Plates" && product.subcategory === "Back Grid Frames";
 
                 return (
                   <tr key={product.id}>
                     <td>{index + 1}</td>
-                    <td>{product.itemname || "Unknown"}</td>
+                    <td>{product.itemname || "N/A"}</td>
                     <td>{product.brand || "N/A"}</td>
                     <td>{product.model || "N/A"}</td>
                     <td className={categoryClass}>{product.subcategory || "N/A"}</td>
-                    <td>₹{displayPrice.toFixed(2)}</td>
+                    <td>₹{mrp.toFixed(2)}</td>
                     <td>
                       <input
                         type="number"
@@ -533,6 +599,7 @@ const SwitchQuotatTable = () => {
                         onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
                         className={`form-control form-control-sm text-center ${qty < 0 ? 'is-invalid' : ''}`}
                         style={{ width: 55 }}
+                        disabled={isBackGridFrame && selectedDesignerPlateSubcategories.length > 0}
                         aria-label={`Quantity for ${product.itemname || "item"}`}
                       />
                     </td>
