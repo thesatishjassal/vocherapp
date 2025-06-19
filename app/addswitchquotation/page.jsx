@@ -1,7 +1,8 @@
 "use client";
-import QuotationInfo from "../components/QuotaionInfo";
-import CustomerModal from "../components/customerModal";
-import SwitchQuotatTable from "../components/SwitchQuotationTable";
+
+import QuotationInfo from "../components/QuotationInfo";
+import CustomerModal from "../components/CustomerModal";
+import SwitchQuotationTable from "../components/SwitchQuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
@@ -85,6 +86,7 @@ const SwitchQuotation = () => {
     const fetchLastQuotationData = async () => {
       try {
         setIsLoading(true);
+        console.log("setQuotationId available:", !!setQuotationId); // Debug log
         const response = await fetch("https://api.panvic.in/quotation/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -124,13 +126,12 @@ const SwitchQuotation = () => {
       }
     };
 
-    fetchLastQuotationData();
+    // Ensure client-side execution
+    if (typeof window !== "undefined") {
+      fetchLastQuotationData();
+    }
   }, []);
 
-  /**
-   * Saves the quotation and its items to the API.
-   * @async
-   */
   const handleSaveQuotation = useCallback(async () => {
     if (quotationSequence === null || isLoading || isSaving) {
       toast.warning("Please wait while the quotation is being processed.");
@@ -344,7 +345,7 @@ const SwitchQuotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <SwitchQuotatTable
+                  <SwitchQuotationTable
                     onRowsChange={handleRowsChange}
                     totalAmount={totalAmount}
                     onTotalAmountChange={handleTotalAmountChange}
@@ -478,7 +479,7 @@ const SwitchQuotation = () => {
                   strokeWidth="32"
                 ></rect>
                 <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
+                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 0 00-40 40v24"
                   fill="none"
                   stroke="currentColor"
                   strokeLinejoin="round"
