@@ -81,7 +81,6 @@ const SwitchQuotation = () => {
     return `PLQOT-${sequenceStr}`;
   }, [quotationSequence]);
 
-  // Fetch last quotation data
   useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
