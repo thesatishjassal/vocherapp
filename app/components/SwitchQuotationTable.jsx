@@ -1,14 +1,26 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import ArtisaSwitchColorSelector from "./ArtisaSwitchColorSelector"
+import ArtisaSwitchColorSelector from "./ArtisaSwitchColorSelector";
 
 const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
   const [gstType, setGstType] = useState("include");
 
-  const gstAmount = useMemo(() => (totalAmount * gstPercentage) / 100, [totalAmount, gstPercentage]);
-  const totalWithGST = useMemo(() => (gstType === "exclude" ? totalAmount + gstAmount : totalAmount), [gstType, totalAmount, gstAmount]);
-  const withoutGST = useMemo(() => (gstType === "exclude" ? totalAmount : totalAmount / (1 + gstPercentage / 100)), [gstType, totalAmount, gstPercentage]);
+  const gstAmount = useMemo(
+    () => (totalAmount * gstPercentage) / 100,
+    [totalAmount, gstPercentage]
+  );
+  const totalWithGST = useMemo(
+    () => (gstType === "exclude" ? totalAmount + gstAmount : totalAmount),
+    [gstType, totalAmount, gstAmount]
+  );
+  const withoutGST = useMemo(
+    () =>
+      gstType === "exclude"
+        ? totalAmount
+        : totalAmount / (1 + gstPercentage / 100),
+    [gstType, totalAmount, gstPercentage]
+  );
 
   useEffect(() => {
     if (onGSTChange) {
@@ -20,7 +32,14 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
         gstType,
       });
     }
-  }, [gstAmount, totalWithGST, withoutGST, gstPercentage, gstType, onGSTChange]);
+  }, [
+    gstAmount,
+    totalWithGST,
+    withoutGST,
+    gstPercentage,
+    gstType,
+    onGSTChange,
+  ]);
 
   return (
     <div className="row p-4">
@@ -30,7 +49,9 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
             type="number"
             placeholder="Enter GST%"
             value={gstPercentage}
-            onChange={(e) => setGstPercentage(Math.max(0, parseFloat(e.target.value) || 0))}
+            onChange={(e) =>
+              setGstPercentage(Math.max(0, parseFloat(e.target.value) || 0))
+            }
             className="form-control m-0 no-print"
             min="0"
             max="100"
@@ -76,7 +97,9 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
               </tr>
               <tr>
                 <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                  <p className="m-0">GST Amt (<b>{gstPercentage}%</b>):</p>
+                  <p className="m-0">
+                    GST Amt (<b>{gstPercentage}%</b>):
+                  </p>
                 </td>
                 <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none">
                   ₹{gstAmount.toFixed(2)}
@@ -87,7 +110,8 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
           <tr>
             <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
               <p className="m-0">
-                Total Amount <b>{gstType === "exclude" ? "with" : "including"} GST</b>:
+                Total Amount{" "}
+                <b>{gstType === "exclude" ? "with" : "including"} GST</b>:
               </p>
             </td>
             <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
@@ -105,12 +129,20 @@ const SwitchQuotatTable = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [brands] = useState(["Wipro", "L&T"]);
   const [models, setModels] = useState([]);
-  const [switchSocketSubcategories, setSwitchSocketSubcategories] = useState([]);
-  const [designerPlateSubcategories, setDesignerPlateSubcategories] = useState([]);
+  const [switchSocketSubcategories, setSwitchSocketSubcategories] = useState(
+    []
+  );
+  const [designerPlateSubcategories, setDesignerPlateSubcategories] = useState(
+    []
+  );
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedSwitchSocketSubcategory, setSelectedSwitchSocketSubcategory] = useState("");
-  const [selectedDesignerPlateSubcategories, setSelectedDesignerPlateSubcategories] = useState([]);
+  const [selectedSwitchSocketSubcategory, setSelectedSwitchSocketSubcategory] =
+    useState("");
+  const [
+    selectedDesignerPlateSubcategories,
+    setSelectedDesignerPlateSubcategories,
+  ] = useState([]);
   const [quotationId, setQuotationId] = useState("");
   const [gstDetails, setGstDetails] = useState({});
   const [loading, setLoading] = useState(true);
@@ -153,7 +185,12 @@ const SwitchQuotatTable = () => {
           ...product,
           qty: product.qty || 0,
           discount: product.discount || 0,
-          size: product.category === "Designer Plates" && product.subcategory !== "Back Grid Frames" && product.subcategory !== "Frame Plate" ? (product.size || 1) : null,
+          size:
+            product.category === "Designer Plates" &&
+            product.subcategory !== "Back Grid Frames" &&
+            product.subcategory !== "Frame Plate"
+              ? product.size || 1
+              : null,
           id: product.id || Math.random().toString(36).substring(2),
         }));
 
@@ -170,11 +207,20 @@ const SwitchQuotatTable = () => {
   // Compute derived data
   const { brandModels, switchSocketSubs, designerPlateSubs } = useMemo(() => {
     const brandModels = selectedBrand
-      ? [...new Set(
-          products
-            .filter((p) => p.brand === selectedBrand && p.model && ["Switches", "Sockets", "Designer Plates", "Plates"].includes(p.category))
-            .map((p) => p.model)
-        )].sort()
+      ? [
+          ...new Set(
+            products
+              .filter(
+                (p) =>
+                  p.brand === selectedBrand &&
+                  p.model &&
+                  ["Switches", "Sockets", "Designer Plates", "Plates"].includes(
+                    p.category
+                  )
+              )
+              .map((p) => p.model)
+          ),
+        ].sort()
       : [];
 
     const switchSocketSubs = [
@@ -190,7 +236,12 @@ const SwitchQuotatTable = () => {
     let designerPlateSubs = [
       ...new Set(
         products
-          .filter((p) => p.category === "Designer Plates" && p.subcategory && p.subcategory !== "Frame Plate")
+          .filter(
+            (p) =>
+              p.category === "Designer Plates" &&
+              p.subcategory &&
+              p.subcategory !== "Frame Plate"
+          )
           .map((p) => p.subcategory)
           .filter((sub) => sub)
       ),
@@ -201,7 +252,9 @@ const SwitchQuotatTable = () => {
       // Include subcategories in custom sequence if they exist in data
       ...designerPlateSequence.filter((sub) => designerPlateSubs.includes(sub)),
       // Append other subcategories (e.g., Back Grid Frames, or any not in sequence)
-      ...designerPlateSubs.filter((sub) => !designerPlateSequence.includes(sub)).sort(),
+      ...designerPlateSubs
+        .filter((sub) => !designerPlateSequence.includes(sub))
+        .sort(),
     ];
 
     return { brandModels, switchSocketSubs, designerPlateSubs };
@@ -219,10 +272,21 @@ const SwitchQuotatTable = () => {
     if (!switchSocketSubs.includes(selectedSwitchSocketSubcategory)) {
       setSelectedSwitchSocketSubcategory("");
     }
-    if (!selectedDesignerPlateSubcategories.every((sub) => designerPlateSubs.includes(sub))) {
+    if (
+      !selectedDesignerPlateSubcategories.every((sub) =>
+        designerPlateSubs.includes(sub)
+      )
+    ) {
       setSelectedDesignerPlateSubcategories([]);
     }
-  }, [brandModels, switchSocketSubs, designerPlateSubs, selectedModel, selectedSwitchSocketSubcategory, selectedDesignerPlateSubcategories]);
+  }, [
+    brandModels,
+    switchSocketSubs,
+    designerPlateSubs,
+    selectedModel,
+    selectedSwitchSocketSubcategory,
+    selectedDesignerPlateSubcategories,
+  ]);
 
   // Handle Designer Plates checkbox changes
   const handleDesignerPlateCheckboxChange = useCallback((subcategory) => {
@@ -235,7 +299,12 @@ const SwitchQuotatTable = () => {
 
   // Calculate total size-based quantity for Back Grid Frames
   const backGridFramesQty = useMemo(() => {
-    if (!selectedDesignerPlateSubcategories.length || !selectedBrand || !selectedModel) return 0;
+    if (
+      !selectedDesignerPlateSubcategories.length ||
+      !selectedBrand ||
+      !selectedModel
+    )
+      return 0;
 
     return filteredProducts.reduce((sum, product) => {
       if (
@@ -252,7 +321,12 @@ const SwitchQuotatTable = () => {
       }
       return sum;
     }, 0);
-  }, [filteredProducts, selectedDesignerPlateSubcategories, selectedBrand, selectedModel]);
+  }, [
+    filteredProducts,
+    selectedDesignerPlateSubcategories,
+    selectedBrand,
+    selectedModel,
+  ]);
 
   // Memoized filtered products with auto-assigned Back Grid Frames quantity
   const filtered = useMemo(() => {
@@ -265,7 +339,9 @@ const SwitchQuotatTable = () => {
     }
 
     result = result.filter((product) =>
-      ["Switches", "Sockets", "Designer Plates", "Plates"].includes(product.category)
+      ["Switches", "Sockets", "Designer Plates", "Plates"].includes(
+        product.category
+      )
     );
 
     if (selectedSwitchSocketSubcategory) {
@@ -282,15 +358,19 @@ const SwitchQuotatTable = () => {
       result = result.filter(
         (product) =>
           (product.category === "Designer Plates" &&
-            (selectedDesignerPlateSubcategories.includes(product.subcategory) || product.subcategory === "Back Grid Frames")) ||
-          (product.category !== "Plates" && product.category !== "Designer Plates") ||
-          (product.category === "Plates" && product.subcategory !== "Regular Plates")
+            (selectedDesignerPlateSubcategories.includes(product.subcategory) ||
+              product.subcategory === "Back Grid Frames")) ||
+          (product.category !== "Plates" &&
+            product.category !== "Designer Plates") ||
+          (product.category === "Plates" &&
+            product.subcategory !== "Regular Plates")
       );
     } else {
       // Default to Regular Plates for Plates category
       result = result.filter(
         (product) =>
-          product.category !== "Plates" || product.subcategory === "Regular Plates"
+          product.category !== "Plates" ||
+          product.subcategory === "Regular Plates"
       );
     }
 
@@ -342,10 +422,15 @@ const SwitchQuotatTable = () => {
   }, []);
 
   const handleDiscountChange = useCallback((id, newDiscount) => {
-    const validatedDiscount = Math.max(0, Math.min(100, parseFloat(newDiscount) || 0));
+    const validatedDiscount = Math.max(
+      0,
+      Math.min(100, parseFloat(newDiscount) || 0)
+    );
     setFilteredProducts((prev) =>
       prev.map((product) =>
-        product.id === id ? { ...product, discount: validatedDiscount } : product
+        product.id === id
+          ? { ...product, discount: validatedDiscount }
+          : product
       )
     );
   }, []);
@@ -372,7 +457,12 @@ const SwitchQuotatTable = () => {
           ...product,
           qty: product.qty || 0,
           discount: product.discount || 0,
-          size: product.category === "Designer Plates" && product.subcategory !== "Back Grid Frames" && product.subcategory !== "Frame Plate" ? (product.size || 1) : null,
+          size:
+            product.category === "Designer Plates" &&
+            product.subcategory !== "Back Grid Frames" &&
+            product.subcategory !== "Frame Plate"
+              ? product.size || 1
+              : null,
           id: product.id || Math.random().toString(36).substring(2),
         }));
 
@@ -398,12 +488,17 @@ const SwitchQuotatTable = () => {
           animation: fadeOut 0.3s forwards;
         }
         @keyframes fadeIn {
-          to { opacity: 1; }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes fadeOut {
-          to { opacity: 0; }
+          to {
+            opacity: 0;
+          }
         }
-        .form-select:hover, .form-control:hover {
+        .form-select:hover,
+        .form-control:hover {
           box-shadow: 0 0 3px rgba(0, 123, 255, 0.2);
           transition: box-shadow 0.2s ease-in-out;
         }
@@ -423,21 +518,22 @@ const SwitchQuotatTable = () => {
 
       {loading && (
         <div
-          className={`d-flex justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100 fade-in ${loading ? '' : 'fade-out'}`}
+          className={`d-flex justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100 fade-in ${
+            loading ? "" : "fade-out"
+          }`}
           style={{ backgroundColor: "rgba(0, 0, 0, 0.1)", zIndex: 1000 }}
         >
           <div className="text-center">
-            <div className="spinner-border spinner-border-lg text-primary" role="status">
+            <div
+              className="spinner-border spinner-border-lg text-primary"
+              role="status"
+            >
               <span className="visually-hidden">Loading...</span>
             </div>
             <p className="mt-2 text-muted">Loading products...</p>
           </div>
         </div>
       )}
-
-      <div className="mb-4 row align-items-center">
-         <ArtisaSwitchColorSelector />
-      </div>
 
       <div className="mb-4 row align-items-start">
         <div className="col-sm-6 col-md-3 mb-2">
@@ -466,7 +562,13 @@ const SwitchQuotatTable = () => {
             disabled={!selectedBrand || !models.length}
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title={!selectedBrand ? "Please select a Brand first" : !models.length ? "No models available" : ""}
+            title={
+              !selectedBrand
+                ? "Please select a Brand first"
+                : !models.length
+                ? "No models available"
+                : ""
+            }
             aria-label="Select Model"
             aria-disabled={!selectedBrand || !models.length}
           >
@@ -485,12 +587,28 @@ const SwitchQuotatTable = () => {
             className="form-select form-select-sm"
             value={selectedSwitchSocketSubcategory}
             onChange={(e) => setSelectedSwitchSocketSubcategory(e.target.value)}
-            disabled={!selectedBrand || !selectedModel || !switchSocketSubcategories.length}
+            disabled={
+              !selectedBrand ||
+              !selectedModel ||
+              !switchSocketSubcategories.length
+            }
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title={!selectedBrand ? "Please select a Brand first" : !selectedModel ? "Please select a Model first" : !switchSocketSubcategories.length ? "No subcategories available" : ""}
+            title={
+              !selectedBrand
+                ? "Please select a Brand first"
+                : !selectedModel
+                ? "Please select a Model first"
+                : !switchSocketSubcategories.length
+                ? "No subcategories available"
+                : ""
+            }
             aria-label="Select Switches and Sockets Type"
-            aria-disabled={!selectedBrand || !selectedModel || !switchSocketSubcategories.length}
+            aria-disabled={
+              !selectedBrand ||
+              !selectedModel ||
+              !switchSocketSubcategories.length
+            }
           >
             <option value="">All Types</option>
             {switchSocketSubcategories.map((subcat) => (
@@ -500,7 +618,11 @@ const SwitchQuotatTable = () => {
             ))}
           </select>
         </div>
-
+        {selectedModel === "Artisa" && selectedSwitchSocketSubcategory && (
+          <div className="mb-2">
+            <ArtisaSwitchColorSelector />
+          </div>
+        )}
         <div className="col-sm-6 col-md-3 mb-2">
           <label className="form-label mb-1">Designer Plates:</label>
           <div
@@ -525,12 +647,17 @@ const SwitchQuotatTable = () => {
                     type="checkbox"
                     value={subcat}
                     id={`designer-plate-${subcat}`}
-                    checked={selectedDesignerPlateSubcategories.includes(subcat)}
+                    checked={selectedDesignerPlateSubcategories.includes(
+                      subcat
+                    )}
                     onChange={() => handleDesignerPlateCheckboxChange(subcat)}
                     disabled={!selectedBrand || !selectedModel}
                     aria-label={`Select ${subcat}`}
                   />
-                  <label className="form-check-label" htmlFor={`designer-plate-${subcat}`}>
+                  <label
+                    className="form-check-label"
+                    htmlFor={`designer-plate-${subcat}`}
+                  >
                     {subcat}
                   </label>
                 </div>
@@ -574,14 +701,19 @@ const SwitchQuotatTable = () => {
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => {
                 const qty = Math.max(0, product.qty || 0);
-                const discount = Math.max(0, Math.min(100, product.discount || 0));
+                const discount = Math.max(
+                  0,
+                  Math.min(100, product.discount || 0)
+                );
                 const mrp = product.price || 0;
                 // Net Price excludes quantity: MRP * (1 - Discount/100)
                 const netPrice = mrp * (1 - discount / 100);
                 // Amount includes quantity: Net Price * Qty
                 const amount = netPrice * qty;
                 const categoryClass = categoryColors[product.category || "N/A"];
-                const isBackGridFrame = product.category === "Designer Plates" && product.subcategory === "Back Grid Frames";
+                const isBackGridFrame =
+                  product.category === "Designer Plates" &&
+                  product.subcategory === "Back Grid Frames";
 
                 return (
                   <tr key={product.id}>
@@ -589,18 +721,29 @@ const SwitchQuotatTable = () => {
                     <td>{product.itemname || "N/A"}</td>
                     <td>{product.brand || "N/A"}</td>
                     <td>{product.model || "N/A"}</td>
-                    <td className={categoryClass}>{product.subcategory || "N/A"}</td>
+                    <td className={categoryClass}>
+                      {product.subcategory || "N/A"}
+                    </td>
                     <td>₹{mrp.toFixed(2)}</td>
                     <td>
                       <input
                         type="number"
                         min="0"
                         value={qty}
-                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
-                        className={`form-control form-control-sm text-center ${qty < 0 ? 'is-invalid' : ''}`}
+                        onChange={(e) =>
+                          handleQtyChange(product.id, parseInt(e.target.value))
+                        }
+                        className={`form-control form-control-sm text-center ${
+                          qty < 0 ? "is-invalid" : ""
+                        }`}
                         style={{ width: 55 }}
-                        disabled={isBackGridFrame && selectedDesignerPlateSubcategories.length > 0}
-                        aria-label={`Quantity for ${product.itemname || "item"}`}
+                        disabled={
+                          isBackGridFrame &&
+                          selectedDesignerPlateSubcategories.length > 0
+                        }
+                        aria-label={`Quantity for ${
+                          product.itemname || "item"
+                        }`}
                       />
                     </td>
                     <td>
@@ -609,10 +752,19 @@ const SwitchQuotatTable = () => {
                         min="0"
                         max="100"
                         value={discount}
-                        onChange={(e) => handleDiscountChange(product.id, parseFloat(e.target.value))}
-                        className={`form-control form-control-sm text-center ${discount < 0 || discount > 100 ? 'is-invalid' : ''}`}
+                        onChange={(e) =>
+                          handleDiscountChange(
+                            product.id,
+                            parseFloat(e.target.value)
+                          )
+                        }
+                        className={`form-control form-control-sm text-center ${
+                          discount < 0 || discount > 100 ? "is-invalid" : ""
+                        }`}
                         style={{ width: 55 }}
-                        aria-label={`Discount for ${product.itemname || "item"}`}
+                        aria-label={`Discount for ${
+                          product.itemname || "item"
+                        }`}
                       />
                     </td>
                     <td>₹{isNaN(netPrice) ? "0.00" : netPrice.toFixed(2)}</td>
@@ -623,7 +775,9 @@ const SwitchQuotatTable = () => {
             ) : (
               <tr>
                 <td colSpan={10} className="text-center text-muted py-3">
-                  {selectedBrand ? "No products found." : "Please select a Brand to start filtering."}
+                  {selectedBrand
+                    ? "No products found."
+                    : "Please select a Brand to start filtering."}
                 </td>
               </tr>
             )}
@@ -635,7 +789,10 @@ const SwitchQuotatTable = () => {
         <div className="col-sm-6"></div>
         <div className="col-sm-6">
           <h5 className="mb-3">Total Amount Details</h5>
-          <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
+          <GSTCalculator
+            totalAmount={totalAmount}
+            onGSTChange={handleGSTChange}
+          />
         </div>
       </div>
     </div>

@@ -612,7 +612,7 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   );
 };
 
-const SwitchQuotatTable = () => {
+const ArtisaSwitchColorSelector = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedColor, setSelectedColor] = useState("white");
@@ -695,7 +695,7 @@ const SwitchQuotatTable = () => {
   }, []);
 
   return (
-    <div className="container py-4 position-relative">
+    <div className="position-relative">
       <style jsx>{`
         .fade-in {
           opacity: 0;
@@ -764,88 +764,8 @@ const SwitchQuotatTable = () => {
         </div>
       )}
 
-      {/* <div className="table-responsive fade-in">
-        <table className="tm_round_border table align-items-center justify-content-center mb-0">
-          <thead className="table-light">
-            <tr>
-              <th scope="col">SR NO</th>
-              <th scope="col">Item Code</th>
-              <th scope="col">Brand</th>
-              <th scope="col">Model</th>
-              <th scope="col">Category</th>
-              <th scope="col">MRP</th>
-              <th scope="col">Qty</th>
-              <th scope="col">Discount (%)</th>
-              <th scope="col">Net Price</th>
-              <th scope="col">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product, index) => {
-                const qty = Math.max(0, product.qty || 0);
-                const discount = Math.max(0, Math.min(100, product.discount || 0));
-                const mrp = product.price || 0;
-                const netPrice = mrp * (1 - discount / 100);
-                const amount = netPrice * qty;
-                const categoryClassName = categoryColors[product.category || "N/A"];
-
-                return (
-                  <tr key={product.id}>
-                    <td>{index + 1}</td>
-                    <td>{product.item_code || "N/A"}</td>
-                    <td>{product.brand || "N/A"}</td>
-                    <td>{product.model || "N/A"}</td>
-                    <td className={categoryClassName}>{product.category || "N/A"}</td>
-                    <td>₹{mrp.toFixed(2)}</td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        value={qty}
-                        onChange={(e) => handleQtyChange(product.id, parseInt(e.target.value))}
-                        className={`form-control form-control-sm text-center ${qty < 0 ? "is-invalid" : ""}`}
-                        style={{ width: 55 }}
-                        aria-label={`Quantity for ${product.item_code || "item"}`}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={discount}
-                        onChange={(e) => handleDiscountChange(product.id, parseFloat(e.target.value))}
-                        className={`form-control form-control-sm text-center ${discount < 0 || discount > 100 ? "is-invalid" : ""}`}
-                        style={{ width: 55 }}
-                        aria-label={`Discount for ${product.item_code || "item"}`}
-                      />
-                    </td>
-                    <td>₹{isNaN(netPrice) ? "0.00" : netPrice.toFixed(2)}</td>
-                    <td>₹{isNaN(amount) ? "0.00" : amount.toFixed(2)}</td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={10} className="text-center text-muted py-3">
-                  No products found for the selected color.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="d-flex container py-4 fade-in">
-        <div className="col-sm-6"></div>
-        <div className="col-sm-6">
-          <h5 className="mb-3">Total Amount Details</h5>
-          <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
-        </div>
-      </div> */}
     </div>
   );
 };
 
-export default SwitchQuotatTable;
+export default ArtisaSwitchColorSelector;
