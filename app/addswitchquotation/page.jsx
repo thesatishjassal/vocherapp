@@ -1,7 +1,7 @@
 "use client";
 
-import QuotationInfo from "../components/QuotationInfo";
-import CustomerModal from "../components/CustomerModal";
+import QuotationInfo from "../components/QuotaionInfo";
+import CustomerModal from "../components/customerModal";
 import SwitchQuotationTable from "../components/SwitchQuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
