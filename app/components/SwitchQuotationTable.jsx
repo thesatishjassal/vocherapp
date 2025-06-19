@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import ArtisaSwitchColorSelector from "./ArtisaSwitchColorSelector";
+import NowaSwitchColorSelector from "./NowaSwitchColorSelector";
+import VeniaSwitchColorSelector from "./VeniaSwitchColorSelector";
 
 const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
@@ -621,6 +623,16 @@ const SwitchQuotatTable = () => {
         {selectedModel === "Artisa" && selectedSwitchSocketSubcategory && (
           <div className="mb-2">
             <ArtisaSwitchColorSelector />
+          </div>
+        )}
+        {selectedModel === "Nowa" && selectedSwitchSocketSubcategory && (
+          <div className="mb-2">
+            <NowaSwitchColorSelector />
+          </div>
+        )}
+            {selectedModel === "Venia" && selectedSwitchSocketSubcategory && (
+          <div className="mb-2">
+            <VeniaSwitchColorSelector />
           </div>
         )}
         <div className="col-sm-6 col-md-3 mb-2">
