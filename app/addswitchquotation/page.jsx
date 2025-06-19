@@ -7,14 +7,13 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
 const SwitchQuotation = () => {
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quotationInfo, setQuotationInfo] = useState(null);
-  // const [quotationId, setQuotationId] = useState(1);
+  const [quotationId, setQuotationId] = useState(1); // Define quotationId state
   const [quotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
@@ -111,7 +110,7 @@ const SwitchQuotation = () => {
 
           const nextSequence = lastSequence + 1;
           setQuotationSequence(nextSequence);
-          setQuotationId(quotations.length + 1);
+          setQuotationId(quotations.length + 1); // Use setQuotationId here
         } else {
           setQuotationId(1);
           setQuotationSequence(1);
@@ -347,6 +346,9 @@ const SwitchQuotation = () => {
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <SwitchQuotatTable
+                    onRowsChange={handleRowsChange}
+                    totalAmount={totalAmount}
+                    onTotalAmountChange={handleTotalAmountChange}
                   />
                   {showModalClientDetails && (
                     <CustomerModal
@@ -368,6 +370,7 @@ const SwitchQuotation = () => {
                     onChange={(e) => setRemarks(e.target.value)}
                   ></textarea>
                 </div>
+                {/* Uncomment if GSTCalculator is needed */}
                 {/* <div className="tm_right_footer">
                   <GSTCalculator
                     totalAmount={totalAmount}
@@ -381,7 +384,7 @@ const SwitchQuotation = () => {
               <b>
                 <i>
                   Thank You for considering us for your needs. Here is the
-                  purposal as you requested.
+                  proposal as you requested.
                 </i>
               </b>
             </p>
