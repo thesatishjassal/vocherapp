@@ -8,7 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie"; // Import js-cookie for cookie management
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
+console.log("API_URL:", API_URL); // Log the API URL to ensure it's set correctly
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "" });
