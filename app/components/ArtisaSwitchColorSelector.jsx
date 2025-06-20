@@ -579,11 +579,16 @@ const ArtisaSwitchColorSelector = () => {
   }, [products, selectedColor]);
 
   // Sync filteredProducts and log to console
-  useEffect(() => {
-    setFilteredProducts(filtered);
-    // Log filtered products based on selected color
-    console.log(`Filtered products for color: ${formatColorName(selectedColor)}`, filtered);
-  }, [filtered, selectedColor]);
+useEffect(() => {
+  setFilteredProducts(filtered);
+  // Create an array of objects with item_code, color, and price
+  const logArray = filtered.map((product) => ({
+    item_code: product.item_code,
+    color: formatColorName(selectedColor),
+    price: product.price,
+  }));
+  console.log(`Selected Color: ${formatColorName(selectedColor)}`, logArray);
+}, [filtered, selectedColor]);
 
   // Calculate total amount
   const totalAmount = useMemo(() => {
