@@ -1,106 +1,50 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import axios from "axios";
-import { toast } from "react-toastify";
 import QuotationItemsTable from "../../components/QuotationItemsTable";
+// import PrintButton from "../../../components/PrintButton";
 
-const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
 const QUOTATION_API_URL = "https://api.panvic.in/quotation";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
 
-const ViewQuotation = () => {
-  const { quote } = useParams();
-  const [quotation, setQuotation] = useState(null);
-  const [client, setClient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [revisionHistory, setRevisionHistory] = useState([]);
-  const [selectedRevision, setSelectedRevision] = useState(null);
+export default async function ViewQuotation({ params }) {
+  const { quote } = await params; // Await params to resolve dynamic route parameter
+  let quotation = null;
+  let client = null;
+  let error = null;
+  // console.log("Fetching quotation for:", quote);
+  try {
+    // Fetch Quotation
+    const quotationResponse = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
+      withCredentials: true,
+    });
 
-  useEffect(() => {
-    if (!quote) return;
-
-    const fetchQuotation = async () => {
-      try {
-        const response = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
+    if (quotationResponse.data) {
+      quotation = quotationResponse.data;
+      // console.log("Quotation data:", quotation);
+      // Fetch Client
+      if (quotation.client_id) {
+        const clientResponse = await axios.get(CLIENT_API_URL, {
           withCredentials: true,
         });
-        if (response.data) {
-          setQuotation(response.data);
-          if (response.data.client_id) {
-            fetchClient(response.data.client_id);
-          }
-          fetchRevisionHistory(response.data.quotation_id);
-        } else {
-          toast.error("No quotation found!");
+        client = clientResponse.data.find((c) => c.id === quotation.client_id);
+        // console.log("Client data:", client);
+        if (!client) {
+          error = "Client not found!";
         }
-      } catch (error) {
-        toast.error("Failed to load quotation details!");
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchQuotation();
-  }, [quote]);
-
-  const fetchClient = async (client_id) => {
-    try {
-      const response = await axios.get(CLIENT_API_URL, {
-        withCredentials: true,
-      });
-      const filteredClient = response.data.find((c) => c.id === client_id);
-      if (filteredClient) {
-        setClient(filteredClient);
-      } else {
-        toast.error("Client not found!");
-      }
-    } catch (error) {
-      toast.error("Failed to load client details!");
+    } else {
+      error = "No quotation found!";
     }
-  };
+  } catch (err) {
+    error = "Failed to load quotation details!";
+  }
 
-  const fetchRevisionHistory = async (quotationId) => {
-    try {
-      const response = await axios.get(
-        `${HISTORY_API_URL}?quotation_id=${quotationId}`,
-        {
-          withCredentials: true,
-        }
-      );
+  if (error) {
+    return <p>{error}</p>;
+  }
 
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        console.log("API Response:", response.data); // Debugging
-
-        // Sort by `edited_at` in descending order (latest first)
-        const sortedRevisions = response.data
-          .filter((revision) => revision.edited_at) // Ensure `edited_at` exists
-          .sort((a, b) => new Date(b.edited_at) - new Date(a.edited_at));
-
-        // Set to state
-        setRevisionHistory(sortedRevisions);
-        setSelectedRevision(sortedRevisions[0]); // Default to latest revision
-      } else {
-        setRevisionHistory([]); // No history found
-        setSelectedRevision(null);
-      }
-    } catch (error) {
-      console.error("Error fetching revision history:", error);
-      toast.error("Failed to load revision history!");
-    }
-  };
-
-  const handleRevisionChange = (e) => {
-    const revisionId = parseInt(e.target.value);
-    const selected = revisionHistory.find((rev) => rev.id === revisionId);
-    setSelectedRevision(selected || null);
-    console.log("Selected Revision:", selected); // Debugging
-  };
-
-  if (loading) return <p>Loading...</p>;
-  if (!quotation) return <p>No quotation found!</p>;
-
-  // Use selectedRevision if available, otherwise fall back to quotation
-  const displayData = selectedRevision || quotation || {};
+  if (!quotation) {
+    return <p>No quotation found!</p>;
+  }
 
   return (
     <div className="card tm_container my-4">
@@ -122,25 +66,6 @@ const ViewQuotation = () => {
                   <b className="tm_primary_color">#{quotation.quotation_id}</b>
                 </p>
               </div>
-            </div>
-
-            <div className="tm_mb20 no-print">
-              <label htmlFor="revisionSelect" className="tm_primary_color">
-                Select Revision:
-              </label>
-              <select
-                id="revisionSelect"
-                className="form-select w-auto d-inline-block ms-2"
-                onChange={handleRevisionChange}
-                value={selectedRevision?.id || ""}
-              >
-                <option value="">Latest Version (Original Quotation)</option>
-                {revisionHistory.map((revision) => (
-                  <option key={revision.id} value={revision.id}>
-                    Edited on: {new Date(revision.edited_at).toLocaleString()}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="tm_invoice_info tm_mb20 m-0">
@@ -191,10 +116,7 @@ const ViewQuotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <QuotationItemsTable
-                    quotation_id={quote}
-                    selectedRevision={selectedRevision}
-                  />
+                  <QuotationItemsTable quotation_id={quotation.quotation_id} />
                 </div>
               </div>
             </div>
@@ -206,7 +128,8 @@ const ViewQuotation = () => {
                   placeholder="Enter remarks here..."
                   rows="1"
                   cols="30"
-                  defaultValue={displayData.remarks || ""}
+                  defaultValue={quotation.remarks || ""}
+                  readOnly
                 ></textarea>
               </div>
 
@@ -259,41 +182,41 @@ const ViewQuotation = () => {
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
               <p>
-                GST : <b>Including in above prices as per applicable..</b>
+                GST: <b>Including in above prices as per applicable.</b>
               </p>
               <p>
-                Payment Terms : <b>100% in advance with order.</b>
+                Payment Terms: <b>100% in advance with order.</b>
               </p>
               <p>
-                Validity : <b>15 days from the date of quotation.</b>
+                Validity: <b>15 days from the date of quotation.</b>
               </p>
               <p className="m-0">
-                Warranty/Guarantee :
+                Warranty/Guarantee:
                 <b>
                   as per company norms.{" "}
                   {quotation && quotation.warranty_guarantee}
                 </b>
               </p>
               <p>
-                Responsibility :
+                Responsibility:
                 <b>
                   Our responsibility for material counting ceases immediately
                   after delivery.
                 </b>
               </p>
               <p>
-                Installation & Fixing :
+                Installation & Fixing:
                 <b>
                   If required, for any electrical job, we will arrange a
                   technician at extra cost. Installation will take 4-5 days from
-                  the date of dorder.
+                  the date of order.
                 </b>
               </p>
               <p>
-                Freight Charges : <b>Extra as per actual.</b>
+                Freight Charges: <b>Extra as per actual.</b>
               </p>
               <p>
-                Bank Details :
+                Bank Details:
                 <b>
                   PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
                   Code: ICIC0001510, Jalandhar.
@@ -304,34 +227,17 @@ const ViewQuotation = () => {
               </p>
               <hr />
               <p>
-                For:- Panvik Lighting This is a computer generated
-                document,hence signature is not required.
+                For:- Panvik Lighting This is a computer-generated document,
+                hence signature is not required.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="tm_invoice_btns">
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="tm_invoice_btn tm_color1"
-        >
-          <span className="tm_btn_icon">
-            <i className="fa-solid fa-print"></i>
-          </span>
-          <span className="tm_btn_text">Print</span>
-        </button>
-        {/* <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
-          <span className="tm_btn_icon">
-            <i className="fa-brands fa-whatsapp"></i>
-          </span>
-          <span className="tm_btn_text">Share</span>
-        </button> */}
-      </div>
+      {/* <div className="tm_invoice_btns">
+        <PrintButton />
+      </div> */}
     </div>
   );
-};
-
-export default ViewQuotation;
+}
