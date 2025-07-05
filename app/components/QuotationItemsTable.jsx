@@ -19,6 +19,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     price: true,
     discount: true,
     mrp: true,
+    image: true,
   });
 
   useEffect(() => {
@@ -163,6 +164,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         <thead>
           <tr>
             {visibleColumns.srNo && <th>SR NO</th>}
+            {visibleColumns.image && <th>Image</th>}
             {visibleColumns.customerCode && <th>Customer Code</th>}
             {visibleColumns.customerDescription && <th>Customer Description</th>}
             {visibleColumns.itemCode && <th>Item Code</th>}
@@ -179,6 +181,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           {items.map((item, index) => (
             <tr key={index}>
               {visibleColumns.srNo && <td>{index + 1}</td>}
+              {visibleColumns.image && (
+                <th>
+                  <img src={`https://api.panvic.in${item.image}`} className="thumnail" />
+                </th>
+              )}
               {visibleColumns.customerCode && <td>{item.customercode}</td>}
               {visibleColumns.customerDescription && <td>{item.customerdescription}</td>}
               {visibleColumns.itemCode && <td>{item.itemcode}</td>}
