@@ -72,7 +72,7 @@ export default async function ViewQuotation({ params }) {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number">
-                  Date: <b>11/03/2025</b>
+                  Date: <b>{new Date().toLocaleDateString('en-GB')}</b>
                 </p>
               </div>
             </div>

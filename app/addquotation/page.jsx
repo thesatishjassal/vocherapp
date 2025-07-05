@@ -35,7 +35,7 @@ const Quotation = () => {
       product_id: item.itemCode,
       customercode: item.customerCode || "N/A",
       customerdescription: item.customerDescription || "N/A",
-      image: item.image || "https://example.com/default-image.jpg",
+      image: item.image ,
       itemcode: item.itemCode,
       brand: item.brand || "N/A",
       mrp: parseFloat(item.mrp) || 0,

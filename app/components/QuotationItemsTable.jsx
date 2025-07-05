@@ -187,7 +187,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.brand && <td>{item.brand}</td>}
               {visibleColumns.qty && <td>{item.quantity}</td>}
               {visibleColumns.mrp && <td>{item.mrp}</td>}
-              {visibleColumns.discount && <td>{item.discount}</td>}
+              {visibleColumns.discount && <td>{item.discount} </td>}
               {visibleColumns.price && <td>{item.price}</td>}
             </tr>
           ))}
