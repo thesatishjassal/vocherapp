@@ -59,7 +59,7 @@ export default async function ViewQuotation({ params }) {
               </div>
               <div className="tm_invoice_right tm_text_right">
                 <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  IN QUOTATION
+                  QUOTATION
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
