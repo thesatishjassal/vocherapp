@@ -170,9 +170,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.unit && <th>Unit</th>}
             {visibleColumns.brand && <th>Brand</th>}
             {visibleColumns.qty && <th>Qty</th>}
-            {visibleColumns.price && <th>Price</th>}
-            {visibleColumns.discount && <th>Discount</th>}
             {visibleColumns.mrp && <th>MRP</th>}
+            {visibleColumns.discount && <th>Discount</th>}
+            {visibleColumns.price && <th>Price</th>}
           </tr>
         </thead>
         <tbody>
@@ -186,9 +186,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
               {visibleColumns.qty && <td>{item.quantity}</td>}
-              {visibleColumns.price && <td>{item.price}</td>}
-              {visibleColumns.discount && <td>{item.discount}</td>}
               {visibleColumns.mrp && <td>{item.mrp}</td>}
+              {visibleColumns.discount && <td>{item.discount}</td>}
+              {visibleColumns.price && <td>{item.price}</td>}
             </tr>
           ))}
         </tbody>
