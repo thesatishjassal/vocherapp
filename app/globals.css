@@ -800,3 +800,7 @@ img.thumnail {
     width: 50px;
   }
 }
+img.thumbnail {
+    width: 100%;
+    max-width: 100px;
+}

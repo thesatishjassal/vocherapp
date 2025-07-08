@@ -1,9 +1,10 @@
 "use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
 
-const QuotatTable = ({
+const QuotationTable = ({
   items = [],
   onTotalAmountChange,
   ShowHideFiltercolModal,
@@ -23,6 +24,7 @@ const QuotatTable = ({
     mrp: "",
     discount: "",
     amount: "",
+    netPrice: "",
     image: "",
   });
   const [showModal, setShowModal] = useState(false);
@@ -39,6 +41,7 @@ const QuotatTable = ({
     Qty: true,
     Dist: true,
     Price: true,
+    NetPrice: true,
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
 
@@ -52,16 +55,22 @@ const QuotatTable = ({
     unit: useRef(null),
     mrp: useRef(null),
     discount: useRef(null),
+    netPrice: useRef(null),
     image: useRef(null),
   };
 
   // Sync rows with items prop
   useEffect(() => {
     if (items.length > 0 && rows.length === 0) {
-      setRows(items.map((item, index) => ({
-        id: index + 1,
-        ...item,
-        amount: calculateAmount(item.qty, item.mrp, item.discount),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            })));
+      setRows(
+        items.map((item, index) => ({
+          id: index + 1,
+          ...item,
+          netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
+          discount: item.discount || calculateDiscount(item.mrp, item.netPrice),
+          amount: calculateAmount(item.qty, item.netPrice || calculateNetPrice(item.mrp, item.discount)),
+        }))
+      );
     }
   }, [items]);
 
@@ -86,13 +95,27 @@ const QuotatTable = ({
     fetchProducts();
   }, []);
 
-  const calculateAmount = (qty, mrp, discount) => {
-    const discountAmount = (mrp * qty * (discount || 0)) / 100;
-    return qty * mrp - discountAmount;
+  const calculateDiscount = (mrp, netPrice) => {
+    const mrpValue = mrp ? parseFloat(mrp) : 0;
+    const netPriceValue = netPrice ? parseFloat(netPrice) : 0;
+    if (mrpValue === 0) return 0;
+    return Math.round((mrpValue - netPriceValue) / mrpValue * 100); // Round to integer
+  };
+
+  const calculateNetPrice = (mrp, discount) => {
+    const mrpValue = mrp ? parseFloat(mrp) : 0;
+    const discountValue = discount ? parseFloat(discount) : 0;
+    return (mrpValue * (1 - discountValue / 100)).toFixed(2);
+  };
+
+  const calculateAmount = (qty, netPrice) => {
+    const qtyValue = qty ? parseFloat(qty) : 0;
+    const netPriceValue = netPrice ? parseFloat(netPrice) : 0;
+    return qtyValue * netPriceValue; // Return as number
   };
 
   // Calculate total amount directly from rows
-  const totalAmount = rows.reduce((sum, row) => sum + row.amount, 0);
+  const totalAmount = rows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
 
   // Notify parent of rows and total amount changes
   useEffect(() => {
@@ -101,10 +124,11 @@ const QuotatTable = ({
   }, [rows, onRowsChange, onTotalAmountChange, totalAmount]);
 
   const handleAddRow = () => {
-    const { qty, mrp, discount } = newRow;
+    const { qty, mrp, netPrice } = newRow;
 
-    if (newRow.itemCode && newRow.itemName && qty && mrp) {
-      const amount = calculateAmount(qty, mrp, discount);
+    if (newRow.itemCode && newRow.itemName && qty && netPrice) {
+      const amount = calculateAmount(qty, netPrice);
+      const discount = calculateDiscount(mrp, netPrice);
 
       if (editRowIndex !== null) {
         setRows((prevRows) =>
@@ -114,6 +138,8 @@ const QuotatTable = ({
                   ...row,
                   ...newRow,
                   amount,
+                  discount,
+                  netPrice,
                 }
               : row
           )
@@ -126,6 +152,8 @@ const QuotatTable = ({
             id: prevRows.length + 1,
             ...newRow,
             amount,
+            discount,
+            netPrice,
           },
         ]);
       }
@@ -141,11 +169,12 @@ const QuotatTable = ({
         mrp: "",
         discount: "",
         amount: "",
+        netPrice: "",
         image: "",
       });
       setShowAddModal(false);
     } else {
-      alert("Please fill in all required fields.");
+      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
     }
   };
 
@@ -161,7 +190,14 @@ const QuotatTable = ({
   };
 
   const handleFieldChange = (field, value) => {
-    setNewRow((prev) => ({ ...prev, [field]: value }));
+    setNewRow((prev) => {
+      const updatedRow = { ...prev, [field]: value };
+      if (field === "netPrice" || field === "mrp" || field === "qty") {
+        updatedRow.discount = calculateDiscount(updatedRow.mrp, updatedRow.netPrice);
+        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+      }
+      return updatedRow;
+    });
     if (["itemCode", "itemName"].includes(field) && value.trim()) {
       setShowModal(true);
       filterProducts(field, value);
@@ -190,6 +226,7 @@ const QuotatTable = ({
         mrp: product.price,
         brand: product.brand,
         image: product.thumbnail,
+        netPrice: product.price, // Initialize Net Price with MRP
       }));
     }
     setShowModal(false);
@@ -215,6 +252,7 @@ const QuotatTable = ({
       mrp: row.mrp,
       discount: row.discount,
       amount: row.amount,
+      netPrice: row.netPrice,
       image: row.image,
     });
     setEditRowIndex(index);
@@ -247,7 +285,8 @@ const QuotatTable = ({
             {columns.MRP && <th>MRP</th>}
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
-            {columns.Price && <th>Price</th>}
+            {/* {columns.Price && <th>Price</th>} */}
+            {columns.NetPrice && <th>Net Price</th>}
             <th className="no-print">Actions</th>
           </tr>
         </thead>
@@ -264,7 +303,7 @@ const QuotatTable = ({
                         : `https://api.panvic.in${row.image}`
                     }
                     alt=""
-                    className="product_img"
+                    className="product_img thumbnail"
                   />
                 </td>
               )}
@@ -279,7 +318,8 @@ const QuotatTable = ({
               {columns.MRP && <td>{row.mrp}</td>}
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
-              {columns.Price && <td>{row.amount.toFixed(2)}</td>}
+              {/* {columns.Price && <td>{(parseFloat(row.amount) || 0).toFixed(2)}</td>} */}
+              {columns.NetPrice && <td>{row.netPrice}</td>}
               <td>
                 <button
                   className="btn action_btn no-print btn-warning"
@@ -400,7 +440,7 @@ const QuotatTable = ({
                       name="qty"
                       value={newRow.qty}
                       onChange={(e) => handleFieldChange("qty", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "discount")}
+                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
                       placeholder="Qty"
                       className="form-control"
                       ref={inputRefs.qty}
@@ -432,21 +472,31 @@ const QuotatTable = ({
                   </div>
                   <div className="col-6">
                     <input
-                      type="number"
+                      type="text"
                       name="discount"
                       value={newRow.discount}
-                      onChange={(e) => handleFieldChange("discount", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, null)}
                       placeholder="Discount (%)"
                       className="form-control"
                       ref={inputRefs.discount}
+                      disabled
                     />
                   </div>
-                  
+                  <div className="col-6">
+                    <input
+                      type="number"
+                      name="netPrice"
+                      value={newRow.netPrice}
+                      onChange={(e) => handleFieldChange("netPrice", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      placeholder="Net Price"
+                      className="form-control"
+                      ref={inputRefs.netPrice}
+                    />
+                  </div>
                   {newRow.image && (
                     <div className="col-12">
                       <img
-                        src={`https://api.panvic.in` + newRow.image}
+                        src={`https://api.panvic.in${newRow.image}`}
                         alt="Preview"
                         className="img-fluid"
                         style={{ maxHeight: "100px" }}
@@ -502,4 +552,4 @@ const QuotatTable = ({
   );
 };
 
-export default QuotatTable;
+export default QuotationTable;

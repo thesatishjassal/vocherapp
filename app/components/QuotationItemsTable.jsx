@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -19,6 +20,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     price: true,
     discount: true,
     mrp: true,
+    netPrice: true, // Added netPrice
     image: true,
   });
 
@@ -29,7 +31,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       try {
         let response;
         if (selectedRevision) {
-          // Fetch from history API and filter by edited_at
           response = await axios.get(
             `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
             { withCredentials: true }
@@ -39,7 +40,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           );
           setItems(filteredItems);
         } else {
-          // Fetch current items if no revision is selected
           response = await axios.get(
             `https://api.panvic.in/quotation/${quotation_id}/items/`,
             { withCredentials: true }
@@ -62,6 +62,13 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
   const handleCheckboxChange = (column) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
+  // Calculate Net Price (assuming discount is a percentage)
+  const calculateNetPrice = (price, discount) => {
+    const discountValue = discount ? parseFloat(discount) : 0;
+    const priceValue = price ? parseFloat(price) : 0;
+    return (priceValue * (1 - discountValue / 100)).toFixed(2);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -137,10 +144,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         <label>
           <input
             type="checkbox"
-            checked={visibleColumns.price}
-            onChange={() => handleCheckboxChange("price")}
+            checked={visibleColumns.mrp}
+            onChange={() => handleCheckboxChange("mrp")}
           />{" "}
-          Price
+          MRP
         </label>
         <label>
           <input
@@ -153,10 +160,18 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         <label>
           <input
             type="checkbox"
-            checked={visibleColumns.mrp}
-            onChange={() => handleCheckboxChange("mrp")}
+            checked={visibleColumns.price}
+            onChange={() => handleCheckboxChange("price")}
           />{" "}
-          MRP
+          Price
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.netPrice}
+            onChange={() => handleCheckboxChange("netPrice")}
+          />{" "}
+          Net Price
         </label>
       </div>
 
@@ -172,9 +187,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.unit && <th>Unit</th>}
             {visibleColumns.brand && <th>Brand</th>}
             {visibleColumns.qty && <th>Qty</th>}
-            {visibleColumns.mrp && <th>MRP</th>}
+            {visibleColumns.mrp && <td>MRP</td>}
             {visibleColumns.discount && <th>Discount</th>}
             {visibleColumns.price && <th>Price</th>}
+            {visibleColumns.netPrice && <th>Net Price</th>}
           </tr>
         </thead>
         <tbody>
@@ -183,7 +199,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.srNo && <td>{index + 1}</td>}
               {visibleColumns.image && (
                 <th>
-                  <img src={`https://api.panvic.in${item.image}`} className="thumnail" />
+                  <img src={`https://api.panvic.in${item.image}`} className="thumbnail" />
                 </th>
               )}
               {visibleColumns.customerCode && <td>{item.customercode}</td>}
@@ -192,10 +208,13 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.itemName && <td>{item.item_name}</td>}
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
-              {visibleColumns.qty && <td>{item.quantity}</td>}
+              {visibleColumns.quantity && <td>{item.quantity}</td>}
               {visibleColumns.mrp && <td>{item.mrp}</td>}
-              {visibleColumns.discount && <td>{item.discount} </td>}
+              {visibleColumns.discount && <td>{item.discount}</td>}
               {visibleColumns.price && <td>{item.price}</td>}
+              {visibleColumns.netPrice && (
+                <td>{calculateNetPrice(item.price, item.discount)}</td>
+              )}
             </tr>
           ))}
         </tbody>
