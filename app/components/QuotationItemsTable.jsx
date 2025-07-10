@@ -20,7 +20,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     price: true,
     discount: true,
     mrp: true,
-    netPrice: true, // Added netPrice
+    price: true, // Added price
     image: true,
   });
 
@@ -65,7 +65,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   };
 
   // Calculate Net Price (assuming discount is a percentage)
-  // const calculateNetPrice = (price, discount) => {
+  // const calculateprice = (price, discount) => {
   //   const discountValue = discount ? parseFloat(discount) : 0;
   //   const priceValue = price ? parseFloat(price) : 0;
   //   return (priceValue * (1 - discountValue / 100)).toFixed(2);
@@ -168,8 +168,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         <label>
           <input
             type="checkbox"
-            checked={visibleColumns.netPrice}
-            onChange={() => handleCheckboxChange("netPrice")}
+            checked={visibleColumns.price}
+            onChange={() => handleCheckboxChange("price")}
           />
           Net Price
         </label>
@@ -190,7 +190,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.qty && <th>Qty</th>}
             {visibleColumns.discount && <th>Discount</th>}
             {/* {visibleColumns.price && <th>Price</th>} */}
-            {visibleColumns.netPrice && <th> Price</th>}
+            {visibleColumns.price && <th> Price</th>}
           </tr>
         </thead>
         <tbody>
@@ -212,8 +212,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.qty && <td>{item.quantity}</td>}
               {visibleColumns.discount && <td>{item.discount}%</td>}
               {/* {visibleColumns.price && <td>{item.price}</td>} */}
-              {visibleColumns.netPrice && (
-                <td>{item.netPrice}</td>
+              {visibleColumns.price && (
+                <td>{item.price}</td>
               )}
             </tr>
           ))}

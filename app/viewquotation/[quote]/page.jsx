@@ -63,7 +63,7 @@ export default async function ViewQuotation({ params }) {
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
-                  <b className="tm_primary_color">#{quotation.quotation_id}</b>
+                  <b className="tm_primary_color">{quotation.quotation_no}</b>
                 </p>
               </div>
             </div>
