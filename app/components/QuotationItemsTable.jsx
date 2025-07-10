@@ -65,11 +65,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   };
 
   // Calculate Net Price (assuming discount is a percentage)
-  const calculateNetPrice = (price, discount) => {
-    const discountValue = discount ? parseFloat(discount) : 0;
-    const priceValue = price ? parseFloat(price) : 0;
-    return (priceValue * (1 - discountValue / 100)).toFixed(2);
-  };
+  // const calculateNetPrice = (price, discount) => {
+  //   const discountValue = discount ? parseFloat(discount) : 0;
+  //   const priceValue = price ? parseFloat(price) : 0;
+  //   return (priceValue * (1 - discountValue / 100)).toFixed(2);
+  // };
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
@@ -82,7 +82,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.srNo}
             onChange={() => handleCheckboxChange("srNo")}
-          />{" "}
+          />
           SR NO
         </label>
         <label>
@@ -90,7 +90,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.customerCode}
             onChange={() => handleCheckboxChange("customerCode")}
-          />{" "}
+          />
           Customer Code
         </label>
         <label>
@@ -98,7 +98,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.customerDescription}
             onChange={() => handleCheckboxChange("customerDescription")}
-          />{" "}
+          />
           Customer Description
         </label>
         <label>
@@ -106,7 +106,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.itemCode}
             onChange={() => handleCheckboxChange("itemCode")}
-          />{" "}
+          />
           Item Code
         </label>
         <label>
@@ -114,7 +114,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.itemName}
             onChange={() => handleCheckboxChange("itemName")}
-          />{" "}
+          />
           Item Name
         </label>
         <label>
@@ -122,7 +122,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.unit}
             onChange={() => handleCheckboxChange("unit")}
-          />{" "}
+          />
           Unit
         </label>
         <label>
@@ -130,7 +130,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.brand}
             onChange={() => handleCheckboxChange("brand")}
-          />{" "}
+          />
           Brand
         </label>
         <label>
@@ -138,7 +138,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.qty}
             onChange={() => handleCheckboxChange("qty")}
-          />{" "}
+          />
           Qty
         </label>
         <label>
@@ -146,7 +146,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.mrp}
             onChange={() => handleCheckboxChange("mrp")}
-          />{" "}
+          />
           MRP
         </label>
         <label>
@@ -154,7 +154,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.discount}
             onChange={() => handleCheckboxChange("discount")}
-          />{" "}
+          />
           Discount
         </label>
         <label>
@@ -162,7 +162,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.price}
             onChange={() => handleCheckboxChange("price")}
-          />{" "}
+          />
           Price
         </label>
         <label>
@@ -170,7 +170,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             type="checkbox"
             checked={visibleColumns.netPrice}
             onChange={() => handleCheckboxChange("netPrice")}
-          />{" "}
+          />
           Net Price
         </label>
       </div>
@@ -186,11 +186,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.itemName && <th>Item Name</th>}
             {visibleColumns.unit && <th>Unit</th>}
             {visibleColumns.brand && <th>Brand</th>}
-            {visibleColumns.qty && <th>Qty</th>}
             {visibleColumns.mrp && <td>MRP</td>}
+            {visibleColumns.qty && <th>Qty</th>}
             {visibleColumns.discount && <th>Discount</th>}
-            {visibleColumns.price && <th>Price</th>}
-            {visibleColumns.netPrice && <th>Net Price</th>}
+            {/* {visibleColumns.price && <th>Price</th>} */}
+            {visibleColumns.netPrice && <th> Price</th>}
           </tr>
         </thead>
         <tbody>
@@ -208,12 +208,12 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.itemName && <td>{item.item_name}</td>}
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
-              {visibleColumns.quantity && <td>{item.quantity}</td>}
               {visibleColumns.mrp && <td>{item.mrp}</td>}
-              {visibleColumns.discount && <td>{item.discount}</td>}
-              {visibleColumns.price && <td>{item.price}</td>}
+              {visibleColumns.qty && <td>{item.quantity}</td>}
+              {visibleColumns.discount && <td>{item.discount}%</td>}
+              {/* {visibleColumns.price && <td>{item.price}</td>} */}
               {visibleColumns.netPrice && (
-                <td>{calculateNetPrice(item.price, item.discount)}</td>
+                <td>{item.netPrice}</td>
               )}
             </tr>
           ))}
