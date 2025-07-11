@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import FindProduct from "../components/FindPropduct";
@@ -26,6 +24,7 @@ const QuotationTable = ({
     amount: "",
     netPrice: "",
     image: "",
+    remarks: "",
   });
   const [showModal, setShowModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -57,6 +56,7 @@ const QuotationTable = ({
     discount: useRef(null),
     netPrice: useRef(null),
     image: useRef(null),
+    remarks: useRef(null),
   };
 
   // Sync rows with items prop
@@ -69,6 +69,7 @@ const QuotationTable = ({
           netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
           discount: item.discount || calculateDiscount(item.mrp, item.netPrice),
           amount: calculateAmount(item.qty, item.netPrice || calculateNetPrice(item.mrp, item.discount)),
+          remarks: item.remarks || "",
         }))
       );
     }
@@ -84,6 +85,7 @@ const QuotationTable = ({
         const updatedData = data.map((item) => ({
           ...item,
           unit: item.unit || "Piece",
+          itemname: item.itemname?.substring(0, 100) || "", // Truncate itemname from API
         }));
         setProductList(updatedData);
         setFilteredProducts(updatedData);
@@ -171,6 +173,7 @@ const QuotationTable = ({
         amount: "",
         netPrice: "",
         image: "",
+        remarks: "",
       });
       setShowAddModal(false);
     } else {
@@ -191,10 +194,18 @@ const QuotationTable = ({
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => {
-      const updatedRow = { ...prev, [field]: value };
-      if (field === "netPrice" || field === "mrp" || field === "qty") {
+      const updatedRow = { ...prev, [field]: field === "itemName" ? value.substring(0, 100) : value };
+      if (field === "itemName" && value.length > 100) {
+        alert("Item name has been truncated to 100 characters to fit database constraints.");
+      }
+      if (field === "netPrice" || field === "mrp") {
         updatedRow.discount = calculateDiscount(updatedRow.mrp, updatedRow.netPrice);
         updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+      } else if (field === "discount") {
+        updatedRow.netPrice = calculateNetPrice(updatedRow.mrp, value);
+        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+      } else if (field === "qty") {
+        updatedRow.amount = calculateAmount(value, updatedRow.netPrice);
       }
       return updatedRow;
     });
@@ -218,10 +229,14 @@ const QuotationTable = ({
 
   const handleProductSelect = (product) => {
     if (product) {
+      const truncatedItemName = product.itemname?.substring(0, 100) || "";
+      if (product.itemname?.length > 100) {
+        alert("Selected product name has been truncated to 100 characters to fit database constraints.");
+      }
       setNewRow((prev) => ({
         ...prev,
         itemCode: product.itemcode,
-        itemName: product.itemname,
+        itemName: truncatedItemName,
         unit: product.unit,
         mrp: product.price,
         brand: product.brand,
@@ -254,6 +269,7 @@ const QuotationTable = ({
       amount: row.amount,
       netPrice: row.netPrice,
       image: row.image,
+      remarks: row.remarks,
     });
     setEditRowIndex(index);
     setShowAddModal(true);
@@ -285,7 +301,6 @@ const QuotationTable = ({
             {columns.MRP && <th>MRP</th>}
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
-            {/* {columns.Price && <th>Price</th>} */}
             {columns.NetPrice && <th>Net Price</th>}
             <th className="no-print">Actions</th>
           </tr>
@@ -312,13 +327,26 @@ const QuotationTable = ({
                 <td>{row.customerDescription}</td>
               )}
               {columns.ItemCode && <td>{row.itemCode}</td>}
-              <td>{row.itemName}</td>
+              <td>
+                <div>{row.itemName}</div>
+                {row.remarks && (
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      color: "#6c757d", // Bootstrap's text-muted color for lighter appearance
+                      fontSize: "0.9em",
+                      marginTop: "0.25em",
+                    }}
+                  >
+                    {row.remarks}
+                  </div>
+                )}
+              </td>
               {columns.Brand && <td>{row.brand}</td>}
               <td>{row.unit}</td>
               {columns.MRP && <td>{row.mrp}</td>}
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
-              {/* {columns.Price && <td>{(parseFloat(row.amount) || 0).toFixed(2)}</td>} */}
               {columns.NetPrice && <td>{row.netPrice}</td>}
               <td>
                 <button
@@ -440,7 +468,7 @@ const QuotationTable = ({
                       name="qty"
                       value={newRow.qty}
                       onChange={(e) => handleFieldChange("qty", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
+                      onKeyDown={(e) => handleKeyDown(e, "discount")}
                       placeholder="Qty"
                       className="form-control"
                       ref={inputRefs.qty}
@@ -472,13 +500,14 @@ const QuotationTable = ({
                   </div>
                   <div className="col-6">
                     <input
-                      type="text"
+                      type="number"
                       name="discount"
                       value={newRow.discount}
+                      onChange={(e) => handleFieldChange("discount", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
                       placeholder="Discount (%)"
                       className="form-control"
                       ref={inputRefs.discount}
-                      disabled
                     />
                   </div>
                   <div className="col-6">
@@ -487,10 +516,22 @@ const QuotationTable = ({
                       name="netPrice"
                       value={newRow.netPrice}
                       onChange={(e) => handleFieldChange("netPrice", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      onKeyDown={(e) => handleKeyDown(e, "remarks")}
                       placeholder="Net Price"
                       className="form-control"
                       ref={inputRefs.netPrice}
+                    />
+                  </div>
+                  <div className="col-12">
+                    <textarea
+                      name="remarks"
+                      value={newRow.remarks}
+                      onChange={(e) => handleFieldChange("remarks", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      placeholder="Remarks"
+                      className="form-control"
+                      ref={inputRefs.remarks}
+                      rows="4"
                     />
                   </div>
                   {newRow.image && (
