@@ -163,14 +163,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             checked={visibleColumns.price}
             onChange={() => handleCheckboxChange("price")}
           />
-          Price
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={visibleColumns.price}
-            onChange={() => handleCheckboxChange("price")}
-          />
           Net Price
         </label>
       </div>

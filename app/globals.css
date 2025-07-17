@@ -804,3 +804,14 @@ img.thumbnail {
     width: 100%;
     max-width: 100px;
 }
+label, .form-label {
+    font-size: .75rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    color: #27272a;
+    margin-left: .25rem;
+}.btn {
+    margin-bottom: 1rem;
+    letter-spacing: .0025rem;
+    box-shadow: 0 4px 7px -1px #0000001c, 0 2px 4px -1px #00000012;
+}

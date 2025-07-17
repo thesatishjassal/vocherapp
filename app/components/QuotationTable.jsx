@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
-import FindProduct from "../components/FindPropduct";
+import FindProduct from "../components/FindProduct";
 
 const QuotationTable = ({
   items = [],
@@ -28,6 +28,7 @@ const QuotationTable = ({
   });
   const [showModal, setShowModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCusAddModal, setShowCusAddModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [columns, setColumns] = useState({
@@ -68,7 +69,10 @@ const QuotationTable = ({
           ...item,
           netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
           discount: item.discount || calculateDiscount(item.mrp, item.netPrice),
-          amount: calculateAmount(item.qty, item.netPrice || calculateNetPrice(item.mrp, item.discount)),
+          amount: calculateAmount(
+            item.qty,
+            item.netPrice || calculateNetPrice(item.mrp, item.discount)
+          ),
           remarks: item.remarks || "",
         }))
       );
@@ -101,7 +105,7 @@ const QuotationTable = ({
     const mrpValue = mrp ? parseFloat(mrp) : 0;
     const netPriceValue = netPrice ? parseFloat(netPrice) : 0;
     if (mrpValue === 0) return 0;
-    return Math.round((mrpValue - netPriceValue) / mrpValue * 100); // Round to integer
+    return Math.round(((mrpValue - netPriceValue) / mrpValue) * 100); // Round to integer
   };
 
   const calculateNetPrice = (mrp, discount) => {
@@ -117,7 +121,10 @@ const QuotationTable = ({
   };
 
   // Calculate total amount directly from rows
-  const totalAmount = rows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+  const totalAmount = rows.reduce(
+    (sum, row) => sum + (parseFloat(row.amount) || 0),
+    0
+  );
 
   // Notify parent of rows and total amount changes
   useEffect(() => {
@@ -177,7 +184,9 @@ const QuotationTable = ({
       });
       setShowAddModal(false);
     } else {
-      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
+      alert(
+        "Please fill in all required fields (Item Code, Item Name, Qty, Net Price)."
+      );
     }
   };
 
@@ -194,16 +203,30 @@ const QuotationTable = ({
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => {
-      const updatedRow = { ...prev, [field]: field === "itemName" ? value.substring(0, 100) : value };
+      const updatedRow = {
+        ...prev,
+        [field]: field === "itemName" ? value.substring(0, 100) : value,
+      };
       if (field === "itemName" && value.length > 100) {
-        alert("Item name has been truncated to 100 characters to fit database constraints.");
+        alert(
+          "Item name has been truncated to 100 characters to fit database constraints."
+        );
       }
       if (field === "netPrice" || field === "mrp") {
-        updatedRow.discount = calculateDiscount(updatedRow.mrp, updatedRow.netPrice);
-        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+        updatedRow.discount = calculateDiscount(
+          updatedRow.mrp,
+          updatedRow.netPrice
+        );
+        updatedRow.amount = calculateAmount(
+          updatedRow.qty,
+          updatedRow.netPrice
+        );
       } else if (field === "discount") {
         updatedRow.netPrice = calculateNetPrice(updatedRow.mrp, value);
-        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+        updatedRow.amount = calculateAmount(
+          updatedRow.qty,
+          updatedRow.netPrice
+        );
       } else if (field === "qty") {
         updatedRow.amount = calculateAmount(value, updatedRow.netPrice);
       }
@@ -231,7 +254,9 @@ const QuotationTable = ({
     if (product) {
       const truncatedItemName = product.itemname?.substring(0, 100) || "";
       if (product.itemname?.length > 100) {
-        alert("Selected product name has been truncated to 100 characters to fit database constraints.");
+        alert(
+          "Selected product name has been truncated to 100 characters to fit database constraints."
+        );
       }
       setNewRow((prev) => ({
         ...prev,
@@ -396,9 +421,12 @@ const QuotationTable = ({
                   <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
+
               <div className="modal-body p-4">
                 <div className="row g-3">
+                  {/* Customer Code */}
                   <div className="col-6">
+                    <label className="form-label small">Customer Code</label>
                     <input
                       type="text"
                       name="customerCode"
@@ -407,12 +435,17 @@ const QuotationTable = ({
                         handleFieldChange("customerCode", e.target.value)
                       }
                       onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                      placeholder="Cust Code"
+                      placeholder="Enter unique customer code"
                       className="form-control"
                       ref={inputRefs.customerCode}
                     />
                   </div>
+
+                  {/* Customer Description */}
                   <div className="col-6">
+                    <label className="form-label small">
+                      Customer Description
+                    </label>
                     <input
                       type="text"
                       name="customerDescription"
@@ -421,119 +454,153 @@ const QuotationTable = ({
                         handleFieldChange("customerDescription", e.target.value)
                       }
                       onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                      placeholder="Cust Desc"
+                      placeholder="Full name or short description"
                       className="form-control"
                       ref={inputRefs.customerDescription}
                     />
                   </div>
-                  <div className="col-6">
+
+                  {/* Item Code + Name + Qty */}
+                  <div className="col-md-4">
+                    <label className="form-label small">Item Code</label>
                     <input
                       type="text"
                       name="itemCode"
                       value={newRow.itemCode}
-                      onChange={(e) => handleFieldChange("itemCode", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("itemCode", e.target.value)
+                      }
                       onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                      placeholder="Item code"
+                      placeholder="Ex: ITEM00123"
                       className="form-control"
                       ref={inputRefs.itemCode}
                     />
                   </div>
-                  <div className="col-6">
+                  <div className="col-md-4">
+                    <label className="form-label small">Item Name</label>
                     <input
                       type="text"
                       name="itemName"
                       value={newRow.itemName}
-                      onChange={(e) => handleFieldChange("itemName", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "brand")}
-                      placeholder="Item name"
+                      onChange={(e) =>
+                        handleFieldChange("itemName", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "qty")}
+                      placeholder="Ex: Stainless Steel Bottle"
                       className="form-control"
                       ref={inputRefs.itemName}
                     />
                   </div>
-                  <div className="col-6">
-                    <input
-                      type="text"
-                      name="brand"
-                      value={newRow.brand}
-                      onChange={(e) => handleFieldChange("brand", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "qty")}
-                      placeholder="Brand"
-                      className="form-control"
-                      ref={inputRefs.brand}
-                    />
-                  </div>
-                  <div className="col-6">
+                  <div className="col-md-4">
+                    <label className="form-label small">Quantity</label>
                     <input
                       type="number"
                       name="qty"
                       value={newRow.qty}
                       onChange={(e) => handleFieldChange("qty", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "discount")}
-                      placeholder="Qty"
+                      onKeyDown={(e) => handleKeyDown(e, "brand")}
+                      placeholder="Enter quantity"
                       className="form-control"
                       ref={inputRefs.qty}
                     />
                   </div>
-                  <div className="col-6">
+
+                  {/* Brand + Unit + MRP */}
+                  <div className="col-md-4">
+                    <label className="form-label small">Brand</label>
+                    <input
+                      type="text"
+                      name="brand"
+                      value={newRow.brand}
+                      onChange={(e) =>
+                        handleFieldChange("brand", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "discount")}
+                      placeholder="Auto-filled unit"
+                      className="form-control"
+                      ref={inputRefs.brand}
+                      
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">Unit</label>
                     <input
                       type="text"
                       name="unit"
                       value={newRow.unit}
-                      onChange={(e) => handleFieldChange("unit", e.target.value)}
-                      placeholder="Unit"
+                      onChange={(e) =>
+                        handleFieldChange("unit", e.target.value)
+                      }
+                      placeholder="Auto-filled unit"
                       className="form-control"
                       ref={inputRefs.unit}
                       disabled
                     />
                   </div>
-                  <div className="col-6">
+                  <div className="col-md-4">
+                    <label className="form-label small">MRP</label>
                     <input
                       type="text"
                       name="mrp"
                       value={newRow.mrp}
                       onChange={(e) => handleFieldChange("mrp", e.target.value)}
-                      placeholder="MRP"
+                      placeholder="Auto-fetched MRP"
                       className="form-control"
                       ref={inputRefs.mrp}
                       disabled
                     />
                   </div>
+
+                  {/* Discount + Net Price */}
                   <div className="col-6">
+                    <label className="form-label small">Discount (%)</label>
                     <input
                       type="number"
                       name="discount"
                       value={newRow.discount}
-                      onChange={(e) => handleFieldChange("discount", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("discount", e.target.value)
+                      }
                       onKeyDown={(e) => handleKeyDown(e, "netPrice")}
-                      placeholder="Discount (%)"
+                      placeholder="E.g. 10 for 10% off"
                       className="form-control"
                       ref={inputRefs.discount}
                     />
                   </div>
                   <div className="col-6">
+                    <label className="form-label small">Net Price</label>
                     <input
                       type="number"
                       name="netPrice"
                       value={newRow.netPrice}
-                      onChange={(e) => handleFieldChange("netPrice", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("netPrice", e.target.value)
+                      }
                       onKeyDown={(e) => handleKeyDown(e, "remarks")}
-                      placeholder="Net Price"
+                      placeholder="Final price after discount"
                       className="form-control"
                       ref={inputRefs.netPrice}
                     />
                   </div>
+
+                  {/* Remarks */}
                   <div className="col-12">
+                    <label className="form-label small">Remarks</label>
                     <textarea
                       name="remarks"
                       value={newRow.remarks}
-                      onChange={(e) => handleFieldChange("remarks", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("remarks", e.target.value)
+                      }
                       onKeyDown={(e) => handleKeyDown(e, null)}
-                      placeholder="Remarks"
+                      placeholder="Any additional notes or info"
                       className="form-control"
                       ref={inputRefs.remarks}
-                      rows="4"
+                      rows="2"
                     />
                   </div>
+
+                  {/* Image Preview */}
                   {newRow.image && (
                     <div className="col-12">
                       <img
@@ -546,6 +613,7 @@ const QuotationTable = ({
                   )}
                 </div>
               </div>
+
               <div className="modal-footer border-0 p-4">
                 <button
                   type="button"
@@ -562,7 +630,9 @@ const QuotationTable = ({
                   type="button"
                   className="btn btn-success"
                   onClick={handleAddRow}
-                  aria-label={editRowIndex !== null ? "Update Item" : "Add Item"}
+                  aria-label={
+                    editRowIndex !== null ? "Update Item" : "Add Item"
+                  }
                 >
                   {editRowIndex !== null ? "Update Item" : "Add Item"}
                 </button>
@@ -571,15 +641,269 @@ const QuotationTable = ({
           </div>
         </div>
       )}
+      {showCusAddModal && (
+        <div
+          className="modal fade show"
+          tabIndex="-1"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            transition: "opacity 0.3s",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0 p-4">
+                <h1 className="modal-title fs-5">
+                  {editRowIndex !== null ? "Edit Item" : "Add New Item"}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => {
+                    setShowCusAddModal(false);
+                    setEditRowIndex(null);
+                  }}
+                  aria-label="Close"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
 
+              <div className="modal-body p-4">
+                <div className="row g-3">
+                  {/* Customer Code */}
+                  <div className="col-6">
+                    <label className="form-label small">Customer Code</label>
+                    <input
+                      type="text"
+                      name="customerCode"
+                      value={newRow.customerCode}
+                      onChange={(e) =>
+                        handleFieldChange("customerCode", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
+                      placeholder="Enter unique customer code"
+                      className="form-control"
+                      ref={inputRefs.customerCode}
+                    />
+                  </div>
+
+                  {/* Customer Description */}
+                  <div className="col-6">
+                    <label className="form-label small">
+                      Customer Description
+                    </label>
+                    <input
+                      type="text"
+                      name="customerDescription"
+                      value={newRow.customerDescription}
+                      onChange={(e) =>
+                        handleFieldChange("customerDescription", e.target.value)
+                      }
+                      // onKeyDown={(e) => handleKeyDown(e, "itemCode")}
+                      placeholder="Full name or short description"
+                      className="form-control"
+                      ref={inputRefs.customerDescription}
+                    />
+                  </div>
+
+                  {/* Item Code + Name + Qty */}
+                  <div className="col-md-4">
+                    <label className="form-label small">Item Code</label>
+                    <input
+                      type="text"
+                      name="itemCusCode"
+                      // value={newRow.itemCode}
+                      // onChange={(e) =>
+                      //   handleFieldChange("itemCode", e.target.value)
+                      // }
+                      // onKeyDown={(e) => handleKeyDown(e, "itemName")}
+                      placeholder="Ex: ITEM00123"
+                      className="form-control"
+                      // ref={inputRefs.itemCusCode}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">Item Name</label>
+                    <input
+                      type="text"
+                      name="itemCusName"
+                      // value={newRow.itemName}
+                      // onChange={(e) =>
+                      //   handleFieldChange("itemName", e.target.value)
+                      // }
+                      onKeyDown={(e) => handleKeyDown(e, "qty")}
+                      placeholder="Ex: Stainless Steel Bottle"
+                      className="form-control"
+                      // ref={inputRefs.itemName}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">Quantity</label>
+                    <input
+                      type="number"
+                      name="qty"
+                      value={newRow.qty}
+                      onChange={(e) => handleFieldChange("qty", e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, "brand")}
+                      placeholder="Enter quantity"
+                      className="form-control"
+                      ref={inputRefs.qty}
+                    />
+                  </div>
+
+                  {/* Brand + Unit + MRP */}
+                  <div className="col-md-4">
+                    <label className="form-label small">Brand</label>
+                    <input
+                      type="text"
+                      name="brand"
+                      value={newRow.brand}
+                      onChange={(e) =>
+                        handleFieldChange("brand", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "discount")}
+                      placeholder="Auto-filled unit"
+                      className="form-control"
+                      ref={inputRefs.brand}
+                      
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">Unit</label>
+                    <input
+                      type="text"
+                      name="unit"
+                      value={newRow.unit}
+                      onChange={(e) =>
+                        handleFieldChange("unit", e.target.value)
+                      }
+                      placeholder="Auto-filled unit"
+                      className="form-control"
+                      ref={inputRefs.unit}
+                      
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">MRP</label>
+                    <input
+                      type="text"
+                      name="mrp"
+                      value={newRow.mrp}
+                      onChange={(e) => handleFieldChange("mrp", e.target.value)}
+                      placeholder="Auto-fetched MRP"
+                      className="form-control"
+                      ref={inputRefs.mrp}
+                      
+                    />
+                  </div>
+
+                  {/* Discount + Net Price */}
+                  <div className="col-6">
+                    <label className="form-label small">Discount (%)</label>
+                    <input
+                      type="number"
+                      name="discount"
+                      value={newRow.discount}
+                      onChange={(e) =>
+                        handleFieldChange("discount", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
+                      placeholder="E.g. 10 for 10% off"
+                      className="form-control"
+                      ref={inputRefs.discount}
+                    />
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label small">Net Price</label>
+                    <input
+                      type="number"
+                      name="netPrice"
+                      value={newRow.netPrice}
+                      onChange={(e) =>
+                        handleFieldChange("netPrice", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                      placeholder="Final price after discount"
+                      className="form-control"
+                      ref={inputRefs.netPrice}
+                    />
+                  </div>
+
+                  {/* Remarks */}
+                  <div className="col-12">
+                    <label className="form-label small">Remarks</label>
+                    <textarea
+                      name="remarks"
+                      value={newRow.remarks}
+                      onChange={(e) =>
+                        handleFieldChange("remarks", e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(e, null)}
+                      placeholder="Any additional notes or info"
+                      className="form-control"
+                      ref={inputRefs.remarks}
+                      rows="2"
+                    />
+                  </div>
+
+                  {/* Image Preview */}
+                  {newRow.image && (
+                    <div className="col-12">
+                      <img
+                        src={`https://api.panvic.in${newRow.image}`}
+                        alt="Preview"
+                        className="img-fluid"
+                        style={{ maxHeight: "100px" }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-footer border-0 p-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCusAddModal(false);
+                    setEditRowIndex(null);
+                  }}
+                  aria-label="Cancel"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleAddRow}
+                  aria-label={
+                    editRowIndex !== null ? "Update Item" : "Add Item"
+                  }
+                >
+                  {editRowIndex !== null ? "Update Item" : "Add Item"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Button to open the Add Row Modal */}
-      <div className="mt-3">
+      <div className="mt-3 d-flex gap-2 no-print">
         <button
           className="btn btn-primary w-100"
           onClick={() => setShowAddModal(true)}
           aria-label="Add New Row"
         >
           Add New Row
+        </button>
+        <button
+          className="btn btn-secondary w-100"
+          onClick={() => setShowCusAddModal(true)}
+          aria-label="Add New Row"
+        >
+          Add Custom New Row
         </button>
       </div>
 
