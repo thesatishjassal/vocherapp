@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import FindProduct from "../components/FindPropduct";
+import FindProduct from "../components/FindProduct";
 
 const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
   const [rows, setRows] = useState([]);

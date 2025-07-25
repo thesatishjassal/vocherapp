@@ -1,36 +1,20 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
-import ShowHideFilter from "../components/ShowHideFilter";
-import FindProduct from "../components/FindProduct";
+import PropTypes from "prop-types";
+import AddProductModal from "./AddProductModal";
+import CustomAddModal from "./CustomAddModal";
+import ShowHideFilter from "./ShowHideFilter";
 
 const QuotationTable = ({
   items = [],
   onTotalAmountChange,
-  ShowHideFiltercolModal,
   onClose,
   onRowsChange,
 }) => {
   const [rows, setRows] = useState([]);
-  const [FiltercolModal, setFiltercolModal] = useState(false);
-  const [newRow, setNewRow] = useState({
-    customerCode: "",
-    customerDescription: "",
-    itemCode: "",
-    itemName: "",
-    brand: "",
-    qty: "",
-    unit: "",
-    mrp: "",
-    discount: "",
-    amount: "",
-    netPrice: "",
-    image: "",
-    remarks: "",
-  });
-  const [showModal, setShowModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCusAddModal, setShowCusAddModal] = useState(false);
   const [productList, setProductList] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [columns, setColumns] = useState({
     customerCode: true,
     customerDescription: true,
@@ -45,41 +29,87 @@ const QuotationTable = ({
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
 
+  // Initialize newRow with all fields as defined values
+  const [newRow, setNewRow] = useState({
+    customerCode: "",
+    customerDescription: "",
+    itemCode: "",
+    itemName: "",
+    cus_itemcode: "",
+    cus_itemname: "",
+    brand: "",
+    qty: "",
+    unit: "",
+    mrp: "",
+    discount: "",
+    amount: "",
+    netPrice: "",
+    image: "",
+    remarks: "",
+    cus_customercode: "",
+    cus_customerdescription: "",
+    cus_qty: "",
+    cus_brand: "",
+    cus_unit: "",
+    cus_mrp: "",
+    cus_discount: "",
+    cus_netprice: "",
+    cus_image: "",
+    cus_remarks: "",
+  });
+
   const inputRefs = {
     customerCode: useRef(null),
     customerDescription: useRef(null),
     itemCode: useRef(null),
     itemName: useRef(null),
-    brand: useRef(null),
     qty: useRef(null),
+    brand: useRef(null),
     unit: useRef(null),
     mrp: useRef(null),
     discount: useRef(null),
     netPrice: useRef(null),
-    image: useRef(null),
     remarks: useRef(null),
+    cus_customercode: useRef(null),
+    cus_customerdescription: useRef(null),
+    cus_itemcode: useRef(null),
+    cus_itemname: useRef(null),
+    cus_qty: useRef(null),
+    cus_brand: useRef(null),
+    cus_unit: useRef(null),
+    cus_mrp: useRef(null),
+    cus_discount: useRef(null),
+    cus_netprice: useRef(null),
+    cus_image: useRef(null),
+    cus_remarks: useRef(null),
   };
 
-  // Sync rows with items prop
   useEffect(() => {
     if (items.length > 0 && rows.length === 0) {
       setRows(
         items.map((item, index) => ({
           id: index + 1,
-          ...item,
-          netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
+          customerCode: item.customerCode || "",
+          customerDescription: item.customerDescription || "",
+          itemCode: item.itemCode || "",
+          itemName: item.itemName || "",
+          brand: item.brand || "",
+          qty: item.qty || "",
+          unit: item.unit || "Piece",
+          mrp: item.mrp || "",
           discount: item.discount || calculateDiscount(item.mrp, item.netPrice),
+          netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
           amount: calculateAmount(
             item.qty,
             item.netPrice || calculateNetPrice(item.mrp, item.discount)
           ),
+          image: item.image || "",
           remarks: item.remarks || "",
         }))
       );
     }
   }, [items]);
 
-  // Fetch products from API on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -89,56 +119,97 @@ const QuotationTable = ({
         const updatedData = data.map((item) => ({
           ...item,
           unit: item.unit || "Piece",
-          itemname: item.itemname?.substring(0, 100) || "", // Truncate itemname from API
+          itemname: item.itemname?.substring(0, 100) || "",
+          itemcode: item.itemcode || "",
+          brand: item.brand || "",
+          price: item.price || "",
+          thumbnail: item.thumbnail || "",
         }));
         setProductList(updatedData);
-        setFilteredProducts(updatedData);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
     };
-
     fetchProducts();
   }, []);
 
   const calculateDiscount = (mrp, netPrice) => {
-    const mrpValue = mrp ? parseFloat(mrp) : 0;
-    const netPriceValue = netPrice ? parseFloat(netPrice) : 0;
-    if (mrpValue === 0) return 0;
-    return Math.round(((mrpValue - netPriceValue) / mrpValue) * 100); // Round to integer
+    const mrpValue = parseFloat(mrp) || 0;
+    const netPriceValue = parseFloat(netPrice) || 0;
+    if (mrpValue === 0) return "";
+    return Math.round(((mrpValue - netPriceValue) / mrpValue) * 100).toString();
   };
 
   const calculateNetPrice = (mrp, discount) => {
-    const mrpValue = mrp ? parseFloat(mrp) : 0;
-    const discountValue = discount ? parseFloat(discount) : 0;
+    const mrpValue = parseFloat(mrp) || 0;
+    const discountValue = parseFloat(discount) || 0;
     return (mrpValue * (1 - discountValue / 100)).toFixed(2);
   };
 
   const calculateAmount = (qty, netPrice) => {
-    const qtyValue = qty ? parseFloat(qty) : 0;
-    const netPriceValue = netPrice ? parseFloat(netPrice) : 0;
-    return qtyValue * netPriceValue; // Return as number
+    const qtyValue = parseFloat(qty) || 0;
+    const netPriceValue = parseFloat(netPrice) || 0;
+    return (qtyValue * netPriceValue).toFixed(2);
   };
 
-  // Calculate total amount directly from rows
+  const filterProducts = (field, value, products) => {
+    return products.filter((product) =>
+      field === "itemCode"
+        ? product.itemcode.toLowerCase().includes(value.toLowerCase())
+        : product.itemname.toLowerCase().includes(value.toLowerCase())
+    );
+  };
+
   const totalAmount = rows.reduce(
     (sum, row) => sum + (parseFloat(row.amount) || 0),
     0
   );
 
-  // Notify parent of rows and total amount changes
   useEffect(() => {
     if (onRowsChange) onRowsChange(rows);
     if (onTotalAmountChange) onTotalAmountChange(totalAmount);
   }, [rows, onRowsChange, onTotalAmountChange, totalAmount]);
 
+  const submitCustomRowToDB = async (rowData) => {
+    try {
+      // Placeholder for API call (uncomment and adjust as needed)
+      /*
+      const response = await fetch("https://api.panvic.in/custom-items/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_code: rowData.cus_customercode || "",
+          customer_description: rowData.cus_customerdescription || "",
+          item_code: rowData.cus_itemcode || "",
+          item_name: rowData.cus_itemname || "",
+          brand: rowData.cus_brand || "",
+          qty: parseFloat(rowData.cus_qty) || 0,
+          unit: rowData.cus_unit || "Piece",
+          mrp: parseFloat(rowData.cus_mrp) || 0,
+          discount: parseFloat(rowData.cus_discount) || 0,
+          net_price: parseFloat(rowData.cus_netprice) || 0,
+          image: rowData.cus_image || "",
+          remarks: rowData.cus_remarks || "",
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to save custom item");
+      const result = await response.json();
+      */
+      const result = { id: Date.now() }; // Mock response
+      console.log("Custom item saved successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error saving custom item:", error);
+      alert("Failed to save custom item. Please try again.");
+      return null;
+    }
+  };
+
   const handleAddRow = () => {
-    const { qty, mrp, netPrice } = newRow;
-
-    if (newRow.itemCode && newRow.itemName && qty && netPrice) {
+    const { qty, netPrice, itemCode, itemName } = newRow;
+    if (itemCode && itemName && qty && netPrice) {
       const amount = calculateAmount(qty, netPrice);
-      const discount = calculateDiscount(mrp, netPrice);
-
+      const discount = calculateDiscount(newRow.mrp, netPrice);
       if (editRowIndex !== null) {
         setRows((prevRows) =>
           prevRows.map((row, index) =>
@@ -149,6 +220,13 @@ const QuotationTable = ({
                   amount,
                   discount,
                   netPrice,
+                  unit: newRow.unit || "Piece",
+                  customerCode: newRow.customerCode || "",
+                  customerDescription: newRow.customerDescription || "",
+                  brand: newRow.brand || "",
+                  mrp: newRow.mrp || "",
+                  image: newRow.image || "",
+                  remarks: newRow.remarks || "",
                 }
               : row
           )
@@ -163,31 +241,92 @@ const QuotationTable = ({
             amount,
             discount,
             netPrice,
+            unit: newRow.unit || "Piece",
+            customerCode: newRow.customerCode || "",
+            customerDescription: newRow.customerDescription || "",
+            brand: newRow.brand || "",
+            mrp: newRow.mrp || "",
+            image: newRow.image || "",
+            remarks: newRow.remarks || "",
           },
         ]);
       }
-
-      setNewRow({
-        customerCode: "",
-        customerDescription: "",
-        itemCode: "",
-        itemName: "",
-        brand: "",
-        qty: "",
-        unit: "",
-        mrp: "",
-        discount: "",
-        amount: "",
-        netPrice: "",
-        image: "",
-        remarks: "",
-      });
+      resetNewRow();
       setShowAddModal(false);
     } else {
+      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
+    }
+  };
+
+  const handleSubmitCustomRow = async (rowData, editIndex) => {
+    const { cus_qty, cus_itemcode, cus_itemname, cus_netprice } = rowData;
+    if (cus_itemcode && cus_itemname && cus_qty && cus_netprice) {
+      const amount = calculateAmount(cus_qty, cus_netprice);
+      const discount = calculateDiscount(rowData.cus_mrp, cus_netprice);
+      const savedItem = await submitCustomRowToDB(rowData);
+      if (savedItem) {
+        const newRowData = {
+          id: editIndex !== null ? rows[editIndex].id : rows.length + 1,
+          customerCode: rowData.cus_customercode || "",
+          customerDescription: rowData.cus_customerdescription || "",
+          itemCode: rowData.cus_itemcode || "",
+          itemName: rowData.cus_itemname || "",
+          brand: rowData.cus_brand || "",
+          qty: rowData.cus_qty || "",
+          unit: rowData.cus_unit || "Piece",
+          mrp: rowData.cus_mrp || "",
+          discount,
+          netPrice: rowData.cus_netprice || "",
+          amount,
+          image: rowData.cus_image || "",
+          remarks: rowData.cus_remarks || "",
+        };
+        if (editIndex !== null) {
+          setRows((prevRows) =>
+            prevRows.map((row, index) => (index === editIndex ? newRowData : row))
+          );
+          setEditRowIndex(null);
+        } else {
+          setRows((prevRows) => [...prevRows, newRowData]);
+        }
+        resetNewRow();
+        setShowCusAddModal(false);
+      }
+    } else {
       alert(
-        "Please fill in all required fields (Item Code, Item Name, Qty, Net Price)."
+        "Please fill in all required fields (Custom Item Code, Custom Item Name, Qty, Net Price)."
       );
     }
+  };
+
+  const resetNewRow = () => {
+    setNewRow({
+      customerCode: "",
+      customerDescription: "",
+      itemCode: "",
+      itemName: "",
+      cus_itemcode: "",
+      cus_itemname: "",
+      brand: "",
+      qty: "",
+      unit: "",
+      mrp: "",
+      discount: "",
+      amount: "",
+      netPrice: "",
+      image: "",
+      remarks: "",
+      cus_customercode: "",
+      cus_customerdescription: "",
+      cus_qty: "",
+      cus_brand: "",
+      cus_unit: "",
+      cus_mrp: "",
+      cus_discount: "",
+      cus_netprice: "",
+      cus_image: "",
+      cus_remarks: "",
+    });
   };
 
   const handleKeyDown = (e, nextField) => {
@@ -196,7 +335,11 @@ const QuotationTable = ({
       if (nextField && inputRefs[nextField]?.current) {
         inputRefs[nextField].current.focus();
       } else {
-        handleAddRow();
+        if (showAddModal) {
+          handleAddRow();
+        } else if (showCusAddModal) {
+          handleSubmitCustomRow(newRow, editRowIndex);
+        }
       }
     }
   };
@@ -205,74 +348,38 @@ const QuotationTable = ({
     setNewRow((prev) => {
       const updatedRow = {
         ...prev,
-        [field]: field === "itemName" ? value.substring(0, 100) : value,
+        [field]:
+          field === "cus_itemname" || field === "itemName"
+            ? value.substring(0, 100)
+            : value || "", // Ensure no undefined values
       };
-      if (field === "itemName" && value.length > 100) {
-        alert(
-          "Item name has been truncated to 100 characters to fit database constraints."
-        );
+      if ((field === "cus_itemname" || field === "itemName") && value.length > 100) {
+        alert("Item name truncated to 100 characters.");
       }
-      if (field === "netPrice" || field === "mrp") {
-        updatedRow.discount = calculateDiscount(
-          updatedRow.mrp,
-          updatedRow.netPrice
+      if (
+        field === "netPrice" ||
+        field === "mrp" ||
+        field === "cus_netprice" ||
+        field === "cus_mrp"
+      ) {
+        updatedRow.discount = calculateDiscount(updatedRow.mrp, updatedRow.netPrice);
+        updatedRow.cus_discount = calculateDiscount(
+          updatedRow.cus_mrp,
+          updatedRow.cus_netprice
         );
-        updatedRow.amount = calculateAmount(
-          updatedRow.qty,
-          updatedRow.netPrice
-        );
-      } else if (field === "discount") {
+        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+        updatedRow.cus_amount = calculateAmount(updatedRow.cus_qty, updatedRow.cus_netprice);
+      } else if (field === "discount" || field === "cus_discount") {
         updatedRow.netPrice = calculateNetPrice(updatedRow.mrp, value);
-        updatedRow.amount = calculateAmount(
-          updatedRow.qty,
-          updatedRow.netPrice
-        );
-      } else if (field === "qty") {
+        updatedRow.cus_netprice = calculateNetPrice(updatedRow.cus_mrp, value);
+        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
+        updatedRow.cus_amount = calculateAmount(updatedRow.cus_qty, updatedRow.cus_netprice);
+      } else if (field === "qty" || field === "cus_qty") {
         updatedRow.amount = calculateAmount(value, updatedRow.netPrice);
+        updatedRow.cus_amount = calculateAmount(value, updatedRow.cus_netprice);
       }
       return updatedRow;
     });
-    if (["itemCode", "itemName"].includes(field) && value.trim()) {
-      setShowModal(true);
-      filterProducts(field, value);
-    }
-  };
-
-  const filterProducts = (field, value) => {
-    const filtered = productList.filter((product) => {
-      if (field === "itemCode") {
-        return product.itemcode.toLowerCase().includes(value.toLowerCase());
-      } else if (field === "itemName") {
-        return product.itemname.toLowerCase().includes(value.toLowerCase());
-      }
-      return true;
-    });
-    setFilteredProducts(filtered);
-  };
-
-  const handleProductSelect = (product) => {
-    if (product) {
-      const truncatedItemName = product.itemname?.substring(0, 100) || "";
-      if (product.itemname?.length > 100) {
-        alert(
-          "Selected product name has been truncated to 100 characters to fit database constraints."
-        );
-      }
-      setNewRow((prev) => ({
-        ...prev,
-        itemCode: product.itemcode,
-        itemName: truncatedItemName,
-        unit: product.unit,
-        mrp: product.price,
-        brand: product.brand,
-        image: product.thumbnail,
-        netPrice: product.price, // Initialize Net Price with MRP
-      }));
-    }
-    setShowModal(false);
-    setTimeout(() => {
-      inputRefs.qty.current?.focus();
-    }, 0);
   };
 
   const handleColumnVisibilityChange = (updatedColumns) => {
@@ -282,22 +389,67 @@ const QuotationTable = ({
   const handleEditRow = (index) => {
     const row = rows[index];
     setNewRow({
-      customerCode: row.customerCode,
-      customerDescription: row.customerDescription,
-      itemCode: row.itemCode,
-      itemName: row.itemName,
-      brand: row.brand,
-      qty: row.qty,
-      unit: row.unit,
-      mrp: row.mrp,
-      discount: row.discount,
-      amount: row.amount,
-      netPrice: row.netPrice,
-      image: row.image,
-      remarks: row.remarks,
+      customerCode: row.customerCode || "",
+      customerDescription: row.customerDescription || "",
+      itemCode: row.itemCode || "",
+      itemName: row.itemName || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
+      brand: row.brand || "",
+      qty: row.qty || "",
+      unit: row.unit || "Piece",
+      mrp: row.mrp || "",
+      discount: row.discount || "",
+      amount: row.amount || "",
+      netPrice: row.netPrice || "",
+      image: row.image || "",
+      remarks: row.remarks || "",
+      cus_customercode: row.customerCode || "",
+      cus_customerdescription: row.customerDescription || "",
+      cus_qty: row.qty || "",
+      cus_brand: row.brand || "",
+      cus_unit: row.unit || "Piece",
+      cus_mrp: row.mrp || "",
+      cus_discount: row.discount || "",
+      cus_netprice: row.netPrice || "",
+      cus_image: row.image || "",
+      cus_remarks: row.remarks || "",
     });
     setEditRowIndex(index);
     setShowAddModal(true);
+  };
+
+  const handleEditCustomRow = (index) => {
+    const row = rows[index];
+    setNewRow({
+      customerCode: row.customerCode || "",
+      customerDescription: row.customerDescription || "",
+      itemCode: row.itemCode || "",
+      itemName: row.itemName || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
+      brand: row.brand || "",
+      qty: row.qty || "",
+      unit: row.unit || "Piece",
+      mrp: row.mrp || "",
+      discount: row.discount || "",
+      amount: row.amount || "",
+      netPrice: row.netPrice || "",
+      image: row.image || "",
+      remarks: row.remarks || "",
+      cus_customercode: row.customerCode || "",
+      cus_customerdescription: row.customerDescription || "",
+      cus_qty: row.qty || "",
+      cus_brand: row.brand || "",
+      cus_unit: row.unit || "Piece",
+      cus_mrp: row.mrp || "",
+      cus_discount: row.discount || "",
+      cus_netprice: row.netPrice || "",
+      cus_image: row.image || "",
+      cus_remarks: row.remarks || "",
+    });
+    setEditRowIndex(index);
+    setShowCusAddModal(true);
   };
 
   const handleDeleteRow = (index) => {
@@ -307,7 +459,7 @@ const QuotationTable = ({
   return (
     <div>
       <ShowHideFilter
-        className="no-print"
+        className="no-print mb-3"
         columns={columns}
         onChange={handleColumnVisibilityChange}
       />
@@ -327,7 +479,7 @@ const QuotationTable = ({
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
             {columns.NetPrice && <th>Net Price</th>}
-            <th className="no-print">Actions</th>
+            <td className="no-print">Actions</td>
           </tr>
         </thead>
         <tbody>
@@ -337,20 +489,16 @@ const QuotationTable = ({
               {columns.Image && (
                 <td>
                   <img
-                    src={
-                      row.image === ""
-                        ? ""
-                        : `https://api.panvic.in${row.image}`
-                    }
+                    src={row.image ? `https://api.panvic.in${row.image}` : ""}
                     alt=""
                     className="product_img thumbnail"
+                    style={{ maxHeight: "50px" }}
+                    onError={(e) => (e.target.style.display = "none")}
                   />
                 </td>
               )}
               {columns.customerCode && <td>{row.customerCode}</td>}
-              {columns.customerDescription && (
-                <td>{row.customerDescription}</td>
-              )}
+              {columns.customerDescription && <td>{row.customerDescription}</td>}
               {columns.ItemCode && <td>{row.itemCode}</td>}
               <td>
                 <div>{row.itemName}</div>
@@ -358,7 +506,7 @@ const QuotationTable = ({
                   <div
                     style={{
                       fontWeight: "bold",
-                      color: "#6c757d", // Bootstrap's text-muted color for lighter appearance
+                      color: "#6c757d",
                       fontSize: "0.9em",
                       marginTop: "0.25em",
                     }}
@@ -373,16 +521,25 @@ const QuotationTable = ({
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
               {columns.NetPrice && <td>{row.netPrice}</td>}
-              <td>
+              <td className="no-print">
                 <button
-                  className="btn action_btn no-print btn-warning"
+                  className="btn action_btn btn-warning me-2"
                   onClick={() => handleEditRow(index)}
+                  aria-label="Edit"
                 >
                   <i className="fas fa-edit"></i>
                 </button>
                 <button
-                  className="btn action_btn no-print btn-danger ml-2"
+                  className="btn action_btn btn-info me-2"
+                  onClick={() => handleEditCustomRow(index)}
+                  aria-label="Edit Custom"
+                >
+                  <i className="fas fa-edit"></i> Custom
+                </button>
+                <button
+                  className="btn action_btn btn-danger"
                   onClick={() => handleDeleteRow(index)}
+                  aria-label="Delete"
                 >
                   <i className="fas fa-trash"></i>
                 </button>
@@ -392,504 +549,32 @@ const QuotationTable = ({
         </tbody>
       </table>
 
-      {/* Add Row Modal */}
-      {showAddModal && (
-        <div
-          className="modal fade show"
-          tabIndex="-1"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            transition: "opacity 0.3s",
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content rounded-4">
-              <div className="modal-header border-0 p-4">
-                <h1 className="modal-title fs-5">
-                  {editRowIndex !== null ? "Edit Item" : "Add New Item"}
-                </h1>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditRowIndex(null);
-                  }}
-                  aria-label="Close"
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
+      <AddProductModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        newRow={newRow}
+        setNewRow={setNewRow}
+        handleFieldChange={handleFieldChange}
+        handleKeyDown={handleKeyDown}
+        inputRefs={inputRefs}
+        editRowIndex={editRowIndex}
+        handleAddRow={handleAddRow}
+        products={productList}
+        filterProducts={filterProducts}
+      />
 
-              <div className="modal-body p-4">
-                <div className="row g-3">
-                  {/* Customer Code */}
-                  <div className="col-6">
-                    <label className="form-label small">Customer Code</label>
-                    <input
-                      type="text"
-                      name="customerCode"
-                      value={newRow.customerCode}
-                      onChange={(e) =>
-                        handleFieldChange("customerCode", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                      placeholder="Enter unique customer code"
-                      className="form-control"
-                      ref={inputRefs.customerCode}
-                    />
-                  </div>
+      <CustomAddModal
+        showCusAddModal={showCusAddModal}
+        setShowCusAddModal={setShowCusAddModal}
+        newRow={newRow}
+        setCustomNewRow={setNewRow}
+        handleFieldChange={handleFieldChange}
+        handleKeyDown={handleKeyDown}
+        inputRefs={inputRefs}
+        editRowIndex={editRowIndex}
+        handleSubmitCustomRow={handleSubmitCustomRow}
+      />
 
-                  {/* Customer Description */}
-                  <div className="col-6">
-                    <label className="form-label small">
-                      Customer Description
-                    </label>
-                    <input
-                      type="text"
-                      name="customerDescription"
-                      value={newRow.customerDescription}
-                      onChange={(e) =>
-                        handleFieldChange("customerDescription", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                      placeholder="Full name or short description"
-                      className="form-control"
-                      ref={inputRefs.customerDescription}
-                    />
-                  </div>
-
-                  {/* Item Code + Name + Qty */}
-                  <div className="col-md-4">
-                    <label className="form-label small">Item Code</label>
-                    <input
-                      type="text"
-                      name="itemCode"
-                      value={newRow.itemCode}
-                      onChange={(e) =>
-                        handleFieldChange("itemCode", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                      placeholder="Ex: ITEM00123"
-                      className="form-control"
-                      ref={inputRefs.itemCode}
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Item Name</label>
-                    <input
-                      type="text"
-                      name="itemName"
-                      value={newRow.itemName}
-                      onChange={(e) =>
-                        handleFieldChange("itemName", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "qty")}
-                      placeholder="Ex: Stainless Steel Bottle"
-                      className="form-control"
-                      ref={inputRefs.itemName}
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Quantity</label>
-                    <input
-                      type="number"
-                      name="qty"
-                      value={newRow.qty}
-                      onChange={(e) => handleFieldChange("qty", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "brand")}
-                      placeholder="Enter quantity"
-                      className="form-control"
-                      ref={inputRefs.qty}
-                    />
-                  </div>
-
-                  {/* Brand + Unit + MRP */}
-                  <div className="col-md-4">
-                    <label className="form-label small">Brand</label>
-                    <input
-                      type="text"
-                      name="brand"
-                      value={newRow.brand}
-                      onChange={(e) =>
-                        handleFieldChange("brand", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "discount")}
-                      placeholder="Auto-filled unit"
-                      className="form-control"
-                      ref={inputRefs.brand}
-                      
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Unit</label>
-                    <input
-                      type="text"
-                      name="unit"
-                      value={newRow.unit}
-                      onChange={(e) =>
-                        handleFieldChange("unit", e.target.value)
-                      }
-                      placeholder="Auto-filled unit"
-                      className="form-control"
-                      ref={inputRefs.unit}
-                      disabled
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">MRP</label>
-                    <input
-                      type="text"
-                      name="mrp"
-                      value={newRow.mrp}
-                      onChange={(e) => handleFieldChange("mrp", e.target.value)}
-                      placeholder="Auto-fetched MRP"
-                      className="form-control"
-                      ref={inputRefs.mrp}
-                      disabled
-                    />
-                  </div>
-
-                  {/* Discount + Net Price */}
-                  <div className="col-6">
-                    <label className="form-label small">Discount (%)</label>
-                    <input
-                      type="number"
-                      name="discount"
-                      value={newRow.discount}
-                      onChange={(e) =>
-                        handleFieldChange("discount", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
-                      placeholder="E.g. 10 for 10% off"
-                      className="form-control"
-                      ref={inputRefs.discount}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <label className="form-label small">Net Price</label>
-                    <input
-                      type="number"
-                      name="netPrice"
-                      value={newRow.netPrice}
-                      onChange={(e) =>
-                        handleFieldChange("netPrice", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "remarks")}
-                      placeholder="Final price after discount"
-                      className="form-control"
-                      ref={inputRefs.netPrice}
-                    />
-                  </div>
-
-                  {/* Remarks */}
-                  <div className="col-12">
-                    <label className="form-label small">Remarks</label>
-                    <textarea
-                      name="remarks"
-                      value={newRow.remarks}
-                      onChange={(e) =>
-                        handleFieldChange("remarks", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, null)}
-                      placeholder="Any additional notes or info"
-                      className="form-control"
-                      ref={inputRefs.remarks}
-                      rows="2"
-                    />
-                  </div>
-
-                  {/* Image Preview */}
-                  {newRow.image && (
-                    <div className="col-12">
-                      <img
-                        src={`https://api.panvic.in${newRow.image}`}
-                        alt="Preview"
-                        className="img-fluid"
-                        style={{ maxHeight: "100px" }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal-footer border-0 p-4">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditRowIndex(null);
-                  }}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={handleAddRow}
-                  aria-label={
-                    editRowIndex !== null ? "Update Item" : "Add Item"
-                  }
-                >
-                  {editRowIndex !== null ? "Update Item" : "Add Item"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {showCusAddModal && (
-        <div
-          className="modal fade show"
-          tabIndex="-1"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            transition: "opacity 0.3s",
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content rounded-4">
-              <div className="modal-header border-0 p-4">
-                <h1 className="modal-title fs-5">
-                  {editRowIndex !== null ? "Edit Item" : "Add New Item"}
-                </h1>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowCusAddModal(false);
-                    setEditRowIndex(null);
-                  }}
-                  aria-label="Close"
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-
-              <div className="modal-body p-4">
-                <div className="row g-3">
-                  {/* Customer Code */}
-                  <div className="col-6">
-                    <label className="form-label small">Customer Code</label>
-                    <input
-                      type="text"
-                      name="customerCode"
-                      value={newRow.customerCode}
-                      onChange={(e) =>
-                        handleFieldChange("customerCode", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                      placeholder="Enter unique customer code"
-                      className="form-control"
-                      ref={inputRefs.customerCode}
-                    />
-                  </div>
-
-                  {/* Customer Description */}
-                  <div className="col-6">
-                    <label className="form-label small">
-                      Customer Description
-                    </label>
-                    <input
-                      type="text"
-                      name="customerDescription"
-                      value={newRow.customerDescription}
-                      onChange={(e) =>
-                        handleFieldChange("customerDescription", e.target.value)
-                      }
-                      // onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                      placeholder="Full name or short description"
-                      className="form-control"
-                      ref={inputRefs.customerDescription}
-                    />
-                  </div>
-
-                  {/* Item Code + Name + Qty */}
-                  <div className="col-md-4">
-                    <label className="form-label small">Item Code</label>
-                    <input
-                      type="text"
-                      name="itemCusCode"
-                      // value={newRow.itemCode}
-                      // onChange={(e) =>
-                      //   handleFieldChange("itemCode", e.target.value)
-                      // }
-                      // onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                      placeholder="Ex: ITEM00123"
-                      className="form-control"
-                      // ref={inputRefs.itemCusCode}
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Item Name</label>
-                    <input
-                      type="text"
-                      name="itemCusName"
-                      // value={newRow.itemName}
-                      // onChange={(e) =>
-                      //   handleFieldChange("itemName", e.target.value)
-                      // }
-                      onKeyDown={(e) => handleKeyDown(e, "qty")}
-                      placeholder="Ex: Stainless Steel Bottle"
-                      className="form-control"
-                      // ref={inputRefs.itemName}
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Quantity</label>
-                    <input
-                      type="number"
-                      name="qty"
-                      value={newRow.qty}
-                      onChange={(e) => handleFieldChange("qty", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "brand")}
-                      placeholder="Enter quantity"
-                      className="form-control"
-                      ref={inputRefs.qty}
-                    />
-                  </div>
-
-                  {/* Brand + Unit + MRP */}
-                  <div className="col-md-4">
-                    <label className="form-label small">Brand</label>
-                    <input
-                      type="text"
-                      name="brand"
-                      value={newRow.brand}
-                      onChange={(e) =>
-                        handleFieldChange("brand", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "discount")}
-                      placeholder="Auto-filled unit"
-                      className="form-control"
-                      ref={inputRefs.brand}
-                      
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">Unit</label>
-                    <input
-                      type="text"
-                      name="unit"
-                      value={newRow.unit}
-                      onChange={(e) =>
-                        handleFieldChange("unit", e.target.value)
-                      }
-                      placeholder="Auto-filled unit"
-                      className="form-control"
-                      ref={inputRefs.unit}
-                      
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label small">MRP</label>
-                    <input
-                      type="text"
-                      name="mrp"
-                      value={newRow.mrp}
-                      onChange={(e) => handleFieldChange("mrp", e.target.value)}
-                      placeholder="Auto-fetched MRP"
-                      className="form-control"
-                      ref={inputRefs.mrp}
-                      
-                    />
-                  </div>
-
-                  {/* Discount + Net Price */}
-                  <div className="col-6">
-                    <label className="form-label small">Discount (%)</label>
-                    <input
-                      type="number"
-                      name="discount"
-                      value={newRow.discount}
-                      onChange={(e) =>
-                        handleFieldChange("discount", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "netPrice")}
-                      placeholder="E.g. 10 for 10% off"
-                      className="form-control"
-                      ref={inputRefs.discount}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <label className="form-label small">Net Price</label>
-                    <input
-                      type="number"
-                      name="netPrice"
-                      value={newRow.netPrice}
-                      onChange={(e) =>
-                        handleFieldChange("netPrice", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, "remarks")}
-                      placeholder="Final price after discount"
-                      className="form-control"
-                      ref={inputRefs.netPrice}
-                    />
-                  </div>
-
-                  {/* Remarks */}
-                  <div className="col-12">
-                    <label className="form-label small">Remarks</label>
-                    <textarea
-                      name="remarks"
-                      value={newRow.remarks}
-                      onChange={(e) =>
-                        handleFieldChange("remarks", e.target.value)
-                      }
-                      onKeyDown={(e) => handleKeyDown(e, null)}
-                      placeholder="Any additional notes or info"
-                      className="form-control"
-                      ref={inputRefs.remarks}
-                      rows="2"
-                    />
-                  </div>
-
-                  {/* Image Preview */}
-                  {newRow.image && (
-                    <div className="col-12">
-                      <img
-                        src={`https://api.panvic.in${newRow.image}`}
-                        alt="Preview"
-                        className="img-fluid"
-                        style={{ maxHeight: "100px" }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal-footer border-0 p-4">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowCusAddModal(false);
-                    setEditRowIndex(null);
-                  }}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={handleAddRow}
-                  aria-label={
-                    editRowIndex !== null ? "Update Item" : "Add Item"
-                  }
-                >
-                  {editRowIndex !== null ? "Update Item" : "Add Item"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Button to open the Add Row Modal */}
       <div className="mt-3 d-flex gap-2 no-print">
         <button
           className="btn btn-primary w-100"
@@ -901,20 +586,20 @@ const QuotationTable = ({
         <button
           className="btn btn-secondary w-100"
           onClick={() => setShowCusAddModal(true)}
-          aria-label="Add New Row"
+          aria-label="Add Custom New Row"
         >
           Add Custom New Row
         </button>
       </div>
-
-      <FindProduct
-        showModal={showModal}
-        setShowModal={setShowModal}
-        handleProductSelect={handleProductSelect}
-        products={filteredProducts}
-      />
     </div>
   );
+};
+
+QuotationTable.propTypes = {
+  items: PropTypes.array,
+  onTotalAmountChange: PropTypes.func,
+  onClose: PropTypes.func,
+  onRowsChange: PropTypes.func,
 };
 
 export default QuotationTable;

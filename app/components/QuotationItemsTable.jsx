@@ -7,19 +7,18 @@ import { toast } from "react-toastify";
 const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
-    customerCode: true,
-    customerDescription: true,
+    customerCode: false,
+    customerDescription: false,
     itemCode: true,
     itemName: true,
     unit: true,
     brand: true,
     qty: true,
     price: true,
-    discount: true,
-    mrp: true,
+    discount: false,
+    mrp: false,
     price: true, // Added price
     image: true,
   });

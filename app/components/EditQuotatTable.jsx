@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
-import FindProduct from "../components/FindPropduct";
+import FindProduct from "../components/FindProduct";
 import axios from "axios"; // Import axios for API calls
 import { toast } from "react-toastify"; // Import toast for notifications (optional)
 

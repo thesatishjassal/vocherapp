@@ -357,12 +357,12 @@ p.bottom_lablel {
 }
 
 .menu ul li a {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  color: #333;
-  transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #333 !important;
+    transition: all .3s;
 }
 
 .menu ul li a:hover {
