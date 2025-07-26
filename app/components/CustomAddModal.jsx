@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState,useRef  } from "react";
 import PropTypes from "prop-types";
 
 const CustomAddModal = ({
@@ -14,6 +14,7 @@ const CustomAddModal = ({
   handleSubmitCustomRow,
 }) => {
   const [previewImage, setPreviewImage] = useState(null);
+  const lastEditedField = useRef(null);
 
   // Calculate amount
   const calculateAmount = (qty, netPrice) => {
@@ -21,12 +22,6 @@ const CustomAddModal = ({
     const netPriceValue = parseFloat(netPrice) || 0;
     return (qtyValue * netPriceValue).toFixed(2);
   };
-
-  // Update amount
-  useEffect(() => {
-    const amount = calculateAmount(newRow.cus_qty, newRow.cus_netprice);
-    handleFieldChange("cus_amount", amount);
-  }, [newRow.cus_qty, newRow.cus_netprice, handleFieldChange]);
 
   // Handle image upload
   const handleImageUpload = async (e) => {
@@ -117,16 +112,8 @@ const CustomAddModal = ({
       return;
     }
 
-    let calculatedNetPrice = parseFloat(newRow.cus_mrp) || 0;
-    if (newRow.cus_discount) {
-      const discount = parseFloat(newRow.cus_discount) || 0;
-      calculatedNetPrice *= 1 - discount / 100;
-    }
-    const amount = calculateAmount(newRow.cus_qty, calculatedNetPrice);
     const updatedRow = {
       ...newRow,
-      cus_netprice: calculatedNetPrice.toFixed(2),
-      cus_amount: amount,
       cus_unit: newRow.cus_unit || "Piece",
       cus_mrp: newRow.cus_mrp || "",
       cus_brand: newRow.cus_brand || "",
@@ -139,21 +126,50 @@ const CustomAddModal = ({
   };
 
   // Handle field changes
-  const handleLocalFieldChange = (field, value) => {
-    const sanitizedValue = field === "cus_itemname" ? value.slice(0, 100) : value || "";
-    handleFieldChange(field, sanitizedValue);
+ const handleLocalFieldChange = (field, value) => {
+  const sanitizedValue = field === "cus_itemname" ? value.slice(0, 100) : value || "";
+  handleFieldChange(field, sanitizedValue);
 
-    if (field === "cus_itemname" && value.length > 100) {
-      alert("Item name truncated to 100 characters.");
-    }
+  if (field === "cus_itemname" && value.length > 100) {
+    alert("Item name truncated to 100 characters.");
+  }
 
-    if (field === "cus_mrp" || field === "cus_discount") {
-      const mrp = parseFloat(newRow.cus_mrp) || 0;
-      const discount = parseFloat(newRow.cus_discount) || 0;
-      const netPrice = mrp * (1 - discount / 100);
-      handleFieldChange("cus_netprice", netPrice.toFixed(2));
+  lastEditedField.current = field;
+
+  const mrp = parseFloat(
+    field === "cus_mrp" ? value : newRow.cus_mrp
+  ) || 0;
+  const discount = parseFloat(
+    field === "cus_discount" ? value : newRow.cus_discount
+  ) || 0;
+  const netPrice = parseFloat(
+    field === "cus_netprice" ? value : newRow.cus_netprice
+  ) || 0;
+
+  // When Discount is updated, calculate Net Price
+  if (field === "cus_discount" && mrp > 0) {
+    const updatedNet = mrp * (1 - discount / 100);
+    handleFieldChange("cus_netprice", updatedNet.toFixed(2));
+  }
+
+  // When Net Price is updated, calculate Discount
+  if (field === "cus_netprice" && mrp > 0) {
+    const updatedDiscount = ((1 - netPrice / mrp) * 100).toFixed(2);
+    handleFieldChange("cus_discount", updatedDiscount);
+  }
+
+  // When MRP is updated, re-calculate based on last edited field
+  if (field === "cus_mrp" && mrp > 0) {
+    if (lastEditedField.current === "cus_discount") {
+      const updatedNet = mrp * (1 - discount / 100);
+      handleFieldChange("cus_netprice", updatedNet.toFixed(2));
+    } else if (lastEditedField.current === "cus_netprice") {
+      const updatedDiscount = ((1 - netPrice / mrp) * 100).toFixed(2);
+      handleFieldChange("cus_discount", updatedDiscount);
     }
-  };
+  }
+};
+
 
   return (
     showCusAddModal && (
@@ -304,6 +320,19 @@ const CustomAddModal = ({
                     name="cus_discount"
                     value={newRow.cus_discount || ""}
                     onChange={(e) => handleLocalFieldChange("cus_discount", e.target.value)}
+                    onBlur={() => {
+                      const mrp = parseFloat(newRow.cus_mrp) || 0;
+                      const discount = parseFloat(newRow.cus_discount) || 0;
+                      if (discount < 0 || discount > 100) {
+                        alert("Discount must be between 0 and 100.");
+                        handleFieldChange("cus_discount", "");
+                      } else {
+                        const netPrice = mrp * (1 - discount / 100);
+                        handleFieldChange("cus_netprice", netPrice.toFixed(2));
+                        const amount = calculateAmount(newRow.cus_qty, netPrice);
+                        handleFieldChange("cus_amount", amount);
+                      }
+                    }}
                     onKeyDown={(e) => handleKeyDown(e, "cus_netprice")}
                     placeholder="E.g. 10 for 10% off"
                     className="form-control"
@@ -320,6 +349,20 @@ const CustomAddModal = ({
                     name="cus_netprice"
                     value={newRow.cus_netprice || ""}
                     onChange={(e) => handleLocalFieldChange("cus_netprice", e.target.value)}
+                    onBlur={() => {
+                      const mrp = parseFloat(newRow.cus_mrp) || 0;
+                      const netPrice = parseFloat(newRow.cus_netprice) || 0;
+                      if (mrp > 0 && netPrice > mrp) {
+                        alert("Net price cannot exceed MRP.");
+                        handleFieldChange("cus_netprice", mrp.toFixed(2));
+                        handleFieldChange("cus_discount", "0");
+                        const amount = calculateAmount(newRow.cus_qty, mrp);
+                        handleFieldChange("cus_amount", amount);
+                      } else {
+                        const amount = calculateAmount(newRow.cus_qty, netPrice);
+                        handleFieldChange("cus_amount", amount);
+                      }
+                    }}
                     onKeyDown={(e) => handleKeyDown(e, "cus_amount")}
                     placeholder="Final price after discount"
                     className="form-control"
@@ -335,8 +378,6 @@ const CustomAddModal = ({
                     type="number"
                     name="cus_amount"
                     value={newRow.cus_amount || ""}
-                    onChange={(e) => handleLocalFieldChange("cus_amount", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "cus_image")}
                     placeholder="Auto-calculated (Qty * Net Price)"
                     className="form-control"
                     ref={inputRefs.cus_amount}
