@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react"; // Added useEffect import
+import React, { useState } from "react"; // Remove useEffect import
 import PropTypes from "prop-types";
 import FindProduct from "./FindProduct";
 
@@ -15,24 +15,74 @@ const AddProductModal = ({
   handleAddRow,
 }) => {
   const [showFindProductModal, setShowFindProductModal] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isNetPriceManual, setIsNetPriceManual] = useState(false);
 
-  // Calculate amount based on qty and netPrice
+  // Calculate amount
   const calculateAmount = (qty, netPrice) => {
     const qtyValue = parseFloat(qty) || 0;
     const netPriceValue = parseFloat(netPrice) || 0;
     return (qtyValue * netPriceValue).toFixed(2);
   };
 
-  // Update amount whenever qty or netPrice changes
-  useEffect(() => {
-    const amount = calculateAmount(newRow.qty, newRow.netPrice);
-    handleFieldChange("amount", amount);
-  }, [newRow.qty, newRow.netPrice, handleFieldChange]);
+  // Calculate net price
+  const calculateNetPrice = (mrp, discount) => {
+    const mrpValue = parseFloat(mrp) || 0;
+    const discountValue = parseFloat(discount) || 0;
+    return (mrpValue * (1 - discountValue / 100)).toFixed(2);
+  };
 
-  // Handle modal close and reset form
+  // Calculate discount
+  const calculateDiscount = (mrp, netPrice) => {
+    const mrpValue = parseFloat(mrp) || 0;
+    const netPriceValue = parseFloat(netPrice) || 0;
+    if (mrpValue === 0) return "0.00";
+    return (((mrpValue - netPriceValue) / mrpValue) * 100).toFixed(2);
+  };
+
+  // Handle image upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      alert("Please upload a valid image (JPEG, PNG, JPG)");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size exceeds 5MB limit");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => setPreviewImage(reader.result);
+    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const { filePath } = await response.json();
+      handleFieldChange("image", filePath);
+    } catch (error) {
+      alert("Failed to upload image");
+      setPreviewImage(null);
+      handleFieldChange("image", "");
+    }
+  };
+
+  // Handle modal close
   const handleClose = () => {
     setShowAddModal(false);
     setShowFindProductModal(false);
+    setPreviewImage(null);
+    setIsNetPriceManual(false);
     setNewRow({
       customerCode: "",
       customerDescription: "",
@@ -64,54 +114,83 @@ const AddProductModal = ({
 
   // Handle form submission
   const handleSubmit = () => {
-    // Basic validation
     if (!newRow.itemCode || !newRow.itemName || !newRow.qty || !newRow.netPrice) {
       alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
       return;
     }
 
-    // Calculate net price if discount is provided
-    let calculatedNetPrice = parseFloat(newRow.mrp) || 0;
-    if (newRow.discount) {
-      const discount = parseFloat(newRow.discount) || 0;
-      calculatedNetPrice = calculatedNetPrice * (1 - discount / 100);
-    }
-    const amount = calculateAmount(newRow.qty, calculatedNetPrice);
-    const updatedRow = { ...newRow, netPrice: calculatedNetPrice.toFixed(2), amount };
+    const netPrice = isNetPriceManual
+      ? parseFloat(newRow.netPrice).toFixed(2)
+      : calculateNetPrice(newRow.mrp, newRow.discount);
+    const amount = calculateAmount(newRow.qty, netPrice);
+    const updatedRow = {
+      ...newRow,
+      netPrice,
+      amount,
+      unit: newRow.unit || "Piece",
+      mrp: newRow.mrp || "",
+      brand: newRow.brand || "",
+      image: newRow.image || "",
+      remarks: newRow.remarks || "",
+      discount: newRow.discount || "",
+    };
 
-    // Pass the updated row to the parent
     handleAddRow(updatedRow, editRowIndex);
     handleClose();
   };
 
   // Handle field changes
   const handleLocalFieldChange = (field, value) => {
-    // Update the field value in the parent component
     const sanitizedValue = field === "itemName" ? value.slice(0, 100) : value || "";
     handleFieldChange(field, sanitizedValue);
 
-    // Show truncation alert for itemName
     if (field === "itemName" && value.length > 100) {
       alert("Item name truncated to 100 characters.");
     }
 
-    // If MRP or discount changes, recalculate net price
-    if (field === "mrp" || field === "discount") {
-      const mrp = parseFloat(newRow.mrp) || 0;
-      const discount = parseFloat(newRow.discount) || 0;
-      const netPrice = mrp * (1 - discount / 100);
-      handleFieldChange("netPrice", netPrice.toFixed(2));
+    if (field === "netPrice") {
+      setIsNetPriceManual(true);
+      handleFieldChange("netPrice", value);
+
+      // If MRP is available, calculate and update Discount
+      if (newRow.mrp && !isNaN(value)) {
+        const discount = calculateDiscount(newRow.mrp, value);
+        handleFieldChange("discount", discount);
+      }
+
+      // Update amount when netPrice changes
+      const amount = calculateAmount(newRow.qty, value);
+      handleFieldChange("amount", amount);
     }
 
-    // Show FindProduct modal when itemCode or itemName is edited
-    if (["itemCode", "itemName"].includes(field) && value.trim()) {
-      setShowFindProductModal(true);
-    } else if (["itemCode", "itemName"].includes(field) && !value.trim()) {
-      setShowFindProductModal(false);
+    if (field === "discount") {
+      setIsNetPriceManual(false);
+      handleFieldChange("discount", value);
+
+      // If MRP is available, calculate and update Net Price
+      if (newRow.mrp && !isNaN(value)) {
+        const netPrice = calculateNetPrice(newRow.mrp, value);
+        handleFieldChange("netPrice", netPrice);
+        // Update amount when netPrice is recalculated
+        const amount = calculateAmount(newRow.qty, netPrice);
+        handleFieldChange("amount", amount);
+      }
+    }
+
+    if (field === "qty") {
+      handleFieldChange("qty", value);
+      // Update amount when qty changes
+      const amount = calculateAmount(value, newRow.netPrice);
+      handleFieldChange("amount", amount);
+    }
+
+    // Auto-open product finder
+    if (["itemCode", "itemName"].includes(field)) {
+      setShowFindProductModal(value.trim().length > 0);
     }
   };
 
-  // Handle product selection from FindProduct modal
+  // Handle product selection
   const handleLocalProductSelect = (product) => {
     if (product) {
       const truncatedItemName = product.itemname?.substring(0, 100) || "";
@@ -131,7 +210,9 @@ const AddProductModal = ({
         image: product.thumbnail || "",
         netPrice,
         amount,
+        discount: "", // Reset discount on product selection
       }));
+      setIsNetPriceManual(false); // Allow recalculation after product selection
       setShowFindProductModal(false);
       setTimeout(() => inputRefs.qty.current?.focus(), 100);
     }
@@ -140,14 +221,12 @@ const AddProductModal = ({
   return (
     showAddModal && (
       <div
-        className="modal"
-        fade="show"
-        tabIndex="{-1}"
+        className="modal fade show"
+        tabIndex={-1}
         style={{
           display: "block",
           backgroundColor: "rgba(0, 0, 0, 0.5)",
-          transition: "opacity:0.3s ease-in-out",
-          zIndex: "1050",
+          zIndex: 1050,
         }}
         aria-modal="true"
         role="dialog"
@@ -156,7 +235,7 @@ const AddProductModal = ({
           <div className="modal-content rounded-4 shadow-lg">
             <div className="modal-header border-0 p-4">
               <h1 className="modal-title fs-5 fw-bold">
-                {editRowIndex !== null ? "Edit Item" : "Add New Item"} Item
+                {editRowIndex !== null ? "Edit Item" : "Add New Item"}
               </h1>
               <button
                 type="button"
@@ -164,13 +243,11 @@ const AddProductModal = ({
                 onClick={handleClose}
                 aria-label="Close"
               >
-                <span>&times;</span>
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
             <div className="modal-body p-4">
               <div className="row g-3">
-                {/* Customer Code */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Customer Code</label>
                   <input
@@ -185,7 +262,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Customer Description */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Customer Description</label>
                   <input
@@ -200,7 +276,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Item Code */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Item Code</label>
                   <input
@@ -215,7 +290,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Item Name */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Item Name</label>
                   <input
@@ -230,7 +304,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Quantity */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Quantity</label>
                   <input
@@ -246,7 +319,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Brand */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Brand</label>
                   <input
@@ -255,13 +327,12 @@ const AddProductModal = ({
                     value={newRow.brand || ""}
                     onChange={(e) => handleLocalFieldChange("brand", e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, "unit")}
-                    placeholder="Enter brand"
+                    placeholder="Brand"
                     className="form-control"
                     ref={inputRefs.brand}
                     disabled
                   />
                 </div>
-                {/* Unit */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Unit</label>
                   <input
@@ -276,7 +347,6 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                {/* MRP */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">MRP</label>
                   <input
@@ -285,7 +355,7 @@ const AddProductModal = ({
                     value={newRow.mrp || ""}
                     onChange={(e) => handleLocalFieldChange("mrp", e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, "discount")}
-                    placeholder="Auto-fetched MRP"
+                    placeholder="MRP"
                     className="form-control"
                     ref={inputRefs.mrp}
                     min="0"
@@ -293,7 +363,6 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                {/* Discount */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Discount (%)</label>
                   <input
@@ -302,7 +371,7 @@ const AddProductModal = ({
                     value={newRow.discount || ""}
                     onChange={(e) => handleLocalFieldChange("discount", e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, "netPrice")}
-                    placeholder="E.g. 10 for 10% off"
+                    placeholder="E.g., 10 for 10% off"
                     className="form-control"
                     ref={inputRefs.discount}
                     min="0"
@@ -310,7 +379,6 @@ const AddProductModal = ({
                     step="0.01"
                   />
                 </div>
-                {/* Net Price */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Net Price</label>
                   <input
@@ -318,7 +386,7 @@ const AddProductModal = ({
                     name="netPrice"
                     value={newRow.netPrice || ""}
                     onChange={(e) => handleLocalFieldChange("netPrice", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "amount")} // Updated to point to amount
+                    onKeyDown={(e) => handleKeyDown(e, "amount")}
                     placeholder="Final price after discount"
                     className="form-control"
                     ref={inputRefs.netPrice}
@@ -327,7 +395,6 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                {/* Amount */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Amount</label>
                   <input
@@ -335,7 +402,7 @@ const AddProductModal = ({
                     name="amount"
                     value={newRow.amount || ""}
                     onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                    onKeyDown={(e) => handleKeyDown(e, "image")}
                     placeholder="Auto-calculated (Qty * Net Price)"
                     className="form-control"
                     ref={inputRefs.amount}
@@ -344,12 +411,28 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                {/* Image Preview */}
-                {newRow.image && (
+                <div className="col-md-12">
+                  <label className="form-label small fw-medium">Upload Image</label>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageUpload}
+                    onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                    className="form-control"
+                    ref={inputRefs.image}
+                  />
+                </div>
+                {(previewImage || newRow.image) && (
                   <div className="col-12">
                     <label className="form-label small fw-medium">Image Preview</label>
                     <img
-                      src={newRow.image.startsWith("http") ? newRow.image : `https://api.panvic.in${newRow.image}`}
+                      src={
+                        previewImage ||
+                        (newRow.image.startsWith("http")
+                          ? newRow.image
+                          : `/uploads/${newRow.image.split("/").pop()}`)
+                      }
                       alt="Preview"
                       className="img-fluid rounded"
                       style={{ maxHeight: "150px", objectFit: "contain" }}
@@ -357,7 +440,6 @@ const AddProductModal = ({
                     />
                   </div>
                 )}
-                {/* Remarks */}
                 <div className="col-12">
                   <label className="form-label small fw-medium">Remarks</label>
                   <textarea

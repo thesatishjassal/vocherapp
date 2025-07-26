@@ -14,84 +14,65 @@ const CustomAddModal = ({
   handleSubmitCustomRow,
 }) => {
   const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
 
-  // Calculate amount based on cus_qty and cus_netprice
+  // Calculate amount
   const calculateAmount = (qty, netPrice) => {
     const qtyValue = parseFloat(qty) || 0;
     const netPriceValue = parseFloat(netPrice) || 0;
     return (qtyValue * netPriceValue).toFixed(2);
   };
 
-  // Update amount whenever cus_qty or cus_netprice changes
+  // Update amount
   useEffect(() => {
     const amount = calculateAmount(newRow.cus_qty, newRow.cus_netprice);
     handleFieldChange("cus_amount", amount);
   }, [newRow.cus_qty, newRow.cus_netprice, handleFieldChange]);
 
   // Handle image upload
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     // Validate file type
-    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-    if (!validTypes.includes(file.type)) {
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
       alert("Please upload a valid image (JPEG, PNG, JPG)");
       return;
     }
 
-    // Validate file size (e.g., max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
       alert("Image size exceeds 5MB limit");
       return;
     }
 
-    // Store file for download
-    setSelectedFile(file);
-
     // Generate preview
     const reader = new FileReader();
-    reader.onload = () => {
-      setPreviewImage(reader.result);
-    };
+    reader.onload = () => setPreviewImage(reader.result);
     reader.readAsDataURL(file);
 
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const fileExtension = file.name.split(".").pop();
-    const fileName = `${uniqueSuffix}.${fileExtension}`;
-    const filePath = `/uploads/${fileName}`;
+    // Upload to Next.js API route
+    const formData = new FormData();
+    formData.append("file", file);
 
-    // Update cus_image with the file path
-    handleFieldChange("cus_image", filePath);
-  };
-
-  // Handle download of the selected image
-  const handleDownloadImage = () => {
-    if (!selectedFile) {
-      alert("No image selected to download");
-      return;
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const { filePath } = await response.json();
+      handleFieldChange("cus_image", filePath);
+    } catch (error) {
+      alert("Failed to upload image");
+      setPreviewImage(null);
+      handleFieldChange("cus_image", "");
     }
-
-    const url = URL.createObjectURL(selectedFile);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = newRow.cus_image.split("/").pop(); // Use the generated filename
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    alert(`Image downloaded. Please place it in public/uploads as ${newRow.cus_image}`);
   };
 
-  // Handle modal close and reset form
+  // Handle modal close
   const handleClose = () => {
     setShowCusAddModal(false);
     setPreviewImage(null);
-    setSelectedFile(null);
     setCustomNewRow({
       customerCode: "",
       customerDescription: "",
@@ -124,7 +105,6 @@ const CustomAddModal = ({
 
   // Handle form submission
   const handleSubmit = () => {
-    // Basic validation
     if (
       !newRow.cus_customercode ||
       !newRow.cus_customerdescription ||
@@ -137,11 +117,10 @@ const CustomAddModal = ({
       return;
     }
 
-    // Calculate net price if discount is provided
     let calculatedNetPrice = parseFloat(newRow.cus_mrp) || 0;
     if (newRow.cus_discount) {
       const discount = parseFloat(newRow.cus_discount) || 0;
-      calculatedNetPrice = calculatedNetPrice * (1 - discount / 100);
+      calculatedNetPrice *= 1 - discount / 100;
     }
     const amount = calculateAmount(newRow.cus_qty, calculatedNetPrice);
     const updatedRow = {
@@ -155,7 +134,6 @@ const CustomAddModal = ({
       cus_remarks: newRow.cus_remarks || "",
     };
 
-    // Pass the updated row to the parent
     handleSubmitCustomRow(updatedRow, editRowIndex);
     handleClose();
   };
@@ -185,7 +163,6 @@ const CustomAddModal = ({
         style={{
           display: "block",
           backgroundColor: "rgba(0, 0, 0, 0.5)",
-          transition: "opacity 0.3s ease-in-out",
           zIndex: 1050,
         }}
         aria-modal="true"
@@ -208,7 +185,6 @@ const CustomAddModal = ({
             </div>
             <div className="modal-body p-4">
               <div className="row g-3">
-                {/* Customer Code */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Customer Code</label>
                   <input
@@ -223,7 +199,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Customer Description */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Customer Description</label>
                   <input
@@ -238,7 +213,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Custom Item Code */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Custom Item Code</label>
                   <input
@@ -253,7 +227,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Custom Item Name */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Custom Item Name</label>
                   <input
@@ -268,7 +241,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Quantity */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Quantity</label>
                   <input
@@ -284,7 +256,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Brand */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Brand</label>
                   <input
@@ -298,7 +269,6 @@ const CustomAddModal = ({
                     ref={inputRefs.cus_brand}
                   />
                 </div>
-                {/* Unit */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">Unit</label>
                   <input
@@ -312,7 +282,6 @@ const CustomAddModal = ({
                     ref={inputRefs.cus_unit}
                   />
                 </div>
-                {/* MRP */}
                 <div className="col-md-4">
                   <label className="form-label small fw-medium">MRP</label>
                   <input
@@ -328,7 +297,6 @@ const CustomAddModal = ({
                     step="0.01"
                   />
                 </div>
-                {/* Discount */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Discount (%)</label>
                   <input
@@ -345,7 +313,6 @@ const CustomAddModal = ({
                     step="0.01"
                   />
                 </div>
-                {/* Net Price */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Net Price</label>
                   <input
@@ -362,7 +329,6 @@ const CustomAddModal = ({
                     required
                   />
                 </div>
-                {/* Amount */}
                 <div className="col-md-6">
                   <label className="form-label small fw-medium">Amount</label>
                   <input
@@ -379,7 +345,6 @@ const CustomAddModal = ({
                     disabled
                   />
                 </div>
-                {/* Image Upload */}
                 <div className="col-md-12">
                   <label className="form-label small fw-medium">Upload Image</label>
                   <input
@@ -392,7 +357,6 @@ const CustomAddModal = ({
                     ref={inputRefs.cus_image}
                   />
                 </div>
-                {/* Image Preview and Download Button */}
                 {(previewImage || newRow.cus_image) && (
                   <div className="col-12">
                     <label className="form-label small fw-medium">Image Preview</label>
@@ -408,18 +372,8 @@ const CustomAddModal = ({
                       style={{ maxHeight: "150px", objectFit: "contain" }}
                       onError={(e) => (e.target.style.display = "none")}
                     />
-                    {previewImage && (
-                      <button
-                        type="button"
-                        className="btn btn-primary mt-2"
-                        onClick={handleDownloadImage}
-                      >
-                        Download Image
-                      </button>
-                    )}
                   </div>
                 )}
-                {/* Remarks */}
                 <div className="col-12">
                   <label className="form-label small fw-medium">Remarks</label>
                   <textarea
