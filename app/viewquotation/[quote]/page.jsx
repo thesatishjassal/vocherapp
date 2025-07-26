@@ -89,6 +89,7 @@ export default async function ViewQuotation({ params }) {
                   <p>
                     Name: <b>{client.client_name}</b> <br />
                     City: <b>{client.city}</b>
+                    Phone: <b>{client.client_phone}</b>
                   </p>
                 </div>
               )}
