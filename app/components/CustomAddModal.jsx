@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react"; // Added useEffect import
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 const CustomAddModal = ({
@@ -13,6 +13,9 @@ const CustomAddModal = ({
   editRowIndex,
   handleSubmitCustomRow,
 }) => {
+  const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
   // Calculate amount based on cus_qty and cus_netprice
   const calculateAmount = (qty, netPrice) => {
     const qtyValue = parseFloat(qty) || 0;
@@ -26,9 +29,69 @@ const CustomAddModal = ({
     handleFieldChange("cus_amount", amount);
   }, [newRow.cus_qty, newRow.cus_netprice, handleFieldChange]);
 
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!validTypes.includes(file.type)) {
+      alert("Please upload a valid image (JPEG, PNG, JPG)");
+      return;
+    }
+
+    // Validate file size (e.g., max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      alert("Image size exceeds 5MB limit");
+      return;
+    }
+
+    // Store file for download
+    setSelectedFile(file);
+
+    // Generate preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const fileExtension = file.name.split(".").pop();
+    const fileName = `${uniqueSuffix}.${fileExtension}`;
+    const filePath = `/uploads/${fileName}`;
+
+    // Update cus_image with the file path
+    handleFieldChange("cus_image", filePath);
+  };
+
+  // Handle download of the selected image
+  const handleDownloadImage = () => {
+    if (!selectedFile) {
+      alert("No image selected to download");
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = newRow.cus_image.split("/").pop(); // Use the generated filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    alert(`Image downloaded. Please place it in public/uploads as ${newRow.cus_image}`);
+  };
+
   // Handle modal close and reset form
   const handleClose = () => {
     setShowCusAddModal(false);
+    setPreviewImage(null);
+    setSelectedFile(null);
     setCustomNewRow({
       customerCode: "",
       customerDescription: "",
@@ -55,7 +118,7 @@ const CustomAddModal = ({
       cus_netprice: "",
       cus_image: "",
       cus_remarks: "",
-      cus_amount: "", // Added cus_amount to reset
+      cus_amount: "",
     });
   };
 
@@ -84,7 +147,7 @@ const CustomAddModal = ({
     const updatedRow = {
       ...newRow,
       cus_netprice: calculatedNetPrice.toFixed(2),
-      cus_amount: amount, // Added cus_amount to updatedRow
+      cus_amount: amount,
       cus_unit: newRow.cus_unit || "Piece",
       cus_mrp: newRow.cus_mrp || "",
       cus_brand: newRow.cus_brand || "",
@@ -99,16 +162,13 @@ const CustomAddModal = ({
 
   // Handle field changes
   const handleLocalFieldChange = (field, value) => {
-    // Update the field value in the parent component
     const sanitizedValue = field === "cus_itemname" ? value.slice(0, 100) : value || "";
     handleFieldChange(field, sanitizedValue);
 
-    // Show truncation alert for itemName
     if (field === "cus_itemname" && value.length > 100) {
       alert("Item name truncated to 100 characters.");
     }
 
-    // If MRP or discount changes, recalculate net price
     if (field === "cus_mrp" || field === "cus_discount") {
       const mrp = parseFloat(newRow.cus_mrp) || 0;
       const discount = parseFloat(newRow.cus_discount) || 0;
@@ -293,7 +353,7 @@ const CustomAddModal = ({
                     name="cus_netprice"
                     value={newRow.cus_netprice || ""}
                     onChange={(e) => handleLocalFieldChange("cus_netprice", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "cus_amount")} // Updated to point to cus_amount
+                    onKeyDown={(e) => handleKeyDown(e, "cus_amount")}
                     placeholder="Final price after discount"
                     className="form-control"
                     ref={inputRefs.cus_netprice}
@@ -319,31 +379,44 @@ const CustomAddModal = ({
                     disabled
                   />
                 </div>
-                {/* Image URL */}
+                {/* Image Upload */}
                 <div className="col-md-12">
-                  <label className="form-label small fw-medium">Image URL</label>
+                  <label className="form-label small fw-medium">Upload Image</label>
                   <input
-                    type="text"
+                    type="file"
                     name="cus_image"
-                    value={newRow.cus_image || ""}
-                    onChange={(e) => handleLocalFieldChange("cus_image", e.target.value)}
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleImageUpload}
                     onKeyDown={(e) => handleKeyDown(e, "cus_remarks")}
-                    placeholder="Enter image URL"
                     className="form-control"
                     ref={inputRefs.cus_image}
                   />
                 </div>
-                {/* Image Preview */}
-                {newRow.cus_image && (
+                {/* Image Preview and Download Button */}
+                {(previewImage || newRow.cus_image) && (
                   <div className="col-12">
                     <label className="form-label small fw-medium">Image Preview</label>
                     <img
-                      src={newRow.cus_image.startsWith("http") ? newRow.cus_image : `https://api.panvic.in${newRow.cus_image}`}
+                      src={
+                        previewImage ||
+                        (newRow.cus_image.startsWith("http")
+                          ? newRow.cus_image
+                          : `/uploads/${newRow.cus_image.split("/").pop()}`)
+                      }
                       alt="Preview"
                       className="img-fluid rounded"
                       style={{ maxHeight: "150px", objectFit: "contain" }}
                       onError={(e) => (e.target.style.display = "none")}
                     />
+                    {previewImage && (
+                      <button
+                        type="button"
+                        className="btn btn-primary mt-2"
+                        onClick={handleDownloadImage}
+                      >
+                        Download Image
+                      </button>
+                    )}
                   </div>
                 )}
                 {/* Remarks */}
@@ -416,7 +489,7 @@ CustomAddModal.propTypes = {
     cus_netprice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     cus_image: PropTypes.string,
     cus_remarks: PropTypes.string,
-    cus_amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Added cus_amount to PropTypes
+    cus_amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
   setCustomNewRow: PropTypes.func.isRequired,
   handleFieldChange: PropTypes.func.isRequired,
