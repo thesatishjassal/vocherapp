@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react"; // Added useEffect import
 import PropTypes from "prop-types";
 
 const CustomAddModal = ({
@@ -13,6 +13,19 @@ const CustomAddModal = ({
   editRowIndex,
   handleSubmitCustomRow,
 }) => {
+  // Calculate amount based on cus_qty and cus_netprice
+  const calculateAmount = (qty, netPrice) => {
+    const qtyValue = parseFloat(qty) || 0;
+    const netPriceValue = parseFloat(netPrice) || 0;
+    return (qtyValue * netPriceValue).toFixed(2);
+  };
+
+  // Update amount whenever cus_qty or cus_netprice changes
+  useEffect(() => {
+    const amount = calculateAmount(newRow.cus_qty, newRow.cus_netprice);
+    handleFieldChange("cus_amount", amount);
+  }, [newRow.cus_qty, newRow.cus_netprice, handleFieldChange]);
+
   // Handle modal close and reset form
   const handleClose = () => {
     setShowCusAddModal(false);
@@ -42,6 +55,7 @@ const CustomAddModal = ({
       cus_netprice: "",
       cus_image: "",
       cus_remarks: "",
+      cus_amount: "", // Added cus_amount to reset
     });
   };
 
@@ -66,9 +80,11 @@ const CustomAddModal = ({
       const discount = parseFloat(newRow.cus_discount) || 0;
       calculatedNetPrice = calculatedNetPrice * (1 - discount / 100);
     }
+    const amount = calculateAmount(newRow.cus_qty, calculatedNetPrice);
     const updatedRow = {
       ...newRow,
       cus_netprice: calculatedNetPrice.toFixed(2),
+      cus_amount: amount, // Added cus_amount to updatedRow
       cus_unit: newRow.cus_unit || "Piece",
       cus_mrp: newRow.cus_mrp || "",
       cus_brand: newRow.cus_brand || "",
@@ -277,13 +293,30 @@ const CustomAddModal = ({
                     name="cus_netprice"
                     value={newRow.cus_netprice || ""}
                     onChange={(e) => handleLocalFieldChange("cus_netprice", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "cus_image")}
+                    onKeyDown={(e) => handleKeyDown(e, "cus_amount")} // Updated to point to cus_amount
                     placeholder="Final price after discount"
                     className="form-control"
                     ref={inputRefs.cus_netprice}
                     min="0"
                     step="0.01"
                     required
+                  />
+                </div>
+                {/* Amount */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Amount</label>
+                  <input
+                    type="number"
+                    name="cus_amount"
+                    value={newRow.cus_amount || ""}
+                    onChange={(e) => handleLocalFieldChange("cus_amount", e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, "cus_image")}
+                    placeholder="Auto-calculated (Qty * Net Price)"
+                    className="form-control"
+                    ref={inputRefs.cus_amount}
+                    min="0"
+                    step="0.01"
+                    disabled
                   />
                 </div>
                 {/* Image URL */}
@@ -383,6 +416,7 @@ CustomAddModal.propTypes = {
     cus_netprice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     cus_image: PropTypes.string,
     cus_remarks: PropTypes.string,
+    cus_amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Added cus_amount to PropTypes
   }).isRequired,
   setCustomNewRow: PropTypes.func.isRequired,
   handleFieldChange: PropTypes.func.isRequired,

@@ -7,7 +7,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
 const Quotation = () => {
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
@@ -35,15 +34,17 @@ const Quotation = () => {
       product_id: item.itemCode,
       customercode: item.customerCode || "N/A",
       customerdescription: item.customerDescription || "N/A",
-      image: item.image ,
+      image: item.image,
       itemcode: item.itemCode,
       brand: item.brand || "N/A",
       mrp: parseFloat(item.mrp) || 0,
+      netPrice: parseFloat(item.netPrice) || 0,  // Added netPrice
       price: Math.round(parseFloat(item.amount)) || 0,
       quantity: parseInt(item.qty, 10) || 0,
       discount: parseFloat(item.discount) || 0,
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
+      amount: parseFloat(item.amount) || 0,  // Added amount
       warranty_guarantee: warranty || "As per company norms",
     }),
     []

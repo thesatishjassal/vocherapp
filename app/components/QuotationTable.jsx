@@ -16,8 +16,8 @@ const QuotationTable = ({
   const [showCusAddModal, setShowCusAddModal] = useState(false);
   const [productList, setProductList] = useState([]);
   const [columns, setColumns] = useState({
-    customerCode: true,
-    customerDescription: true,
+    customerCode: false,
+    customerDescription: false,
     Image: true,
     ItemCode: true,
     Brand: true,
@@ -26,6 +26,7 @@ const QuotationTable = ({
     Dist: true,
     Price: true,
     NetPrice: true,
+    Amount: true, // Added Amount to columns state
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
 
@@ -479,6 +480,7 @@ const QuotationTable = ({
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
             {columns.NetPrice && <th>Net Price</th>}
+            {columns.Amount && <th>Amount</th>} {/* Added Amount column header */}
             <td className="no-print">Actions</td>
           </tr>
         </thead>
@@ -521,6 +523,7 @@ const QuotationTable = ({
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
               {columns.NetPrice && <td>{row.netPrice}</td>}
+              {columns.Amount && <td>{row.amount}</td>} {/* Added Amount column data */}
               <td className="no-print">
                 <button
                   className="btn action_btn btn-warning me-2"

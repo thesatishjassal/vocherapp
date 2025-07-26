@@ -19,7 +19,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     price: true,
     discount: false,
     mrp: false,
-    price: true, // Added price
+    netPrice: true, // Added netPrice
+    amount: true, // Added amount
     image: true,
   });
 
@@ -162,7 +163,15 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             checked={visibleColumns.price}
             onChange={() => handleCheckboxChange("price")}
           />
-          Net Price
+          Rate
+        </label>
+          <label>
+          <input
+            type="checkbox"
+            checked={visibleColumns.amount}
+            onChange={() => handleCheckboxChange("amount")}
+          />
+          Amount
         </label>
       </div>
 
@@ -181,7 +190,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.qty && <th>Qty</th>}
             {visibleColumns.discount && <th>Discount</th>}
             {/* {visibleColumns.price && <th>Price</th>} */}
-            {visibleColumns.price && <th> Price</th>}
+            {visibleColumns.price && <th> Rate</th>}
+            {visibleColumns.amount && <th> Amount</th>}
           </tr>
         </thead>
         <tbody>
@@ -203,8 +213,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.qty && <td>{item.quantity}</td>}
               {visibleColumns.discount && <td>{item.discount}%</td>}
               {/* {visibleColumns.price && <td>{item.price}</td>} */}
-              {visibleColumns.price && (
-                <td>{item.price}</td>
+              {visibleColumns.netPrice && (
+                <td>{item.netPrice}</td>
+              )}
+               {visibleColumns.amount && (
+                <td>{item.amount}</td>
               )}
             </tr>
           ))}

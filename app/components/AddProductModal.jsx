@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Added useEffect import
 import PropTypes from "prop-types";
 import FindProduct from "./FindProduct";
 
@@ -15,6 +15,19 @@ const AddProductModal = ({
   handleAddRow,
 }) => {
   const [showFindProductModal, setShowFindProductModal] = useState(false);
+
+  // Calculate amount based on qty and netPrice
+  const calculateAmount = (qty, netPrice) => {
+    const qtyValue = parseFloat(qty) || 0;
+    const netPriceValue = parseFloat(netPrice) || 0;
+    return (qtyValue * netPriceValue).toFixed(2);
+  };
+
+  // Update amount whenever qty or netPrice changes
+  useEffect(() => {
+    const amount = calculateAmount(newRow.qty, newRow.netPrice);
+    handleFieldChange("amount", amount);
+  }, [newRow.qty, newRow.netPrice, handleFieldChange]);
 
   // Handle modal close and reset form
   const handleClose = () => {
@@ -63,7 +76,8 @@ const AddProductModal = ({
       const discount = parseFloat(newRow.discount) || 0;
       calculatedNetPrice = calculatedNetPrice * (1 - discount / 100);
     }
-    const updatedRow = { ...newRow, netPrice: calculatedNetPrice.toFixed(2) };
+    const amount = calculateAmount(newRow.qty, calculatedNetPrice);
+    const updatedRow = { ...newRow, netPrice: calculatedNetPrice.toFixed(2), amount };
 
     // Pass the updated row to the parent
     handleAddRow(updatedRow, editRowIndex);
@@ -104,6 +118,9 @@ const AddProductModal = ({
       if (product.itemname?.length > 100) {
         alert("Selected product name truncated to 100 characters.");
       }
+      const netPrice = product.price || "";
+      const qty = newRow.qty || "";
+      const amount = calculateAmount(qty, netPrice);
       setNewRow((prev) => ({
         ...prev,
         itemCode: product.itemcode || "",
@@ -112,7 +129,8 @@ const AddProductModal = ({
         mrp: product.price || "",
         brand: product.brand || "",
         image: product.thumbnail || "",
-        netPrice: product.price || "",
+        netPrice,
+        amount,
       }));
       setShowFindProductModal(false);
       setTimeout(() => inputRefs.qty.current?.focus(), 100);
@@ -122,7 +140,8 @@ const AddProductModal = ({
   return (
     showAddModal && (
       <div
-        className="modal" fade="show"
+        className="modal"
+        fade="show"
         tabIndex="{-1}"
         style={{
           display: "block",
@@ -134,9 +153,9 @@ const AddProductModal = ({
         role="dialog"
       >
         <div className="modal-dialog modal-dialog-centered modal-md">
-          <div class="modal-content rounded-4 shadow-lg">
-            <div class="modal-header border-0 p-4">
-              <h1 class="modal-title fs-5 fw-bold">
+          <div className="modal-content rounded-4 shadow-lg">
+            <div className="modal-header border-0 p-4">
+              <h1 className="modal-title fs-5 fw-bold">
                 {editRowIndex !== null ? "Edit Item" : "Add New Item"} Item
               </h1>
               <button
@@ -146,14 +165,14 @@ const AddProductModal = ({
                 aria-label="Close"
               >
                 <span>&times;</span>
-                <i class="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            <div class="modal-body p-4">
-              <div class="row g-3">
+            <div className="modal-body p-4">
+              <div className="row g-3">
                 {/* Customer Code */}
-                <div class="col-md-6">
-                  <label class="form-label small fw-medium">Customer Code</label>
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Customer Code</label>
                   <input
                     type="text"
                     name="customerCode"
@@ -167,8 +186,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Customer Description */}
-                <div class="col-md-6">
-                  <label class="form-label small fw-medium">Customer Description</label>
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Customer Description</label>
                   <input
                     type="text"
                     name="customerDescription"
@@ -182,8 +201,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Item Code */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">Item Code</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">Item Code</label>
                   <input
                     type="text"
                     name="itemCode"
@@ -197,8 +216,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Item Name */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">Item Name</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">Item Name</label>
                   <input
                     type="text"
                     name="itemName"
@@ -212,8 +231,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Quantity */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">Quantity</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">Quantity</label>
                   <input
                     type="number"
                     name="qty"
@@ -228,8 +247,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Brand */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">Brand</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">Brand</label>
                   <input
                     type="text"
                     name="brand"
@@ -243,8 +262,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Unit */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">Unit</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">Unit</label>
                   <input
                     type="text"
                     name="unit"
@@ -258,8 +277,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* MRP */}
-                <div class="col-md-4">
-                  <label class="form-label small fw-medium">MRP</label>
+                <div className="col-md-4">
+                  <label className="form-label small fw-medium">MRP</label>
                   <input
                     type="number"
                     name="mrp"
@@ -275,8 +294,8 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Discount */}
-                <div class="col-md-6">
-                  <label class="form-label small fw-medium">Discount (%)</label>
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Discount (%)</label>
                   <input
                     type="number"
                     name="discount"
@@ -292,14 +311,14 @@ const AddProductModal = ({
                   />
                 </div>
                 {/* Net Price */}
-                <div class="col-md-6">
-                  <label class="form-label small fw-medium">Net Price</label>
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Net Price</label>
                   <input
                     type="number"
                     name="netPrice"
                     value={newRow.netPrice || ""}
                     onChange={(e) => handleLocalFieldChange("netPrice", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                    onKeyDown={(e) => handleKeyDown(e, "amount")} // Updated to point to amount
                     placeholder="Final price after discount"
                     className="form-control"
                     ref={inputRefs.netPrice}
@@ -308,10 +327,27 @@ const AddProductModal = ({
                     required
                   />
                 </div>
+                {/* Amount */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-medium">Amount</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={newRow.amount || ""}
+                    onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                    placeholder="Auto-calculated (Qty * Net Price)"
+                    className="form-control"
+                    ref={inputRefs.amount}
+                    min="0"
+                    step="0.01"
+                    disabled
+                  />
+                </div>
                 {/* Image Preview */}
                 {newRow.image && (
-                  <div class="col-12">
-                    <label class="form-label small fw-medium">Image Preview</label>
+                  <div className="col-12">
+                    <label className="form-label small fw-medium">Image Preview</label>
                     <img
                       src={newRow.image.startsWith("http") ? newRow.image : `https://api.panvic.in${newRow.image}`}
                       alt="Preview"
@@ -322,8 +358,8 @@ const AddProductModal = ({
                   </div>
                 )}
                 {/* Remarks */}
-                <div class="col-12">
-                  <label class="form-label small fw-medium">Remarks</label>
+                <div className="col-12">
+                  <label className="form-label small fw-medium">Remarks</label>
                   <textarea
                     name="remarks"
                     value={newRow.remarks || ""}
@@ -337,7 +373,7 @@ const AddProductModal = ({
                 </div>
               </div>
             </div>
-            <div class="modal-footer border-0 p-4">
+            <div className="modal-footer border-0 p-4">
               <button
                 type="button"
                 className="btn btn-secondary"

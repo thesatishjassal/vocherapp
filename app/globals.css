@@ -815,3 +815,11 @@ label, .form-label {
     letter-spacing: .0025rem;
     box-shadow: 0 4px 7px -1px #0000001c, 0 2px 4px -1px #00000012;
 }
+@media print {
+  @page {
+    margin-top: 0.4in;
+    margin-bottom: 0.48in;
+    margin-left: 0;   /* You can customize this */
+    margin-right: 0;  /* You can customize this */
+  }
+}
