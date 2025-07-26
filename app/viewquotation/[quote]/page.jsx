@@ -84,7 +84,7 @@ export default async function ViewQuotation({ params }) {
                   style={{ flex: 1, textAlign: "left" }}
                 >
                   <p className="tm_mb2">
-                    <b className="tm_primary_color">Supplier Details:</b>
+                    <b className="tm_primary_color">Client Details:</b>
                   </p>
                   <p>
                     Name: <b>{client.client_name}</b> <br />

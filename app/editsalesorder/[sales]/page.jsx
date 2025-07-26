@@ -231,7 +231,7 @@ const EditQuotation = () => {
               {client && (
                 <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                   <p className="tm_mb2">
-                    <b className="tm_primary_color">Supplier Details:</b>
+                    <b className="tm_primary_color">Client Details:</b>
                   </p>
                   <p style={{ textAlign: "justify" }}>
                     Name: <b>{client.client_name}</b> <br />

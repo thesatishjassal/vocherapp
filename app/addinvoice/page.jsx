@@ -273,7 +273,7 @@ const handleSubmit = async () => {
             <div className="tm_invoice_head tm_mb10" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                 <p className="tm_mb2">
-                  <b className="tm_primary_color">Supplier Details:</b>{" "}
+                  <b className="tm_primary_color">Client Details:</b>{" "}
                   <button
                     type="button"
                     className="btn modalaction_btn no-print"

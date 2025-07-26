@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
-import FindProduct from "./FindPropduct"; // Import FindProduct component
+import FindProduct from "./FindProduct"; // Import FindProduct component
 
 const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
   const [rows, setRows] = useState([]);
