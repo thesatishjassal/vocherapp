@@ -135,8 +135,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       position: "relative",
-                      boxShadow: "0 0 4px rgba(0,0,0,0.1)",
-                      border: "1px solid #ddd",
                     }}
                     title="Click to upload image"
                     onClick={() =>
