@@ -154,7 +154,7 @@ const ProductsReport = () => {
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
-                {["id", "thumbnail", "hsncode", "itemcode", "itemname", "category", "brand", "model", "price", "quantity", "createdAt"].map((header) => (
+                {["id", "thumbnail", "RacK Code", "itemcode", "itemname", "category", "brand", "model", "price", "quantity", "createdAt"].map((header) => (
                   <th key={header} onClick={() => handleSort(header)} style={{ cursor: "pointer", whiteSpace: "nowrap" }}>
                     {header.toUpperCase()} {sortConfig.key === header ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                   </th>
@@ -167,7 +167,7 @@ const ProductsReport = () => {
                   <tr key={index}>
                     <td>{product.id}</td>
                     <td><img src={`https://api.panvic.in${product.thumbnail}`} alt="" className="thumnail" /></td>
-                    <td>{product.hsncode}</td>
+                    <td>{product.rackcode}</td>
                     <td>{product.itemcode}</td>
                     <td>{product.itemname}</td>
                     <td>{product.category}</td>
