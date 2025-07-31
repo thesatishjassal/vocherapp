@@ -20,7 +20,7 @@ const Report = () => {
           <div>
             <h2 className="title">Reports</h2>
           </div>
-        </div>
+        </div>  
       </div>
       <div className="container my-4 p-0">
       {/* Nav Tabs */}

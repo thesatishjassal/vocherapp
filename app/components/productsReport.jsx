@@ -175,7 +175,6 @@ const ProductsReport = () => {
                     <td>{product.model}</td>
                     <td>₹{product.price}</td>
                     <td>{product.quantity > 0 ? product.quantity : <span className="text-danger">Out of Stock</span>}</td>
-
                     <td>{product.createdAt}</td>
                   </tr>
                 ))

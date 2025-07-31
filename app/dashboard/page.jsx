@@ -23,39 +23,37 @@ export default function Home() {
 
     // Fetch data from APIs
     axios
-      .get("https://api.panvic.in/clients/")
+      .get(`${API_URL}/clients/`)
       .then((response) => setClientsLength(response.data.length))
       .catch((error) => console.error("Error fetching clients:", error));
     axios
-      .get("https://api.panvic.in/outvouchers/")
+      .get(`${API_URL}/outvouchers/`)
       .then((response) => setOutVoucherLength(response.data.length))
       .catch((error) => console.error("Error fetching out vouchers:", error));
     axios
-      .get("https://api.panvic.in/invouchers/")
+      .get(`${API_URL}/invouchers/`)
       .then((response) => setInVoucherLength(response.data.length))
       .catch((error) => console.error("Error fetching in vouchers:", error));
     axios
-      .get("https://api.panvic.in/products/")
+      .get(`${API_URL}/products/`)
       .then((response) => setProductsLength(response.data.length))
       .catch((error) => console.error("Error fetching products:", error));
     axios
-      .get("https://api.panvic.in/quotation/")
+      .get(`${API_URL}/quotation/`)
       .then((response) => setQuotationLength(response.data.length))
       .catch((error) => console.error("Error fetching quotations:", error));
-
-      axios
-      .get("https://api.panvic.in/salesorder/")
+    axios
+      .get(`${API_URL}/salesorder/`)
       .then((response) => setSalesorder(response.data.length))
-      .catch((error) => console.error("Error fetching quotations:", error));
-
+      .catch((error) => console.error("Error fetching sales orders:", error));
   }, []); // Removed userDetails from dependencies to avoid infinite loop
-  
+
   // Define visibility based on role
   const role = userDetails?.role || "";
   const isSalesExecutiveOrArchitect =
     role === "Sales Executive" || role === "Architect";
   const isStockManager = role === "Stock Manager";
-  const isAdmin = role === "Admin" || "admin";
+  const isAdmin = role === "Admin" || role === "admin";
 
   return (
     <>
@@ -63,7 +61,7 @@ export default function Home() {
         <DynamicGreeting />
       </div>
       <div className="row mb-4">
-        {(isAdmin || isSalesExecutiveOrArchitect) && (
+        {(isAdmin || (isSalesExecutiveOrArchitect && !isStockManager)) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
             <a href="/addclient">
               <div className="card">
@@ -84,7 +82,7 @@ export default function Home() {
           </div>
         )}
 
-        {(isAdmin || isSalesExecutiveOrArchitect) && (
+        {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
             <a href="/products">
               <div className="card">
@@ -130,7 +128,7 @@ export default function Home() {
 
         {(isAdmin || isStockManager) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/getoutvouchers">
+           <a href="/getoutvouchers">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
@@ -217,7 +215,7 @@ export default function Home() {
             </a>
           </div>
         )}
-    
+
         {(isAdmin || isSalesExecutiveOrArchitect) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
             <a href="/switchquotation">
@@ -231,7 +229,7 @@ export default function Home() {
                       className="client_img"
                     />
                   </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">Switch Quotaion</h5>
+                  <h5 className="font-weight-bolder mb-0 mt-3">Switch Quotation</h5>
                   <span className="count text-sm">{salesorders}</span>
                 </div>
               </div>
