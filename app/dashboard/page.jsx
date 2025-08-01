@@ -60,6 +60,7 @@ export default function Home() {
       <div className="row welcome">
         <DynamicGreeting />
       </div>
+      
       <div className="row mb-4">
         {(isAdmin || (isSalesExecutiveOrArchitect && !isStockManager)) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
