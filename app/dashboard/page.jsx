@@ -62,7 +62,7 @@ export default function Home() {
       </div>
       
       <div className="row mb-4">
-        {(isAdmin || (isSalesExecutiveOrArchitect && !isStockManager)) && (
+        {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
             <a href="/addclient">
               <div className="card">
