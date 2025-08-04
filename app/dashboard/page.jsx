@@ -83,6 +83,7 @@ export default function Home() {
           </div>
         )}
 
+
         {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
             <a href="/products">
@@ -103,6 +104,7 @@ export default function Home() {
             </a>
           </div>
         )}
+
 
         {(isAdmin || isStockManager) && (
           <div className="col-lg-2 col-md-4 col-6 mb-3">
