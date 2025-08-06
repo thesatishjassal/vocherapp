@@ -10,16 +10,16 @@ import GetClients from "./getClients";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Validation schema with Yup
+// ✅ Updated validation schema
 const validationSchema = Yup.object({
   client_name: Yup.string().required("Client Name is required"),
-  address: Yup.string().required("Address is required"),
-  gst_number: Yup.string().required("GST Number is required"),
+  address: Yup.string(), // ✅ Optional
+  gst_number: Yup.string(), // ✅ Optional
   client_phone: Yup.string().required("Contact Number is required"),
-  client_email: Yup.string().email("Invalid email format").required("Email is required"),
+  client_email: Yup.string().email("Invalid email format"), // ✅ Optional
   client_type: Yup.string().required("Client Type is required"),
-  businessname: Yup.string().required("Business Name is required"),
-  pincode: Yup.string().required("Pincode is required"),
+  businessname: Yup.string(), // ✅ Optional
+  pincode: Yup.string(), // ✅ Optional
   city: Yup.string().required("City is required"),
   state: Yup.string().required("State is required"),
 });
