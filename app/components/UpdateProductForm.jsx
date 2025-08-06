@@ -24,6 +24,7 @@ const productSchema = yup.object().shape({
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
   unit: yup.string().required("Unit is required"),
+  inDisplay: yup.string().oneOf(["yes", "no"], "Select a valid option").required("Display option is required"),
 });
 
 const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
@@ -32,7 +33,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
     handleSubmit,
     reset,
     setValue,
-    trigger, // ✅ Add trigger here
+    trigger,
     formState: { errors, isValid },
     watch,
   } = useForm({
@@ -194,6 +195,21 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                 </select>
                 {errors.subcategory && (
                   <small className="text-danger">{errors.subcategory.message}</small>
+                )}
+              </div>
+
+              {/* ✅ inDisplay Dropdown */}
+              <div className="col-md-6">
+                <select
+                  {...register("inDisplay")}
+                  className={`form-control ${errors.inDisplay ? "border-danger" : ""}`}
+                >
+                  <option value="">Show in Display?</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+                {errors.inDisplay && (
+                  <small className="text-danger">{errors.inDisplay.message}</small>
                 )}
               </div>
 
