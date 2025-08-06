@@ -790,7 +790,7 @@ const ProductsTable = () => {
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
-                        <td>{product.in_display ? 'YES' : 'NO'}</td>
+                        <td>{product.in_display ? 'NO' : 'YES'}</td>
                         <td>
                           {product.thumbnail ? (
                             <img
