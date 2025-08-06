@@ -762,6 +762,9 @@ const ProductsTable = () => {
                     <th onClick={() => handleSort("itemcode")}>
                       Item Code {sortColumn === "itemcode" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
+                      <th onClick={() => handleSort("in_display")}>
+                      In Display {sortColumn === "in_display" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
                     <th>Thumbnail</th>
                     <th onClick={() => handleSort("itemname")}>
                       Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
@@ -787,6 +790,7 @@ const ProductsTable = () => {
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
+                        <td>{product.in_display}</td>
                         <td>
                           {product.thumbnail ? (
                             <img
