@@ -85,52 +85,58 @@ const GetInvoucherTable = () => {
           </div>
         </div>
         <div className="table-responsive">
-        <table className="tm_round_border table align-items-center justify-content-center mb-0">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Voucher Number</th>
-              <th>Voucher Date</th>
-              <th>Transaction Type</th>
-              <th>Invoice Number</th>
-              <th>Transport Mode</th>
-              <th>Packages</th>
-              <th>Freight Status</th>
-              <th>Total Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVouchers.map((voucher) => (
-              <tr key={voucher.voucher_id}>
-                <td>{voucher.voucher_id}</td>
-                <td>{voucher.voucher_number}</td>
-                <td>{voucher.voucher_date}</td>
-                <td>{voucher.transaction_type}</td>
-                <td>{voucher.invoice_number}</td>
-                <td>{voucher.mode_of_transport}</td>
-                <td>{voucher.number_of_packages}</td>
-                <td>{voucher.freight_status}</td>
-                <td>{voucher.total_amount}</td>
-                <td>
-                  <Link href={`/viewinv/${voucher.voucher_id}`}>
-                    <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
-                      <i className="fas fa-eye"></i>
-                    </u>
-                  </Link>
-                  <u
-                    className="text-danger"
-                    title="Delete"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(voucher.voucher_id)}
-                  >
-                    <i className="fas fa-trash"></i>
-                  </u>
-                </td>
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Voucher Number</th>
+                <th>Voucher Date</th>
+                <th>Transaction Type</th>
+                <th>Invoice Number</th>
+                <th>Transport Mode</th>
+                <th>Packages</th>
+                <th>Freight Status</th>
+                <th>GST Option</th>
+                <th>GST Percentage</th>
+                <th>GST Amount</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredVouchers.map((voucher) => (
+                <tr key={voucher.voucher_id}>
+                  <td>{voucher.voucher_id}</td>
+                  <td>{voucher.voucher_number}</td>
+                  <td>{voucher.voucher_date}</td>
+                  <td>{voucher.transaction_type}</td>
+                  <td>{voucher.invoice_number}</td>
+                  <td>{voucher.mode_of_transport}</td>
+                  <td>{voucher.number_of_packages}</td>
+                  <td>{voucher.freight_status}</td>
+                  <td>{voucher.gst_option || "Include"}</td>
+                  <td>{(voucher.gst_percentage || 0).toFixed(2)}%</td>
+                  <td>{(voucher.gst_amount || 0).toFixed(2)}</td>
+                  <td>{(voucher.total_amount || 0).toFixed(2)}</td>
+                  <td>
+                    <Link href={`/viewinv/${voucher.voucher_id}`}>
+                      <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
+                        <i className="fas fa-eye"></i>
+                      </u>
+                    </Link>
+                    <u
+                      className="text-danger"
+                      title="Delete"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleDelete(voucher.voucher_id)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </u>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>  
       </div>
     </div>

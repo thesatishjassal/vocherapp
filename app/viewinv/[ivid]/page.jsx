@@ -64,8 +64,19 @@ const InvoucherDetail = () => {
     }
   };
 
+  // Calculate display amounts based on GST fields
+  const calculateDisplayAmounts = () => {
+    const baseAmount = voucher.gst_option === "Exclude" ? voucher.total_amount - (voucher.gst_amount || 0) : voucher.total_amount;
+    const gstAmount = voucher.gst_option === "Exclude" ? voucher.gst_amount || 0 : 0;
+    const totalWithGst = voucher.total_amount;
+
+    return { baseAmount, gstAmount, totalWithGst };
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!voucher) return <p>No voucher found!</p>;
+
+  const { baseAmount, gstAmount, totalWithGst } = calculateDisplayAmounts();
 
   return (
     <div className="card tm_container my-4">
@@ -85,7 +96,7 @@ const InvoucherDetail = () => {
                 </div>
                 <p className="tm_invoice_number">
                   Voucher No:{" "}
-                  <b className="tm_primary_color">#{voucher.voucherNo}</b>
+                  <b className="tm_primary_color">#{voucher.voucher_number}</b>
                 </p>
               </div>
             </div>
@@ -99,7 +110,7 @@ const InvoucherDetail = () => {
                 </p>
                 <p className="tm_invoice_date">
                   Date:{" "}
-                  <b className="tm_primary_color">{voucher.invoice_date}</b>
+                  <b className="tm_primary_color">{voucher.voucher_date}</b>
                 </p>
               </div>
             </div>
@@ -119,13 +130,12 @@ const InvoucherDetail = () => {
                     <p style={{ textAlign: "justify" }}>
                       Name: <b>{client.client_name}</b> <br />
                       Address: <b>{client.address}</b> <br />
-                      City: <b>{client.city}</b>, State: <b>{client.state}</b> |
-                      Pincode: <b>{client.pincode}</b> <br />
+                      City: <b>{client.city}</b>, State: <b>{client.state}</b> | Pincode: <b>{client.pincode}</b> <br />
                       Phone: <b>{client.client_phone}</b>
                       <br />
                       GST NO: <b>{client.gst_number}</b>
                     </p>
-                    Freight: <b>{voucher && voucher.freight_status}</b>
+                    Freight: <b>{voucher.freight_status}</b>
                   </div>
                 </div>
               )}
@@ -161,7 +171,25 @@ const InvoucherDetail = () => {
                         Total Amount Without GST
                       </td>
                       <td className="tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {voucher.total_amount?.toFixed(2)}
+                        {baseAmount.toFixed(2)}
+                      </td>
+                    </tr>
+                    {voucher.gst_option === "Exclude" && (
+                      <tr>
+                        <td className="tm_primary_color tm_border_none px-0">
+                          GST ({voucher.gst_percentage}%)
+                        </td>
+                        <td className="tm_primary_color tm_text_right tm_border_none">
+                          {gstAmount.toFixed(2)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="tm_primary_color tm_border_none tm_bold px-0">
+                        Total Amount {voucher.gst_option === "Include" ? "(GST Inclusive)" : "(With GST)"}
+                      </td>
+                      <td className="tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {totalWithGst.toFixed(2)}
                       </td>
                     </tr>
                   </tbody>
@@ -178,13 +206,13 @@ const InvoucherDetail = () => {
             className="tm_invoice_btn tm_color1"
           >
             <span className="tm_btn_icon">
-            <i className="fa-solid fa-print"></i>
+              <i className="fa-solid fa-print"></i>
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
-            <i className="fa-brands fa-whatsapp"></i>
+              <i className="fa-brands fa-whatsapp"></i>
             </span>
             <span className="tm_btn_text">Share</span>
           </button>

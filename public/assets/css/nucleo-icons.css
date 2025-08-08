@@ -606,3 +606,9 @@ img.no-product-found {
   display: block;
   text-align: center;
 }
+.tm_invoice_footer {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    justify-content: flex-end;
+}
