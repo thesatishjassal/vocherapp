@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { redirect } from "next/dist/server/api-utils";
 
 const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -18,6 +17,8 @@ const AddInvoice = () => {
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [voucherSequence, setVoucherSequence] = useState(null);
   const [voucherId, setVoucherId] = useState(null);
+  const [gstOption, setGstOption] = useState("Include"); // New state for GST dropdown
+  const [gstPercentage, setGstPercentage] = useState(0); // New state for GST percentage
 
   const closeModal = () => {
     setShowModalClientDetails(false);
@@ -43,6 +44,20 @@ const AddInvoice = () => {
     if (voucherSequence === null) return "PLINV-Loading...";
     const sequenceStr = voucherSequence.toString().padStart(3, "0");
     return `PLINV-${sequenceStr}`;
+  };
+
+  // Calculate GST amount and total with GST
+  const calculateGstAndTotal = () => {
+    const baseAmount = totalAmount;
+    let gstAmount = 0;
+    let totalWithGst = baseAmount;
+
+    if (gstOption === "Exclude" && gstPercentage > 0) {
+      gstAmount = (baseAmount * gstPercentage) / 100;
+      totalWithGst = baseAmount + gstAmount;
+    }
+
+    return { baseAmount, gstAmount, totalWithGst };
   };
 
   useEffect(() => {
@@ -113,132 +128,145 @@ const AddInvoice = () => {
     }
   }, [submitStatus]);
 
-
-const handleSubmit = async () => {
-  if (!selectedCustomer || !receiverInfo) {
-    setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
-    console.log("Missing required fields:", { selectedCustomer, receiverInfo });
-    return;
-  }
-
-  if (voucherId === null || voucherSequence === null) {
-    setSubmitStatus("Voucher data not yet loaded, please wait");
-    console.log("Voucher data not loaded:", { voucherId, voucherSequence });
-    return;
-  }
-
-  if (invoiceItems.length === 0) {
-    setSubmitStatus("Please add at least one item to the invoice");
-    console.log("No invoice items provided");
-    return;
-  }
-
-  setIsSubmitting(true);
-  setSubmitStatus(null);
-
-  const voucherNumber = generateVoucherNumber();
-  const invoiceData = {
-    voucher_id: voucherId,
-    voucher_number: voucherNumber,
-    transaction_type: receiverInfo?.transactionType || "",
-    voucher_date: new Date().toISOString().split("T")[0],
-    client_id: selectedCustomer?.id || "3",
-    invoice_number: receiverInfo?.InvoiceNumber || "",
-    invoice_date: receiverInfo?.InvoiceDate || "",
-    mode_of_transport: receiverInfo?.ModeofTransport || "",
-    number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
-    freight_status: receiverInfo?.Freight || "",
-    total_amount: totalAmount,
-    remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
-  };
-
-  try {
-    // Step 1: Submit the invoice
-    console.log("Submitting Invoice Data:", invoiceData);
-    const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(invoiceData),
-    });
-
-    if (!invoiceResponse.ok) {
-      const errorData = await invoiceResponse.json();
-      console.error("Invoice submission failed:", errorData);
-      throw new Error(
-        `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
-      );
+  const handleSubmit = async () => {
+    if (!selectedCustomer || !receiverInfo) {
+      setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
+      console.log("Missing required fields:", { selectedCustomer, receiverInfo });
+      return;
     }
 
-    const invoiceResult = await invoiceResponse.json();
-    console.log("Invoice submission response:", invoiceResult);
-
-    // Step 2: Extract the correct ID
-    const newVoucherId = invoiceResult.voucher_id;
-    console.log("New Voucher ID (from id):", newVoucherId);
-
-    if (!newVoucherId) {
-      console.error("No id field in invoiceResult:", invoiceResult);
-      throw new Error("No valid id returned from invoice creation. Check API response.");
+    if (voucherId === null || voucherSequence === null) {
+      setSubmitStatus("Voucher data not yet loaded, please wait");
+      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
+      return;
     }
 
-    // Step 3: Submit invoice items
-    console.log("Submitting Invoice Items:", invoiceItems);
-    for (const item of invoiceItems) {
-      const itemData = {
-        product_id: item.itemcode,
-        item_name: item.itemname,
-        unit: item.unit,
-        rack_code: item.rackcode,
-        quantity: parseInt(item.quantity),
-        rate: parseFloat(item.rate),
-        discount_percentage: parseFloat(item.discount_percentage || 0),
-        additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
-        amount: parseFloat(item.amount),
-        comments: item.comments || "",
-      };
+    if (invoiceItems.length === 0) {
+      setSubmitStatus("Please add at least one item to the invoice");
+      console.log("No invoice items provided");
+      return;
+    }
 
-      const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
-      console.log("Submitting item to:", itemUrl, "with data:", itemData);
+    if (gstOption === "Exclude" && gstPercentage <= 0) {
+      setSubmitStatus("Please enter a valid GST percentage");
+      console.log("Invalid GST percentage:", gstPercentage);
+      return;
+    }
 
-      const itemsResponse = await fetch(itemUrl, {
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    const voucherNumber = generateVoucherNumber();
+    const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
+    const invoiceData = {
+      voucher_id: voucherId,
+      voucher_number: voucherNumber,
+      transaction_type: receiverInfo?.transactionType || "",
+      voucher_date: new Date().toISOString().split("T")[0],
+      client_id: selectedCustomer?.id || "3",
+      invoice_number: receiverInfo?.InvoiceNumber || "",
+      invoice_date: receiverInfo?.InvoiceDate || "",
+      mode_of_transport: receiverInfo?.ModeofTransport || "",
+      number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
+      freight_status: receiverInfo?.Freight || "",
+      total_amount: totalWithGst, // Use total with GST
+      gst_option: gstOption,
+      gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
+      gst_amount: gstAmount,
+      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
+    };
+
+    try {
+      // Step 1: Submit the invoice
+      console.log("Submitting Invoice Data:", invoiceData);
+      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(itemData),
+        body: JSON.stringify(invoiceData),
       });
 
-      if (!itemsResponse.ok) {
-        const errorData = await itemsResponse.json();
-        console.error("Item submission failed:", errorData);
+      if (!invoiceResponse.ok) {
+        const errorData = await invoiceResponse.json();
+        console.error("Invoice submission failed:", errorData);
         throw new Error(
-          `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
+          `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
         );
       }
 
-      const itemsResult = await itemsResponse.json();
-      console.log("Item submitted successfully:", itemsResult);
-      
-    }
+      const invoiceResult = await invoiceResponse.json();
+      console.log("Invoice submission response:", invoiceResult);
 
-    // Success: Update state and notify user
-    setSubmitStatus("Invoice and items submitted successfully!");
-    window.location.href = "/getinvouchers";
-    setVoucherSequence((prev) => prev + 1);
-    setVoucherId(invoiceResult.voucher_id + 1);
-    setSelectedCustomer(null);
-    setReceiverInfo(null);
-    setInvoiceItems([]);
-    setTotalAmount(0);
-  } catch (error) {
-    setSubmitStatus("Error submitting invoice or items: " + error.message);
-    console.error("Submission Error:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // Step 2: Extract the correct ID
+      const newVoucherId = invoiceResult.voucher_id;
+      console.log("New Voucher ID (from id):", newVoucherId);
+
+      if (!newVoucherId) {
+        console.error("No id field in invoiceResult:", invoiceResult);
+        throw new Error("No valid id returned from invoice creation. Check API response.");
+      }
+
+      // Step 3: Submit invoice items
+      console.log("Submitting Invoice Items:", invoiceItems);
+      for (const item of invoiceItems) {
+        const itemData = {
+          product_id: item.itemcode,
+          item_name: item.itemname,
+          unit: item.unit,
+          rack_code: item.rackcode,
+          quantity: parseInt(item.quantity),
+          rate: parseFloat(item.rate),
+          discount_percentage: parseFloat(item.discount_percentage || 0),
+          additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
+          amount: parseFloat(item.amount),
+          comments: item.comments || "",
+        };
+
+        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+        console.log("Submitting item to:", itemUrl, "with data:", itemData);
+
+        const itemsResponse = await fetch(itemUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(itemData),
+        });
+
+        if (!itemsResponse.ok) {
+          const errorData = await itemsResponse.json();
+          console.error("Item submission failed:", errorData);
+          throw new Error(
+            `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
+          );
+        }
+
+        const itemsResult = await itemsResponse.json();
+        console.log("Item submitted successfully:", itemsResult);
+      }
+
+      // Success: Update state and notify user
+      setSubmitStatus("Invoice and items submitted successfully!");
+      window.location.href = "/getinvouchers";
+      setVoucherSequence((prev) => prev + 1);
+      setVoucherId(invoiceResult.voucher_id + 1);
+      setSelectedCustomer(null);
+      setReceiverInfo(null);
+      setInvoiceItems([]);
+      setTotalAmount(0);
+      setGstOption("Include");
+      setGstPercentage(0);
+    } catch (error) {
+      setSubmitStatus("Error submitting invoice or items: " + error.message);
+      console.error("Submission Error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -334,6 +362,39 @@ const handleSubmit = async () => {
                     rows="4"
                     cols="50"
                   ></textarea>
+                  <div className="tm_gst_section mt-3">
+                    <label htmlFor="gstOption" className="tm_primary_color">
+                      GST Option:
+                    </label>
+                    <select
+                      id="gstOption"
+                      className="form-control"
+                      value={gstOption}
+                      onChange={(e) => setGstOption(e.target.value)}
+                      style={{ width: "150px", marginTop: "5px" }}
+                    >
+                      <option value="Include">Include</option>
+                      <option value="Exclude">Exclude</option>
+                    </select>
+                    {gstOption === "Exclude" && (
+                      <div className="mt-2">
+                        <label htmlFor="gstPercentage" className="tm_primary_color">
+                          GST Percentage (%):
+                        </label>
+                        <input
+                          id="gstPercentage"
+                          type="number"
+                          className="form-control"
+                          value={gstPercentage}
+                          onChange={(e) => setGstPercentage(e.target.value)}
+                          min="0"
+                          step="0.01"
+                          placeholder="Enter GST %"
+                          style={{ width: "150px", marginTop: "5px" }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="tm_right_footer">
                   <table>
@@ -343,7 +404,25 @@ const handleSubmit = async () => {
                           Total Amount Without GST
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {totalAmount.toFixed(2)}
+                          {baseAmount.toFixed(2)}
+                        </td>
+                      </tr>
+                      {gstOption === "Exclude" && (
+                        <tr>
+                          <td className="tm_width_2 tm_primary_color tm_border_none">
+                            GST ({gstPercentage}%)
+                          </td>
+                          <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none">
+                            {gstAmount.toFixed(2)}
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td className="tm_width_2 tm_primary_color tm_border_none tm_bold">
+                          Total Amount {gstOption === "Include" ? "(GST Inclusive)" : "(With GST)"}
+                        </td>
+                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                          {totalWithGst.toFixed(2)}
                         </td>
                       </tr>
                     </tbody>
