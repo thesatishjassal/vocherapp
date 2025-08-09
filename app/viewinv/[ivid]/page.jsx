@@ -86,7 +86,7 @@ const InvoucherDetail = () => {
       const canvas = await html2canvas(element, {
         scale: 2, // Higher scale for better quality
         useCORS: true, // Enable CORS for external images (e.g., logo)
-        windowHeight: 842, // A4 height in points (297mm at 72dpi)
+        winowHeight: 842, // A4 height in points (297mm at 72dpi)
       });
       const imgData = canvas.toDataURL("image/png");
 
