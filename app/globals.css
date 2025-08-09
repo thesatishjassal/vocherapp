@@ -228,6 +228,15 @@ button.btn.add_warehouse {
   border: 1px solid #0000001f !important;
   box-shadow: none !important;
 }
+.tm_container {
+    padding: 15px 15px;
+}
+.tm_invoice.tm_style1 {
+    padding: 0 0 !important;
+}  
+.tm_invoice_head p {
+    margin: 0 !important;
+}
 img.logo {
   width: 100%;
   max-width: 120px;
