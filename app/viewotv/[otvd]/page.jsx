@@ -81,7 +81,7 @@ const OutvoucherDetail = () => {
               </div>
               <div className="tm_invoice_right tm_text_right">
                 <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  IN VOUCHER
+                  OUT VOUCHER
                 </div>
                 <p className="tm_invoice_number">
                   Voucher No:{" "}
