@@ -186,7 +186,7 @@ const OutvoucherDetail = () => {
             {/* Buttons */}
           </div>
         </div>{" "}
-        <div className="tm_invoice_btns">
+        <div className="tm_invoice_btns no-print">
           <button
             type="button"
             onClick={() => window.print()}
