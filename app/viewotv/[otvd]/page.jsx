@@ -173,13 +173,6 @@ const OutvoucherDetail = () => {
               <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
                 <p className="tm_mb2 no-print">
                   <b className="tm_primary_color">Basic Details:</b>
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setInfoModal(true)}
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
                 </p>
                 Issue Slip No: <b>{voucher.issue_slip_no}</b> <br />
                 Sale Order No: <b>{voucher.sale_order_no}</b> <br />
