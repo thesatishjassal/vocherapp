@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import InvoucherTable from "../../components/InvoucherItems";
 
 const INVOCHER_API_URL = "https://api.panvic.in/invouchers";
@@ -14,6 +16,7 @@ const InvoucherDetail = () => {
   const [voucher, setVoucher] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const invoiceRef = useRef(null); // Ref to capture invoice content
 
   // Fetch Invoucher Details
   useEffect(() => {
@@ -27,8 +30,6 @@ const InvoucherDetail = () => {
         console.log(response.data);
         if (response.data) {
           setVoucher(response.data);
-
-          // If the voucher contains a clientId, fetch client details
           if (response.data.client_id) {
             fetchClient(response.data.client_id);
           }
@@ -51,7 +52,6 @@ const InvoucherDetail = () => {
       const response = await axios.get(CLIENT_API_URL, {
         withCredentials: true,
       });
-
       const filteredClient = response.data.find((c) => c.id === client_id);
       console.log(filteredClient);
       if (filteredClient) {
@@ -73,6 +73,55 @@ const InvoucherDetail = () => {
     return { baseAmount, gstAmount, totalWithGst };
   };
 
+  // Generate PDF
+  const generatePDF = async () => {
+    const element = invoiceRef.current;
+    if (!element) return;
+
+    try {
+      // Temporarily hide no-print elements
+      const noPrintElements = element.querySelectorAll(".no-print");
+      noPrintElements.forEach((el) => (el.style.display = "none"));
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true, // Enable CORS for external images (e.g., logo)
+        windowHeight: 842, // A4 height in points (297mm at 72dpi)
+      });
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+      const imgWidth = 190; // A4 width (210mm - 10mm margins)
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      let position = 10; // Top margin
+      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Handle multi-page content
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`invoucher_${voucher.voucher_number}.pdf`);
+
+      // Restore no-print elements
+      noPrintElements.forEach((el) => (el.style.display = ""));
+    } catch (error) {
+      toast.error("Failed to generate PDF!");
+      console.error(error);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!voucher) return <p>No voucher found!</p>;
 
@@ -80,7 +129,7 @@ const InvoucherDetail = () => {
 
   return (
     <div className="card tm_container my-4">
-      <div className="tm_invoice_wrap">
+      <div className="tm_invoice_wrap" ref={invoiceRef}>
         <div className="tm_invoice tm_style1">
           <div className="tm_invoice_in">
             {/* Header */}
@@ -109,30 +158,24 @@ const InvoucherDetail = () => {
                   Transaction Type: <b>{voucher.transaction_type}</b>
                 </p>
                 <p className="tm_invoice_date">
-                  Date:{" "}
-                  <b className="tm_primary_color">{voucher.voucher_date}</b>
+                  Date: <b className="tm_primary_color">{voucher.voucher_date}</b>
                 </p>
               </div>
             </div>
 
             {/* Supplier & Receiver Details */}
             <div className="tm_invoice_head tm_mb10">
-              {/* Client Details */}
               {client && (
                 <div className="tm_invoice_head tm_mb10">
-                  <div
-                    className="tm_invoice_left mt-0"
-                    style={{ flex: 1, textAlign: "left" }}
-                  >
+                  <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                     <p className="tm_mb2">
-                      <b className="tm_primary_color">Client Details:</b>{" "}
+                      <b className="tm_primary_color">Client Details:</b>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                       Name: <b>{client.client_name}</b> <br />
                       Address: <b>{client.address}</b> <br />
                       City: <b>{client.city}</b>, State: <b>{client.state}</b> | Pincode: <b>{client.pincode}</b> <br />
-                      Phone: <b>{client.client_phone}</b>
-                      <br />
+                      Phone: <b>{client.client_phone}</b> <br />
                       GST NO: <b>{client.gst_number}</b>
                     </p>
                     Freight: <b>{voucher.freight_status}</b>
@@ -144,14 +187,10 @@ const InvoucherDetail = () => {
                   <b className="tm_primary_color">Receiver Details:</b>
                 </p>
                 <p>
-                  Invoice No: <b>{voucher.invoice_number}</b>
-                  <br />
-                  Invoice Date: <b>{voucher.invoice_date}</b>
-                  <br />
-                  Number of Packages: <b>{voucher.number_of_packages}</b>
-                  <br />
-                  Transport: <b>{voucher.mode_of_transport}</b>
-                  <br />
+                  Invoice No: <b>{voucher.invoice_number}</b> <br />
+                  Invoice Date: <b>{voucher.invoice_date}</b> <br />
+                  Number of Packages: <b>{voucher.number_of_packages}</b> <br />
+                  Transport: <b>{voucher.mode_of_transport}</b> <br />
                 </p>
               </div>
             </div>
@@ -161,8 +200,9 @@ const InvoucherDetail = () => {
               <b className="tm_primary_color">Product Info:</b>
             </p>
             <InvoucherTable invoucherId={ivid} />
-            {/* Total Amount */}
-            <div className="tm_invoice_footer my-2">
+
+            {/* Fixed Footer */}
+            <div className="tm_invoice_footer">
               <div className="tm_right_footer">
                 <table>
                   <tbody>
@@ -196,10 +236,9 @@ const InvoucherDetail = () => {
                 </table>
               </div>
             </div>
-            {/* Buttons */}
           </div>
-        </div>{" "}
-        <div className="tm_invoice_btns">
+        </div>
+        <div className="tm_invoice_btns no-print">
           <button
             type="button"
             onClick={() => window.print()}
@@ -209,6 +248,16 @@ const InvoucherDetail = () => {
               <i className="fa-solid fa-print"></i>
             </span>
             <span className="tm_btn_text">Print</span>
+          </button>
+          <button
+            type="button"
+            onClick={generatePDF}
+            className="tm_invoice_btn tm_color2"
+          >
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-file-pdf"></i>
+            </span>
+            <span className="tm_btn_text">Download PDF</span>
           </button>
           <button id="tm_download_btn" className="tm_invoice_btn tm_color2">
             <span className="tm_btn_icon">
