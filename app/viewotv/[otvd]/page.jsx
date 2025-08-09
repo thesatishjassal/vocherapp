@@ -171,7 +171,7 @@ const OutvoucherDetail = () => {
                 </div>
               )}
               <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
-                <p className="tm_mb2">
+                <p className="tm_mb2 no-print">
                   <b className="tm_primary_color">Basic Details:</b>
                   <button
                     type="button"
