@@ -55,7 +55,7 @@ const OutvoucherTable = ({ voucher_id }) => {
               <td>{item.unit}</td>
               <td>{item.rack_code}</td>
               <td>{item.quantity}</td>
-              <td>{item.remarks}</td>
+              <td>{item.comments}</td>
             </tr>
           ))}
         </tbody>
