@@ -227,7 +227,7 @@ const Addoutinvoice = () => {
           unit: row.unit,
           rack_code: row.rackcode,
           quantity: Number(row.qty) || 0,
-          comments: null,
+          comments: row.comments,
         };
   
         // Second request: Create Outvoucher Items
