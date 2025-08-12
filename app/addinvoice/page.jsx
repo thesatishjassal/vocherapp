@@ -220,7 +220,7 @@ const AddInvoice = () => {
           discount_percentage: parseFloat(item.discount_percentage || 0),
           additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
           amount: parseFloat(item.amount),
-          comments: item.comments || "",
+          comments: item.comments,
         };
 
         const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
