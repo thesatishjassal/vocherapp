@@ -112,7 +112,7 @@ useEffect(() => {
 
   return (
     <div className="card">
-      <div className="card-header pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div className=" no-print card-header pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h6>Manage In-Vouchers</h6>
         <button className="btn btn-success btn-sm" onClick={handleExport}>
           Export Excel
@@ -121,7 +121,7 @@ useEffect(() => {
 
       {/* Filters Section */}
       <div className="card-body py-0 pt-0 pb-2">
-        <div className="row g-2 mb-3 align-items-center">
+        <div className="row g-2 mb-3 align-items-center no-print">
           <div className="col-12 col-md-3">
             <input
               type="text"

@@ -35,7 +35,7 @@ const Report = () => {
 
   return (
     <>
-      <div className="mini_banner reports">
+      <div className="mini_banner reports no-print">
         <div className="content_box">
           <div>
             <h2 className="title">Reports</h2>
@@ -45,7 +45,7 @@ const Report = () => {
 
       <div className="container my-4 p-0">
         {/* Nav Tabs */}
-        <ul className="nav nav-tabs">
+        <ul className="nav nav-tabs no-print">
           <li className="nav-item">
             <button
               className={`nav-link ${activeTab === "products" ? "active" : ""}`}
