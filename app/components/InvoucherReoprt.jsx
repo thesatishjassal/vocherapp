@@ -31,33 +31,35 @@ const InvoucherReoprt = () => {
     fetchInvouchers();
   }, []);
 
-  // Filter logic
-  useEffect(() => {
-    let filteredData = invouchers;
+ // Filter logic
+useEffect(() => {
+  let filteredData = invouchers;
 
-    if (searchTerm) {
-      filteredData = filteredData.filter(
-        (voucher) =>
-          voucher.voucher_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          voucher.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  if (searchTerm) {
+    filteredData = filteredData.filter(
+      (voucher) =>
+        voucher.voucher_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        voucher.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-    if (transactionFilter) {
-      filteredData = filteredData.filter(
-        (voucher) => voucher.transaction_type === transactionFilter
-      );
-    }
+  if (transactionFilter) {
+    filteredData = filteredData.filter(
+      (voucher) => voucher.transaction_type === transactionFilter
+    );
+  }
 
-    if (fromDate && toDate) {
-      filteredData = filteredData.filter((voucher) => {
-        const voucherDate = new Date(voucher.voucher_date);
-        return voucherDate >= new Date(fromDate) && voucherDate <= new Date(toDate);
-      });
-    }
+  // ✅ Date filter with exact YYYY-MM-DD comparison
+  if (fromDate && toDate) {
+    filteredData = filteredData.filter((voucher) => {
+      const voucherDate = voucher.voucher_date?.split("T")[0]; // ensure only YYYY-MM-DD
+      return voucherDate >= fromDate && voucherDate <= toDate;
+    });
+  }
 
-    setFilteredVouchers(filteredData);
-  }, [searchTerm, transactionFilter, fromDate, toDate, invouchers]);
+  setFilteredVouchers(filteredData);
+}, [searchTerm, transactionFilter, fromDate, toDate, invouchers]);
+
 
   // Clear filters
   const handleClearFilters = () => {
