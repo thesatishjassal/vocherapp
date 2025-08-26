@@ -43,6 +43,16 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const [subCategories, setSubCategories] = useState([]);
   const [reorderEnabled, setReorderEnabled] = useState(false);
 
+    const generateHSNCode = () => {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      let randomLetters = "";
+      for (let i = 0; i < 4; i++) {
+        randomLetters += letters.charAt(Math.floor(Math.random() * letters.length));
+      }
+      const randomNumbers = Math.floor(100 + Math.random() * 900); // 3-digit number
+      return randomLetters + randomNumbers;
+    };
+
   const {
     register,
     handleSubmit,
@@ -56,6 +66,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     defaultValues: {
       reorderEnabled: false,
       inDisplay: "yes",
+       hsncode: generateHSNCode() 
     },
   });
 
