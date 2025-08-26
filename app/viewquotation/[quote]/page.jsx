@@ -195,7 +195,7 @@ export default async function ViewQuotation({ params }) {
               <p className="m-0">
                 Warranty/Guarantee:
                 <b>
-                  as per company norms 
+                  as per company norms &nbsp;
                   {quotation && quotation.warranty_guarantee}
                 </b>
               </p>
