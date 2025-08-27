@@ -21,7 +21,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     unit: true,
     brand: true,
     qty: true,
-    price: true,
+    // price: true,
     discount: false,
     mrp: false,
     netPrice: true,

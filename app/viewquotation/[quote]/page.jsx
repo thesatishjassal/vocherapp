@@ -237,9 +237,18 @@ export default async function ViewQuotation({ params }) {
         </div>
       </div>
 
-      {/* <div className="tm_invoice_btns">
-        <PrintButton />
-      </div> */}
+        <div className="tm_invoice_btns no-print">
+          {/* <button
+            type="button"
+            onClick={() => window.print()}
+            className="tm_invoice_btn tm_color1"
+          >
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-print"></i>
+            </span>
+            <span className="tm_btn_text">Print</span>
+          </button> */}
+        </div>
     </div>
   );
 }
