@@ -229,7 +229,9 @@ button.btn.add_warehouse {
   box-shadow: none !important;
 }
 .tm_container {
-    padding: 15px 15px;
+    padding: 15px;
+    width: 100%;
+    max-width: 1024px;
 }
 .tm_invoice.tm_style1 {
     padding: 0 0 !important;

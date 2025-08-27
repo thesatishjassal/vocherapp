@@ -4,10 +4,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FiPlusCircle } from "react-icons/fi";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
     customerCode: false,
@@ -82,11 +86,95 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     setItems(updatedItems);
   };
 
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+
+    const sortedItems = [...items].sort((a, b) => {
+      const aVal = a[key] ?? "";
+      const bVal = b[key] ?? "";
+
+      if (!isNaN(aVal) && !isNaN(bVal)) {
+        return direction === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      return direction === "asc"
+        ? aVal.toString().localeCompare(bVal.toString())
+        : bVal.toString().localeCompare(aVal.toString());
+    });
+
+    setItems(sortedItems);
+  };
+
+  const getSortIndicator = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === "asc" ? " ▲" : " ▼";
+    }
+    return "";
+  };
+
+  // ✅ Print function
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // ✅ Save as PDF in landscape orientation
+  const handleSaveAsPDF = async () => {
+    const element = document.getElementById("quotation-table");
+    if (!element) return;
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("l", "mm", "a4"); // Landscape orientation for PDF
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("quotation-items.pdf");
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
+      {/* ✅ CSS for landscape printing */}
+      <style jsx>{`
+        @media print {
+          @page {
+            size: A4 landscape; /* Set print orientation to landscape */
+          }
+          .no-print {
+            display: none !important; /* Hide buttons during printing */
+          }
+          #quotation-table {
+            width: 100%;
+            font-size: 12px; /* Optimize font size for printing */
+          }
+        }
+      `}</style>
+
+      {/* ✅ Top-right Print & PDF buttons */}
+      <div className="absolute top-0 right-0 flex flex-col gap-2 no-print">
+        <button
+          onClick={handlePrint}
+          className="px-3 py-2 bg-gray-200 rounded-md shadow hover:bg-gray-300"
+        >
+          🖨 Print
+        </button>
+        <button
+          onClick={handleSaveAsPDF}
+          className="px-3 py-2 bg-gray-200 rounded-md shadow hover:bg-gray-300"
+        >
+          💾 Save PDF
+        </button>
+      </div>
+
+      {/* ✅ Column toggle checkboxes */}
       <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
         {Object.entries(visibleColumns).map(([key, value]) => (
           <label key={key}>
@@ -100,30 +188,85 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         ))}
       </div>
 
-      <table className="tm_round_border table align-items-center justify-content-center mb-0">
+      {/* ✅ Table */}
+      <table
+        id="quotation-table"
+        className="tm_round_border table align-items-center justify-content-center mb-0"
+      >
         <thead>
           <tr>
-            {visibleColumns.srNo && <th>SR NO</th>}
+            {visibleColumns.srNo && (
+              <th onClick={() => requestSort("srNo")}>
+                SR NO {getSortIndicator("srNo")}
+              </th>
+            )}
             {visibleColumns.image && <th>Image</th>}
-            {visibleColumns.customerCode && <th>Customer Code</th>}
-            {visibleColumns.customerDescription && <th>Customer Description</th>}
-            {visibleColumns.itemCode && <th>Item Code</th>}
-            {visibleColumns.itemName && <th>Item Name</th>}
-            {visibleColumns.unit && <th>Unit</th>}
-            {visibleColumns.brand && <th>Brand</th>}
-            {visibleColumns.mrp && <th>MRP</th>}
-            {visibleColumns.qty && <th>Qty</th>}
-            {visibleColumns.discount && <th>Discount</th>}
-            {visibleColumns.price && <th>Rate</th>}
-            {visibleColumns.netPrice && <th>Net Price</th>}
-            {visibleColumns.amount && <th>Amount</th>}
+            {visibleColumns.customerCode && (
+              <th onClick={() => requestSort("customercode")}>
+                Customer Code {getSortIndicator("customercode")}
+              </th>
+            )}
+            {visibleColumns.customerDescription && (
+              <th onClick={() => requestSort("customerdescription")}>
+                Customer Description {getSortIndicator("customerdescription")}
+              </th>
+            )}
+            {visibleColumns.itemCode && (
+              <th onClick={() => requestSort("itemcode")}>
+                Item Code {getSortIndicator("itemcode")}
+              </th>
+            )}
+            {visibleColumns.itemName && (
+              <th onClick={() => requestSort("item_name")}>
+                Item Name {getSortIndicator("item_name")}
+              </th>
+            )}
+            {visibleColumns.unit && (
+              <th onClick={() => requestSort("unit")}>
+                Unit {getSortIndicator("unit")}
+              </th>
+            )}
+            {visibleColumns.brand && (
+              <th onClick={() => requestSort("brand")}>
+                Brand {getSortIndicator("brand")}
+              </th>
+            )}
+            {visibleColumns.mrp && (
+              <th onClick={() => requestSort("mrp")}>
+                MRP {getSortIndicator("mrp")}
+              </th>
+            )}
+            {visibleColumns.qty && (
+              <th onClick={() => requestSort("quantity")}>
+                Qty {getSortIndicator("quantity")}
+              </th>
+            )}
+            {visibleColumns.discount && (
+              <th onClick={() => requestSort("discount")}>
+                Discount {getSortIndicator("discount")}
+              </th>
+            )}
+            {visibleColumns.price && (
+              <th onClick={() => requestSort("price")}>
+                Rate {getSortIndicator("price")}
+              </th>
+            )}
+            {visibleColumns.netPrice && (
+              <th onClick={() => requestSort("netPrice")}>
+                Net Price {getSortIndicator("netPrice")}
+              </th>
+            )}
+            {visibleColumns.amount && (
+              <th onClick={() => requestSort("amount")}>
+                Amount {getSortIndicator("amount")}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {items.map((item, index) => (
             <tr key={index}>
               {visibleColumns.srNo && <td>{index + 1}</td>}
-
               {visibleColumns.image && (
                 <td>
                   <div
@@ -153,14 +296,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         objectFit: "cover",
                       }}
                     />
-                    <div
-                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <FiPlusCircle
-                        color="white"
-                        size={24}
-                        title="Upload Image"
-                      />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <FiPlusCircle color="white" size={24} title="Upload Image" />
                     </div>
                     <input
                       type="file"
@@ -172,7 +309,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                   </div>
                 </td>
               )}
-
               {visibleColumns.customerCode && <td>{item.customercode}</td>}
               {visibleColumns.customerDescription && (
                 <td>{item.customerdescription}</td>
