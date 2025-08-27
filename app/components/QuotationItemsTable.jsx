@@ -166,12 +166,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         >
           🖨 Print
         </button>
-        <button
-          onClick={handleSaveAsPDF}
-          className="px-3 py-2 bg-gray-200 rounded-md shadow hover:bg-gray-300"
-        >
-          💾 Save PDF
-        </button>
       </div>
 
       {/* ✅ Column toggle checkboxes */}
