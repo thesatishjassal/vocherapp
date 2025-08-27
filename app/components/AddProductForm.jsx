@@ -43,15 +43,15 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const [subCategories, setSubCategories] = useState([]);
   const [reorderEnabled, setReorderEnabled] = useState(false);
 
-    const generateHSNCode = () => {
-      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      let randomLetters = "";
-      for (let i = 0; i < 4; i++) {
-        randomLetters += letters.charAt(Math.floor(Math.random() * letters.length));
-      }
-      const randomNumbers = Math.floor(100 + Math.random() * 900); // 3-digit number
-      return randomLetters + randomNumbers;
-    };
+  const generateHSNCode = () => {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let randomLetters = "";
+    for (let i = 0; i < 4; i++) {
+      randomLetters += letters.charAt(Math.floor(Math.random() * letters.length));
+    }
+    const randomNumbers = Math.floor(100 + Math.random() * 900); // 3-digit number
+    return randomLetters + randomNumbers;
+  };
 
   const {
     register,
@@ -66,7 +66,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     defaultValues: {
       reorderEnabled: false,
       inDisplay: "yes",
-       hsncode: generateHSNCode() 
+      hsncode: generateHSNCode(),
     },
   });
 
@@ -79,9 +79,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
-        const resSubCategories = await fetch(
-          "https://api.panvic.in/subcategory/"
-        );
+        const resSubCategories = await fetch("https://api.panvic.in/subcategory/");
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
@@ -148,6 +146,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+
+              {/* Common Inputs with floating labels */}
               {[
                 "hsncode",
                 "itemcode",
@@ -162,91 +162,90 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "brand",
                 "unit",
               ].map((field) => (
-                <div className="col-6" key={field}>
+                <div className="col-6 form-floating mb-1" key={field}>
                   <input
                     type="text"
                     {...register(field)}
-                    className={`form-control ${
-                      errors[field] ? "border-danger" : ""
-                    }`}
-                    placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                    id={field}
+                    placeholder=" "
                   />
+                  <label htmlFor={field}>
+                    {field.replace(/([A-Z])/g, " $1").trim()}
+                  </label>
                   {errors[field] && (
-                    <small className="text-danger">
-                      {errors[field].message}
-                    </small>
+                    <small className="text-danger">{errors[field].message}</small>
                   )}
                 </div>
               ))}
 
               {/* Category */}
-              <div className="col-6">
+              <div className="col-6 form-floating mb-1">
                 <select
                   {...register("category")}
-                  className={`form-control ${
-                    errors.category ? "border-danger" : ""
-                  }`}
+                  className={`form-select ${errors.category ? "border-danger" : ""}`}
+                  id="category"
+                  defaultValue=""
                 >
-                  <option value="">Select Category</option>
+                  <option value="" disabled>
+                    Select Category
+                  </option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.catname}>
                       {cat.catname}
                     </option>
                   ))}
                 </select>
+                <label htmlFor="category">Category</label>
                 {errors.category && (
-                  <small className="text-danger">
-                    {errors.category.message}
-                  </small>
+                  <small className="text-danger">{errors.category.message}</small>
                 )}
               </div>
 
               {/* Subcategory */}
-              <div className="col-6">
+              <div className="col-6 form-floating mb-1">
                 <select
                   {...register("subcategory")}
-                  className={`form-control ${
-                    errors.subcategory ? "border-danger" : ""
-                  }`}
+                  className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
+                  id="subcategory"
+                  defaultValue=""
                 >
-                  <option value="">Select Subcategory</option>
+                  <option value="" disabled>
+                    Select Subcategory
+                  </option>
                   {filteredSubCategories.map((sub) => (
                     <option key={sub.id} value={sub.subcatname}>
                       {sub.subcatname}
                     </option>
                   ))}
                 </select>
+                <label htmlFor="subcategory">Subcategory</label>
                 {errors.subcategory && (
-                  <small className="text-danger">
-                    {errors.subcategory.message}
-                  </small>
+                  <small className="text-danger">{errors.subcategory.message}</small>
                 )}
               </div>
 
-              {/* In Display Dropdown */}
-              <div className="col-6">
+              {/* In Display */}
+              <div className="col-6 form-floating mb-1">
                 <select
                   {...register("inDisplay")}
-                  className={`form-control ${
-                    errors.inDisplay ? "border-danger" : ""
-                  }`}
+                  className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
+                  id="inDisplay"
+                  defaultValue="yes"
                 >
                   <option value="">Show in Display?</option>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
+                <label htmlFor="inDisplay">Show in Display?</label>
                 {errors.inDisplay && (
-                  <small className="text-danger">
-                    {errors.inDisplay.message}
-                  </small>
+                  <small className="text-danger">{errors.inDisplay.message}</small>
                 )}
               </div>
 
               {/* Reorder Switch */}
               <div className="col-6 d-flex align-items-center gap-2">
-                <label className="form-check-label me-2">
-                  Enable Reorder Qty
-                </label>
+                <label className="form-check-label me-2">Enable Reorder Qty</label>
                 <div className="form-check form-switch">
                   <input
                     className="form-check-input"
@@ -261,19 +260,17 @@ const AddProductForm = ({ show, onClose, onSave }) => {
 
               {/* Reorder Qty Input */}
               {reorderEnabled && (
-                <div className="col-6">
+                <div className="col-6 form-floating mb-1">
                   <input
                     type="number"
                     {...register("reorderqty")}
-                    className={`form-control ${
-                      errors.reorderqty ? "border-danger" : ""
-                    }`}
-                    placeholder="Reorder Quantity"
+                    className={`form-control ${errors.reorderqty ? "border-danger" : ""}`}
+                    id="reorderqty"
+                    placeholder=" "
                   />
+                  <label htmlFor="reorderqty">Reorder Quantity</label>
                   {errors.reorderqty && (
-                    <small className="text-danger">
-                      {errors.reorderqty.message}
-                    </small>
+                    <small className="text-danger">{errors.reorderqty.message}</small>
                   )}
                 </div>
               )}

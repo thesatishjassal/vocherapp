@@ -24,7 +24,10 @@ const productSchema = yup.object().shape({
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
   unit: yup.string().required("Unit is required"),
-  inDisplay: yup.string().oneOf(["yes", "no"], "Select a valid option").required("Display option is required"),
+  inDisplay: yup
+    .string()
+    .oneOf(["yes", "no"], "Select a valid option")
+    .required("Display option is required"),
 });
 
 const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
@@ -105,14 +108,19 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
 
       const responseData = await response.json();
 
-      if (!response.ok) throw new Error(responseData.message || "Failed to update product");
+      if (!response.ok)
+        throw new Error(responseData.message || "Failed to update product");
 
-      toast.success("Product updated successfully!", { position: "top-right" });
+      toast.success("Product updated successfully!", {
+        position: "top-right",
+      });
       onSave(responseData);
       reset();
       onClose();
     } catch (error) {
-      toast.error(error.message || "Error updating product", { position: "top-right" });
+      toast.error(error.message || "Error updating product", {
+        position: "top-right",
+      });
     }
   };
 
@@ -135,79 +143,98 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+
+              {/* Common Inputs with floating labels */}
               {[
-                { name: "hsncode", placeholder: "Enter HSN Code" },
-                { name: "itemcode", placeholder: "Enter Item Code" },
-                { name: "itemname", placeholder: "Enter Item Name" },
-                { name: "description", placeholder: "Enter Product Description" },
-                { name: "price", placeholder: "Enter Product Price" },
-                { name: "quantity", placeholder: "Enter Quantity" },
-                { name: "rackcode", placeholder: "Enter Rack Code" },
-                { name: "size", placeholder: "Enter Size (e.g., M, L, XL)" },
-                { name: "color", placeholder: "Enter Color" },
-                { name: "model", placeholder: "Enter Model Number" },
-                { name: "brand", placeholder: "Enter Brand Name" },
-                { name: "unit", placeholder: "Enter Unit (e.g., pcs, kg)" },
-              ].map(({ name, placeholder }) => (
-                <div className="col-md-6" key={name}>
+                "hsncode",
+                "itemcode",
+                "itemname",
+                "description",
+                "price",
+                "quantity",
+                "rackcode",
+                "size",
+                "color",
+                "model",
+                "brand",
+                "unit",
+              ].map((field) => (
+                <div className="col-md-6 form-floating mb-1" key={field}>
                   <input
                     type="text"
-                    {...register(name)}
-                    className={`form-control ${errors[name] ? "border-danger" : ""}`}
-                    placeholder={placeholder}
+                    {...register(field)}
+                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                    id={field}
+                    placeholder=" "
                   />
-                  {errors[name] && (
-                    <small className="text-danger">{errors[name].message}</small>
+                  <label htmlFor={field}>
+                    {field.replace(/([A-Z])/g, " $1").trim()}
+                  </label>
+                  {errors[field] && (
+                    <small className="text-danger">{errors[field].message}</small>
                   )}
                 </div>
               ))}
 
               {/* Category Dropdown */}
-              <div className="col-md-6">
+              <div className="col-md-6 form-floating mb-1">
                 <select
                   {...register("category")}
-                  className={`form-control ${errors.category ? "border-danger" : ""}`}
+                  className={`form-select ${errors.category ? "border-danger" : ""}`}
+                  id="category"
+                  defaultValue=""
                 >
-                  <option value="">Select Product Category</option>
+                  <option value="" disabled>
+                    Select Product Category
+                  </option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.catname}>
                       {cat.catname}
                     </option>
                   ))}
                 </select>
+                <label htmlFor="category">Category</label>
                 {errors.category && (
                   <small className="text-danger">{errors.category.message}</small>
                 )}
               </div>
 
               {/* Subcategory Dropdown */}
-              <div className="col-md-6">
+              <div className="col-md-6 form-floating mb-1">
                 <select
                   {...register("subcategory")}
-                  className={`form-control ${errors.subcategory ? "border-danger" : ""}`}
+                  className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
+                  id="subcategory"
+                  defaultValue=""
                 >
-                  <option value="">Select Product Subcategory</option>
+                  <option value="" disabled>
+                    Select Product Subcategory
+                  </option>
                   {filteredSubCategories.map((sub) => (
                     <option key={sub.id} value={sub.subcatname}>
                       {sub.subcatname}
                     </option>
                   ))}
                 </select>
+                <label htmlFor="subcategory">Subcategory</label>
                 {errors.subcategory && (
                   <small className="text-danger">{errors.subcategory.message}</small>
                 )}
               </div>
 
-              {/* ✅ inDisplay Dropdown */}
-              <div className="col-md-6">
+              {/* inDisplay Dropdown */}
+              <div className="col-md-6 form-floating mb-1">
                 <select
                   {...register("inDisplay")}
-                  className={`form-control ${errors.inDisplay ? "border-danger" : ""}`}
+                  className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
+                  id="inDisplay"
+                  defaultValue=""
                 >
                   <option value="">Show in Display?</option>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
+                <label htmlFor="inDisplay">Show in Display?</label>
                 {errors.inDisplay && (
                   <small className="text-danger">{errors.inDisplay.message}</small>
                 )}
@@ -217,12 +244,13 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
               <div className="col-12">
                 <button
                   type="submit"
-                  className="btn btn-success w-100"
+                  className="btn btn-success w-100 py-3"
                   disabled={!isValid}
                 >
                   Update Product
                 </button>
               </div>
+
             </form>
           </div>
         </div>
