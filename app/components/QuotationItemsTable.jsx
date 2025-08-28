@@ -76,35 +76,36 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-const handleImageChange = async (e, index) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleImageChange = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const previewUrl = URL.createObjectURL(file);
-  const updatedItems = [...items];
-  updatedItems[index].preview = previewUrl;
-  setItems(updatedItems);
+    // ✅ Preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    const updatedItems = [...items];
+    updatedItems[index].preview = previewUrl;
+    setItems(updatedItems);
 
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    await axios.put(
-      `https://api.panvic.in/quotation/items/${updatedItems[index].id}/image`,
-      formData,
-      {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+      // ✅ Use both quotation_id and item.id in API call
+      await axios.put(
+        `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-    toast.success("Image uploaded successfully!");
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    toast.error("Failed to upload image!");
-  }
-};
-
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image!");
+    }
+  };
 
   const requestSort = (key) => {
     let direction = "asc";
@@ -311,7 +312,11 @@ const handleImageChange = async (e, index) => {
                       }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <FiPlusCircle color="white" size={24} title="Upload Image" />
+                      <FiPlusCircle
+                        color="white"
+                        size={24}
+                        title="Upload Image"
+                      />
                     </div>
                     <input
                       type="file"
