@@ -918,9 +918,9 @@ const ProductsTable = () => {
                           )}
                         </td>
                         <td>{product.itemname}</td>
-                        <td>{product.cct}</td>
+                        {/* <td>{product.cct}</td>
                         <td>{product.beamangle}</td>
-                        <td>{product.cutoutdia}</td>
+                        <td>{product.cutoutdia}</td> */}
                         <td>{product.category}</td>
                         <td>{product.subcategory}</td>
                         <td>{product.brand}</td>
