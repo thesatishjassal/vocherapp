@@ -76,15 +76,35 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-  const handleImageChange = (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const handleImageChange = async (e, index) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    const updatedItems = [...items];
-    updatedItems[index].preview = previewUrl;
-    setItems(updatedItems);
-  };
+  const previewUrl = URL.createObjectURL(file);
+  const updatedItems = [...items];
+  updatedItems[index].preview = previewUrl;
+  setItems(updatedItems);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await axios.put(
+      `https://api.panvic.in/quotation/items/${updatedItems[index].id}/image`,
+      formData,
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    toast.success("Image uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    toast.error("Failed to upload image!");
+  }
+};
+
 
   const requestSort = (key) => {
     let direction = "asc";
