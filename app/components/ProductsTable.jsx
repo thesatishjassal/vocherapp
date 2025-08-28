@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState, useRef } from "react";
 import AddProductForm from "./AddProductForm";
@@ -38,7 +37,9 @@ const ProductsTable = () => {
   const prevSortOrder = useRef("asc");
 
   // Calculate total uploaded images
-  const uploadedImagesCount = products.filter((product) => product.thumbnail).length;
+  const uploadedImagesCount = products.filter(
+    (product) => product.thumbnail
+  ).length;
 
   const handleCloseModal = () => setShowModal(false);
 
@@ -55,7 +56,10 @@ const ProductsTable = () => {
     }
 
     return parts.map((item, index) => (
-      <p key={index} style={{ marginBottom: 4, fontSize: "14px", color: "#666" }}>
+      <p
+        key={index}
+        style={{ marginBottom: 4, fontSize: "14px", color: "#666" }}
+      >
         <strong>{item.key}</strong>: {item.value}
       </p>
     ));
@@ -64,7 +68,9 @@ const ProductsTable = () => {
   const truncateText = (text, wordLimit = 8) => {
     if (!text) return "";
     const words = text.split(" ");
-    return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : text;
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(" ") + "..."
+      : text;
   };
 
   // Modal Handlers
@@ -114,7 +120,8 @@ const ProductsTable = () => {
 
   // Delete product
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
     try {
       await fetch(`${API_URL}/products/${productId}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((product) => product.id !== productId));
@@ -197,7 +204,9 @@ const ProductsTable = () => {
         product.price || "",
         "",
         product.quantity || 0,
-        `${product.category || ""}${product.subcategory ? `>${product.subcategory}` : ""}`,
+        `${product.category || ""}${
+          product.subcategory ? `>${product.subcategory}` : ""
+        }`,
         product.thumbnail ? `${API_URL}${product.thumbnail}` : "",
         attributes,
         product.hsncode || "",
@@ -216,7 +225,8 @@ const ProductsTable = () => {
       ...rows.map((row) =>
         row
           .map((cell) =>
-            typeof cell === "string" && (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
+            typeof cell === "string" &&
+            (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
               ? `"${cell.replace(/"/g, '""')}"`
               : cell
           )
@@ -260,15 +270,21 @@ const ProductsTable = () => {
     // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode].some(
-          (field) => field?.toLowerCase().includes(searchQuery)
-        )
+        [
+          product.itemname,
+          product.hsncode,
+          product.category,
+          product.subcategory,
+          product.itemcode,
+        ].some((field) => field?.toLowerCase().includes(searchQuery))
       );
     }
 
     // Apply category filter
     if (filterCategory) {
-      filtered = filtered.filter((product) => product.category === filterCategory);
+      filtered = filtered.filter(
+        (product) => product.category === filterCategory
+      );
     }
 
     // Apply brand filter
@@ -287,7 +303,9 @@ const ProductsTable = () => {
         const valueA = a[sortColumn] || "";
         const valueB = b[sortColumn] || "";
         if (sortColumn === "price" || sortColumn === "quantity") {
-          return sortOrder === "asc" ? Number(valueA) - Number(valueB) : Number(valueB) - Number(valueA);
+          return sortOrder === "asc"
+            ? Number(valueA) - Number(valueB)
+            : Number(valueB) - Number(valueA);
         } else {
           return sortOrder === "asc"
             ? String(valueA).localeCompare(String(valueB))
@@ -317,7 +335,15 @@ const ProductsTable = () => {
     prevShowNoImageOnly.current = showNoImageOnly;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
-  }, [products, searchQuery, filterCategory, filterBrand, showNoImageOnly, sortColumn, sortOrder]);
+  }, [
+    products,
+    searchQuery,
+    filterCategory,
+    filterBrand,
+    showNoImageOnly,
+    sortColumn,
+    sortOrder,
+  ]);
 
   // Handle image modal navigation
   useEffect(() => {
@@ -362,7 +388,10 @@ const ProductsTable = () => {
 
     for (let page = startPage; page <= endPage; page++) {
       pages.push(
-        <li key={page} className={`page-item ${currentPage === page ? "active" : ""}`}>
+        <li
+          key={page}
+          className={`page-item ${currentPage === page ? "active" : ""}`}
+        >
           <button
             className="page-link"
             onClick={() => handlePageChange(page)}
@@ -387,8 +416,12 @@ const ProductsTable = () => {
   };
 
   // Extract unique categories and brands
-  const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
-  const brands = Array.from(new Set(products.map((product) => product.brand))).filter(Boolean);
+  const categories = Array.from(
+    new Set(products.map((product) => product.category))
+  ).filter(Boolean);
+  const brands = Array.from(
+    new Set(products.map((product) => product.brand))
+  ).filter(Boolean);
 
   return (
     <div className="card" style={{ minHeight: "500px", overflow: "auto" }}>
@@ -613,7 +646,8 @@ const ProductsTable = () => {
               </div>
               <div style={{ flex: 1, textAlign: "left" }}>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>ID:</strong> {String(selectedProduct.id).padStart(5, '0')}
+                  <strong>ID:</strong>{" "}
+                  {String(selectedProduct.id).padStart(5, "0")}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Item Code:</strong> {selectedProduct.itemcode}
@@ -625,7 +659,8 @@ const ProductsTable = () => {
                   <strong>Category:</strong> {selectedProduct.category}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
+                  <strong>Subcategory:</strong>{" "}
+                  {selectedProduct.subcategory || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
@@ -643,26 +678,30 @@ const ProductsTable = () => {
                   <strong>Price:</strong> ₹{selectedProduct.price}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+                  <strong>Rack Code:</strong>{" "}
+                  {selectedProduct.rackcode || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Quantity:</strong> {selectedProduct.quantity}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
+                  <strong>Reorder Quantity:</strong>{" "}
+                  {selectedProduct.reorderqty || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Unit:</strong> {selectedProduct.unit}
                 </p>
-                  {/* ✅ New fields */}
+                {/* ✅ New fields */}
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Beam Angle:</strong> {selectedProduct.beamangle || "N/A"}
+                  <strong>Beam Angle:</strong>{" "}
+                  {selectedProduct.beamangle || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia || "N/A"}
+                  <strong>Cutout Dia:</strong>{" "}
+                  {selectedProduct.cutoutdia || "N/A"}
                 </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <i>Description</i>:
@@ -670,7 +709,13 @@ const ProductsTable = () => {
                 <div>{formatText(selectedProduct.description) || "N/A"}</div>
               </div>
             </div>
-            <div style={{ marginTop: 25, display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                marginTop: 25,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
               <button
                 onClick={handleDetailsModalClose}
                 style={{
@@ -684,8 +729,12 @@ const ProductsTable = () => {
                   cursor: "pointer",
                   transition: "background 0.3s",
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#ddd")}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#eee")}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#ddd")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#eee")
+                }
               >
                 Close
               </button>
@@ -714,7 +763,7 @@ const ProductsTable = () => {
               <option value="">All Categories</option>
               {categories.map((cat, idx) => (
                 <option key={idx} value={cat}>
-                   {cat}
+                  {cat}
                 </option>
               ))}
             </select>
@@ -747,10 +796,16 @@ const ProductsTable = () => {
             <button className="btn btn-info btn-md" onClick={exportToCSV}>
               Export to CSV
             </button>
-            <button className="btn btn-success btn-md" onClick={handleAddModalOpen}>
+            <button
+              className="btn btn-success btn-md"
+              onClick={handleAddModalOpen}
+            >
               Add Product
             </button>
-            <button className="btn btn-danger btn-md" onClick={() => setShowModal(true)}>
+            <button
+              className="btn btn-danger btn-md"
+              onClick={() => setShowModal(true)}
+            >
               Upload CSV or Excel
             </button>
           </div>
@@ -758,8 +813,15 @@ const ProductsTable = () => {
 
         {/* Loading Spinner */}
         {isLoading ? (
-          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
-            <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: "200px" }}
+          >
+            <div
+              className="spinner-border text-primary"
+              role="status"
+              style={{ width: "3rem", height: "3rem" }}
+            >
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
@@ -770,36 +832,56 @@ const ProductsTable = () => {
                 <thead>
                   <tr>
                     <th onClick={() => handleSort("itemcode")}>
-                      Item Code {sortColumn === "itemcode" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Item Code{" "}
+                      {sortColumn === "itemcode" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                      <th onClick={() => handleSort("in_display")}>
-                      In Display {sortColumn === "in_display" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <th onClick={() => handleSort("in_display")}>
+                      In Display{" "}
+                      {sortColumn === "in_display" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th>Thumbnail</th>
                     <th onClick={() => handleSort("itemname")}>
-                      Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Item Name{" "}
+                      {sortColumn === "itemname" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                           <th onClick={() => handleSort("cct")}>
-                     CCT {sortColumn === "cct" && (sortOrder === "asc" ? "↑" : "↓")}
+                    {/* <th onClick={() => handleSort("cct")}>
+                      CCT{" "}
+                      {sortColumn === "cct" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                               <th onClick={() => handleSort("beamangle")}>
-                     Beam Angle {sortColumn === "beamangle" && (sortOrder === "asc" ? "↑" : "↓")}
+                    <th onClick={() => handleSort("beamangle")}>
+                      Beam Angle{" "}
+                      {sortColumn === "beamangle" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
-                                 <th onClick={() => handleSort("cutoutdia")}>
-                    Cutout Dia {sortColumn === "cutoutdia" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
+                    <th onClick={() => handleSort("cutoutdia")}>
+                      Cutout Dia{" "}
+                      {sortColumn === "cutoutdia" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th> */}
                     <th onClick={() => handleSort("category")}>
-                      Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Category{" "}
+                      {sortColumn === "category" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("subcategory")}>
-                      Subcategory {sortColumn === "subcategory" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Subcategory{" "}
+                      {sortColumn === "subcategory" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th>Brand</th>
                     <th onClick={() => handleSort("price")}>
-                      Price {sortColumn === "price" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Price{" "}
+                      {sortColumn === "price" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th onClick={() => handleSort("quantity")}>
-                      Quantity {sortColumn === "quantity" && (sortOrder === "asc" ? "↑" : "↓")}
+                      Quantity{" "}
+                      {sortColumn === "quantity" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th>Actions</th>
                   </tr>
@@ -809,7 +891,7 @@ const ProductsTable = () => {
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
-                        <td>{product.in_display ? 'NO' : 'YES'}</td>
+                        <td>{product.in_display ? "NO" : "YES"}</td>
                         <td>
                           {product.thumbnail ? (
                             <img
@@ -879,7 +961,11 @@ const ProductsTable = () => {
               <nav aria-label="Product table pagination" className="mt-4">
                 <div className="pagination-container">
                   <ul className="pagination justify-content-center align-items-center">
-                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => handlePageChange(1)}
@@ -889,7 +975,11 @@ const ProductsTable = () => {
                         <i className="fa-solid fa-angles-left"></i>
                       </button>
                     </li>
-                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => handlePageChange(currentPage - 1)}
@@ -900,7 +990,11 @@ const ProductsTable = () => {
                       </button>
                     </li>
                     {renderPageNumbers()}
-                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => handlePageChange(currentPage + 1)}
@@ -910,7 +1004,11 @@ const ProductsTable = () => {
                         <i className="fa-solid fa-angle-right"></i>
                       </button>
                     </li>
-                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => handlePageChange(totalPages)}
@@ -928,7 +1026,10 @@ const ProductsTable = () => {
                       max={totalPages}
                       value={currentPage}
                       onChange={(e) => {
-                        const page = Math.min(Math.max(1, parseInt(e.target.value) || 1), totalPages);
+                        const page = Math.min(
+                          Math.max(1, parseInt(e.target.value) || 1),
+                          totalPages
+                        );
                         handlePageChange(page);
                       }}
                       className="form-control"
