@@ -654,6 +654,16 @@ const ProductsTable = () => {
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <strong>Unit:</strong> {selectedProduct.unit}
                 </p>
+                  {/* ✅ New fields */}
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Beam Angle:</strong> {selectedProduct.beamangle || "N/A"}
+                </p>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                  <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia || "N/A"}
+                </p>
                 <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                   <i>Description</i>:
                 </p>
@@ -769,6 +779,15 @@ const ProductsTable = () => {
                     <th onClick={() => handleSort("itemname")}>
                       Item Name {sortColumn === "itemname" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
+                           <th onClick={() => handleSort("cct")}>
+                     CCT {sortColumn === "cct" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                               <th onClick={() => handleSort("beamangle")}>
+                     Beam Angle {sortColumn === "beamangle" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                                 <th onClick={() => handleSort("cutoutdia")}>
+                    Cutout Dia {sortColumn === "cutoutdia" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
                     <th onClick={() => handleSort("category")}>
                       Category {sortColumn === "category" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
@@ -817,6 +836,9 @@ const ProductsTable = () => {
                           )}
                         </td>
                         <td>{product.itemname}</td>
+                        <td>{product.cct}</td>
+                        <td>{product.beamangle}</td>
+                        <td>{product.cutoutdia}</td>
                         <td>{product.category}</td>
                         <td>{product.subcategory}</td>
                         <td>{product.brand}</td>

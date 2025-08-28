@@ -23,6 +23,9 @@ const productSchema = yup.object().shape({
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
   unit: yup.string().required("Unit is required"),
+  cct: yup.string().nullable(),        // ✅ new
+  beamangle: yup.string().nullable(),  // ✅ new
+  cutoutdia: yup.string().nullable(),  // ✅ new
   inDisplay: yup
     .string()
     .oneOf(["yes", "no"], "Select a valid display option")
@@ -47,7 +50,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let randomLetters = "";
     for (let i = 0; i < 4; i++) {
-      randomLetters += letters.charAt(Math.floor(Math.random() * letters.length));
+      randomLetters += letters.charAt(
+        Math.floor(Math.random() * letters.length)
+      );
     }
     const randomNumbers = Math.floor(100 + Math.random() * 900); // 3-digit number
     return randomLetters + randomNumbers;
@@ -79,7 +84,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
-        const resSubCategories = await fetch("https://api.panvic.in/subcategory/");
+        const resSubCategories = await fetch(
+          "https://api.panvic.in/subcategory/"
+        );
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
@@ -146,7 +153,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-
               {/* Common Inputs with floating labels */}
               {[
                 "hsncode",
@@ -161,12 +167,17 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "model",
                 "brand",
                 "unit",
+                "cct", // ✅ new
+                "beamangle", // ✅ new
+                "cutoutdia", // ✅ new
               ].map((field) => (
                 <div className="col-6 form-floating mb-1" key={field}>
                   <input
                     type="text"
                     {...register(field)}
-                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                    className={`form-control ${
+                      errors[field] ? "border-danger" : ""
+                    }`}
                     id={field}
                     placeholder=" "
                   />
@@ -174,7 +185,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                     {field.replace(/([A-Z])/g, " $1").trim()}
                   </label>
                   {errors[field] && (
-                    <small className="text-danger">{errors[field].message}</small>
+                    <small className="text-danger">
+                      {errors[field].message}
+                    </small>
                   )}
                 </div>
               ))}
@@ -183,7 +196,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <div className="col-6 form-floating mb-1">
                 <select
                   {...register("category")}
-                  className={`form-select ${errors.category ? "border-danger" : ""}`}
+                  className={`form-select ${
+                    errors.category ? "border-danger" : ""
+                  }`}
                   id="category"
                   defaultValue=""
                 >
@@ -198,7 +213,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </select>
                 <label htmlFor="category">Category</label>
                 {errors.category && (
-                  <small className="text-danger">{errors.category.message}</small>
+                  <small className="text-danger">
+                    {errors.category.message}
+                  </small>
                 )}
               </div>
 
@@ -206,7 +223,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <div className="col-6 form-floating mb-1">
                 <select
                   {...register("subcategory")}
-                  className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
+                  className={`form-select ${
+                    errors.subcategory ? "border-danger" : ""
+                  }`}
                   id="subcategory"
                   defaultValue=""
                 >
@@ -221,7 +240,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </select>
                 <label htmlFor="subcategory">Subcategory</label>
                 {errors.subcategory && (
-                  <small className="text-danger">{errors.subcategory.message}</small>
+                  <small className="text-danger">
+                    {errors.subcategory.message}
+                  </small>
                 )}
               </div>
 
@@ -229,7 +250,9 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <div className="col-6 form-floating mb-1">
                 <select
                   {...register("inDisplay")}
-                  className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
+                  className={`form-select ${
+                    errors.inDisplay ? "border-danger" : ""
+                  }`}
                   id="inDisplay"
                   defaultValue="yes"
                 >
@@ -239,13 +262,17 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 </select>
                 <label htmlFor="inDisplay">Show in Display?</label>
                 {errors.inDisplay && (
-                  <small className="text-danger">{errors.inDisplay.message}</small>
+                  <small className="text-danger">
+                    {errors.inDisplay.message}
+                  </small>
                 )}
               </div>
 
               {/* Reorder Switch */}
               <div className="col-6 d-flex align-items-center gap-2">
-                <label className="form-check-label me-2">Enable Reorder Qty</label>
+                <label className="form-check-label me-2">
+                  Enable Reorder Qty
+                </label>
                 <div className="form-check form-switch">
                   <input
                     className="form-check-input"
@@ -264,13 +291,17 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   <input
                     type="number"
                     {...register("reorderqty")}
-                    className={`form-control ${errors.reorderqty ? "border-danger" : ""}`}
+                    className={`form-control ${
+                      errors.reorderqty ? "border-danger" : ""
+                    }`}
                     id="reorderqty"
                     placeholder=" "
                   />
                   <label htmlFor="reorderqty">Reorder Quantity</label>
                   {errors.reorderqty && (
-                    <small className="text-danger">{errors.reorderqty.message}</small>
+                    <small className="text-danger">
+                      {errors.reorderqty.message}
+                    </small>
                   )}
                 </div>
               )}
