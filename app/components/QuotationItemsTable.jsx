@@ -76,36 +76,40 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-  const handleImageChange = async (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const handleImageChange = async (e, index) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    // ✅ Preview immediately
-    const previewUrl = URL.createObjectURL(file);
-    const updatedItems = [...items];
-    updatedItems[index].preview = previewUrl;
+  // Show temporary preview
+  const previewUrl = URL.createObjectURL(file);
+  const updatedItems = [...items];
+  updatedItems[index].preview = previewUrl;
+  setItems(updatedItems);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axios.put(
+      `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
+      formData,
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    // ✅ Replace blob with actual API URL
+    updatedItems[index].preview = response.data.image_url;
     setItems(updatedItems);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+    toast.success("Image uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    toast.error("Failed to upload image!");
+  }
+};
 
-      // ✅ Use both quotation_id and item.id in API call
-      await axios.put(
-        `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      toast.success("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Failed to upload image!");
-    }
-  };
 
   const requestSort = (key) => {
     let direction = "asc";
