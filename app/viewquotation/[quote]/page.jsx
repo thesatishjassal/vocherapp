@@ -111,7 +111,7 @@ export default async function ViewQuotation({ params }) {
               </div>
             </div>
 
-                          Subject: <span className="tm_primary_color">{quotation && <b>{quotation.subject}</b>}</span>
+             Subject: <span className="tm_primary_color mb-3">{quotation && <b>{quotation.subject}</b>}</span>
             
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
