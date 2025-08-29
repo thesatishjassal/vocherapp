@@ -139,7 +139,7 @@ export default async function ViewQuotation({ params }) {
                     {quotation && quotation.without_gst !== 0 ? (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">Without GST:</p>
+                          <p className="m-0">Included GST:</p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
                           {(quotation.without_gst || 0).toFixed(2)}
