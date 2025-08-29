@@ -398,7 +398,7 @@ useEffect(() => {
                         handleEditFieldChange("unit", e.target.value)
                       }
                       className="form-control input-small"
-                      disabled
+                      
                     />
                   ) : (
                     row.unit
@@ -414,7 +414,7 @@ useEffect(() => {
                           handleEditFieldChange("mrp", e.target.value)
                         }
                         className="form-control input-small"
-                        disabled
+                        
                       />
                     ) : (
                       row.mrp
@@ -577,7 +577,7 @@ useEffect(() => {
                   placeholder="unit"
                   className="form-control input-small"
                   ref={inputRefs.unit}
-                  disabled
+                  
                 />
               </td>
               <td>
@@ -589,7 +589,7 @@ useEffect(() => {
                   placeholder="MRP"
                   className="form-control input-small"
                   ref={inputRefs.mrp}
-                  disabled
+                  
                 />
               </td>
               <td>
@@ -623,7 +623,7 @@ useEffect(() => {
                   type="number"
                   name="amount"
                   value={newRow.amount}
-                  disabled
+                  
                   placeholder="Amount"
                   className="form-control input-small"
                 />
