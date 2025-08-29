@@ -87,7 +87,7 @@ export default async function ViewQuotation({ params }) {
                     <b className="tm_primary_color">Client Details:</b>
                   </p>
                   <p>
-                    Business Name: <b>{client.businessname}</b> <br />
+                    {/* Business Name: <b>{client.businessname}</b> <br /> */}
                     Name: <b>{client.client_name}</b> <br />
                     City: <b>{client.city}</b> | Phone: <b>{client.client_phone}</b>
                   </p>
