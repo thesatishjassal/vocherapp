@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import axios from "axios"; // Import axios for API calls
-import AddProductForm from "../components/AddProductForm"; // ✅ import modal
 
 const QuotatTable = ({
   items = [],
@@ -13,8 +12,6 @@ const QuotatTable = ({
 }) => {
   const [rows, setRows] = useState([]);
   const [FiltercolModal, setFiltercolModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false); // ✅ modal state
-
   const [newRow, setNewRow] = useState({
     customerCode: "",
     customerDescription: "",
@@ -55,38 +52,7 @@ const QuotatTable = ({
     discount: useRef(null),
     image: useRef(null),
   };
-  const handleProductSave = async (product) => {
-    try {
-      // call backend to attach product to quotation
-      const payload = {
-        product_id: product.id, // backend expects product_id
-        itemcode: product.itemcode,
-        item_name: product.itemname,
-        brand: product.brand,
-        quantity: 1,
-        unit: product.unit,
-        mrp: Number(product.price),
-        discount: 0,
-        price: Number(product.price),
-        customercode: "",
-        customerdescription: "",
-        remarks: "",
-      };
 
-      const response = await axios.post(
-        `https://api.panvic.in/quotation/${qouteId}/items/`,
-        payload,
-        { withCredentials: true }
-      );
-
-      const newItem = response.data;
-      setRows((prev) => [...prev, newItem]); // ✅ update table instantly
-      setShowProductModal(false);
-    } catch (err) {
-      console.error("Error adding product to quotation:", err);
-      alert("Failed to add product. Please try again.");
-    }
-  };
   // Fetch items for the given qouteId from the API
   useEffect(() => {
     if (!qouteId) return; // Do nothing if qouteId is not provided
@@ -138,10 +104,9 @@ const QuotatTable = ({
       setRows((prevRows) => [
         ...prevRows,
         {
-          id: prevRows.length + 1,
+          id: prevRows.length + 1, // Temporary ID for new rows
           ...newRow,
           amount,
-          isLocal: true, // mark this as local
         },
       ]);
 
@@ -189,14 +154,13 @@ const QuotatTable = ({
     setEditRow((prev) => ({
       ...prev,
       [field]: value,
-      amount:
-        field === "qty" || field === "mrp" || field === "discount"
-          ? calculateAmount(
-              field === "qty" ? value : prev.qty,
-              field === "mrp" ? value : prev.mrp,
-              field === "discount" ? value : prev.discount
-            )
-          : prev.amount,
+      amount: field === "qty" || field === "mrp" || field === "discount"
+        ? calculateAmount(
+            field === "qty" ? value : prev.qty,
+            field === "mrp" ? value : prev.mrp,
+            field === "discount" ? value : prev.discount
+          )
+        : prev.amount,
     }));
   };
 
@@ -210,40 +174,49 @@ const QuotatTable = ({
     setEditRowIndex(index);
   };
 
-  const handleSaveRow = async () => {
-    if (editRow.itemCode && editRow.itemName && editRow.qty && editRow.mrp) {
-      if (editRow.isLocal) {
-        // only update locally
-        setRows((prevRows) =>
-          prevRows.map((row, index) =>
-            index === editRowIndex ? { ...editRow } : row
-          )
-        );
-      } else {
-        // existing API code for PUT request
-        try {
-          const response = await axios.put(
-            `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}`,
-            { ...editRow },
-            { withCredentials: true }
-          );
-          const updatedItem = response.data;
-          setRows((prevRows) =>
-            prevRows.map((row, index) =>
-              index === editRowIndex ? { ...updatedItem } : row
-            )
-          );
-        } catch (err) {
-          console.error("Error updating item:", err);
-          alert("Failed to update item.");
-        }
-      }
+const handleSaveRow = async () => {
+  if (editRow.itemCode && editRow.itemName && editRow.qty && editRow.mrp) {
+    try {
+      // Call backend API
+      const response = await axios.put(
+        `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}`,
+        {
+          product_id: editRow.itemCode, // depends on your backend schema
+          customercode: editRow.customerCode,
+          customerdescription: editRow.customerDescription,
+          itemcode: editRow.itemCode,
+          item_name: editRow.itemName,
+          brand: editRow.brand,
+          quantity: Number(editRow.qty),
+          unit: editRow.unit,
+          mrp: Number(editRow.mrp),
+          discount: Number(editRow.discount),
+          price: Number(editRow.amount),
+          image: editRow.image,
+          remarks: editRow.remarks || "",
+        },
+        { withCredentials: true }
+      );
+
+      const updatedItem = response.data;
+
+      // Update rows in frontend
+      setRows((prevRows) =>
+        prevRows.map((row, index) =>
+          index === editRowIndex ? { ...updatedItem } : row
+        )
+      );
+
       setEditRowIndex(null);
       setEditRow(null);
-    } else {
-      alert("Please fill in all required fields.");
+    } catch (error) {
+      console.error("Error updating item:", error);
+      alert("Failed to update item. Please try again.");
     }
-  };
+  } else {
+    alert("Please fill in all required fields.");
+  }
+};
 
   const handleCancelEdit = () => {
     setEditRowIndex(null);
@@ -252,43 +225,48 @@ const QuotatTable = ({
 
   const handleDeleteRow = async (index) => {
     const row = rows[index];
+    const itemId = row.id; // Use the id from the row
     const amountToSubtract = row.amount;
 
-    if (row.isLocal) {
+    try {
+      const response = await axios.delete(
+        `https://api.panvic.in/quotation/${qouteId}/items/${itemId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log("Delete response:", response.data);
+
       setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-      setTotalAmount((prev) => prev - amountToSubtract);
-    } else {
-      try {
-        await axios.delete(
-          `https://api.panvic.in/quotation/${qouteId}/items/${row.id}`,
-          { withCredentials: true }
-        );
-        setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-        setTotalAmount((prev) => prev - amountToSubtract);
-      } catch (err) {
-        console.error("Error deleting item:", err);
-        alert("Failed to delete item.");
-      }
+      setTotalAmount((prevTotal) => {
+        const updatedTotal = prevTotal - amountToSubtract;
+        if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
+        return updatedTotal;
+      });
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      alert("Failed to delete item. Please try again.");
     }
   };
 
-  // Update total amount when rows change
-  useEffect(() => {
-    const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
-    setTotalAmount(updatedTotal);
-    if (onTotalAmountChange) {
-      onTotalAmountChange(updatedTotal);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]); // ✅ only depend on rows
+// Update total amount when rows change
+useEffect(() => {
+  const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
+  setTotalAmount(updatedTotal);
+  if (onTotalAmountChange) {
+    onTotalAmountChange(updatedTotal);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [rows]); // ✅ only depend on rows
 
-  // Notify parent when rows change
-  useEffect(() => {
-    if (onRowsChange) {
-      onRowsChange(rows);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]); // ✅ only depend on rows
+// Notify parent when rows change
+useEffect(() => {
+  if (onRowsChange) {
+    onRowsChange(rows);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [rows]); // ✅ only depend on rows
+
 
   return (
     <div>
@@ -356,10 +334,7 @@ const QuotatTable = ({
                         type="text"
                         value={editRow.customerDescription}
                         onChange={(e) =>
-                          handleEditFieldChange(
-                            "customerDescription",
-                            e.target.value
-                          )
+                          handleEditFieldChange("customerDescription", e.target.value)
                         }
                         className="form-control input-small"
                       />
@@ -423,6 +398,7 @@ const QuotatTable = ({
                         handleEditFieldChange("unit", e.target.value)
                       }
                       className="form-control input-small"
+                      disabled
                     />
                   ) : (
                     row.unit
@@ -438,6 +414,7 @@ const QuotatTable = ({
                           handleEditFieldChange("mrp", e.target.value)
                         }
                         className="form-control input-small"
+                        disabled
                       />
                     ) : (
                       row.mrp
@@ -600,6 +577,7 @@ const QuotatTable = ({
                   placeholder="unit"
                   className="form-control input-small"
                   ref={inputRefs.unit}
+                  disabled
                 />
               </td>
               <td>
@@ -611,6 +589,7 @@ const QuotatTable = ({
                   placeholder="MRP"
                   className="form-control input-small"
                   ref={inputRefs.mrp}
+                  disabled
                 />
               </td>
               <td>
@@ -644,6 +623,7 @@ const QuotatTable = ({
                   type="number"
                   name="amount"
                   value={newRow.amount}
+                  disabled
                   placeholder="Amount"
                   className="form-control input-small"
                 />
