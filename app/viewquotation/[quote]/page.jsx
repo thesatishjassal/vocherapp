@@ -111,9 +111,8 @@ export default async function ViewQuotation({ params }) {
               </div>
             </div>
 
-            <p>
-              <b className="tm_primary_color">Product Info:</b>
-            </p>
+                          Subject: <span className="tm_primary_color">{quotation && <b>{quotation.salesperson}</b>}</span>
+            
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
