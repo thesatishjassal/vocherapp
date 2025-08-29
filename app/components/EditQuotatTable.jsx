@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import axios from "axios"; // Import axios for API calls
+import AddProductForm from "../components/AddProductForm"; // ✅ import modal
 
 const QuotatTable = ({
   items = [],
@@ -12,6 +13,8 @@ const QuotatTable = ({
 }) => {
   const [rows, setRows] = useState([]);
   const [FiltercolModal, setFiltercolModal] = useState(false);
+    const [showProductModal, setShowProductModal] = useState(false); // ✅ modal state
+
   const [newRow, setNewRow] = useState({
     customerCode: "",
     customerDescription: "",
@@ -52,7 +55,38 @@ const QuotatTable = ({
     discount: useRef(null),
     image: useRef(null),
   };
+  const handleProductSave = async (product) => {
+    try {
+      // call backend to attach product to quotation
+      const payload = {
+        product_id: product.id, // backend expects product_id
+        itemcode: product.itemcode,
+        item_name: product.itemname,
+        brand: product.brand,
+        quantity: 1,
+        unit: product.unit,
+        mrp: Number(product.price),
+        discount: 0,
+        price: Number(product.price),
+        customercode: "",
+        customerdescription: "",
+        remarks: "",
+      };
 
+      const response = await axios.post(
+        `https://api.panvic.in/quotation/${qouteId}/items/`,
+        payload,
+        { withCredentials: true }
+      );
+
+      const newItem = response.data;
+      setRows((prev) => [...prev, newItem]); // ✅ update table instantly
+      setShowProductModal(false);
+    } catch (err) {
+      console.error("Error adding product to quotation:", err);
+      alert("Failed to add product. Please try again.");
+    }
+  };
   // Fetch items for the given qouteId from the API
   useEffect(() => {
     if (!qouteId) return; // Do nothing if qouteId is not provided
@@ -398,7 +432,6 @@ useEffect(() => {
                         handleEditFieldChange("unit", e.target.value)
                       }
                       className="form-control input-small"
-                      disabled
                     />
                   ) : (
                     row.unit
@@ -414,7 +447,6 @@ useEffect(() => {
                           handleEditFieldChange("mrp", e.target.value)
                         }
                         className="form-control input-small"
-                        disabled
                       />
                     ) : (
                       row.mrp
@@ -577,7 +609,6 @@ useEffect(() => {
                   placeholder="unit"
                   className="form-control input-small"
                   ref={inputRefs.unit}
-                  disabled
                 />
               </td>
               <td>
@@ -589,7 +620,6 @@ useEffect(() => {
                   placeholder="MRP"
                   className="form-control input-small"
                   ref={inputRefs.mrp}
-                  disabled
                 />
               </td>
               <td>
@@ -623,7 +653,6 @@ useEffect(() => {
                   type="number"
                   name="amount"
                   value={newRow.amount}
-                  disabled
                   placeholder="Amount"
                   className="form-control input-small"
                 />
