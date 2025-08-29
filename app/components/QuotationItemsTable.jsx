@@ -28,15 +28,15 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     amount: true,
     image: true,
   });
-useEffect(() => {
-  return () => {
-    items.forEach((item) => {
-      if (item.preview?.startsWith("blob:")) {
-        URL.revokeObjectURL(item.preview);
-      }
-    });
-  };
-}, [items]);
+  useEffect(() => {
+    return () => {
+      items.forEach((item) => {
+        if (item.preview?.startsWith("blob:")) {
+          URL.revokeObjectURL(item.preview);
+        }
+      });
+    };
+  }, [items]);
 
   useEffect(() => {
     if (!quotation_id) return;
@@ -85,48 +85,47 @@ useEffect(() => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-const handleImageChange = async (e, index) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleImageChange = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // 🚀 Clean up old preview if it exists
-  if (items[index].preview?.startsWith("blob:")) {
-    URL.revokeObjectURL(items[index].preview);
-  }
+    // 🚀 Clean up old preview if it exists
+    if (items[index].preview?.startsWith("blob:")) {
+      URL.revokeObjectURL(items[index].preview);
+    }
 
-  // Show temporary preview
-  const previewUrl = URL.createObjectURL(file);
-  const updatedItems = [...items];
-  updatedItems[index] = { ...updatedItems[index], preview: previewUrl };
-  setItems(updatedItems);
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await axios.put(
-      `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
-      formData,
-      {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-
-    // ✅ Replace blob with actual API URL
-    updatedItems[index] = {
-      ...updatedItems[index],
-      preview: `https://api.panvic.in${response.data.image_url}`,
-    };
+    // Show temporary preview
+    const previewUrl = URL.createObjectURL(file);
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], preview: previewUrl };
     setItems(updatedItems);
 
-    toast.success("Image uploaded successfully!");
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    toast.error("Failed to upload image!");
-  }
-};
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
+      const response = await axios.put(
+        `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      // ✅ Replace blob with actual API URL
+      updatedItems[index] = {
+        ...updatedItems[index],
+        preview: `https://api.panvic.in${response.data.image_url}`,
+      };
+      setItems(updatedItems);
+
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image!");
+    }
+  };
 
   const requestSort = (key) => {
     let direction = "asc";
@@ -353,7 +352,17 @@ const handleImageChange = async (e, index) => {
               {visibleColumns.customerDescription && (
                 <td>{item.customerdescription}</td>
               )}
-              {visibleColumns.itemCode && <td>{item.itemcode}</td>}
+              {visibleColumns.itemCode && (
+                <td>
+                  <div>{item.itemcode}</div>
+                  <span style={{ fontSize: "11px", color: "#6b7280" }}>
+                    CCT: {item?.cct ?? "4k"} | Cutout Size:{" "}
+                    {item?.cutoutsize ?? item?.cutoutdia ?? "200mm"} | Beam
+                    Angle: {item?.beamangle ?? "40°"}
+                  </span>
+                </td>
+              )}
+
               {visibleColumns.itemName && <td>{item.item_name}</td>}
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
