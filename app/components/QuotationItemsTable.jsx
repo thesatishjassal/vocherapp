@@ -352,18 +352,23 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.customerDescription && (
                 <td>{item.customerdescription}</td>
               )}
-              {visibleColumns.itemCode && (
+              {visibleColumns.itemCode && <td>{item.itemcode}</td>}
+              {visibleColumns.itemName && (
                 <td>
-                  <div>{item.itemcode}</div>
-                  <span style={{ fontSize: "11px", color: "#6b7280" }}>
+                  <div>{item.item_name}</div>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      color: "#6b7280",
+                    }}
+                  >
                     CCT: {item?.cct ?? "4k"} | Cutout Size:{" "}
                     {item?.cutoutsize ?? item?.cutoutdia ?? "200mm"} | Beam
                     Angle: {item?.beamangle ?? "40°"}
                   </span>
                 </td>
               )}
-
-              {visibleColumns.itemName && <td>{item.item_name}</td>}
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
               {visibleColumns.mrp && <td>{item.mrp}</td>}
