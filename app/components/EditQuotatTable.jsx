@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
-import FindProduct from "../components/FindProduct";
 import axios from "axios"; // Import axios for API calls
-import { toast } from "react-toastify"; // Import toast for notifications (optional)
 
 const QuotatTable = ({
   items = [],
@@ -28,9 +26,6 @@ const QuotatTable = ({
     image: "",
   });
   const [totalAmount, setTotalAmount] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [productList, setProductList] = useState([]); // Full product list
-  const [filteredProducts, setFilteredProducts] = useState([]); // Filtered product list
   const [columns, setColumns] = useState({
     customerCode: true,
     customerDescription: true,
@@ -42,7 +37,8 @@ const QuotatTable = ({
     Dist: true,
     Price: true,
   });
-  const [editRowIndex, setEditRowIndex] = useState(null); // To track which row is being edited
+  const [editRowIndex, setEditRowIndex] = useState(null); // Track which row is being edited
+  const [editRow, setEditRow] = useState(null); // Store data of the row being edited
 
   const inputRefs = {
     customerCode: useRef(null),
@@ -56,27 +52,6 @@ const QuotatTable = ({
     discount: useRef(null),
     image: useRef(null),
   };
-
-  // Fetch products from API on component mount
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("https://api.panvic.in/products/");
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const data = await response.json();
-        const updatedData = data.map((item) => ({
-          ...item,
-          unit: item.unit || "Piece",
-        }));
-        setProductList(updatedData);
-        setFilteredProducts(updatedData); // Initially, show all products
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   // Fetch items for the given qouteId from the API
   useEffect(() => {
@@ -126,31 +101,14 @@ const QuotatTable = ({
     if (newRow.itemCode && newRow.itemName && qty && mrp) {
       const amount = calculateAmount(qty, mrp, discount);
 
-      if (editRowIndex !== null) {
-        // Edit existing row
-        setRows((prevRows) =>
-          prevRows.map((row, index) =>
-            index === editRowIndex
-              ? {
-                  ...row,
-                  ...newRow,
-                  amount,
-                }
-              : row
-          )
-        );
-        setEditRowIndex(null); // Reset edit mode
-      } else {
-        // Add new row
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            id: prevRows.length + 1, // Temporary ID for new rows
-            ...newRow,
-            amount,
-          },
-        ]);
-      }
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1, // Temporary ID for new rows
+          ...newRow,
+          amount,
+        },
+      ]);
 
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal + amount;
@@ -190,41 +148,20 @@ const QuotatTable = ({
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["itemCode", "itemName"].includes(field) && value.trim()) {
-      setShowModal(true);
-      filterProducts(field, value); // Filter products based on input
-    }
   };
 
-  // Implement filterProducts function
-  const filterProducts = (field, value) => {
-    const filtered = productList.filter((product) => {
-      if (field === "itemCode") {
-        return product.itemcode.toLowerCase().includes(value.toLowerCase());
-      } else if (field === "itemName") {
-        return product.itemname.toLowerCase().includes(value.toLowerCase());
-      }
-      return true;
-    });
-    setFilteredProducts(filtered);
-  };
-
-  const handleProductSelect = (product) => {
-    if (product) {
-      setNewRow((prev) => ({
-        ...prev,
-        itemCode: product.itemcode,
-        itemName: product.itemname,
-        unit: product.unit,
-        mrp: product.price,
-        brand: product.brand,
-        image: product.thumbnail,
-      }));
-    }
-    setShowModal(false);
-    setTimeout(() => {
-      inputRefs.qty.current?.focus();
-    }, 0);
+  const handleEditFieldChange = (field, value) => {
+    setEditRow((prev) => ({
+      ...prev,
+      [field]: value,
+      amount: field === "qty" || field === "mrp" || field === "discount"
+        ? calculateAmount(
+            field === "qty" ? value : prev.qty,
+            field === "mrp" ? value : prev.mrp,
+            field === "discount" ? value : prev.discount
+          )
+        : prev.amount,
+    }));
   };
 
   const handleColumnVisibilityChange = (updatedColumns) => {
@@ -233,70 +170,103 @@ const QuotatTable = ({
 
   const handleEditRow = (index) => {
     const row = rows[index];
-    setNewRow({
-      customerCode: row.customerCode,
-      customerDescription: row.customerDescription,
-      itemCode: row.itemCode,
-      itemName: row.itemName,
-      brand: row.brand,
-      qty: row.qty,
-      unit: row.unit,
-      mrp: row.mrp,
-      discount: row.discount,
-      amount: row.amount,
-      image: row.image,
-    });
-    setEditRowIndex(index); // Set the index for the row being edited
+    setEditRow({ ...row });
+    setEditRowIndex(index);
   };
 
-  // Updated handleDeleteRow to call the API
+const handleSaveRow = async () => {
+  if (editRow.itemCode && editRow.itemName && editRow.qty && editRow.mrp) {
+    try {
+      // Call backend API
+      const response = await axios.put(
+        `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}`,
+        {
+          product_id: editRow.itemCode, // depends on your backend schema
+          customercode: editRow.customerCode,
+          customerdescription: editRow.customerDescription,
+          itemcode: editRow.itemCode,
+          item_name: editRow.itemName,
+          brand: editRow.brand,
+          quantity: Number(editRow.qty),
+          unit: editRow.unit,
+          mrp: Number(editRow.mrp),
+          discount: Number(editRow.discount),
+          price: Number(editRow.amount),
+          image: editRow.image,
+          remarks: editRow.remarks || "",
+        },
+        { withCredentials: true }
+      );
+
+      const updatedItem = response.data;
+
+      // Update rows in frontend
+      setRows((prevRows) =>
+        prevRows.map((row, index) =>
+          index === editRowIndex ? { ...updatedItem } : row
+        )
+      );
+
+      setEditRowIndex(null);
+      setEditRow(null);
+    } catch (error) {
+      console.error("Error updating item:", error);
+      alert("Failed to update item. Please try again.");
+    }
+  } else {
+    alert("Please fill in all required fields.");
+  }
+};
+
+  const handleCancelEdit = () => {
+    setEditRowIndex(null);
+    setEditRow(null);
+  };
+
   const handleDeleteRow = async (index) => {
     const row = rows[index];
     const itemId = row.id; // Use the id from the row
     const amountToSubtract = row.amount;
 
     try {
-      // Make DELETE request to the API
       const response = await axios.delete(
         `https://api.panvic.in/quotation/${qouteId}/items/${itemId}`,
         {
-          withCredentials: true, // Include credentials if needed for authentication
+          withCredentials: true,
         }
       );
       console.log("Delete response:", response.data);
 
-      // Update the frontend state after successful deletion
       setRows((prevRows) => prevRows.filter((_, i) => i !== index));
       setTotalAmount((prevTotal) => {
         const updatedTotal = prevTotal - amountToSubtract;
         if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
         return updatedTotal;
       });
-
-      // Optional: Show success notification
-      toast.success("Item deleted successfully!");
     } catch (error) {
       console.error("Error deleting item:", error);
-      if (error.response?.status === 404) {
-        toast.error("Item not found on server.");
-      } else {
-        toast.error("Failed to delete item. Please try again.");
-      }
+      alert("Failed to delete item. Please try again.");
     }
   };
 
-  useEffect(() => {
-    const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
-    setTotalAmount(updatedTotal);
-    if (onTotalAmountChange) onTotalAmountChange(updatedTotal);
-  }, [rows, onTotalAmountChange]);
+// Update total amount when rows change
+useEffect(() => {
+  const updatedTotal = rows.reduce((sum, row) => sum + row.amount, 0);
+  setTotalAmount(updatedTotal);
+  if (onTotalAmountChange) {
+    onTotalAmountChange(updatedTotal);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [rows]); // ✅ only depend on rows
 
-  // Pass the updated rows data to the parent component
-  useEffect(() => {
-    if (onRowsChange) {
-      onRowsChange(rows);
-    }
-  }, [rows, onRowsChange]);
+// Notify parent when rows change
+useEffect(() => {
+  if (onRowsChange) {
+    onRowsChange(rows);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [rows]); // ✅ only depend on rows
+
 
   return (
     <div>
@@ -321,7 +291,7 @@ const QuotatTable = ({
               {columns.Qty && <th>Qty</th>}
               {columns.Dist && <th>Dist (%)</th>}
               {columns.Price && <th>Price</th>}
-              <th className="no-print">Actions</th> {/* Add Actions column */}
+              <th className="no-print">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -341,31 +311,187 @@ const QuotatTable = ({
                     />
                   </td>
                 )}
-                {columns.customerCode && <td>{row.customerCode}</td>}
-                {columns.customerDescription && (
-                  <td>{row.customerDescription}</td>
+                {columns.customerCode && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="text"
+                        value={editRow.customerCode}
+                        onChange={(e) =>
+                          handleEditFieldChange("customerCode", e.target.value)
+                        }
+                        className="form-control input-small"
+                      />
+                    ) : (
+                      row.customerCode
+                    )}
+                  </td>
                 )}
-                {columns.ItemCode && <td>{row.itemCode}</td>}
-                <td>{row.itemName}</td>
-                {columns.Brand && <td>{row.brand}</td>}
-                <td>{row.unit}</td>
-                {columns.MRP && <td>{row.mrp}</td>}
-                {columns.Qty && <td>{row.qty}</td>}
-                {columns.Dist && <td>{row.discount}</td>}
-                {columns.Price && <td>{row.amount.toFixed(2)}</td>}
+                {columns.customerDescription && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="text"
+                        value={editRow.customerDescription}
+                        onChange={(e) =>
+                          handleEditFieldChange("customerDescription", e.target.value)
+                        }
+                        className="form-control input-small"
+                      />
+                    ) : (
+                      row.customerDescription
+                    )}
+                  </td>
+                )}
+                {columns.ItemCode && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="text"
+                        value={editRow.itemCode}
+                        onChange={(e) =>
+                          handleEditFieldChange("itemCode", e.target.value)
+                        }
+                        className="form-control input-small"
+                      />
+                    ) : (
+                      row.itemCode
+                    )}
+                  </td>
+                )}
                 <td>
-                  <button
-                    className="btn action_btn no-print btn-warning"
-                    onClick={() => handleEditRow(index)}
-                  >
-                    <i className="fas fa-edit"></i> {/* Edit Icon */}
-                  </button>
-                  <button
-                    className="btn action_btn no-print btn-danger ml-2"
-                    onClick={() => handleDeleteRow(index)}
-                  >
-                    <i className="fas fa-trash"></i> {/* Delete Icon */}
-                  </button>
+                  {editRowIndex === index ? (
+                    <input
+                      type="text"
+                      value={editRow.itemName}
+                      onChange={(e) =>
+                        handleEditFieldChange("itemName", e.target.value)
+                      }
+                      className="form-control"
+                    />
+                  ) : (
+                    row.itemName
+                  )}
+                </td>
+                {columns.Brand && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="text"
+                        value={editRow.brand}
+                        onChange={(e) =>
+                          handleEditFieldChange("brand", e.target.value)
+                        }
+                        className="form-control"
+                      />
+                    ) : (
+                      row.brand
+                    )}
+                  </td>
+                )}
+                <td>
+                  {editRowIndex === index ? (
+                    <input
+                      type="text"
+                      value={editRow.unit}
+                      onChange={(e) =>
+                        handleEditFieldChange("unit", e.target.value)
+                      }
+                      className="form-control input-small"
+                      disabled
+                    />
+                  ) : (
+                    row.unit
+                  )}
+                </td>
+                {columns.MRP && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="text"
+                        value={editRow.mrp}
+                        onChange={(e) =>
+                          handleEditFieldChange("mrp", e.target.value)
+                        }
+                        className="form-control input-small"
+                        disabled
+                      />
+                    ) : (
+                      row.mrp
+                    )}
+                  </td>
+                )}
+                {columns.Qty && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="number"
+                        value={editRow.qty}
+                        onChange={(e) =>
+                          handleEditFieldChange("qty", e.target.value)
+                        }
+                        className="form-control input-small"
+                      />
+                    ) : (
+                      row.qty
+                    )}
+                  </td>
+                )}
+                {columns.Dist && (
+                  <td>
+                    {editRowIndex === index ? (
+                      <input
+                        type="number"
+                        value={editRow.discount}
+                        onChange={(e) =>
+                          handleEditFieldChange("discount", e.target.value)
+                        }
+                        className="form-control input-small"
+                      />
+                    ) : (
+                      row.discount
+                    )}
+                  </td>
+                )}
+                {columns.Price && (
+                  <td>
+                    {editRowIndex === index
+                      ? editRow.amount.toFixed(2)
+                      : row.amount.toFixed(2)}
+                  </td>
+                )}
+                <td>
+                  {editRowIndex === index ? (
+                    <>
+                      <button
+                        className="btn action_btn no-print btn-success"
+                        onClick={handleSaveRow}
+                      >
+                        <i className="fas fa-save"></i> {/* Save Icon */}
+                      </button>
+                      <button
+                        className="btn action_btn no-print btn-secondary ml-2"
+                        onClick={handleCancelEdit}
+                      >
+                        <i className="fas fa-times"></i> {/* Cancel Icon */}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn action_btn no-print btn-warning"
+                        onClick={() => handleEditRow(index)}
+                      >
+                        <i className="fas fa-edit"></i> {/* Edit Icon */}
+                      </button>
+                      <button
+                        className="btn action_btn no-print btn-danger ml-2"
+                        onClick={() => handleDeleteRow(index)}
+                      >
+                        <i className="fas fa-trash"></i> {/* Delete Icon */}
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -406,7 +532,7 @@ const QuotatTable = ({
                 <input
                   type="text"
                   name="itemCode"
-                  value={newRow.itemCode} // Fixed: Changed 'row.itemCode' to 'newRow.itemCode'
+                  value={newRow.itemCode}
                   onChange={(e) =>
                     handleFieldChange("itemCode", e.target.value)
                   }
@@ -506,12 +632,6 @@ const QuotatTable = ({
           </tbody>
         </table>
       </div>
-      <FindProduct
-        showModal={showModal}
-        setShowModal={setShowModal}
-        handleProductSelect={handleProductSelect}
-        products={filteredProducts} // Pass filtered products to FindProduct
-      />
     </div>
   );
 };

@@ -9,18 +9,20 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
     gstType === "exclude" ? totalAmount + gstAmount : totalAmount;
   const withoutGST = gstType === "exclude" ? totalAmount : totalAmount / (1 + gstPercentage / 100);
 
+
   // Pass calculated values to parent whenever they change
-  useEffect(() => {
-    if (onGSTChange) {
-      onGSTChange({
-        gstAmount: gstAmount || 0, // Default to 0 if null/undefined
-        totalWithGST: totalWithGST || 0, // Default to 0 if null/undefined
-        withoutGST: withoutGST || 0, // Default to 0 if null/undefined
-        gstPercentage,
-        gstType,
-      });
-    }
-  }, [gstAmount, totalWithGST, withoutGST, gstPercentage, gstType, onGSTChange]);
+useEffect(() => {
+  if (onGSTChange) {
+    onGSTChange({
+      gstAmount: gstAmount || 0,
+      totalWithGST: totalWithGST || 0,
+      withoutGST: withoutGST || 0,
+      gstPercentage,
+      gstType,
+    });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [gstAmount, totalWithGST, withoutGST, gstPercentage, gstType]);
 
   return (
     <div className="row p-4">
