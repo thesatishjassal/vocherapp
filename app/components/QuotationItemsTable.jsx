@@ -28,6 +28,15 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     amount: true,
     image: true,
   });
+useEffect(() => {
+  return () => {
+    items.forEach((item) => {
+      if (item.preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(item.preview);
+      }
+    });
+  };
+}, [items]);
 
   useEffect(() => {
     if (!quotation_id) return;
@@ -80,10 +89,15 @@ const handleImageChange = async (e, index) => {
   const file = e.target.files[0];
   if (!file) return;
 
+  // 🚀 Clean up old preview if it exists
+  if (items[index].preview?.startsWith("blob:")) {
+    URL.revokeObjectURL(items[index].preview);
+  }
+
   // Show temporary preview
   const previewUrl = URL.createObjectURL(file);
   const updatedItems = [...items];
-  updatedItems[index].preview = previewUrl;
+  updatedItems[index] = { ...updatedItems[index], preview: previewUrl };
   setItems(updatedItems);
 
   try {
@@ -100,7 +114,10 @@ const handleImageChange = async (e, index) => {
     );
 
     // ✅ Replace blob with actual API URL
-    updatedItems[index].preview = response.data.image_url;
+    updatedItems[index] = {
+      ...updatedItems[index],
+      preview: `https://api.panvic.in${response.data.image_url}`,
+    };
     setItems(updatedItems);
 
     toast.success("Image uploaded successfully!");
