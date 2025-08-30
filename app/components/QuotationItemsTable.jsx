@@ -356,7 +356,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.itemName && (
                 <td>
                   <div>{item.item_name}</div>
-                  <span
+                  {/* <span
                     style={{
                       fontSize: "11px",
                       fontWeight: "bold",
@@ -366,7 +366,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                     CCT: {item?.cct ?? "4k"} | Cutout Size:{" "}
                     {item?.cutoutsize ?? item?.cutoutdia ?? "200mm"} | Beam
                     Angle: {item?.beamangle ?? "40°"} | CRI: {item?.Cri ?? "2550m"} | Body Color: {item?.bodycolor ?? "White"} | Lumens: {item?.lumens ?? "800lm"} 
-                  </span>
+                  </span> */}
                 </td>
               )}
               {visibleColumns.brand && <td>{item.brand}</td>}
