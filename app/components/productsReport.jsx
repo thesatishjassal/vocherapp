@@ -47,7 +47,7 @@ const ProductsReport = () => {
 
     if (searchQuery) {
       filtered = filtered.filter((product) =>
-        [product.itemname, product.hsncode, product.category, product.subcategory, product.itemcode]
+        [product.itemname, product.category, product.subcategory, product.itemcode]
           .some((field) => field?.toLowerCase().includes(searchQuery))
       );
     }

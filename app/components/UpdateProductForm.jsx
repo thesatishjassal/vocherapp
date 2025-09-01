@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Validation Schema
 const productSchema = yup.object().shape({
-  hsncode: yup.string().required("HSN Code is required"),
+  // hsncode: yup.string().required("HSN Code is required"),
   itemcode: yup.string().required("Item Code is required"),
   itemname: yup.string().required("Item Name is required"),
   description: yup.string().required("Description is required"),
@@ -146,7 +146,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
 
               {/* Common Inputs with floating labels */}
               {[
-                "hsncode",
+                // "hsncode",
                 "itemcode",
                 "itemname",
                 "description",

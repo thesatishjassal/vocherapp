@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const productSchema = yup.object().shape({
-  hsncode: yup.string().required("HSN Code is required"),
+  // hsncode: yup.string().required("HSN Code is required"),
   itemcode: yup.string().required("Item Code is required"),
   itemname: yup.string().required("Item Name is required"),
   description: yup.string().required("Description is required"),
@@ -48,17 +48,17 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const [subCategories, setSubCategories] = useState([]);
   const [reorderEnabled, setReorderEnabled] = useState(false);
 
-  const generateHSNCode = () => {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let randomLetters = "";
-    for (let i = 0; i < 4; i++) {
-      randomLetters += letters.charAt(
-        Math.floor(Math.random() * letters.length)
-      );
-    }
-    const randomNumbers = Math.floor(100 + Math.random() * 900);
-    return randomLetters + randomNumbers;
-  };
+  // const generateHSNCode = () => {
+  //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  //   let randomLetters = "";
+  //   for (let i = 0; i < 4; i++) {
+  //     randomLetters += letters.charAt(
+  //       Math.floor(Math.random() * letters.length)
+  //     );
+  //   }
+  //   const randomNumbers = Math.floor(100 + Math.random() * 900);
+  //   return randomLetters + randomNumbers;
+  // };
 
   const {
     register,
@@ -73,7 +73,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     defaultValues: {
       reorderEnabled: false,
       inDisplay: "yes",
-      hsncode: generateHSNCode(),
+      // hsncode: generateHSNCode(),
     },
   });
 
@@ -157,7 +157,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
               {/* Common Inputs */}
               {[
-                "hsncode",
+                // "hsncode",
                 "itemcode",
                 "itemname",
                 "description",

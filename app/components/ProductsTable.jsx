@@ -174,7 +174,7 @@ const ProductsTable = () => {
       "Categories",
       "Images",
       "Attributes",
-      "Meta: hsncode",
+      // "Meta: hsncode",
       "Meta: unit",
       "Meta: rackcode",
       "Meta: size",
@@ -209,7 +209,7 @@ const ProductsTable = () => {
         }`,
         product.thumbnail ? `${API_URL}${product.thumbnail}` : "",
         attributes,
-        product.hsncode || "",
+        // product.hsncode || "",
         product.unit || "",
         product.rackcode || "",
         product.size || "",
@@ -272,7 +272,7 @@ const ProductsTable = () => {
       filtered = filtered.filter((product) =>
         [
           product.itemname,
-          product.hsncode,
+          // product.hsncode,
           product.category,
           product.subcategory,
           product.itemcode,
