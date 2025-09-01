@@ -356,17 +356,18 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.itemName && (
                 <td>
                   <div>{item.item_name}</div>
-                  {/* <span
+                  <span
                     style={{
                       fontSize: "11px",
                       fontWeight: "bold",
                       color: "#6b7280",
                     }}
                   >
-                    CCT: {item?.cct ?? "4k"} | Cutout Size:{" "}
-                    {item?.cutoutsize ?? item?.cutoutdia ?? "200mm"} | Beam
-                    Angle: {item?.beamangle ?? "40°"} | CRI: {item?.Cri ?? "2550m"} | Body Color: {item?.bodycolor ?? "White"} | Lumens: {item?.lumens ?? "800lm"} 
-                  </span> */}
+                    CCT: {item?.cct} | Cutout Size:{" "}
+                    {item?.cutoutsize ?? item?.cutoutdia} | Beam Angle:{" "}
+                    {item?.beamangle} | CRI: {item?.Cri} | Body Color:{" "}
+                    {item?.bodycolor} | Lumens: {item?.lumens}
+                  </span>
                 </td>
               )}
               {visibleColumns.unit && <td>{item.unit}</td>}
