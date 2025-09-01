@@ -23,9 +23,11 @@ const productSchema = yup.object().shape({
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
   unit: yup.string().required("Unit is required"),
-  cct: yup.string().nullable(),        // ✅ new
-  beamangle: yup.string().nullable(),  // ✅ new
-  cutoutdia: yup.string().nullable(),  // ✅ new
+  cct: yup.string().nullable(),        // ✅ existing
+  beamangle: yup.string().nullable(),  // ✅ existing
+  cutoutdia: yup.string().nullable(),  // ✅ existing
+  cri: yup.string().nullable(),        // ✅ new
+  lumens: yup.string().nullable(),     // ✅ new
   inDisplay: yup
     .string()
     .oneOf(["yes", "no"], "Select a valid display option")
@@ -54,7 +56,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         Math.floor(Math.random() * letters.length)
       );
     }
-    const randomNumbers = Math.floor(100 + Math.random() * 900); // 3-digit number
+    const randomNumbers = Math.floor(100 + Math.random() * 900);
     return randomLetters + randomNumbers;
   };
 
@@ -153,7 +155,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
           </div>
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              {/* Common Inputs with floating labels */}
+              {/* Common Inputs */}
               {[
                 "hsncode",
                 "itemcode",
@@ -167,9 +169,11 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "model",
                 "brand",
                 "unit",
-                "cct", // ✅ new
-                "beamangle", // ✅ new
-                "cutoutdia", // ✅ new
+                "cct",        // ✅ existing
+                "beamangle",  // ✅ existing
+                "cutoutdia",  // ✅ existing
+                "cri",        // ✅ new
+                "lumens",     // ✅ new
               ].map((field) => (
                 <div className="col-6 form-floating mb-1" key={field}>
                   <input
