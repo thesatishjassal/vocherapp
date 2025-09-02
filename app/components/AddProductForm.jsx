@@ -125,7 +125,8 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       toast.success("Product added successfully!", {
         position: "top-right",
       });
-      window.location.reload();
+      console.log("Added Product:", responseData);
+      // window.location.reload();
       onSave(responseData);
       reset();
     } catch (error) {
