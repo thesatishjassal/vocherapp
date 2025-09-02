@@ -363,10 +363,13 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                       color: "#6b7280",
                     }}
                   >
-                    CCT: {item?.cct} | Cutout Size:{" "}
-                    {item?.cutoutsize ?? item?.cutoutdia} | Beam Angle:{" "}
-                    {item?.beamangle} | CRI: {item?.Cri} | Body Color:{" "}
-                    {item?.bodycolor} | Lumens: {item?.lumens}
+                    {item?.cct && `CCT: ${item.cct} | `}
+                    {(item?.cutoutsize || item?.cutoutdia) &&
+                      `Cutout Size: ${item.cutoutsize ?? item.cutoutdia} | `}
+                    {item?.beamangle && `Beam Angle: ${item.beamangle} | `}
+                    {item?.Cri && `CRI: ${item.Cri} | `}
+                    {item?.bodycolor && `Body Color: ${item.bodycolor} | `}
+                    {item?.lumens && `Lumens: ${item.lumens}`}
                   </span>
                 </td>
               )}
