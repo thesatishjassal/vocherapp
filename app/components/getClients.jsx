@@ -16,7 +16,7 @@ const GetClients = () => {
     fetchClients();
   }, []);
 
-  // Fetch clients data
+  // Fetch clients data;
   const fetchClients = async () => {
     try {
       const response = await axios.get(`${API_URL}/clients/`);
@@ -30,7 +30,7 @@ const GetClients = () => {
   // console.log("Clients:", clients);
   const handleDelete = async (clientId) => {
     if (!confirm("Are you sure you want to delete this client?")) return;
-    // console.log("Deleting client:", clientId);
+    // console.log("Deleting client:", clientId)
     try {
       const response = await axios.delete(`${API_URL}/client/${clientId}/`, {
         headers: { "Content-Type": "application/json" },

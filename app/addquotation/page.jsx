@@ -46,6 +46,9 @@ const Quotation = () => {
       unit: item.unit || "pcs",
       amount: parseFloat(item.amount) || 0,  // Added amount
       warranty_guarantee: warranty || "As per company norms",
+      comments: item.comments || "N/A",
+      status: "active",
+
     }),
     []
   );

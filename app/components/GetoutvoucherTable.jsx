@@ -116,8 +116,8 @@ const GetOutvoucherTable = () => {
           <tbody>
             {sortedVouchers.length > 0 ? (
               sortedVouchers.map((voucher) => (
-                <tr key={voucher.voucher_id}>
-                  <td>{voucher.voucher_id}</td>
+                <tr key={voucher.id}>
+                  <td>{voucher.id}</td>
                   <td>{voucher.voucher_no}</td>
                   <td>{voucher.issue_slip_no}</td>
                   <td>{voucher.sale_order_no}</td>
@@ -127,7 +127,7 @@ const GetOutvoucherTable = () => {
                   <td>{voucher.number_of_packages}</td>
                   <td>{voucher.freight_amount}</td>
                   <td>
-                    <Link href={`/viewotv/${voucher.voucher_id}`}>
+                    <Link href={`/viewotv/${voucher.id}`}>
                       <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
                         <i className="fas fa-eye"></i>
                       </u>
@@ -136,7 +136,7 @@ const GetOutvoucherTable = () => {
                       className="text-danger"
                       title="Delete"
                       style={{ cursor: "pointer" }}
-                      onClick={() => handleDelete(voucher.voucher_id)}
+                      onClick={() => handleDelete(voucher.id)}
                     >
                       <i className="fas fa-trash"></i>
                     </u>

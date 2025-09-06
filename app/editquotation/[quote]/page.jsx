@@ -65,7 +65,7 @@ const EditQuotation = () => {
           toast.error("No quotation found!");
         }
       } catch (error) {
-        toast.error("Failed to load quotation details!");
+        toast.error("Failed to load quotation ''!");
       } finally {
         setLoading(false);
       }

@@ -18,8 +18,7 @@ const Addoutinvoice = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [voucherId, setVoucherId] = useState(1); // Star at 1
-  const [voucherSequence, setVoucherSequence] = useState(1); // Start at 1
+  const [voucherSequence, setVoucherSequence] = useState(1); // only sequence
   const [submitStatus, setSubmitStatus] = useState(null);
   const [voucherRows, setVoucherRows] = useState([]);
   const [productsFetched, setProductsFetched] = useState(false);
@@ -68,8 +67,8 @@ const Addoutinvoice = () => {
       }
 
       const productsData = await response.json();
-      const ids = productsData.map(product => product.itemcode);
-      
+      const ids = productsData.map((product) => product.itemcode);
+
       setProductIds(new Set(ids));
       setProductsFetched(true);
     } catch (error) {
@@ -80,7 +79,7 @@ const Addoutinvoice = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchLastVoucherData = async () => {
@@ -96,13 +95,6 @@ const Addoutinvoice = () => {
 
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
-          // Get the last voucher number correctly
-          const lastVoucher = vouchers.reduce((max, voucher) =>
-            parseInt(voucher.voucher_id) > parseInt(max.voucher_id)
-              ? voucher
-              : max
-          );
-
           const lastSequence = vouchers
             .map((voucher) => {
               const match = voucher.voucher_no
@@ -112,15 +104,12 @@ const Addoutinvoice = () => {
             })
             .reduce((max, num) => Math.max(max, num), 0);
 
-          setVoucherId(lastVoucher.voucher_id + 1);
           setVoucherSequence(lastSequence + 1);
         } else {
-          setVoucherId(1);
           setVoucherSequence(1);
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error);
-        setVoucherId(1);
         setVoucherSequence(1);
       }
     };
@@ -134,19 +123,11 @@ const Addoutinvoice = () => {
         toast.error(submitStatus, {
           position: "top-right",
           autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
         });
       } else {
         toast.success(submitStatus, {
           position: "top-right",
           autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
         });
       }
     }
@@ -157,7 +138,7 @@ const Addoutinvoice = () => {
       setSubmitStatus("Please complete the basic info details");
       return;
     }
-    if (voucherId === null || voucherSequence === null) {
+    if (voucherSequence === null) {
       setSubmitStatus("Voucher data not yet loaded, please wait");
       return;
     }
@@ -166,59 +147,70 @@ const Addoutinvoice = () => {
       setLoading(false);
       return;
     }
-  
+
     setLoading(true);
     setError(null);
     setSubmitStatus(null);
-  
+
     const newVoucherNo = generateVoucherNumber();
-  
+
     const voucherPayload = {
-      voucher_id: voucherId,
-      voucher_no: newVoucherNo,
+      voucher_no: newVoucherNo, // only voucher_no, id is auto
       issue_slip_no: basicinfoData?.IssueSlipNo || null,
       sale_order_no: basicinfoData?.SaleOrderNo || null,
       transport: basicinfoData?.Transport || null,
       transaction_types: basicinfoData?.transaction_types || null,
       vehicle_no: basicinfoData?.VehicleNo || null,
-      number_of_packages: basicinfoData?.Packages ? parseInt(basicinfoData.Packages, 10) : null,
+      number_of_packages: basicinfoData?.Packages
+        ? parseInt(basicinfoData.Packages, 10)
+        : null,
       ordered_by: basicinfoData?.OrderBy || null,
       sales_person: basicinfoData?.SalePerson || null,
-      freight_amount: basicinfoData?.FreightAmount ? parseFloat(basicinfoData.FreightAmount) : null,
+      freight_amount: basicinfoData?.FreightAmount
+        ? parseFloat(basicinfoData.FreightAmount)
+        : null,
       receiver_name: basicinfoData?.ReceiverName || null,
       mobile_number: basicinfoData?.ContactNumber || null,
       client_id: selectedCustomer?.id || null,
       remarks: null,
     };
-  
+
     try {
       // First request: Create Outvoucher
-      const voucherResponse = await axios.post("https://api.panvic.in/outvouchers/", voucherPayload, {
-        headers: { "Content-Type": "application/json" },
-      });
-  
+      const voucherResponse = await axios.post(
+        "https://api.panvic.in/outvouchers/",
+        voucherPayload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
       console.log("Outvoucher Created:", voucherResponse.data);
-  
-      // Extract created voucher_id from response
-      const createdVoucherId = voucherResponse.data.voucher_id;
+
+      // Use DB auto-generated ID
+      const createdVoucherId =
+        voucherResponse.data.id || voucherResponse.data.voucher_id;
       if (!createdVoucherId) {
         throw new Error("Failed to retrieve voucher_id from response.");
       }
-  
-      // Validate voucherRows before making the second API call
+
+      // Validate rows
       if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
-        throw new Error("Voucher items are empty. Cannot proceed with creating outvoucher items.");
+        throw new Error("Voucher items are empty. Cannot proceed.");
       }
-  
+
       const requiredFields = ["itemcode", "itemname", "unit", "qty"];
-      const invalidRows = voucherRows.some((row) => {
-        return requiredFields.some((field) => !row[field] || row[field].trim() === "");
-      });
-  
+      const invalidRows = voucherRows.some((row) =>
+        requiredFields.some(
+          (field) => !row[field] || row[field].toString().trim() === ""
+        )
+      );
+
       if (invalidRows) {
         throw new Error("All item fields must be filled.");
       }
-  
+
+      // Submit items
       for (const row of voucherRows) {
         const itemData = {
           voucher_id: createdVoucherId,
@@ -229,29 +221,26 @@ const Addoutinvoice = () => {
           quantity: Number(row.qty) || 0,
           comments: row.comments,
         };
-  
-        // Second request: Create Outvoucher Items
+
         const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
         console.log("Submitting item to:", itemUrl, "with data:", itemData);
-  
+
         const itemsResponse = await axios.post(itemUrl, itemData, {
           headers: { "Content-Type": "application/json" },
         });
-  
+
         console.log("Item submitted successfully:", itemsResponse.data);
       }
+
       setSubmitStatus("Outvoucher and Items created successfully!");
       window.location.href = "/getoutvouchers";
-  
-      // Update sequence only after successful response
-      setVoucherId((prev) => (prev !== null ? prev + 1 : 1));
+
+      // Update sequence only after success
       setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
     } catch (err) {
       console.error("Error:", err.response?.data || err.message);
       setError(
-        err.response?.data || {
-          message: "Failed to create outvoucher and items",
-        }
+        err.response?.data || { message: "Failed to create outvoucher/items" }
       );
     } finally {
       setLoading(false);
