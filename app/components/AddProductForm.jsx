@@ -28,6 +28,7 @@ const productSchema = yup.object().shape({
   cutoutdia: yup.string().nullable(),  // ✅ existing
   cri: yup.string().nullable(),        // ✅ new
   lumens: yup.string().nullable(),     // ✅ new
+  watt: yup.string().nullable(),     // ✅ new
   inDisplay: yup
     .string()
     .oneOf(["yes", "no"], "Select a valid display option")
@@ -165,7 +166,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "price",
                 "quantity",
                 "rackcode",
-                "Dia size",
+              "size",
                 "color",
                 "model",
                 "brand",
