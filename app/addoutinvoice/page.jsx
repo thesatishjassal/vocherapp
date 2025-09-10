@@ -279,26 +279,12 @@ const Addoutinvoice = () => {
                 <p className="tm_invoice_date tm_m0">
                   Date:{" "}
                   <b className="tm_primary_color">
-                    {startDate.toLocaleDateString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                  {startDate.toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                   </b>
-                  {open && (
-                    <div className="custom_datepciker">
-                      {open && (
-                        <DatePicker
-                          selected={startDate}
-                          onChange={(date) => {
-                            setStartDate(date);
-                            setOpen(false);
-                          }}
-                          inline
-                        />
-                      )}
-                    </div>
-                  )}
                 </p>
               </div>
             </div>

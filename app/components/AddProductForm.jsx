@@ -165,7 +165,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "price",
                 "quantity",
                 "rackcode",
-                "size",
+                "Dia size",
                 "color",
                 "model",
                 "brand",
