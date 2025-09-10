@@ -172,7 +172,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "unit",
                 "cct",        // ✅ existing
                 "beamangle",  // ✅ existing
-                "cutoutdia",  // ✅ existing
+                "cutout size",  // ✅ existing
                 "cri",        // ✅ new
                 "lumens",     // ✅ new
               ].map((field) => (
