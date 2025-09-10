@@ -51,7 +51,7 @@ const ExcelUploaderModal = ({ show, onClose }) => {
       setFile(null);
       onClose(); // Close modal on success
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Upload error:", error.response?.data?.detail );
       toast.error(
         error.response?.data?.detail ||
           "File upload failed. Please try again."
