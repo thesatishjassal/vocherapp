@@ -128,142 +128,151 @@ const AddInvoice = () => {
     }
   }, [submitStatus]);
 
-  const handleSubmit = async () => {
-    if (!selectedCustomer || !receiverInfo) {
-      setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
-      console.log("Missing required fields:", { selectedCustomer, receiverInfo });
-      return;
+const handleSubmit = async () => {
+  if (!selectedCustomer || !receiverInfo) {
+    setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
+    return;
+  }
+
+  if (voucherId === null || voucherSequence === null) {
+    setSubmitStatus("Voucher data not yet loaded, please wait");
+    return;
+  }
+
+  if (invoiceItems.length === 0) {
+    setSubmitStatus("Please add at least one item to the invoice");
+    return;
+  }
+
+  if (gstOption === "Exclude" && gstPercentage <= 0) {
+    setSubmitStatus("Please enter a valid GST percentage");
+    return;
+  }
+
+  setIsSubmitting(true);
+  setSubmitStatus(null);
+
+  const voucherNumber = generateVoucherNumber();
+  const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
+
+  const invoiceData = {
+    voucher_id: voucherId,
+    voucher_number: voucherNumber,
+    transaction_type: receiverInfo?.transactionType || "",
+    voucher_date: new Date().toISOString().split("T")[0],
+    client_id: selectedCustomer?.id || "3",
+    invoice_number: receiverInfo?.InvoiceNumber || "",
+    invoice_date: receiverInfo?.InvoiceDate || "",
+    mode_of_transport: receiverInfo?.ModeofTransport || "",
+    number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
+    freight_status: receiverInfo?.Freight || "",
+    total_amount: totalWithGst,
+    gst_option: gstOption,
+    gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
+    gst_amount: gstAmount,
+    remarks: remarks || "Urgent delivery", // ✅ Use state instead of querySelector
+  };
+
+  try {
+    // Step 1: Submit the invoice
+    const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invoiceData),
+    });
+
+    if (!invoiceResponse.ok) {
+      const errorData = await invoiceResponse.json();
+      throw new Error(
+        `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
+      );
     }
 
-    if (voucherId === null || voucherSequence === null) {
-      setSubmitStatus("Voucher data not yet loaded, please wait");
-      console.log("Voucher data not loaded:", { voucherId, voucherSequence });
-      return;
+    const invoiceResult = await invoiceResponse.json();
+    const newVoucherId = invoiceResult.voucher_id;
+
+    if (!newVoucherId) {
+      throw new Error("No valid id returned from invoice creation. Check API response.");
     }
 
-    if (invoiceItems.length === 0) {
-      setSubmitStatus("Please add at least one item to the invoice");
-      console.log("No invoice items provided");
-      return;
-    }
+    // Step 2: Submit invoice items
+    for (const item of invoiceItems) {
+      const itemData = {
+        product_id: item.itemcode,
+        item_name: item.itemname,
+        unit: item.unit,
+        rack_code: item.rackcode,
+        quantity: parseInt(item.quantity),
+        rate: parseFloat(item.rate),
+        discount_percentage: parseFloat(item.discount_percentage || 0),
+        additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
+        amount: parseFloat(item.amount),
+        comments: item.comments,
+      };
 
-    if (gstOption === "Exclude" && gstPercentage <= 0) {
-      setSubmitStatus("Please enter a valid GST percentage");
-      console.log("Invalid GST percentage:", gstPercentage);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-
-    const voucherNumber = generateVoucherNumber();
-    const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
-    const invoiceData = {
-      voucher_id: voucherId,
-      voucher_number: voucherNumber,
-      transaction_type: receiverInfo?.transactionType || "",
-      voucher_date: new Date().toISOString().split("T")[0],
-      client_id: selectedCustomer?.id || "3",
-      invoice_number: receiverInfo?.InvoiceNumber || "",
-      invoice_date: receiverInfo?.InvoiceDate || "",
-      mode_of_transport: receiverInfo?.ModeofTransport || "",
-      number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
-      freight_status: receiverInfo?.Freight || "",
-      total_amount: totalWithGst, // Use total with GST
-      gst_option: gstOption,
-      gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
-      gst_amount: gstAmount,
-      remarks: document.querySelector(".tm_remarks_box")?.value || "Urgent delivery",
-    };
-
-    try {
-      // Step 1: Submit the invoice
-      console.log("Submitting Invoice Data:", invoiceData);
-      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
+      const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+      const itemsResponse = await fetch(itemUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(invoiceData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(itemData),
       });
 
-      if (!invoiceResponse.ok) {
-        const errorData = await invoiceResponse.json();
-        console.error("Invoice submission failed:", errorData);
+      if (!itemsResponse.ok) {
+        const errorData = await itemsResponse.json();
         throw new Error(
-          `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
+          `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
         );
       }
+// Step 3: Update product stock (optimized: fetch all products once)
+try {
+  // Fetch all products once
+  const productResponse = await fetch("https://api.panvic.in/products/");
+  if (!productResponse.ok) throw new Error("Failed to fetch product stock");
 
-      const invoiceResult = await invoiceResponse.json();
-      console.log("Invoice submission response:", invoiceResult);
+  const products = await productResponse.json();
 
-      // Step 2: Extract the correct ID
-      const newVoucherId = invoiceResult.voucher_id;
-      console.log("New Voucher ID (from id):", newVoucherId);
+  for (const item of invoiceItems) {
+    const productId = item.itemcode;
+    const product = products.find(p => p.itemcode === productId || p.itemcode === productId);
 
-      if (!newVoucherId) {
-        console.error("No id field in invoiceResult:", invoiceResult);
-        throw new Error("No valid id returned from invoice creation. Check API response.");
-      }
-
-      // Step 3: Submit invoice items
-      console.log("Submitting Invoice Items:", invoiceItems);
-      for (const item of invoiceItems) {
-        const itemData = {
-          product_id: item.itemcode,
-          item_name: item.itemname,
-          unit: item.unit,
-          rack_code: item.rackcode,
-          quantity: parseInt(item.quantity),
-          rate: parseFloat(item.rate),
-          discount_percentage: parseFloat(item.discount_percentage || 0),
-          additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
-          amount: parseFloat(item.amount),
-          comments: item.comments,
-        };
-
-        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
-        console.log("Submitting item to:", itemUrl, "with data:", itemData);
-
-        const itemsResponse = await fetch(itemUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(itemData),
-        });
-
-        if (!itemsResponse.ok) {
-          const errorData = await itemsResponse.json();
-          console.error("Item submission failed:", errorData);
-          throw new Error(
-            `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
-          );
-        }
-
-        const itemsResult = await itemsResponse.json();
-        console.log("Item submitted successfully:", itemsResult);
-      }
-
-      // Success: Update state and notify user
-      setSubmitStatus("Invoice and items submitted successfully!");
-      window.location.href = "/getinvouchers";
-      setVoucherSequence((prev) => prev + 1);
-      setVoucherId(invoiceResult.voucher_id + 1);
-      setSelectedCustomer(null);
-      setReceiverInfo(null);
-      setInvoiceItems([]);
-      setTotalAmount(0);
-      setGstOption("Include");
-      setGstPercentage(0);
-    } catch (error) {
-      setSubmitStatus("Error submitting invoice or items: " + error.message);
-      console.error("Submission Error:", error);
-    } finally {
-      setIsSubmitting(false);
+    if (!product) {
+      console.warn(`Product with ID ${productId} not found in products list`);
+      continue;
     }
-  };
+
+    // Reduce stock (assuming sales)
+    const newQuantity = (product.quantity || 0) + parseInt(item.quantity);
+
+    await fetch(`https://api.panvic.in/products/${product.id}/`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...product, quantity: newQuantity }),
+    });
+
+    console.log(`Stock updated for product ${productId}: ${product.quantity} → ${newQuantity}`);
+  }
+} catch (err) {
+  console.error("Error updating product stocks", err);
+}
+    }
+
+    // Success
+    setSubmitStatus("Invoice, items, and product stocks updated successfully!");
+    setVoucherSequence((prev) => prev + 1);
+    setVoucherId(newVoucherId);
+    setSelectedCustomer(null);
+    setReceiverInfo(null);
+    setInvoiceItems([]);
+    setTotalAmount(0);
+    setGstOption("Include");
+    setGstPercentage(0);
+  } catch (error) {
+    setSubmitStatus("Error submitting invoice or items: " + error.message);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
 

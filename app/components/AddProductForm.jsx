@@ -175,6 +175,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "cutout size",  // ✅ existing
                 "cri",        // ✅ new
                 "lumens",     // ✅ new
+                "watt",     // ✅ new
               ].map((field) => (
                 <div className="col-6 form-floating mb-1" key={field}>
                   <input
