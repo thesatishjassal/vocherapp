@@ -67,7 +67,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${API_URL}/products/${productId}/`);
+        const res = await fetch(`${API_URL}/products/${productId}`);
         const data = await res.json();
         if (res.ok) {
           Object.keys(data).forEach((key) => {
