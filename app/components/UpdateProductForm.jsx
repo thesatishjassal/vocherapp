@@ -115,7 +115,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
   // Handle form submission
   const onSubmit = async (data) => {
     try {
-      const response = await fetch(`${API_URL}/products/${productId}/`, {
+      const response = await fetch(`${API_URL}/products/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -186,7 +186,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                 "unit",
                 "cct",        // ✅ existing
                 "beamangle",  // ✅ existing
-                "cutout size",  // ✅ existing
+                "cutoutdia",  // ✅ existing
                 "cri",        // ✅ new
                 "lumens",     // ✅ new
                 "watt",     // ✅ new
