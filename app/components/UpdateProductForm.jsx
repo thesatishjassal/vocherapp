@@ -28,6 +28,21 @@ const productSchema = yup.object().shape({
     .string()
     .oneOf(["yes", "no"], "Select a valid option")
     .required("Display option is required"),
+    cct: yup.string().nullable(),        // ✅ existing
+    beamangle: yup.string().nullable(),  // ✅ existing
+    cutoutdia: yup.string().nullable(),  // ✅ existing
+    cri: yup.string().nullable(),        // ✅ new
+    lumens: yup.string().nullable(),     // ✅ new
+    watt: yup.string().nullable(),     // ✅ new
+  reorderEnabled: yup.boolean().default(false),
+  reorderqty: yup
+    .number()
+    .typeError("Reorder Qty must be a number")
+    .when("reorderEnabled", {
+      is: true,
+      then: (schema) => schema.required("Reorder Qty is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 });
 
 const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
@@ -158,6 +173,23 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                 "model",
                 "brand",
                 "unit",
+                "itemcode",
+                "itemname",
+                "description",
+                "price",
+                "quantity",
+                "rackcode",
+                "size",
+                "color",
+                "model",
+                "brand",
+                "unit",
+                "cct",        // ✅ existing
+                "beamangle",  // ✅ existing
+                "cutout size",  // ✅ existing
+                "cri",        // ✅ new
+                "lumens",     // ✅ new
+                "watt",     // ✅ new
               ].map((field) => (
                 <div className="col-md-6 form-floating mb-1" key={field}>
                   <input
