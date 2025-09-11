@@ -28,12 +28,12 @@ const productSchema = yup.object().shape({
     .string()
     .oneOf(["yes", "no"], "Select a valid option")
     .required("Display option is required"),
-    cct: yup.string().nullable(),        // ✅ existing
-    beamangle: yup.string().nullable(),  // ✅ existing
-    cutoutdia: yup.string().nullable(),  // ✅ existing
-    cri: yup.string().nullable(),        // ✅ new
-    lumens: yup.string().nullable(),     // ✅ new
-    watt: yup.string().nullable(),     // ✅ new
+  cct: yup.string().nullable(),        // ✅ existing
+  beamangle: yup.string().nullable(),  // ✅ existing
+  cutoutdia: yup.string().nullable(),  // ✅ existing
+  cri: yup.string().nullable(),        // ✅ new
+  lumens: yup.string().nullable(),     // ✅ new
+  watt: yup.string().nullable(),     // ✅ new
   reorderEnabled: yup.boolean().default(false),
   reorderqty: yup
     .number()
