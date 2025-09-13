@@ -76,7 +76,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Add Clients</h5>
-                  <span className="count text-sm">{clientsLength}</span>
+                  {/* <span className="count text-sm">{clientsLength}</span> */}
                 </div>
               </div>
             </a>
