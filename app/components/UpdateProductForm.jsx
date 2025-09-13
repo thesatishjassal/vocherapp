@@ -71,7 +71,12 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
         if (res.ok) {
           Object.keys(data).forEach((key) => {
             if (data[key] !== null && data[key] !== undefined) {
-              setValue(key, String(data[key]));
+              // Map in_display (boolean) to inDisplay (string: "yes" or "no")
+              if (key === "in_display") {
+                setValue("inDisplay", data[key] ? "yes" : "no");
+              } else {
+                setValue(key, String(data[key]));
+              }
             }
           });
           setTimeout(() => {
@@ -146,14 +151,14 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
   return (
     <>
       <ToastContainer />
-<div
-  className={`modal ${show ? "show" : ""}`}
-  tabIndex="-1"
-  style={{
-    display: show ? "block" : "none",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  }}
->
+      <div
+        className={`modal ${show ? "show" : ""}`}
+        tabIndex="-1"
+        style={{
+          display: show ? "block" : "none",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        }}
+      >
         <div className="modal-dialog AddProductForm">
           <div className="modal-content">
             <div className="modal-header">
@@ -247,21 +252,35 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
                   )}
                 </div>
 
-                {/* inDisplay Dropdown */}
-                <div className="col-md-6 form-floating mb-1">
-                  <select
-                    {...register("inDisplay")}
-                    className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
-                    id="inDisplay"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Show in Display?
-                    </option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                  <label htmlFor="inDisplay">Show in Display?</label>
+                {/* inDisplay Radio Buttons */}
+                <div className="col-md-6 mb-1">
+                  <label className="form-label">Show in Display?</label>
+                  <div className="d-flex gap-3">
+                    <div className="form-check">
+                      <input
+                        type="radio"
+                        {...register("inDisplay")}
+                        className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
+                        id="inDisplayYes"
+                        value="yes"
+                      />
+                      <label className="form-check-label" htmlFor="inDisplayYes">
+                        Yes
+                      </label>
+                    </div>
+                    <div className="form-check">
+                      <input
+                        type="radio"
+                        {...register("inDisplay")}
+                        className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
+                        id="inDisplayNo"
+                        value="no"
+                      />
+                      <label className="form-check-label" htmlFor="inDisplayNo">
+                        No
+                      </label>
+                    </div>
+                  </div>
                   {errors.inDisplay && (
                     <small className="text-danger">{errors.inDisplay.message}</small>
                   )}
