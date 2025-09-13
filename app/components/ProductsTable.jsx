@@ -644,71 +644,74 @@ const ProductsTable = () => {
                   </div>
                 )}
               </div>
-              <div style={{ flex: 1, textAlign: "left" }}>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>ID:</strong>{" "}
-                  {String(selectedProduct.id).padStart(5, "0")}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Item Code:</strong> {selectedProduct.itemcode}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Item Name:</strong> {selectedProduct.itemname}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Category:</strong> {selectedProduct.category}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Subcategory:</strong>{" "}
-                  {selectedProduct.subcategory || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Model:</strong> {selectedProduct.model || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Size:</strong> {selectedProduct.size || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Color:</strong> {selectedProduct.color || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Price:</strong> ₹{selectedProduct.price}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Rack Code:</strong>{" "}
-                  {selectedProduct.rackcode || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Quantity:</strong> {selectedProduct.quantity}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Reorder Quantity:</strong>{" "}
-                  {selectedProduct.reorderqty || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Unit:</strong> {selectedProduct.unit}
-                </p>
-                {/* ✅ New fields */}
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Beam Angle:</strong>{" "}
-                  {selectedProduct.beamangle || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <strong>Cutout Dia:</strong>{" "}
-                  {selectedProduct.cutoutdia || "N/A"}
-                </p>
-                <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                  <i>Description</i>:
-                </p>
-                <div>{formatText(selectedProduct.description) || "N/A"}</div>
-              </div>
-            </div>
+           
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>ID:</strong> {String(selectedProduct.id).padStart(5, "0")}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Item Code:</strong> {selectedProduct.itemcode}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Item Name:</strong> {selectedProduct.itemname}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Category:</strong> {selectedProduct.category}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Model:</strong> {selectedProduct.model || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Size:</strong> {selectedProduct.size || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Color:</strong> {selectedProduct.color || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Price:</strong> ₹{selectedProduct.price}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Quantity:</strong> {selectedProduct.quantity}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Unit:</strong> {selectedProduct.unit}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Beam Angle:</strong> {selectedProduct.beamangle || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia || "N/A"}
+              </p>
+              {/* New fields added */}
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>CRI:</strong> {selectedProduct.cri || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Lumens:</strong> {selectedProduct.lumens || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <strong>Watt:</strong> {selectedProduct.watt || "N/A"}
+              </p>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
+                <i>Description</i>:
+              </p>
+              <div>{formatText(selectedProduct.description) || "N/A"}</div>
+            </div> </div>
             <div
               style={{
                 marginTop: 25,

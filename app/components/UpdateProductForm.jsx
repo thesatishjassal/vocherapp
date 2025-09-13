@@ -3,14 +3,13 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Validation Schema
 const productSchema = yup.object().shape({
-  // hsncode: yup.string().required("HSN Code is required"),
   itemcode: yup.string().required("Item Code is required"),
   itemname: yup.string().required("Item Name is required"),
   description: yup.string().required("Description is required"),
@@ -28,12 +27,12 @@ const productSchema = yup.object().shape({
     .string()
     .oneOf(["yes", "no"], "Select a valid option")
     .required("Display option is required"),
-  cct: yup.string().nullable(),        // ✅ existing
-  beamangle: yup.string().nullable(),  // ✅ existing
-  cutoutdia: yup.string().nullable(),  // ✅ existing
-  cri: yup.string().nullable(),        // ✅ new
-  lumens: yup.string().nullable(),     // ✅ new
-  watt: yup.string().nullable(),     // ✅ new
+  cct: yup.string().nullable(),
+  beamangle: yup.string().nullable(),
+  cutoutdia: yup.string().nullable(),
+  cri: yup.string().nullable(),
+  lumens: yup.string().nullable(),
+  watt: yup.string().nullable(),
   reorderEnabled: yup.boolean().default(false),
   reorderqty: yup
     .number()
@@ -76,7 +75,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
             }
           });
           setTimeout(() => {
-            trigger(); // ✅ Trigger form validation after setting values
+            trigger(); // Trigger form validation after setting values
           }, 100);
         } else {
           throw new Error(data.message || "Failed to fetch product");
@@ -118,7 +117,10 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
       const response = await fetch(`${API_URL}/products/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          in_display: data.inDisplay === "yes", // Convert string to boolean
+        }),
       });
 
       const responseData = await response.json();
@@ -128,6 +130,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
 
       toast.success("Product updated successfully!", {
         position: "top-right",
+        autoClose: 3000,
       });
       onSave(responseData);
       reset();
@@ -135,159 +138,166 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
     } catch (error) {
       toast.error(error.message || "Error updating product", {
         position: "top-right",
+        autoClose: 3000,
       });
     }
   };
 
   return (
-    <div
-      className={`modal ${show ? "show" : ""}`}
-      tabIndex="-1"
-      style={{
-        display: show ? "block" : "none",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-      }}
-    >
-      <div className="modal-dialog AddProductForm">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h1 className="modal-title fs-5">Update Product</h1>
-            <button type="button" className="btn-close" onClick={onClose}>
-              <i className="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-          <div className="modal-body py-3">
-            <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+    <>
+      <ToastContainer />
+<div
+  className={`modal ${show ? "show" : ""}`}
+  tabIndex="-1"
+  style={{
+    display: show ? "block" : "none",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  }}
+>
+        <div className="modal-dialog AddProductForm">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5">Update Product</h1>
+              <button type="button" className="btn-close" onClick={onClose}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="modal-body py-3">
+              <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+                {/* Common Inputs with floating labels */}
+                {[
+                  "itemcode",
+                  "itemname",
+                  "description",
+                  "price",
+                  "quantity",
+                  "rackcode",
+                  "size",
+                  "color",
+                  "model",
+                  "brand",
+                  "unit",
+                  "cct",
+                  "beamangle",
+                  "cutoutdia",
+                  "cri",
+                  "lumens",
+                  "watt",
+                ].map((field) => (
+                  <div className="col-md-6 form-floating mb-1" key={field}>
+                    <input
+                      type="text"
+                      {...register(field)}
+                      className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                      id={field}
+                      placeholder=" "
+                    />
+                    <label htmlFor={field}>
+                      {field.replace(/([A-Z])/g, " $1").trim()}
+                    </label>
+                    {errors[field] && (
+                      <small className="text-danger">{errors[field].message}</small>
+                    )}
+                  </div>
+                ))}
 
-              {/* Common Inputs with floating labels */}
-              {[
-                // "hsncode",
-                "itemcode",
-                "itemname",
-                "description",
-                "price",
-                "quantity",
-                "rackcode",
-                "size",
-                "color",
-                "model",
-                "brand",
-                "unit",
-                "itemcode",
-                "itemname",
-                "description",
-                "price",
-                "quantity",
-                "rackcode",
-                "size",
-                "color",
-                "model",
-                "brand",
-                "unit",
-                "cct",        // ✅ existing
-                "beamangle",  // ✅ existing
-                "cutoutdia",  // ✅ existing
-                "cri",        // ✅ new
-                "lumens",     // ✅ new
-                "watt",     // ✅ new
-              ].map((field) => (
-                <div className="col-md-6 form-floating mb-1" key={field}>
-                  <input
-                    type="text"
-                    {...register(field)}
-                    className={`form-control ${errors[field] ? "border-danger" : ""}`}
-                    id={field}
-                    placeholder=" "
-                  />
-                  <label htmlFor={field}>
-                    {field.replace(/([A-Z])/g, " $1").trim()}
-                  </label>
-                  {errors[field] && (
-                    <small className="text-danger">{errors[field].message}</small>
+                {/* Category Dropdown */}
+                <div className="col-md-6 form-floating mb-1">
+                  <select
+                    {...register("category")}
+                    className={`form-select ${errors.category ? "border-danger" : ""}`}
+                    id="category"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select Product Category
+                    </option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.catname}>
+                        {cat.catname}
+                      </option>
+                    ))}
+                  </select>
+                  <label htmlFor="category">Category</label>
+                  {errors.category && (
+                    <small className="text-danger">{errors.category.message}</small>
                   )}
                 </div>
-              ))}
 
-              {/* Category Dropdown */}
-              <div className="col-md-6 form-floating mb-1">
-                <select
-                  {...register("category")}
-                  className={`form-select ${errors.category ? "border-danger" : ""}`}
-                  id="category"
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Select Product Category
-                  </option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.catname}>
-                      {cat.catname}
+                {/* Subcategory Dropdown */}
+                <div className="col-md-6 form-floating mb-1">
+                  <select
+                    {...register("subcategory")}
+                    className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
+                    id="subcategory"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select Product Subcategory
                     </option>
-                  ))}
-                </select>
-                <label htmlFor="category">Category</label>
-                {errors.category && (
-                  <small className="text-danger">{errors.category.message}</small>
-                )}
-              </div>
+                    {filteredSubCategories.map((sub) => (
+                      <option key={sub.id} value={sub.subcatname}>
+                        {sub.subcatname}
+                      </option>
+                    ))}
+                  </select>
+                  <label htmlFor="subcategory">Subcategory</label>
+                  {errors.subcategory && (
+                    <small className="text-danger">{errors.subcategory.message}</small>
+                  )}
+                </div>
 
-              {/* Subcategory Dropdown */}
-              <div className="col-md-6 form-floating mb-1">
-                <select
-                  {...register("subcategory")}
-                  className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
-                  id="subcategory"
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Select Product Subcategory
-                  </option>
-                  {filteredSubCategories.map((sub) => (
-                    <option key={sub.id} value={sub.subcatname}>
-                      {sub.subcatname}
+                {/* inDisplay Dropdown */}
+                <div className="col-md-6 form-floating mb-1">
+                  <select
+                    {...register("inDisplay")}
+                    className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
+                    id="inDisplay"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Show in Display?
                     </option>
-                  ))}
-                </select>
-                <label htmlFor="subcategory">Subcategory</label>
-                {errors.subcategory && (
-                  <small className="text-danger">{errors.subcategory.message}</small>
-                )}
-              </div>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                  <label htmlFor="inDisplay">Show in Display?</label>
+                  {errors.inDisplay && (
+                    <small className="text-danger">{errors.inDisplay.message}</small>
+                  )}
+                </div>
 
-              {/* inDisplay Dropdown */}
-              <div className="col-md-6 form-floating mb-1">
-                <select
-                  {...register("inDisplay")}
-                  className={`form-select ${errors.inDisplay ? "border-danger" : ""}`}
-                  id="inDisplay"
-                  defaultValue=""
-                >
-                  <option value="">Show in Display?</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-                <label htmlFor="inDisplay">Show in Display?</label>
-                {errors.inDisplay && (
-                  <small className="text-danger">{errors.inDisplay.message}</small>
-                )}
-              </div>
+                {/* Reorder Quantity */}
+                <div className="col-md-6 form-floating mb-1">
+                  <input
+                    type="number"
+                    {...register("reorderqty")}
+                    className={`form-control ${errors.reorderqty ? "border-danger" : ""}`}
+                    id="reorderqty"
+                    placeholder=" "
+                  />
+                  <label htmlFor="reorderqty">Reorder Quantity</label>
+                  {errors.reorderqty && (
+                    <small className="text-danger">{errors.reorderqty.message}</small>
+                  )}
+                </div>
 
-              {/* Submit Button */}
-              <div className="col-12">
-                <button
-                  type="submit"
-                  className="btn btn-success w-100 py-3"
-                  disabled={!isValid}
-                >
-                  Update Product
-                </button>
-              </div>
-
-            </form>
+                {/* Submit Button */}
+                <div className="col-12">
+                  <button
+                    type="submit"
+                    className="btn btn-success w-100 py-3"
+                    disabled={!isValid}
+                  >
+                    Update Product
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
