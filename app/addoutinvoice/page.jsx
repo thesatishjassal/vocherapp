@@ -133,119 +133,145 @@ const Addoutinvoice = () => {
     }
   }, [submitStatus]);
 
-  const handleSubmit = async () => {
-    if (!basicinfoData) {
-      setSubmitStatus("Please complete the basic info details");
-      return;
-    }
-    if (voucherSequence === null) {
-      setSubmitStatus("Voucher data not yet loaded, please wait");
-      return;
-    }
-    if (!productsFetched) {
-      setSubmitStatus("Waiting for product data to load.");
-      setLoading(false);
-      return;
-    }
+const handleSubmit = async () => {
+  if (!basicinfoData) {
+    setSubmitStatus("Please complete the basic info details");
+    return;
+  }
+  if (voucherSequence === null) {
+    setSubmitStatus("Voucher data not yet loaded, please wait");
+    return;
+  }
+  if (!productsFetched) {
+    setSubmitStatus("Waiting for product data to load.");
+    setLoading(false);
+    return;
+  }
 
-    setLoading(true);
-    setError(null);
-    setSubmitStatus(null);
+  setLoading(true);
+  setError(null);
+  setSubmitStatus(null);
 
-    const newVoucherNo = generateVoucherNumber();
+  const newVoucherNo = generateVoucherNumber();
 
-    const voucherPayload = {
-      voucher_no: newVoucherNo, // only voucher_no, id is auto
-      issue_slip_no: basicinfoData?.IssueSlipNo || null,
-      sale_order_no: basicinfoData?.SaleOrderNo || null,
-      transport: basicinfoData?.Transport || null,
-      transaction_types: basicinfoData?.transaction_types || null,
-      vehicle_no: basicinfoData?.VehicleNo || null,
-      number_of_packages: basicinfoData?.Packages
-        ? parseInt(basicinfoData.Packages, 10)
-        : null,
-      ordered_by: basicinfoData?.OrderBy || null,
-      sales_person: basicinfoData?.SalePerson || null,
-      freight_amount: basicinfoData?.FreightAmount
-        ? parseFloat(basicinfoData.FreightAmount)
-        : null,
-      receiver_name: basicinfoData?.ReceiverName || null,
-      mobile_number: basicinfoData?.ContactNumber || null,
-      client_id: selectedCustomer?.id || null,
-      remarks: null,
-    };
-
-    try {
-      // First request: Create Outvoucher
-      const voucherResponse = await axios.post(
-        "https://api.panvic.in/outvouchers/",
-        voucherPayload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      console.log("Outvoucher Created:", voucherResponse.data);
-
-      // Use DB auto-generated ID
-      const createdVoucherId =
-        voucherResponse.data.id || voucherResponse.data.voucher_id;
-      if (!createdVoucherId) {
-        throw new Error("Failed to retrieve voucher_id from response.");
-      }
-
-      // Validate rows
-      if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
-        throw new Error("Voucher items are empty. Cannot proceed.");
-      }
-
-      const requiredFields = ["itemcode", "itemname", "unit", "qty"];
-      const invalidRows = voucherRows.some((row) =>
-        requiredFields.some(
-          (field) => !row[field] || row[field].toString().trim() === ""
-        )
-      );
-
-      if (invalidRows) {
-        throw new Error("All item fields must be filled.");
-      }
-
-      // Submit items
-      for (const row of voucherRows) {
-        const itemData = {
-          voucher_id: createdVoucherId,
-          product_id: row.itemcode,
-          item_name: row.itemname,
-          unit: row.unit,
-          rack_code: row.rackcode,
-          quantity: Number(row.qty) || 0,
-          comments: row.comments,
-        };
-
-        const itemUrl = `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`;
-        console.log("Submitting item to:", itemUrl, "with data:", itemData);
-
-        const itemsResponse = await axios.post(itemUrl, itemData, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        console.log("Item submitted successfully:", itemsResponse.data);
-      }
-
-      setSubmitStatus("Outvoucher and Items created successfully!");
-      window.location.href = "/getoutvouchers";
-
-      // Update sequence only after success
-      setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
-    } catch (err) {
-      console.error("Error:", err.response?.data || err.message);
-      setError(
-        err.response?.data || { message: "Failed to create outvoucher/items" }
-      );
-    } finally {
-      setLoading(false);
-    }
+  const voucherPayload = {
+    voucher_no: newVoucherNo,
+    issue_slip_no: basicinfoData?.IssueSlipNo || null,
+    sale_order_no: basicinfoData?.SaleOrderNo || null,
+    transport: basicinfoData?.Transport || null,
+    transaction_types: basicinfoData?.transaction_types || null,
+    vehicle_no: basicinfoData?.VehicleNo || null,
+    number_of_packages: basicinfoData?.Packages
+      ? parseInt(basicinfoData.Packages, 10)
+      : null,
+    ordered_by: basicinfoData?.OrderBy || null,
+    sales_person: basicinfoData?.SalePerson || null,
+    freight_amount: basicinfoData?.FreightAmount
+      ? parseFloat(basicinfoData.FreightAmount)
+      : null,
+    receiver_name: basicinfoData?.ReceiverName || null,
+    mobile_number: basicinfoData?.ContactNumber || null,
+    client_id: selectedCustomer?.id || null,
+    remarks: null,
   };
+
+  try {
+    // 1️⃣ Create the Outvoucher
+    const voucherResponse = await axios.post(
+      "https://api.panvic.in/outvouchers/",
+      voucherPayload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    const createdVoucherId =
+      voucherResponse.data.id || voucherResponse.data.voucher_id;
+    if (!createdVoucherId) throw new Error("Failed to get voucher_id");
+
+    // 2️⃣ Validate and submit items
+    if (!Array.isArray(voucherRows) || voucherRows.length === 0) {
+      throw new Error("Voucher items are empty. Cannot proceed.");
+    }
+    const requiredFields = ["itemcode", "itemname", "unit", "qty"];
+    const invalidRows = voucherRows.some((row) =>
+      requiredFields.some(
+        (field) => !row[field] || row[field].toString().trim() === ""
+      )
+    );
+    if (invalidRows) throw new Error("All item fields must be filled.");
+
+    for (const row of voucherRows) {
+      const itemData = {
+        voucher_id: createdVoucherId,
+        product_id: row.itemcode,
+        item_name: row.itemname,
+        unit: row.unit,
+        rack_code: row.rackcode,
+        quantity: Number(row.qty) || 0,
+        comments: row.comments,
+      };
+      await axios.post(
+        `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
+        itemData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // 3️⃣ Decrease product quantities (NEW PART)
+    try {
+      // Get all product_ids from the voucherRows
+      const usedIds = new Set(voucherRows.map((r) => r.itemcode));
+
+      // Fetch product list once
+      const productRes = await fetch("https://api.panvic.in/products/");
+      if (!productRes.ok) throw new Error("Failed to fetch product list");
+      const products = await productRes.json();
+
+      // Filter only those we used
+      const matchedProducts = products.filter((p) => usedIds.has(p.itemcode));
+
+      for (const product of matchedProducts) {
+        // Total qty we just issued for this product
+        const totalIssued = voucherRows
+          .filter((r) => r.itemcode === product.itemcode)
+          .reduce((sum, r) => sum + Number(r.qty || 0), 0);
+
+        // Decrease stock
+        const newQty = Math.max(
+          0,
+          (product.quantity || 0) - totalIssued
+        );
+
+        const updateRes = await fetch(
+          `https://api.panvic.in/products/${product.id}/`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...product, quantity: newQty }),
+          }
+        );
+        if (!updateRes.ok) {
+          console.warn(`Failed to update stock for ${product.itemcode}`);
+        }
+      }
+    } catch (stockErr) {
+      console.error("Stock update error:", stockErr);
+      toast.error("Voucher saved but stock update failed.");
+    }
+
+    // 4️⃣ Final actions
+    setSubmitStatus("Outvoucher and Items created, stock decreased!");
+    window.location.href = "/getoutvouchers";
+    setVoucherSequence((prev) => (prev !== null ? prev + 1 : 1));
+  } catch (err) {
+    console.error("Error:", err.response?.data || err.message);
+    setError(
+      err.response?.data || { message: "Failed to create outvoucher/items" }
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">

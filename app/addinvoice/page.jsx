@@ -17,12 +17,11 @@ const AddInvoice = () => {
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [voucherSequence, setVoucherSequence] = useState(null);
   const [voucherId, setVoucherId] = useState(null);
-  const [gstOption, setGstOption] = useState("Include"); // New state for GST dropdown
-  const [gstPercentage, setGstPercentage] = useState(0); // New state for GST percentage
+  const [gstOption, setGstOption] = useState("Include");
+  const [gstPercentage, setGstPercentage] = useState(0);
+  const [remarks, setRemarks] = useState("");
 
-  const closeModal = () => {
-    setShowModalClientDetails(false);
-  };
+  const closeModal = () => setShowModalClientDetails(false);
 
   const handleTotalAmountChange = (newTotalAmount, rows) => {
     setTotalAmount(newTotalAmount);
@@ -46,46 +45,39 @@ const AddInvoice = () => {
     return `PLINV-${sequenceStr}`;
   };
 
-  // Calculate GST amount and total with GST
   const calculateGstAndTotal = () => {
     const baseAmount = totalAmount;
     let gstAmount = 0;
     let totalWithGst = baseAmount;
-
     if (gstOption === "Exclude" && gstPercentage > 0) {
       gstAmount = (baseAmount * gstPercentage) / 100;
       totalWithGst = baseAmount + gstAmount;
     }
-
     return { baseAmount, gstAmount, totalWithGst };
   };
 
+  // fetch next voucher details
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
         const response = await fetch("https://api.panvic.in/invouchers/", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const vouchers = await response.json();
         if (vouchers && vouchers.length > 0) {
-          const lastVoucher = vouchers.reduce((max, voucher) =>
-            parseInt(voucher.voucher_id) > parseInt(max.voucher_id) ? voucher : max
+          const lastVoucher = vouchers.reduce((max, v) =>
+            parseInt(v.voucher_id) > parseInt(max.voucher_id) ? v : max
           );
           const nextVoucherId = lastVoucher.voucher_id + 1;
           setVoucherId(nextVoucherId);
 
           const lastSequence = vouchers
-            .map((voucher) => {
-              const match = voucher.voucher_number.match(/^PLINV-(\d+)$/);
-              return match ? parseInt(match[1], 10) : 0;
+            .map((v) => {
+              const m = v.voucher_number.match(/^PLINV-(\d+)$/);
+              return m ? parseInt(m[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
           setVoucherSequence(lastSequence + 1);
@@ -93,186 +85,172 @@ const AddInvoice = () => {
           setVoucherId("1");
           setVoucherSequence(1);
         }
-      } catch (error) {
-        console.error("Error fetching vouchers:", error);
+      } catch (err) {
+        console.error("Error fetching vouchers:", err);
         setVoucherId("1");
         setVoucherSequence(1);
         setSubmitStatus("Error fetching last voucher data, starting with 1");
       }
     };
-
     fetchLastVoucherData();
   }, []);
 
   useEffect(() => {
     if (submitStatus) {
-      if (submitStatus.includes("Error")) {
-        toast.error(submitStatus, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-      } else {
-        toast.success(submitStatus, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-      }
+      const fn = submitStatus.includes("Error") ? toast.error : toast.success;
+      fn(submitStatus, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   }, [submitStatus]);
 
-const handleSubmit = async () => {
-  if (!selectedCustomer || !receiverInfo) {
-    setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
-    return;
-  }
-
-  if (voucherId === null || voucherSequence === null) {
-    setSubmitStatus("Voucher data not yet loaded, please wait");
-    return;
-  }
-
-  if (invoiceItems.length === 0) {
-    setSubmitStatus("Please add at least one item to the invoice");
-    return;
-  }
-
-  if (gstOption === "Exclude" && gstPercentage <= 0) {
-    setSubmitStatus("Please enter a valid GST percentage");
-    return;
-  }
-
-  setIsSubmitting(true);
-  setSubmitStatus(null);
-
-  const voucherNumber = generateVoucherNumber();
-  const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
-
-  const invoiceData = {
-    voucher_id: voucherId,
-    voucher_number: voucherNumber,
-    transaction_type: receiverInfo?.transactionType || "",
-    voucher_date: new Date().toISOString().split("T")[0],
-    client_id: selectedCustomer?.id || "3",
-    invoice_number: receiverInfo?.InvoiceNumber || "",
-    invoice_date: receiverInfo?.InvoiceDate || "",
-    mode_of_transport: receiverInfo?.ModeofTransport || "",
-    number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
-    freight_status: receiverInfo?.Freight || "",
-    total_amount: totalWithGst,
-    gst_option: gstOption,
-    gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
-    gst_amount: gstAmount,
-    remarks: remarks || "Urgent delivery", // ✅ Use state instead of querySelector
-  };
-
-  try {
-    // Step 1: Submit the invoice
-    const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(invoiceData),
-    });
-
-    if (!invoiceResponse.ok) {
-      const errorData = await invoiceResponse.json();
-      throw new Error(
-        `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
-      );
+  const handleSubmit = async () => {
+    if (!selectedCustomer || !receiverInfo) {
+      setSubmitStatus("Please complete all required fields (Customer and Receiver Info)");
+      return;
+    }
+    if (voucherId === null || voucherSequence === null) {
+      setSubmitStatus("Voucher data not yet loaded, please wait");
+      return;
+    }
+    if (invoiceItems.length === 0) {
+      setSubmitStatus("Please add at least one item to the invoice");
+      return;
+    }
+    if (gstOption === "Exclude" && gstPercentage <= 0) {
+      setSubmitStatus("Please enter a valid GST percentage");
+      return;
     }
 
-    const invoiceResult = await invoiceResponse.json();
-    const newVoucherId = invoiceResult.voucher_id;
+    setIsSubmitting(true);
+    setSubmitStatus(null);
 
-    if (!newVoucherId) {
-      throw new Error("No valid id returned from invoice creation. Check API response.");
-    }
+    const voucherNumber = generateVoucherNumber();
+    const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
 
-    // Step 2: Submit invoice items
-    for (const item of invoiceItems) {
-      const itemData = {
-        product_id: item.itemcode,
-        item_name: item.itemname,
-        unit: item.unit,
-        rack_code: item.rackcode,
-        quantity: parseInt(item.quantity),
-        rate: parseFloat(item.rate),
-        discount_percentage: parseFloat(item.discount_percentage || 0),
-        additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
-        amount: parseFloat(item.amount),
-        comments: item.comments,
-      };
+    const invoiceData = {
+      voucher_id: voucherId,
+      voucher_number: voucherNumber,
+      transaction_type: receiverInfo?.transactionType || "",
+      voucher_date: new Date().toISOString().split("T")[0],
+      client_id: selectedCustomer?.id || "3",
+      invoice_number: receiverInfo?.InvoiceNumber || "",
+      invoice_date: receiverInfo?.InvoiceDate || "",
+      mode_of_transport: receiverInfo?.ModeofTransport || "",
+      number_of_packages: parseInt(receiverInfo?.NumberofPackages) || 0,
+      freight_status: receiverInfo?.Freight || "",
+      total_amount: totalWithGst,
+      gst_option: gstOption,
+      gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
+      gst_amount: gstAmount,
+      remarks: remarks || "Urgent delivery",
+    };
 
-      const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
-      const itemsResponse = await fetch(itemUrl, {
+    try {
+      // Step 1: Create invoice
+      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(itemData),
+        body: JSON.stringify(invoiceData),
       });
-
-      if (!itemsResponse.ok) {
-        const errorData = await itemsResponse.json();
+      if (!invoiceResponse.ok) {
+        const errorData = await invoiceResponse.json();
         throw new Error(
-          `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
+          `HTTP error submitting invoice! status: ${invoiceResponse.status} - ${JSON.stringify(errorData)}`
         );
       }
-// Step 3: Update product stock (optimized: fetch all products once)
-try {
-  // Fetch all products once
-  const productResponse = await fetch("https://api.panvic.in/products/");
-  if (!productResponse.ok) throw new Error("Failed to fetch product stock");
 
-  const products = await productResponse.json();
+      const invoiceResult = await invoiceResponse.json();
+      const newVoucherId = invoiceResult.voucher_id;
+      if (!newVoucherId) throw new Error("No valid id returned from invoice creation.");
 
-  for (const item of invoiceItems) {
-    const productId = item.itemcode;
-    const product = products.find(p => p.itemcode === productId || p.itemcode === productId);
+      // Step 2: Submit invoice items
+      for (const item of invoiceItems) {
+        const itemData = {
+          product_id: item.itemcode,
+          item_name: item.itemname,
+          unit: item.unit,
+          rack_code: item.rackcode,
+          quantity: parseInt(item.quantity),
+          rate: parseFloat(item.rate),
+          discount_percentage: parseFloat(item.discount_percentage || 0),
+          additional_discount_percentage: parseFloat(item.additional_discount_percentage || 0),
+          amount: parseFloat(item.amount),
+          comments: item.comments,
+        };
 
-    if (!product) {
-      console.warn(`Product with ID ${productId} not found in products list`);
-      continue;
+        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+        const itemsResponse = await fetch(itemUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(itemData),
+        });
+        if (!itemsResponse.ok) {
+          const errorData = await itemsResponse.json();
+          throw new Error(
+            `HTTP error submitting item! status: ${itemsResponse.status} - ${JSON.stringify(errorData)}`
+          );
+        }
+      }
+
+      // ✅ Step 3: Update product stock once for all added items
+      try {
+        const productIds = new Set(invoiceItems.map((i) => i.itemcode));
+        const productResponse = await fetch("https://api.panvic.in/products/");
+        if (!productResponse.ok) throw new Error("Failed to fetch product list");
+        const products = await productResponse.json();
+
+        const matchedProducts = products.filter((p) => productIds.has(p.itemcode));
+
+        for (const product of matchedProducts) {
+          const addedQty = invoiceItems
+            .filter((i) => i.itemcode === product.itemcode)
+            .reduce((sum, i) => sum + parseInt(i.quantity, 10), 0);
+
+          // Change +addedQty to -addedQty if it's a sales OUT operation
+          const newQuantity = (product.quantity || 0) + addedQty;
+
+          const updateRes = await fetch(`https://api.panvic.in/products/${product.id}/`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...product, quantity: newQuantity }),
+          });
+
+          if (!updateRes.ok) {
+            const errData = await updateRes.json();
+            console.warn(`Failed to update product ${product.itemcode}:`, errData);
+          } else {
+            console.log(
+              `Stock updated for ${product.itemcode}: ${product.quantity} → ${newQuantity}`
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error updating product stocks:", err);
+      }
+
+      // Success clean-up
+      setSubmitStatus("Invoice, items, and product stocks updated successfully!");
+      setVoucherSequence((prev) => prev + 1);
+      setVoucherId(newVoucherId);
+      setSelectedCustomer(null);
+      setReceiverInfo(null);
+      setInvoiceItems([]);
+      setTotalAmount(0);
+      setGstOption("Include");
+      setGstPercentage(0);
+      setRemarks("");
+    } catch (error) {
+      setSubmitStatus("Error submitting invoice or items: " + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Reduce stock (assuming sales)
-    const newQuantity = (product.quantity || 0) + parseInt(item.quantity);
-
-    await fetch(`https://api.panvic.in/products/${product.id}/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...product, quantity: newQuantity }),
-    });
-
-    console.log(`Stock updated for product ${productId}: ${product.quantity} → ${newQuantity}`);
-  }
-} catch (err) {
-  console.error("Error updating product stocks", err);
-}
-    }
-
-    // Success
-    setSubmitStatus("Invoice, items, and product stocks updated successfully!");
-    setVoucherSequence((prev) => prev + 1);
-    setVoucherId(newVoucherId);
-    setSelectedCustomer(null);
-    setReceiverInfo(null);
-    setInvoiceItems([]);
-    setTotalAmount(0);
-    setGstOption("Include");
-    setGstPercentage(0);
-  } catch (error) {
-    setSubmitStatus("Error submitting invoice or items: " + error.message);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   const { baseAmount, gstAmount, totalWithGst } = calculateGstAndTotal();
 
@@ -288,14 +266,13 @@ try {
                 </div>
               </div>
               <div className="tm_invoice_right tm_text_right">
-                <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  IN VOUCHER
-                </div>
+                <div className="tm_primary_color tm_f50 tm_text_uppercase">IN VOUCHER</div>
                 <p className="tm_invoice_number tm_m0">
                   Voucher No: <b className="tm_primary_color">{generateVoucherNumber()}</b>
                 </p>
               </div>
             </div>
+
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
@@ -307,7 +284,8 @@ try {
                 </p>
               </div>
             </div>
-            <div className="tm_invoice_head tm_mb10" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+            <div className="tm_invoice_head tm_mb10" style={{ display: "flex", justifyContent: "space-between" }}>
               <div className="tm_invoice_left mt-0" style={{ flex: 1, textAlign: "left" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Client Details:</b>{" "}
@@ -322,12 +300,14 @@ try {
                 <p style={{ textAlign: "justify" }}>
                   Name: <b>{selectedCustomer?.client_name || "Not Selected"}</b> <br />
                   Address: <b>{selectedCustomer?.address || "N/A"}</b> <br />
-                  City: <b>{selectedCustomer?.city || "N/A"}</b>, State: <b>{selectedCustomer?.state || "N/A"}</b> | Pincode: <b>{selectedCustomer?.pincode || "N/A"}</b> <br />
+                  City: <b>{selectedCustomer?.city || "N/A"}</b>, State: <b>{selectedCustomer?.state || "N/A"}</b> |
+                  Pincode: <b>{selectedCustomer?.pincode || "N/A"}</b> <br />
                   Phone: <b>{selectedCustomer?.client_phone || "N/A"}</b> <br />
                   GST NO: <b>{selectedCustomer?.gst_number || "N/A"}</b>
                 </p>
                 Freight: <b>{receiverInfo?.Freight || "N/A"}</b>
               </div>
+
               <div className="tm_invoice_right tm_text_right" style={{ flex: 1, textAlign: "right" }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Receiver Details:</b>
@@ -348,18 +328,22 @@ try {
                 Number of Packages: <b>{receiverInfo?.NumberofPackages || "N/A"}</b> <br />
               </div>
             </div>
-            <p className="tm_mb2">
-              <b className="tm_primary_color">Product Info:</b>
-            </p>
+
+            <p className="tm_mb2"><b className="tm_primary_color">Product Info:</b></p>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <InvoucherTable onTotalAmountChange={handleTotalAmountChange} />
                   {showModalClientDetails && (
-                    <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
+                    <CustomerModal
+                      onClose={closeModal}
+                      client={showModalClientDetails}
+                      onConfirm={handleClientConfirm}
+                    />
                   )}
                 </div>
               </div>
+
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <p className="tm_mb2">
@@ -370,11 +354,12 @@ try {
                     placeholder="Enter remarks here..."
                     rows="4"
                     cols="50"
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
                   ></textarea>
+
                   <div className="tm_gst_section mt-3">
-                    <label htmlFor="gstOption" className="tm_primary_color">
-                      GST Option:
-                    </label>
+                    <label htmlFor="gstOption" className="tm_primary_color">GST Option:</label>
                     <select
                       id="gstOption"
                       className="form-control"
@@ -385,6 +370,7 @@ try {
                       <option value="Include">Include</option>
                       <option value="Exclude">Exclude</option>
                     </select>
+
                     {gstOption === "Exclude" && (
                       <div className="mt-2">
                         <label htmlFor="gstPercentage" className="tm_primary_color">
@@ -405,6 +391,7 @@ try {
                     )}
                   </div>
                 </div>
+
                 <div className="tm_right_footer">
                   <table>
                     <tbody>
@@ -441,6 +428,7 @@ try {
             </div>
           </div>
         </div>
+
         <div className="tm_invoice_btns tm_hide_print">
           <button
             type="button"
