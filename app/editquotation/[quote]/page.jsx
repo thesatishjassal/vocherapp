@@ -4,11 +4,10 @@ import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
 import EdiQuotatTable from "../../components/EditQuotatTable";
 import GSTCalculator from "../../components/GSTCalculator";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const EditQuotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -19,7 +18,6 @@ const EditQuotation = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quotationInfo, setQuotationInfo] = useState(null);
   const [quotationId, setQuotationId] = useState(1);
-  const [QuotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
     gstAmount: 0,
@@ -28,8 +26,10 @@ const EditQuotation = () => {
     gstPercentage: 0,
     gstType: "include",
   });
-  const [remarks, setRemarks] = useState(""); // State for remarks textarea
-  const [warrantyGuarantee, setWarrantyGuarantee] = useState("1 year warranty against manufacturing defects"); // State for warranty/guarantee textarea
+  const [remarks, setRemarks] = useState("");
+  const [warrantyGuarantee, setWarrantyGuarantee] = useState(
+    "1 year warranty against manufacturing defects"
+  );
   const { quote } = useParams();
 
   const QUOTATION_API_URL = "https://api.panvic.in/quotation";
@@ -38,117 +38,112 @@ const EditQuotation = () => {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* -------------------- Load quotation + client -------------------- */
   useEffect(() => {
     if (!quote) return;
-
     const fetchQuotation = async () => {
       try {
         const response = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
           withCredentials: true,
         });
-        console.log(response.data);
         if (response.data) {
           setQuotation(response.data);
-          setRemarks(response.data.remarks || ""); // Set initial remarks from API
-          setWarrantyGuarantee(response.data.warranty_guarantee || "1 year warranty against manufacturing defects"); // Set initial warranty from API
+          setRemarks(response.data.remarks || "");
+          setWarrantyGuarantee(
+            response.data.warranty_guarantee ||
+              "1 year warranty against manufacturing defects"
+          );
           setGstDetails({
             gstAmount: response.data.gst_amount || 0,
             totalWithGST: response.data.amount_with_gst || 0,
             withoutGST: response.data.without_gst || 0,
-            gstPercentage: 0, // Assuming this isn't in API, adjust if it is
-            gstType: "include", // Default, adjust if API provides this
+            gstPercentage: 0,
+            gstType: "include",
           });
-          if (response.data.client_id) {
-            fetchClient(response.data.client_id);
-          }
+          if (response.data.client_id) fetchClient(response.data.client_id);
         } else {
           toast.error("No quotation found!");
         }
-      } catch (error) {
-        toast.error("Failed to load quotation ''!");
+      } catch {
+        toast.error("Failed to load quotation!");
       } finally {
         setLoading(false);
       }
     };
-
     fetchQuotation();
   }, [quote]);
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
-        withCredentials: true,
-      });
-
+      const response = await axios.get(CLIENT_API_URL, { withCredentials: true });
       const filteredClient = response.data.find((c) => c.id === client_id);
-      console.log(filteredClient);
-      if (filteredClient) {
-        setClient(filteredClient);
-      } else {
-        toast.error("Client not found!");
-      }
-    } catch (error) {
+      if (filteredClient) setClient(filteredClient);
+      else toast.error("Client not found!");
+    } catch {
       toast.error("Failed to load client details!");
     }
   };
 
-  const handleQuotationConfirm = (data) => {
-    setQuotationInfo(data);
-    console.log("Quotation Info Received:", data);
-  };
+  /* -------------------- Helpers for revision number -------------------- */
+  const baseNumber = useMemo(() => {
+    const match = quote?.match(/^PLQOT-\d{3}/);
+    return match ? match[0] : quote;
+  }, [quote]);
 
+  const [revisionLetter, setRevisionLetter] = useState("");
+
+  useEffect(() => {
+    if (!baseNumber) return;
+    // Get all quotations starting with this base number
+    axios
+      .get(`${QUOTATION_API_URL}?base=${baseNumber}`, { withCredentials: true })
+      .then((res) => {
+        const count = res.data.length; // existing revisions
+        setRevisionLetter(String.fromCharCode(65 + count)); // A=0,B=1...
+      })
+      .catch(() => setRevisionLetter("A"));
+  }, [baseNumber]);
+
+  const nextRevisionNo = useMemo(() => {
+    if (!baseNumber || !revisionLetter) return "PLQOT-Loading...";
+    return `${baseNumber}-${revisionLetter}`;
+  }, [baseNumber, revisionLetter]);
+
+  /* -------------------- Handlers -------------------- */
+  const handleTotalAmountChange = (newTotalAmount) => setTotalAmount(newTotalAmount);
+  const handleRowsChange = (rows) => setRowsData(rows);
+  const handleClientConfirm = (selectedClient) => setSelectedCustomer(selectedClient);
+  const handleGSTChange = (details) => setGstDetails(details);
   const closeModal = () => {
     setShowModalClientDetails(false);
     setShowHideFilterModal(false);
   };
 
-  const handleTotalAmountChange = (newTotalAmount) => {
-    setTotalAmount(newTotalAmount);
-  };
-
-  const handleRowsChange = (rows) => {
-    setRowsData(rows);
-    console.log("Updated Rows Data:", rows);
-  };
-
-  const handleClientConfirm = (selectedClient) => {
-    console.log("Selected Client:", selectedClient);
-    setSelectedCustomer(selectedClient);
-  };
-
-  const handleGSTChange = (details) => {
-    setGstDetails(details);
-    console.log("GST Details Received:", details);
-  };
-
+  /* ---------- Update quotation in-place ---------- */
   const handleSaveQuotation = async () => {
     try {
       const quotationData = {
         quotation_no: quote,
-        salesperson: quotationInfo?.salesperson || quotation?.salesperson || "Salesperson",
-        subject: quotationInfo?.Subject || quotation?.subject || "Quotation for Products/Services",
+        salesperson:
+          quotationInfo?.salesperson || quotation?.salesperson || "Salesperson",
+        subject:
+          quotationInfo?.Subject ||
+          quotation?.subject ||
+          "Quotation for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
         without_gst: Math.round(gstDetails.withoutGST) || 0,
         gst_amount: Math.round(gstDetails.gstAmount) || 0,
         amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee,
-        remarks: remarks,
+        remarks,
         status: quotationInfo?.status || "active",
         client_id: selectedCustomer?.client_id || quotation?.client_id || 3,
       };
 
-      console.log("Quotation data to be sent:", quotationData);
-
-      const quotationResponse = await axios.put(
-        `${QUOTATION_API_URL}/${quote}`,
-        quotationData,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-
-      console.log("Quotation updated successfully:", quotationResponse.data);
+      await axios.put(`${QUOTATION_API_URL}/${quote}`, quotationData, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
 
       if (rowsData.length > 0) {
         const itemsData = rowsData.map((item) => ({
@@ -166,34 +161,47 @@ const EditQuotation = () => {
           item_name: item.itemName || "N/A",
           unit: item.unit || "pcs",
         }));
-
-        console.log("Items data to be sent as a list:", itemsData);
-
-        const itemsResponse = await axios.put(
-          `${QUOTATION_API_URL}/${quote}/items/`,
-          itemsData,
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
-
-        console.log("All items updated successfully:", itemsResponse.data);
-      } else {
-        console.log("No items to save.");
+        await axios.put(`${QUOTATION_API_URL}/${quote}/items/`, itemsData, {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        });
       }
 
-      setQuotationId(quotationId + 1);
-      toast.success("Quotation and items saved successfully!");
+      setQuotationId((p) => p + 1);
+      toast.success("Quotation updated successfully!");
       window.location.href = "/getquotation";
     } catch (error) {
-      console.error("Error saving quotation or items:", error);
-      if (error.response) {
-        console.error("API Error Response:", error.response.data);
-        toast.error(`Failed to save: ${error.response.data.detail || "Unknown error"}`);
-      } else {
-        toast.error("Failed to save quotation or items. Please try again.");
+      toast.error(
+        `Failed to save: ${
+          error.response?.data?.detail || error.message || "Unknown error"
+        }`
+      );
+    }
+  };
+
+  /* ---------- Create a new revision ---------- */
+  const handlePublishRevision = async () => {
+    try {
+      const payload = {
+        remarks,
+        warranty_guarantee: warrantyGuarantee,
+        quotation_no: nextRevisionNo, // send the new number
+      };
+      const res = await axios.post(
+        `${QUOTATION_API_URL}/${quote}/revise`,
+        payload,
+        { withCredentials: true }
+      );
+      toast.success(`Revision created: ${res.data.quotation_no}`);
+      if (res.data.quotation_no) {
+        window.location.href = `/getquotation`;
       }
+    } catch (err) {
+      toast.error(
+        `Failed to create revision: ${
+          err.response?.data?.detail || err.message || "Unknown error"
+        }`
+      );
     }
   };
 
@@ -217,8 +225,13 @@ const EditQuotation = () => {
                 <p className="tm_invoice_number tm_m0">
                   Quotation No: <b className="tm_primary_color">{quote}</b>
                 </p>
+                <p className="tm_invoice_number tm_m0">
+                  Next Revision: <b className="tm_primary_color">{nextRevisionNo}</b>
+                </p>
               </div>
             </div>
+
+            {/* client & company details */}
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
@@ -250,11 +263,13 @@ const EditQuotation = () => {
                 <br />
               </div>
             </div>
+
             <div className="d-flex mb-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <p className="tm_mb2">
                 Subject: {quotation && <b className="tm_primary_color">{quotation.subject}</b>}
               </p>
             </div>
+
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
@@ -275,6 +290,7 @@ const EditQuotation = () => {
                   )}
                 </div>
               </div>
+
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <textarea
@@ -291,12 +307,15 @@ const EditQuotation = () => {
                 </div>
               </div>
             </div>
+
             <hr />
             <p>
               <b>
                 <i>Thank You for considering us for your needs. Here is the proposal as you requested.</i>
               </b>
             </p>
+
+            {/* Terms */}
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
               <p>GST: <b>Including in above prices as per applicable.</b></p>
@@ -324,6 +343,8 @@ const EditQuotation = () => {
             </div>
           </div>
         </div>
+
+        {/* Buttons */}
         <div className="tm_invoice_btns tm_hide_print">
           <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
             <span className="tm_btn_icon">
@@ -336,11 +357,19 @@ const EditQuotation = () => {
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
+
           <button id="tm_publish_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveQuotation}>
             <span className="tm_btn_icon">
               <i className="fa-solid fa-upload"></i>
             </span>
             <span className="tm_btn_text">Publish</span>
+          </button>
+
+          <button className="tm_invoice_btn tm_color2" onClick={handlePublishRevision}>
+            <span className="tm_btn_icon">
+              <i className="fa-solid fa-code-branch"></i>
+            </span>
+            <span className="tm_btn_text">Publish Revision</span>
           </button>
         </div>
       </div>
