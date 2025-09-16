@@ -266,14 +266,14 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 Brand {getSortIndicator("brand")}
               </th>
             )}
-            {visibleColumns.mrp && (
-              <th onClick={() => requestSort("mrp")}>
-                MRP {getSortIndicator("mrp")}
-              </th>
-            )}
             {visibleColumns.qty && (
               <th onClick={() => requestSort("quantity")}>
                 Qty {getSortIndicator("quantity")}
+              </th>
+            )}
+            {visibleColumns.mrp && (
+              <th onClick={() => requestSort("mrp")}>
+                MRP {getSortIndicator("mrp")}
               </th>
             )}
             {visibleColumns.discount && (
@@ -375,12 +375,29 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               )}
               {visibleColumns.unit && <td>{item.unit}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
-              {visibleColumns.mrp && <td>{item.mrp}</td>}
               {visibleColumns.qty && <td>{item.quantity}</td>}
+              {visibleColumns.mrp && <td>{item.mrp}</td>}
               {visibleColumns.discount && <td>{item.discount}%</td>}
               {visibleColumns.price && <td>{item.price}</td>}
-              {visibleColumns.netPrice && <td>{item.netPrice}</td>}
-              {visibleColumns.amount && <td>{item.amount}</td>}
+              {/* {visibleColumns.netPrice && <td>{item.netPrice}</td>} */}
+              {visibleColumns.netPrice && (
+                // calculate on the fly: price * (1 - discount/100)
+                <td>
+                  {(
+                    Number(item.mrp) *
+                    (1 - (Number(item.discount) || 0) / 100)
+                  ).toFixed(2)}
+                </td>
+              )}
+              {visibleColumns.amount && (
+                <td>
+                  {(
+                    Number(item.quantity) *
+                      Number(item.mrp) *
+                    (1 - (Number(item.discount) || 0) / 100)
+                  ).toFixed(2)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
