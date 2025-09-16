@@ -84,31 +84,6 @@ const EditQuotation = () => {
     }
   };
 
-  /* -------------------- Helpers for revision number -------------------- */
-  const baseNumber = useMemo(() => {
-    const match = quote?.match(/^PLQOT-\d{3}/);
-    return match ? match[0] : quote;
-  }, [quote]);
-
-  const [revisionLetter, setRevisionLetter] = useState("");
-
-  useEffect(() => {
-    if (!baseNumber) return;
-    // Get all quotations starting with this base number
-    axios
-      .get(`${QUOTATION_API_URL}?base=${baseNumber}`, { withCredentials: true })
-      .then((res) => {
-        const count = res.data.length; // existing revisions
-        setRevisionLetter(String.fromCharCode(65 + count)); // A=0,B=1...
-      })
-      .catch(() => setRevisionLetter("A"));
-  }, [baseNumber]);
-
-  const nextRevisionNo = useMemo(() => {
-    if (!baseNumber || !revisionLetter) return "PLQOT-Loading...";
-    return `${baseNumber}-${revisionLetter}`;
-  }, [baseNumber, revisionLetter]);
-
   /* -------------------- Handlers -------------------- */
   const handleTotalAmountChange = (newTotalAmount) => setTotalAmount(newTotalAmount);
   const handleRowsChange = (rows) => setRowsData(rows);
@@ -119,7 +94,7 @@ const EditQuotation = () => {
     setShowHideFilterModal(false);
   };
 
-  /* ---------- Update quotation in-place ---------- */
+  /* ---------- Existing: update quotation in-place ---------- */
   const handleSaveQuotation = async () => {
     try {
       const quotationData = {
@@ -130,14 +105,15 @@ const EditQuotation = () => {
           quotationInfo?.Subject ||
           quotation?.subject ||
           "Quotation for Products/Services",
-        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+        amount_including_gst: Math.round(gstDetails.withoutGST) || 0,
         without_gst: Math.round(gstDetails.withoutGST) || 0,
         gst_amount: Math.round(gstDetails.gstAmount) || 0,
         amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee,
         remarks,
         status: quotationInfo?.status || "active",
-        client_id: selectedCustomer?.client_id || quotation?.client_id || 3,
+        client_id:
+          selectedCustomer?.client_id || quotation?.client_id || 3,
       };
 
       await axios.put(`${QUOTATION_API_URL}/${quote}`, quotationData, {
@@ -179,20 +155,37 @@ const EditQuotation = () => {
     }
   };
 
-  /* ---------- Create a new revision ---------- */
+  /* ---------- NEW: generate next revision number ---------- */
+  const nextRevisionNo = useMemo(() => {
+    if (!quote) return "";
+    // If quote like PLQOT-001 or PLQOT-001-A, bump the letter
+    const base = quote.replace(/-([A-Z])$/, "");
+    const match = quote.match(/-([A-Z])$/);
+    if (!match) return `${base}-A`;
+    const letter = match[1];
+    const nextLetter = String.fromCharCode(letter.charCodeAt(0) + 1);
+    return `${base}-${nextLetter}`;
+  }, [quote]);
+
+  /* ---------- NEW: create a revision WITH GST values ---------- */
   const handlePublishRevision = async () => {
     try {
       const payload = {
         remarks,
         warranty_guarantee: warrantyGuarantee,
-        quotation_no: nextRevisionNo, // send the new number
+        quotation_no: nextRevisionNo,
+        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+        without_gst: Math.round(gstDetails.withoutGST) || 0,
+        gst_amount: Math.round(gstDetails.gstAmount) || 0,
       };
       const res = await axios.post(
         `${QUOTATION_API_URL}/${quote}/revise`,
         payload,
         { withCredentials: true }
       );
-      toast.success(`Revision created: ${res.data.quotation_no}`);
+      toast.success(
+        `Revision created: ${res.data.quotation_no || nextRevisionNo}`
+      );
       if (res.data.quotation_no) {
         window.location.href = `/getquotation`;
       }
@@ -225,13 +218,13 @@ const EditQuotation = () => {
                 <p className="tm_invoice_number tm_m0">
                   Quotation No: <b className="tm_primary_color">{quote}</b>
                 </p>
-                <p className="tm_invoice_number tm_m0">
-                  Next Revision: <b className="tm_primary_color">{nextRevisionNo}</b>
-                </p>
+                {nextRevisionNo && (
+                  <p className="tm_invoice_number tm_m0">
+                    Next Revision: <b className="tm_primary_color">{nextRevisionNo}</b>
+                  </p>
+                )}
               </div>
             </div>
-
-            {/* client & company details */}
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
@@ -263,13 +256,11 @@ const EditQuotation = () => {
                 <br />
               </div>
             </div>
-
             <div className="d-flex mb-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <p className="tm_mb2">
                 Subject: {quotation && <b className="tm_primary_color">{quotation.subject}</b>}
               </p>
             </div>
-
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
@@ -290,7 +281,6 @@ const EditQuotation = () => {
                   )}
                 </div>
               </div>
-
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <textarea
@@ -307,15 +297,12 @@ const EditQuotation = () => {
                 </div>
               </div>
             </div>
-
             <hr />
             <p>
               <b>
                 <i>Thank You for considering us for your needs. Here is the proposal as you requested.</i>
               </b>
             </p>
-
-            {/* Terms */}
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
               <p>GST: <b>Including in above prices as per applicable.</b></p>
@@ -343,8 +330,6 @@ const EditQuotation = () => {
             </div>
           </div>
         </div>
-
-        {/* Buttons */}
         <div className="tm_invoice_btns tm_hide_print">
           <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
             <span className="tm_btn_icon">
@@ -357,17 +342,16 @@ const EditQuotation = () => {
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
-
           <button id="tm_publish_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveQuotation}>
             <span className="tm_btn_icon">
               <i className="fa-solid fa-upload"></i>
             </span>
             <span className="tm_btn_text">Publish</span>
           </button>
-
-          <button className="tm_invoice_btn tm_color2" onClick={handlePublishRevision}>
+          {/* New Publish Revision button */}
+          <button id="tm_publish_revision_btn" className="tm_invoice_btn tm_color3" onClick={handlePublishRevision}>
             <span className="tm_btn_icon">
-              <i className="fa-solid fa-code-branch"></i>
+              <i className="fa-solid fa-copy"></i>
             </span>
             <span className="tm_btn_text">Publish Revision</span>
           </button>
