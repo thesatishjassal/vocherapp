@@ -147,7 +147,6 @@ const GetQuotationTables = () => {
     }
   };
 
-  // ✅ Helper to format date/time nicely
   const formatDateTime = (isoString) => {
     if (!isoString) return "N/A";
     return new Date(isoString).toLocaleString("en-IN", {
@@ -162,19 +161,71 @@ const GetQuotationTables = () => {
 
   return (
     <div className="card">
-      <div className="card-header pb-0">
+      <div className="card-header d-flex justify-content-between align-items-center pb-0">
         <h6>Manage Quotations</h6>
+
+        {/* ✅ Add Quotation Button */}
+        <Link href="/addquotation" className="btn btn-primary btn-sm">
+          + Add Quotation
+        </Link>
+      </div>
+
+      {/* ✅ Filters & Search UI */}
+      <div className="px-3 pt-2 pb-0">
+        <div className="d-flex flex-wrap gap-3 align-items-center mb-2">
+          <input
+            type="text"
+            className="form-control w-auto"
+            placeholder="Search by client, salesperson or subject"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="activeCheck"
+              checked={statusFilters.active}
+              onChange={() => handleCheckboxChange("active")}
+            />
+            <label className="form-check-label" htmlFor="activeCheck">
+              Active ({statusCounts.active})
+            </label>
+          </div>
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="matureCheck"
+              checked={statusFilters.mature}
+              onChange={() => handleCheckboxChange("mature")}
+            />
+            <label className="form-check-label" htmlFor="matureCheck">
+              Mature ({statusCounts.mature})
+            </label>
+          </div>
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="lostCheck"
+              checked={statusFilters.lost}
+              onChange={() => handleCheckboxChange("lost")}
+            />
+            <label className="form-check-label" htmlFor="lostCheck">
+              Lost ({statusCounts.lost})
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="card-body py-0 pt-0 pb-2">
-        {/* filters remain unchanged */}
         <div className="table-responsive">
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
-                {/* New Created At column FIRST */}
-                <th className="d-none d-md-table-cell">ID</th>
                 <th>Created At</th>
+                <th className="d-none d-md-table-cell">ID</th>
                 <th>Client Name</th>
                 <th>Quotation No</th>
                 <th className="d-none d-lg-table-cell">Salesperson</th>
@@ -191,10 +242,9 @@ const GetQuotationTables = () => {
               {filteredQuotations.length > 0 ? (
                 filteredQuotations.map((q) => (
                   <tr key={q.quotation_id}>
-                    {/* New Created At cell */}
-                    <td className="d-none d-md-table-cell">{q.quotation_id}</td>
                     <td>{formatDateTime(q.created_at)}</td>
-                    <td>{q.client_name || q.businessname || "N/A"}</td>
+                    <td className="d-none d-md-table-cell">{q.quotation_id}</td>
+                    <td>{q.client_name || "N/A"}</td>
                     <td>{q.quotation_no}</td>
                     <td className="d-none d-lg-table-cell">{q.salesperson}</td>
                     <td>{q.subject}</td>
