@@ -131,7 +131,8 @@ const EditQuotation = () => {
           itemcode: item.itemCode,
           brand: item.brand || "N/A",
           mrp: parseFloat(item.mrp) || 0,
-          price: parseFloat(item.amount) || 0,
+          // ✅ ensure integer price for backend
+          price: Math.round(parseFloat(item.amount)) || 0,
           quantity: parseInt(item.qty, 10) || 0,
           discount: parseFloat(item.discount) || 0,
           item_name: item.itemName || "N/A",
@@ -158,7 +159,6 @@ const EditQuotation = () => {
   /* ---------- NEW: generate next revision number ---------- */
   const nextRevisionNo = useMemo(() => {
     if (!quote) return "";
-    // If quote like PLQOT-001 or PLQOT-001-A, bump the letter
     const base = quote.replace(/-([A-Z])$/, "");
     const match = quote.match(/-([A-Z])$/);
     if (!match) return `${base}-A`;
@@ -199,7 +199,7 @@ const EditQuotation = () => {
   };
 
   if (loading) return <p>Loading...</p>;
-
+  
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
