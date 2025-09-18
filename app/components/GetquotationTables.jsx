@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
@@ -70,6 +70,29 @@ const GetQuotationTables = () => {
     } catch (error) {
       toast.error(`Failed to delete quotation: ${error.message}`);
       console.error("Delete error:", error);
+    }
+  };
+
+  const handleClone = async (quotationId) => {
+    if (!confirm("Are you sure you want to clone this quotation?")) return;
+    try {
+      const response = await axios.post(`${API_URL}${quotationId}/clone`, {}, {
+        withCredentials: true,
+      });
+      if (response.status === 200 || response.status === 201) {
+        const newQuotation = {
+          ...response.data,
+          client_name: quotations.find((q) => q.quotation_id === quotationId)?.client_name || null,
+          status: response.data.status || "Active",
+        };
+        setQuotations((prev) => [newQuotation, ...prev].sort(
+          (a, b) => b.quotation_id - a.quotation_id
+        ));
+        toast.success("Quotation cloned successfully!");
+      }
+    } catch (error) {
+      toast.error(`Failed to clone quotation: ${error.message}`);
+      console.error("Clone error:", error);
     }
   };
 
@@ -226,7 +249,7 @@ const GetQuotationTables = () => {
                 <th>Quotation No</th>
                 <th className="d-none d-lg-table-cell">Salesperson</th>
                 <th>Subject</th>
-                <th className="d-none d-md-table-cell">Amount (Incl. GST)</th>
+                {/* <th className="d-none d-md-table-cell">Amount (Incl. GST)</th> */}
                 <th className="d-none d-lg-table-cell">Without GST</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th>Total with GST</th>
@@ -244,7 +267,7 @@ const GetQuotationTables = () => {
                     <td>{q.quotation_no}</td>
                     <td className="d-none d-lg-table-cell">{q.salesperson}</td>
                     <td>{q.subject}</td>
-                    <td className="d-none d-md-table-cell">{q.amount_including_gst}</td>
+                    {/* <td className="d-none d-md-table-cell">{q.amount_including_gst}</td> */}
                     <td className="d-none d-lg-table-cell">{q.without_gst}</td>
                     <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
                     <td>{q.amount_with_gst}</td>
@@ -264,6 +287,12 @@ const GetQuotationTables = () => {
                         className="fas fa-trash text-danger me-2"
                         title="Delete"
                         onClick={() => handleDelete(q.quotation_id)}
+                        style={{ cursor: "pointer" }}
+                      ></i>
+                      <i
+                        className="fas fa-copy text-secondary me-2"
+                        title="Clone"
+                        onClick={() => handleClone(q.quotation_id)}
                         style={{ cursor: "pointer" }}
                       ></i>
                       <select
