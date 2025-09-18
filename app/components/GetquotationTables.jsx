@@ -17,6 +17,13 @@ const GetQuotationTables = () => {
   });
   const [sortOrder, setSortOrder] = useState("latest");
 
+  // Helper function to format quotation_no
+  const formatQuotationNo = (quotationNo) => {
+    if (!quotationNo) return "N/A"; // Handle null or undefined
+    const isNumeric = /^\d+$/.test(quotationNo);
+    return isNumeric ? `PLQOT-${quotationNo}` : quotationNo;
+  };
+
   const fetchAllClients = async () => {
     try {
       const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
@@ -249,7 +256,6 @@ const GetQuotationTables = () => {
                 <th>Quotation No</th>
                 <th className="d-none d-lg-table-cell">Salesperson</th>
                 <th>Subject</th>
-                {/* <th className="d-none d-md-table-cell">Amount (Incl. GST)</th> */}
                 <th className="d-none d-lg-table-cell">Without GST</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th>Total with GST</th>
@@ -263,11 +269,10 @@ const GetQuotationTables = () => {
                   <tr key={q.quotation_id}>
                     <td>{formatDateTime(q.created_at)}</td>
                     <td className="d-none d-md-table-cell">{q.quotation_id}</td>
-                    <td>{q.client_name || "N/A"}</td>
-                    <td>{q.quotation_no}</td>
+                    <td>{q.client_name || q.businessname || "N/A"}</td>
+                    <td>{formatQuotationNo(q.quotation_no)}</td>
                     <td className="d-none d-lg-table-cell">{q.salesperson}</td>
                     <td>{q.subject}</td>
-                    {/* <td className="d-none d-md-table-cell">{q.amount_including_gst}</td> */}
                     <td className="d-none d-lg-table-cell">{q.without_gst}</td>
                     <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
                     <td>{q.amount_with_gst}</td>
