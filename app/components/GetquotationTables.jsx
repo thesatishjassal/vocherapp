@@ -1,5 +1,4 @@
-"use client";
-
+"use client"
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
@@ -163,14 +162,11 @@ const GetQuotationTables = () => {
     <div className="card">
       <div className="card-header d-flex justify-content-between align-items-center pb-0">
         <h6>Manage Quotations</h6>
-
-        {/* ✅ Add Quotation Button */}
         <Link href="/addquotation" className="btn btn-primary btn-sm">
           + Add Quotation
         </Link>
       </div>
 
-      {/* ✅ Filters & Search UI */}
       <div className="px-3 pt-2 pb-0">
         <div className="d-flex flex-wrap gap-3 align-items-center mb-2">
           <input
@@ -264,6 +260,12 @@ const GetQuotationTables = () => {
                       <Link href={`/viewquotation/${q.quotation_id}`}>
                         <i className="fas fa-eye text-primary me-2" title="View"></i>
                       </Link>
+                      <i
+                        className="fas fa-trash text-danger me-2"
+                        title="Delete"
+                        onClick={() => handleDelete(q.quotation_id)}
+                        style={{ cursor: "pointer" }}
+                      ></i>
                       <select
                         className="form-select form-select-sm d-inline w-auto"
                         value={q.status || "Active"}
