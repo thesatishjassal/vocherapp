@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import FindProduct from "../components/FindProduct";
 
 const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
-  const [rows, setRows] = useState([]);
-  const [newRow, setNewRow] = useState({
+  const emptyRow = {
     itemcode: "",
     itemname: "",
     quantity: "",
@@ -15,11 +14,17 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     additional_discount_percentage: "",
     amount: "",
     comments: "",
-  });
+  };
+
+  const [rows, setRows] = useState([]);
+  const [newRow, setNewRow] = useState(emptyRow);
+  const [editingRow, setEditingRow] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
+
   const [showModal, setShowModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false); // New state for add row modal
-  const [productList, setProductList] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const inputRefs = {
     itemcode: useRef(null),
     itemname: useRef(null),
@@ -32,87 +37,78 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     comments: useRef(null),
   };
 
-  const calculateAmount = (quantity, rate, discount_percentage, additional_discount_percentage) => {
-    const baseAmount = quantity * rate;
-    const firstDiscount = (baseAmount * (discount_percentage || 0)) / 100;
-    const amountAfterFirstDiscount = baseAmount - firstDiscount;
-    const additionalDiscount = (amountAfterFirstDiscount * (additional_discount_percentage || 0)) / 100;
-    return amountAfterFirstDiscount - additionalDiscount;
+  const calcAmount = (q, r, d, ad) => {
+    const base = q * r;
+    const first = base * (d || 0) / 100;
+    const afterFirst = base - first;
+    const second = afterFirst * (ad || 0) / 100;
+    return afterFirst - second;
+  };
+
+  const updateTotal = (updated) => {
+    const total = updated.reduce((a, r) => a + Number(r.amount || 0), 0);
+    setTotalAmount(total);
+    onTotalAmountChange?.(total, updated);
   };
 
   const handleAddRow = () => {
     const { quantity, rate, discount_percentage, additional_discount_percentage } = newRow;
-
     if (newRow.itemcode && newRow.itemname && quantity && rate) {
-      const amount = calculateAmount(quantity, rate, discount_percentage, additional_discount_percentage);
-
-      const updatedRows = [
-        ...rows,
-        {
-          id: rows.length + 1,
-          ...newRow,
-          amount,
-        },
-      ];
-
-      setRows(updatedRows);
-
-      setTotalAmount((prevTotal) => {
-        const updatedTotal = prevTotal + amount;
-        if (onTotalAmountChange) {
-          onTotalAmountChange(updatedTotal, updatedRows);
-        }
-        return updatedTotal;
-      });
-
-      setNewRow({
-        itemcode: "",
-        itemname: "",
-        quantity: "",
-        unit: "",
-        rackcode: "",
-        rate: "",
-        discount_percentage: "",
-        additional_discount_percentage: "",
-        amount: "",
-        comments: "",
-      });
-      setShowAddModal(false); // Close the modal after adding
-    } else {
-      alert("Please fill in all required fields.");
-    }
+      const amount = calcAmount(quantity, rate, discount_percentage, additional_discount_percentage);
+      const updated = [...rows, { id: Date.now(), ...newRow, amount }];
+      setRows(updated);
+      updateTotal(updated);
+      setNewRow(emptyRow);
+      setShowAddModal(false);
+    } else alert("Please fill in all required fields.");
   };
 
-  const handleKeyDown = (e, nextField) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (nextField && inputRefs[nextField]?.current) {
-        inputRefs[nextField].current.focus();
-      } else {
-        handleAddRow();
-      }
-    }
+  const handleDeleteRow = (id) => {
+    const filtered = rows.filter((r) => r.id !== id);
+    setRows(filtered);
+    updateTotal(filtered);
   };
 
-  const handleFieldChange = (field, value) => {
-    setNewRow((prev) => ({ ...prev, [field]: value }));
-    if (["itemcode", "itemname"].includes(field) && value.trim()) {
-      setShowModal(true);
-    }
+  const handleEditClick = (row) => {
+    setEditingRow({ ...row });
+    setShowEditModal(true);
   };
 
-  const handleProductSelect = (product) => {
-    setNewRow((prev) => ({
-      ...prev,
-      itemcode: product.itemcode,
-      itemname: product.itemname,
-      unit: product.unit,
-      rackcode: product.rackcode,
+  const handleEditSave = () => {
+    const updated = rows.map((r) =>
+      r.id === editingRow.id
+        ? {
+            ...editingRow,
+            amount: calcAmount(
+              editingRow.quantity,
+              editingRow.rate,
+              editingRow.discount_percentage,
+              editingRow.additional_discount_percentage
+            ),
+          }
+        : r
+    );
+    setRows(updated);
+    updateTotal(updated);
+    setShowEditModal(false);
+    setEditingRow(null);
+  };
+
+  const handleFieldChange = (f, v) => {
+    setNewRow((p) => ({ ...p, [f]: v }));
+    if (["itemcode", "itemname"].includes(f) && v.trim()) setShowModal(true);
+  };
+
+  const handleProductSelect = (p) => {
+    setNewRow((pr) => ({
+      ...pr,
+      itemcode: p.itemcode,
+      itemname: p.itemname,
+      unit: p.unit,
+      rackcode: p.rackcode,
     }));
     setShowModal(false);
-    setTimeout(() => {
-      inputRefs.quantity.current?.focus();
-    }, 0);
+    setTimeout(() => inputRefs.quantity.current?.focus(), 0);
   };
 
   return (
@@ -132,12 +128,14 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
               <th>Add. Disc %</th>
               <th>Amount</th>
               <th>Comments</th>
+              {/* Action column moved **after Comments** */}
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {rows.map((row, idx) => (
               <tr key={row.id}>
-                <td>{index + 1}</td>
+                <td>{idx + 1}</td>
                 <td>{row.itemcode}</td>
                 <td>{row.itemname}</td>
                 <td>{row.unit}</td>
@@ -146,182 +144,56 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
                 <td>{row.rate}</td>
                 <td>{row.discount_percentage}</td>
                 <td>{row.additional_discount_percentage}</td>
-                <td>{row.amount.toFixed(2)}</td>
+                <td>{Number(row.amount).toFixed(2)}</td>
                 <td>{row.comments}</td>
+                {/* Buttons right after Comments */}
+                <td>
+                  <button
+                    className="btn btn-sm btn-outline-primary me-2"
+                    onClick={() => handleEditClick(row)}
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleDeleteRow(row.id)}
+                  >
+                    🗑️
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Button to open the Add Row Modal */}
-
-
-      {/* Add Row Modal */}
       {showAddModal && (
-        <div
-          className="modal fade show"
-          tabIndex="-1"
-          style={{
-            display: "block",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            transition: "opacity 0.3s",
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content rounded-4">
-              <div className="modal-header border-0 p-4">
-                <h1 className="modal-title fs-5">Add New Item</h1>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowAddModal(false)}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body p-4">
-                <div className="row g-3">
-                  <div className="col-6">
-                    <input
-                      type="text"
-                      name="itemcode"
-                      value={newRow.itemcode}
-                      onChange={(e) => handleFieldChange("itemcode", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "itemname")}
-                      placeholder="Product ID"
-                      className="form-control"
-                      ref={inputRefs.itemcode}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="text"
-                      name="itemname"
-                      value={newRow.itemname}
-                      onChange={(e) => handleFieldChange("itemname", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "quantity")}
-                      placeholder="Item Name"
-                      className="form-control"
-                      ref={inputRefs.itemname}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="text"
-                      name="unit"
-                      value={newRow.unit}
-                      onChange={(e) => handleFieldChange("unit", e.target.value)}
-                      placeholder="Unit"
-                      className="form-control"
-                      ref={inputRefs.unit}
-                      disabled
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="text"
-                      name="rackcode"
-                      value={newRow.rackcode}
-                      onChange={(e) => handleFieldChange("rackcode", e.target.value)}
-                      placeholder="Rack Code"
-                      className="form-control"
-                      ref={inputRefs.rackcode}
-                      disabled
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={newRow.quantity}
-                      onChange={(e) => handleFieldChange("quantity", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "rate")}
-                      placeholder="Quantity"
-                      className="form-control"
-                      ref={inputRefs.quantity}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="number"
-                      name="rate"
-                      value={newRow.rate}
-                      onChange={(e) => handleFieldChange("rate", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "discount_percentage")}
-                      placeholder="Rate"
-                      className="form-control"
-                      ref={inputRefs.rate}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="number"
-                      name="discount_percentage"
-                      value={newRow.discount_percentage}
-                      onChange={(e) => handleFieldChange("discount_percentage", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "additional_discount_percentage")}
-                      placeholder="Discount %"
-                      className="form-control"
-                      ref={inputRefs.discount_percentage}
-                    />
-                  </div>
-                  <div className="col-6">
-                    <input
-                      type="number"
-                      name="additional_discount_percentage"
-                      value={newRow.additional_discount_percentage}
-                      onChange={(e) => handleFieldChange("additional_discount_percentage", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, "comments")}
-                      placeholder="Additional Disc %"
-                      className="form-control"
-                      ref={inputRefs.additional_discount_percentage}
-                    />
-                  </div>
-                  <div className="col-12">
-                    <input
-                      type="text"
-                      name="comments"
-                      value={newRow.comments}
-                      onChange={(e) => handleFieldChange("comments", e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, null)}
-                      placeholder="Comments"
-                      className="form-control"
-                      ref={inputRefs.comments}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer border-0 p-4">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowAddModal(false)}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={handleAddRow}
-                  aria-label="Add Item"
-                >
-                  Add Item
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ModalWrapper title="Add New Item" onClose={() => setShowAddModal(false)}>
+          <RowForm
+            rowData={newRow}
+            setRowData={setNewRow}
+            onSave={handleAddRow}
+          />
+        </ModalWrapper>
       )}
+
+      {showEditModal && editingRow && (
+        <ModalWrapper title="Edit Item" onClose={() => setShowEditModal(false)}>
+          <RowForm
+            rowData={editingRow}
+            setRowData={setEditingRow}
+            onSave={handleEditSave}
+            isEdit
+          />
+        </ModalWrapper>
+      )}
+
       <div className="mt-3 no-print">
-        <button
-          className="btn btn-primary w-100"
-          onClick={() => setShowAddModal(true)}
-          aria-label="Add New Row"
-        >
+        <button className="btn btn-primary w-100" onClick={() => setShowAddModal(true)}>
           Add New Row
         </button>
       </div>
+
       <FindProduct
         showModal={showModal}
         setShowModal={setShowModal}
@@ -332,6 +204,55 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
         handleProductSelect={handleProductSelect}
       />
     </div>
+  );
+};
+
+// ---- Subcomponents ----
+const ModalWrapper = ({ title, children, onClose }) => (
+  <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content rounded-4">
+        <div className="modal-header border-0 p-4">
+          <h1 className="modal-title fs-5">{title}</h1>
+          <button type="button" className="btn-close" onClick={onClose}></button>
+        </div>
+        <div className="modal-body p-4">{children}</div>
+      </div>
+    </div>
+  </div>
+);
+
+const RowForm = ({ rowData, setRowData, onSave, isEdit }) => {
+  const handleChange = (field, value) =>
+    setRowData((prev) => ({ ...prev, [field]: value }));
+  const fields = [
+    "itemcode","itemname","unit","rackcode",
+    "quantity","rate","discount_percentage",
+    "additional_discount_percentage","comments"
+  ];
+  return (
+    <>
+      <div className="row g-3">
+        {fields.map((f) => (
+          <div className="col-6" key={f}>
+            <input
+              type={["quantity","rate","discount_percentage","additional_discount_percentage"].includes(f) ? "number" : "text"}
+              name={f}
+              value={rowData[f]}
+              onChange={(e) => handleChange(f, e.target.value)}
+              className="form-control"
+              placeholder={f.replace(/_/g," ").toUpperCase()}
+              disabled={["unit","rackcode"].includes(f)}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="modal-footer border-0 p-4">
+        <button type="button" className="btn btn-secondary" onClick={onSave}>
+          {isEdit ? "Save Changes" : "Add Item"}
+        </button>
+      </div>
+    </>
   );
 };
 
