@@ -12,8 +12,16 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
     rackcode: "",
     comments: "",
   });
+
+  // NEW state for editing & deleting
+  const [editRow, setEditRow] = useState(null);
+  const [deleteRowId, setDeleteRowId] = useState(null);
+
   const [showModal, setShowModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false); // New state for add row modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [productList, setProductList] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -43,10 +51,8 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
           ...newRow,
         },
       ];
-
       setRows(updatedRows);
       onRowsUpdate(updatedRows);
-
       setNewRow({
         itemcode: "",
         itemname: "",
@@ -55,10 +61,29 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
         rackcode: "",
         comments: "",
       });
-      setShowAddModal(false); // Close the modal after adding
+      setShowAddModal(false);
     } else {
       alert("Please fill in all required fields.");
     }
+  };
+
+  // --- NEW: Update and Delete handlers ---
+  const handleUpdateRow = () => {
+    const updatedRows = rows.map((r) =>
+      r.id === editRow.id ? editRow : r
+    );
+    setRows(updatedRows);
+    onRowsUpdate(updatedRows);
+    setShowEditModal(false);
+    setEditRow(null);
+  };
+
+  const handleDeleteRow = () => {
+    const updatedRows = rows.filter((r) => r.id !== deleteRowId);
+    setRows(updatedRows);
+    onRowsUpdate(updatedRows);
+    setShowDeleteModal(false);
+    setDeleteRowId(null);
   };
 
   const handleKeyDown = (e, nextField) => {
@@ -101,7 +126,6 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
       unit: product.unit,
       rackcode: product.rackcode,
     }));
-
     setShowModal(false);
     setTimeout(() => {
       inputRefs.qty.current?.focus();
@@ -121,6 +145,8 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
               <th>Rackcode</th>
               <th>Qty</th>
               <th>Comments</th>
+              {/* NEW: Action Column */}
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -133,6 +159,26 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
                 <td>{row.rackcode}</td>
                 <td>{row.qty}</td>
                 <td>{row.comments}</td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-outline-primary me-2"
+                    onClick={() => {
+                      setEditRow({ ...row });
+                      setShowEditModal(true);
+                    }}
+                  >
+                    <i className="fa fa-edit"></i>
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => {
+                      setDeleteRowId(row.id);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    <i className="fa fa-trash"></i>
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -140,7 +186,15 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
       </div>
 
       {/* Button to open the Add Row Modal */}
-
+      <div className="mt-3">
+        <button
+          className={`btn btn-primary w-100 ${isMobile ? "mb-3" : ""}`}
+          onClick={() => setShowAddModal(true)}
+          aria-label="Add New Row"
+        >
+          Add New Row
+        </button>
+      </div>
 
       {/* Add Row Modal */}
       {showAddModal && (
@@ -162,7 +216,9 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
                   className="btn-close"
                   onClick={() => setShowAddModal(false)}
                   aria-label="Close"
-                ><i className="fa-solid fa-xmark"></i></button>
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
               </div>
               <div className="modal-body p-4">
                 <div className="row g-3">
@@ -262,15 +318,112 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
           </div>
         </div>
       )}
-      <div className="mt-3">
-        <button
-          className={`btn btn-primary w-100 ${isMobile ? "mb-3" : ""}`}
-          onClick={() => setShowAddModal(true)}
-          aria-label="Add New Row"
+
+      {/* Edit Modal */}
+      {showEditModal && editRow && (
+        <div
+          className="modal fade show"
+          tabIndex="-1"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
         >
-          Add New Row
-        </button>
-      </div>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0 p-4">
+                <h1 className="modal-title fs-5">Edit Item</h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditModal(false)}
+                  aria-label="Close"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="row g-3">
+                  {["itemcode","itemname","unit","rackcode","qty","comments"].map((f)=>(
+                    <div className="col-6" key={f}>
+                      <input
+                        type={f==="qty"?"number":"text"}
+                        name={f}
+                        value={editRow[f]}
+                        onChange={(e)=>setEditRow({...editRow,[f]:e.target.value})}
+                        className="form-control"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-footer border-0 p-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleUpdateRow}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div
+          className="modal fade show"
+          tabIndex="-1"
+          style={{
+            display: "block",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0 p-4">
+                <h1 className="modal-title fs-5">Confirm Delete</h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div className="modal-body p-4">
+                Are you sure you want to delete this item?
+              </div>
+              <div className="modal-footer border-0 p-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleDeleteRow}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FindProduct Modal */}
       <FindProduct
         showModal={showModal}
