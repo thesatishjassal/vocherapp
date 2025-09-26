@@ -26,11 +26,10 @@ const QuotationTable = ({
     Dist: true,
     Price: true,
     NetPrice: true,
-    Amount: true, // Added Amount to columns state
+    Amount: true,
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
 
-  // Initialize newRow with all fields as defined values
   const [newRow, setNewRow] = useState({
     customerCode: "",
     customerDescription: "",
@@ -85,31 +84,56 @@ const QuotationTable = ({
     cus_remarks: useRef(null),
   };
 
+  /* ---------- Helpers ---------- */
+  const calculateDiscount = (mrp, netPrice) => {
+    const mrpValue = Number(mrp) || 0;
+    const netValue = Number(netPrice) || 0;
+    if (!mrpValue) return 0;
+    return +(((mrpValue - netValue) / mrpValue) * 100).toFixed(2);
+  };
+
+  const calculateNetPrice = (mrp, discount) => {
+    const mrpValue = Number(mrp) || 0;
+    const discValue = Number(discount) || 0;
+    return +(mrpValue * (1 - discValue / 100)).toFixed(2);
+  };
+
+  const calculateAmount = (qty, netPrice) => {
+    const qtyValue = Number(qty) || 0;
+    const netValue = Number(netPrice) || 0;
+    return +(qtyValue * netValue).toFixed(2);
+  };
+
+  /* ---------- Effects ---------- */
   useEffect(() => {
     if (items.length > 0 && rows.length === 0) {
       setRows(
-        items.map((item, index) => ({
-          id: index + 1,
-          customerCode: item.customerCode || "",
-          customerDescription: item.customerDescription || "",
-          itemCode: item.itemCode || "",
-          itemName: item.itemName || "",
-          brand: item.brand || "",
-          qty: item.qty || "",
-          unit: item.unit || "Piece",
-          mrp: item.mrp || "",
-          discount: item.discount || calculateDiscount(item.mrp, item.netPrice),
-          netPrice: item.netPrice || calculateNetPrice(item.mrp, item.discount),
-          amount: calculateAmount(
-            item.qty,
-            item.netPrice || calculateNetPrice(item.mrp, item.discount)
-          ),
-          image: item.image || "",
-          remarks: item.remarks || "",
-        }))
+        items.map((item, index) => {
+          const mrp = Number(item.mrp) || 0;
+          const net = Number(item.netPrice) || 0;
+          const discount = item.discount !== undefined
+            ? Number(item.discount)
+            : calculateDiscount(mrp, net);
+          return {
+            id: index + 1,
+            customerCode: item.customerCode || "",
+            customerDescription: item.customerDescription || "",
+            itemCode: item.itemCode || "",
+            itemName: item.itemName || "",
+            brand: item.brand || "",
+            qty: Number(item.qty) || 0,
+            unit: item.unit || "Piece",
+            mrp,
+            discount,
+            netPrice: net || calculateNetPrice(mrp, discount),
+            amount: calculateAmount(item.qty, net || calculateNetPrice(mrp, discount)),
+            image: item.image || "",
+            remarks: item.remarks || "",
+          };
+        })
       );
     }
-  }, [items]);
+  }, [items, rows.length]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -134,35 +158,8 @@ const QuotationTable = ({
     fetchProducts();
   }, []);
 
-  const calculateDiscount = (mrp, netPrice) => {
-    const mrpValue = parseFloat(mrp) || 0;
-    const netPriceValue = parseFloat(netPrice) || 0;
-    if (mrpValue === 0) return "";
-    return Math.round(((mrpValue - netPriceValue) / mrpValue) * 100).toString();
-  };
-
-  const calculateNetPrice = (mrp, discount) => {
-    const mrpValue = parseFloat(mrp) || 0;
-    const discountValue = parseFloat(discount) || 0;
-    return (mrpValue * (1 - discountValue / 100)).toFixed(2);
-  };
-
-  const calculateAmount = (qty, netPrice) => {
-    const qtyValue = parseFloat(qty) || 0;
-    const netPriceValue = parseFloat(netPrice) || 0;
-    return (qtyValue * netPriceValue).toFixed(2);
-  };
-
-  const filterProducts = (field, value, products) => {
-    return products.filter((product) =>
-      field === "itemCode"
-        ? product.itemcode.toLowerCase().includes(value.toLowerCase())
-        : product.itemname.toLowerCase().includes(value.toLowerCase())
-    );
-  };
-
   const totalAmount = rows.reduce(
-    (sum, row) => sum + (parseFloat(row.amount) || 0),
+    (sum, row) => sum + (Number(row.amount) || 0),
     0
   );
 
@@ -171,134 +168,13 @@ const QuotationTable = ({
     if (onTotalAmountChange) onTotalAmountChange(totalAmount);
   }, [rows, onRowsChange, onTotalAmountChange, totalAmount]);
 
-  const submitCustomRowToDB = async (rowData) => {
-    try {
-      // Placeholder for API call (uncomment and adjust as needed)
-      /*
-      const response = await fetch("https://api.panvic.in/custom-items/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_code: rowData.cus_customercode || "",
-          customer_description: rowData.cus_customerdescription || "",
-          item_code: rowData.cus_itemcode || "",
-          item_name: rowData.cus_itemname || "",
-          brand: rowData.cus_brand || "",
-          qty: parseFloat(rowData.cus_qty) || 0,
-          unit: rowData.cus_unit || "Piece",
-          mrp: parseFloat(rowData.cus_mrp) || 0,
-          discount: parseFloat(rowData.cus_discount) || 0,
-          net_price: parseFloat(rowData.cus_netprice) || 0,
-          image: rowData.cus_image || "",
-          remarks: rowData.cus_remarks || "",
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to save custom item");
-      const result = await response.json();
-      */
-      const result = { id: Date.now() }; // Mock response
-      console.log("Custom item saved successfully:", result);
-      return result;
-    } catch (error) {
-      console.error("Error saving custom item:", error);
-      alert("Failed to save custom item. Please try again.");
-      return null;
-    }
-  };
-
-  const handleAddRow = () => {
-    const { qty, netPrice, itemCode, itemName } = newRow;
-    if (itemCode && itemName && qty && netPrice) {
-      const amount = calculateAmount(qty, netPrice);
-      const discount = calculateDiscount(newRow.mrp, netPrice);
-      if (editRowIndex !== null) {
-        setRows((prevRows) =>
-          prevRows.map((row, index) =>
-            index === editRowIndex
-              ? {
-                  ...row,
-                  ...newRow,
-                  amount,
-                  discount,
-                  netPrice,
-                  unit: newRow.unit || "Piece",
-                  customerCode: newRow.customerCode || "",
-                  customerDescription: newRow.customerDescription || "",
-                  brand: newRow.brand || "",
-                  mrp: newRow.mrp || "",
-                  image: newRow.image || "",
-                  remarks: newRow.remarks || "",
-                }
-              : row
-          )
-        );
-        setEditRowIndex(null);
-      } else {
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            id: prevRows.length + 1,
-            ...newRow,
-            amount,
-            discount,
-            netPrice,
-            unit: newRow.unit || "Piece",
-            customerCode: newRow.customerCode || "",
-            customerDescription: newRow.customerDescription || "",
-            brand: newRow.brand || "",
-            mrp: newRow.mrp || "",
-            image: newRow.image || "",
-            remarks: newRow.remarks || "",
-          },
-        ]);
-      }
-      resetNewRow();
-      setShowAddModal(false);
-    } else {
-      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
-    }
-  };
-
-  const handleSubmitCustomRow = async (rowData, editIndex) => {
-    const { cus_qty, cus_itemcode, cus_itemname, cus_netprice } = rowData;
-    if (cus_itemcode && cus_itemname && cus_qty && cus_netprice) {
-      const amount = calculateAmount(cus_qty, cus_netprice);
-      const discount = calculateDiscount(rowData.cus_mrp, cus_netprice);
-      const savedItem = await submitCustomRowToDB(rowData);
-      if (savedItem) {
-        const newRowData = {
-          id: editIndex !== null ? rows[editIndex].id : rows.length + 1,
-          customerCode: rowData.cus_customercode || "",
-          customerDescription: rowData.cus_customerdescription || "",
-          itemCode: rowData.cus_itemcode || "",
-          itemName: rowData.cus_itemname || "",
-          brand: rowData.cus_brand || "",
-          qty: rowData.cus_qty || "",
-          unit: rowData.cus_unit || "Piece",
-          mrp: rowData.cus_mrp || "",
-          discount,
-          netPrice: rowData.cus_netprice || "",
-          amount,
-          image: rowData.cus_image || "",
-          remarks: rowData.cus_remarks || "",
-        };
-        if (editIndex !== null) {
-          setRows((prevRows) =>
-            prevRows.map((row, index) => (index === editIndex ? newRowData : row))
-          );
-          setEditRowIndex(null);
-        } else {
-          setRows((prevRows) => [...prevRows, newRowData]);
-        }
-        resetNewRow();
-        setShowCusAddModal(false);
-      }
-    } else {
-      alert(
-        "Please fill in all required fields (Custom Item Code, Custom Item Name, Qty, Net Price)."
-      );
-    }
-  };
+  /* ---------- Handlers ---------- */
+  const filterProducts = (field, value, products) =>
+    products.filter((product) =>
+      field === "itemCode"
+        ? product.itemcode.toLowerCase().includes(value.toLowerCase())
+        : product.itemname.toLowerCase().includes(value.toLowerCase())
+    );
 
   const resetNewRow = () => {
     setNewRow({
@@ -330,57 +206,128 @@ const QuotationTable = ({
     });
   };
 
+  const handleFieldChange = (field, value) => {
+    setNewRow((prev) => {
+      const next = { ...prev, [field]: value };
+      const mrp = Number(next.mrp);
+      const net = Number(next.netPrice);
+      const disc = Number(next.discount);
+      const qty = Number(next.qty);
+
+      if (["mrp", "netPrice"].includes(field)) {
+        next.discount = calculateDiscount(mrp, net);
+        next.amount = calculateAmount(qty, net);
+      }
+      if (field === "discount") {
+        const computedNet = calculateNetPrice(mrp, disc);
+        next.netPrice = computedNet;
+        next.amount = calculateAmount(qty, computedNet);
+      }
+      if (field === "qty") {
+        next.amount = calculateAmount(qty, net);
+      }
+      return next;
+    });
+  };
+
+  const handleAddRow = () => {
+    const { itemCode, itemName, qty, mrp, netPrice, discount } = newRow;
+    if (!itemCode || !itemName || !qty || !netPrice) {
+      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
+      return;
+    }
+
+    const parsedMrp = Number(mrp);
+    const parsedNet = Number(netPrice);
+    const parsedDisc = discount === "" ? calculateDiscount(parsedMrp, parsedNet) : Number(discount);
+    const amount = calculateAmount(Number(qty), parsedNet);
+
+    const payload = {
+      ...newRow,
+      mrp: parsedMrp,
+      netPrice: parsedNet,
+      discount: parsedDisc,
+      amount,
+      qty: Number(qty),
+      unit: newRow.unit || "Piece",
+    };
+
+    if (editRowIndex !== null) {
+      setRows((prev) =>
+        prev.map((row, i) => (i === editRowIndex ? { ...row, ...payload } : row))
+      );
+      setEditRowIndex(null);
+    } else {
+      setRows((prev) => [...prev, { id: prev.length + 1, ...payload }]);
+    }
+
+    resetNewRow();
+    setShowAddModal(false);
+  };
+
+  const submitCustomRowToDB = async (rowData) => {
+    try {
+      const result = { id: Date.now() }; // Mock response
+      return result;
+    } catch (error) {
+      console.error("Error saving custom item:", error);
+      alert("Failed to save custom item. Please try again.");
+      return null;
+    }
+  };
+
+  const handleSubmitCustomRow = async (rowData, editIndex) => {
+    const qty = Number(rowData.cus_qty);
+    const mrp = Number(rowData.cus_mrp);
+    const net = Number(rowData.cus_netprice);
+    const discount =
+      rowData.cus_discount === ""
+        ? calculateDiscount(mrp, net)
+        : Number(rowData.cus_discount);
+    const amount = calculateAmount(qty, net);
+
+    const savedItem = await submitCustomRowToDB(rowData);
+    if (!savedItem) return;
+
+    const newRowData = {
+      id: editIndex !== null ? rows[editIndex].id : rows.length + 1,
+      customerCode: rowData.cus_customercode || "",
+      customerDescription: rowData.cus_customerdescription || "",
+      itemCode: rowData.cus_itemcode || "",
+      itemName: rowData.cus_itemname || "",
+      brand: rowData.cus_brand || "",
+      qty,
+      unit: rowData.cus_unit || "Piece",
+      mrp,
+      discount,
+      netPrice: net,
+      amount,
+      image: rowData.cus_image || "",
+      remarks: rowData.cus_remarks || "",
+    };
+
+    if (editIndex !== null) {
+      setRows((prev) =>
+        prev.map((row, i) => (i === editIndex ? newRowData : row))
+      );
+      setEditRowIndex(null);
+    } else {
+      setRows((prev) => [...prev, newRowData]);
+    }
+    resetNewRow();
+    setShowCusAddModal(false);
+  };
+
   const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
       e.preventDefault();
       if (nextField && inputRefs[nextField]?.current) {
         inputRefs[nextField].current.focus();
       } else {
-        if (showAddModal) {
-          handleAddRow();
-        } else if (showCusAddModal) {
-          handleSubmitCustomRow(newRow, editRowIndex);
-        }
+        if (showAddModal) handleAddRow();
+        else if (showCusAddModal) handleSubmitCustomRow(newRow, editRowIndex);
       }
     }
-  };
-
-  const handleFieldChange = (field, value) => {
-    setNewRow((prev) => {
-      const updatedRow = {
-        ...prev,
-        [field]:
-          field === "cus_itemname" || field === "itemName"
-            ? value.substring(0, 100)
-            : value || "", // Ensure no undefined values
-      };
-      if ((field === "cus_itemname" || field === "itemName") && value.length > 100) {
-        alert("Item name truncated to 100 characters.");
-      }
-      if (
-        field === "netPrice" ||
-        field === "mrp" ||
-        field === "cus_netprice" ||
-        field === "cus_mrp"
-      ) {
-        updatedRow.discount = calculateDiscount(updatedRow.mrp, updatedRow.netPrice);
-        updatedRow.cus_discount = calculateDiscount(
-          updatedRow.cus_mrp,
-          updatedRow.cus_netprice
-        );
-        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
-        updatedRow.cus_amount = calculateAmount(updatedRow.cus_qty, updatedRow.cus_netprice);
-      } else if (field === "discount" || field === "cus_discount") {
-        updatedRow.netPrice = calculateNetPrice(updatedRow.mrp, value);
-        updatedRow.cus_netprice = calculateNetPrice(updatedRow.cus_mrp, value);
-        updatedRow.amount = calculateAmount(updatedRow.qty, updatedRow.netPrice);
-        updatedRow.cus_amount = calculateAmount(updatedRow.cus_qty, updatedRow.cus_netprice);
-      } else if (field === "qty" || field === "cus_qty") {
-        updatedRow.amount = calculateAmount(value, updatedRow.netPrice);
-        updatedRow.cus_amount = calculateAmount(value, updatedRow.cus_netprice);
-      }
-      return updatedRow;
-    });
   };
 
   const handleColumnVisibilityChange = (updatedColumns) => {
@@ -390,12 +337,11 @@ const QuotationTable = ({
   const handleEditRow = (index) => {
     const row = rows[index];
     setNewRow({
+      ...newRow,
       customerCode: row.customerCode || "",
       customerDescription: row.customerDescription || "",
       itemCode: row.itemCode || "",
       itemName: row.itemName || "",
-      cus_itemcode: row.itemCode || "",
-      cus_itemname: row.itemName || "",
       brand: row.brand || "",
       qty: row.qty || "",
       unit: row.unit || "Piece",
@@ -407,6 +353,8 @@ const QuotationTable = ({
       remarks: row.remarks || "",
       cus_customercode: row.customerCode || "",
       cus_customerdescription: row.customerDescription || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
       cus_qty: row.qty || "",
       cus_brand: row.brand || "",
       cus_unit: row.unit || "Piece",
@@ -423,12 +371,11 @@ const QuotationTable = ({
   const handleEditCustomRow = (index) => {
     const row = rows[index];
     setNewRow({
+      ...newRow,
       customerCode: row.customerCode || "",
       customerDescription: row.customerDescription || "",
       itemCode: row.itemCode || "",
       itemName: row.itemName || "",
-      cus_itemcode: row.itemCode || "",
-      cus_itemname: row.itemName || "",
       brand: row.brand || "",
       qty: row.qty || "",
       unit: row.unit || "Piece",
@@ -440,6 +387,8 @@ const QuotationTable = ({
       remarks: row.remarks || "",
       cus_customercode: row.customerCode || "",
       cus_customerdescription: row.customerDescription || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
       cus_qty: row.qty || "",
       cus_brand: row.brand || "",
       cus_unit: row.unit || "Piece",
@@ -457,6 +406,7 @@ const QuotationTable = ({
     setRows((prevRows) => prevRows.filter((_, i) => i !== index));
   };
 
+  /* ---------- JSX ---------- */
   return (
     <div>
       <ShowHideFilter
@@ -480,7 +430,7 @@ const QuotationTable = ({
             {columns.Qty && <th>Qty</th>}
             {columns.Dist && <th>Dist (%)</th>}
             {columns.NetPrice && <th>Net Price</th>}
-            {columns.Amount && <th>Amount</th>} {/* Added Amount column header */}
+            {columns.Amount && <th>Amount</th>}
             <td className="no-print">Actions</td>
           </tr>
         </thead>
@@ -523,7 +473,7 @@ const QuotationTable = ({
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
               {columns.NetPrice && <td>{row.netPrice}</td>}
-              {columns.Amount && <td>{row.amount}</td>} {/* Added Amount column data */}
+              {columns.Amount && <td>{row.amount}</td>}
               <td className="no-print">
                 <button
                   className="btn action_btn btn-warning me-2"
@@ -589,10 +539,21 @@ const QuotationTable = ({
         <button
           className="btn btn-secondary w-100"
           onClick={() => setShowCusAddModal(true)}
-          aria-label="Add Custom New Row"
+          aria-label="Custom Add Row"
         >
-          Add Custom New Row
+          Custom Add
         </button>
+        <button
+          className="btn btn-outline-secondary w-100"
+          onClick={onClose}
+          aria-label="Close Table"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="mt-3">
+        <h4>Total Amount: {totalAmount}</h4>
       </div>
     </div>
   );
@@ -601,7 +562,7 @@ const QuotationTable = ({
 QuotationTable.propTypes = {
   items: PropTypes.array,
   onTotalAmountChange: PropTypes.func,
-  onClose: PropTypes.func,
+  onClose: PropTypes.func.isRequired,
   onRowsChange: PropTypes.func,
 };
 
