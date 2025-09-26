@@ -168,35 +168,35 @@ const EditQuotation = () => {
   }, [quote]);
 
   /* ---------- NEW: create a revision WITH GST values ---------- */
-  const handlePublishRevision = async () => {
-    try {
-      const payload = {
-        remarks,
-        warranty_guarantee: warrantyGuarantee,
-        quotation_no: nextRevisionNo,
-        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-        without_gst: Math.round(gstDetails.withoutGST) || 0,
-        gst_amount: Math.round(gstDetails.gstAmount) || 0,
-      };
-      const res = await axios.post(
-        `${QUOTATION_API_URL}/${quote}/revise`,
-        payload,
-        { withCredentials: true }
-      );
-      toast.success(
-        `Revision created: ${res.data.quotation_no || nextRevisionNo}`
-      );
-      if (res.data.quotation_no) {
-        window.location.href = `/getquotation`;
-      }
-    } catch (err) {
-      toast.error(
-        `Failed to create revision: ${
-          err.response?.data?.detail || err.message || "Unknown error"
-        }`
-      );
-    }
-  };
+  // const handlePublishRevision = async () => {
+  //   try {
+  //     const payload = {
+  //       remarks,
+  //       warranty_guarantee: warrantyGuarantee,
+  //       quotation_no: nextRevisionNo,
+  //       amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+  //       without_gst: Math.round(gstDetails.withoutGST) || 0,
+  //       gst_amount: Math.round(gstDetails.gstAmount) || 0,
+  //     };
+  //     const res = await axios.post(
+  //       `${QUOTATION_API_URL}/${quote}/revise`,
+  //       payload,
+  //       { withCredentials: true }
+  //     );
+  //     toast.success(
+  //       `Revision created: ${res.data.quotation_no || nextRevisionNo}`
+  //     );
+  //     if (res.data.quotation_no) {
+  //       window.location.href = `/getquotation`;
+  //     }
+  //   } catch (err) {
+  //     toast.error(
+  //       `Failed to create revision: ${
+  //         err.response?.data?.detail || err.message || "Unknown error"
+  //       }`
+  //     );
+  //   }
+  // };
 
   if (loading) return <p>Loading...</p>;
   
@@ -349,12 +349,12 @@ const EditQuotation = () => {
             <span className="tm_btn_text">Publish</span>
           </button>
           {/* New Publish Revision button */}
-          <button id="tm_publish_revision_btn" className="tm_invoice_btn tm_color3" onClick={handlePublishRevision}>
+          {/* <button id="tm_publish_revision_btn" className="tm_invoice_btn tm_color3" onClick={handlePublishRevision}>
             <span className="tm_btn_icon">
               <i className="fa-solid fa-copy"></i>
             </span>
             <span className="tm_btn_text">Publish Revision</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
