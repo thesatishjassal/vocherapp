@@ -67,16 +67,14 @@ export default async function ViewQuotation({ params }) {
                 </p>
               </div>
             </div>
-
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
                 <p className="tm_invoice_number">
-                  Date: <b>{new Date().toLocaleDateString('en-GB')}</b>
+                  Date: <b>{new Date().toLocaleDateString("en-GB")}</b>
                 </p>
               </div>
             </div>
-
             <div className="tm_invoice_head tm_mb10">
               {client && (
                 <div
@@ -87,9 +85,33 @@ export default async function ViewQuotation({ params }) {
                     <b className="tm_primary_color">Client Details:</b>
                   </p>
                   <p>
-                    {/* Business Name: <b>{client.businessname}</b> <br /> */}
-                    Name: <b>{client.client_name}</b> <br />
-                    City: <b>{client.city}</b> | Phone: <b>{client.client_phone}</b>
+                    {client.businessname && (
+                      <>
+                        Business Name: <b>{client.businessname}</b>
+                        <br />
+                      </>
+                    )}
+
+                    {client?.client_name && (
+                      <>
+                        Name: <b>{client.client_name}</b>
+                        <br />
+                      </>
+                    )}
+
+                    {client?.city && (
+                      <>
+                        City: <b>{client.city}</b>
+                        {client?.client_phone && " | "}
+                      </>
+                    )}
+
+                    {client?.client_phone && (
+                      <>
+                        Phone: <b>{client.client_phone}</b>
+                        <br />
+                      </>
+                    )}
                   </p>
                 </div>
               )}
@@ -110,9 +132,10 @@ export default async function ViewQuotation({ params }) {
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>}
               </div>
             </div>
-
-             Subject: <span className="tm_primary_color mb-3">{quotation && <b>{quotation.subject}</b>}</span>
-            
+            Subject:{" "}
+            <span className="tm_primary_color mb-3">
+              {quotation && <b>{quotation.subject}</b>}
+            </span>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
@@ -120,7 +143,6 @@ export default async function ViewQuotation({ params }) {
                 </div>
               </div>
             </div>
-
             <div className="tm_invoice_footer my-2">
               <div className="tm_left_footer px-0">
                 <textarea
@@ -170,7 +192,6 @@ export default async function ViewQuotation({ params }) {
                 </table>
               </div>
             </div>
-
             <p>
               <b>
                 <i>
@@ -235,8 +256,8 @@ export default async function ViewQuotation({ params }) {
         </div>
       </div>
 
-        <div className="tm_invoice_btns no-print">
-          {/* <button
+      <div className="tm_invoice_btns no-print">
+        {/* <button
             type="button"
             onClick={() => window.print()}
             className="tm_invoice_btn tm_color1"
@@ -246,7 +267,7 @@ export default async function ViewQuotation({ params }) {
             </span>
             <span className="tm_btn_text">Print</span>
           </button> */}
-        </div>
+      </div>
     </div>
   );
 }
