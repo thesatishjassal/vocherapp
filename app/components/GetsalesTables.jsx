@@ -191,11 +191,11 @@ const GetSalesOrdersTable = () => {
         {/* Quotation Items Table */}
         {selectedQuotation && (
           <div className="table-responsive mb-4">
-            <h6>Quotation Items</h6>
+            <h6>Sales Order Items</h6>
             {loadingItems ? (
               <p>Loading items...</p>
             ) : (
-              <table className="table table-bordered">
+              <table className="table table-bordered table-striped table-hover align-middle">
                 <thead>
                   <tr>
                     <th>ItemCode</th>
