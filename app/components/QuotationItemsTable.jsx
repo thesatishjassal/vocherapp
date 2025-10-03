@@ -9,6 +9,7 @@ import html2canvas from "html2canvas";
 
 const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
+  const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -28,6 +29,25 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     amount: true,
     image: true,
   });
+
+  // ✅ Fetch products once and build lookup map
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("https://api.panvic.in/products/");
+        const productMap = {};
+        res.data.forEach((prod) => {
+          productMap[prod.itemcode] = prod;
+        });
+        setProducts(productMap);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // ✅ Cleanup blob URLs
   useEffect(() => {
     return () => {
       items.forEach((item) => {
@@ -38,6 +58,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     };
   }, [items]);
 
+  // ✅ Fetch quotation items
   useEffect(() => {
     if (!quotation_id) return;
 
@@ -89,12 +110,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 🚀 Clean up old preview if it exists
     if (items[index].preview?.startsWith("blob:")) {
       URL.revokeObjectURL(items[index].preview);
     }
 
-    // Show temporary preview
     const previewUrl = URL.createObjectURL(file);
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], preview: previewUrl };
@@ -113,7 +132,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         }
       );
 
-      // ✅ Replace blob with actual API URL
       updatedItems[index] = {
         ...updatedItems[index],
         preview: `https://api.panvic.in${response.data.image_url}`,
@@ -157,12 +175,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     return "";
   };
 
-  // ✅ Print function
   const handlePrint = () => {
     window.print();
   };
 
-  // ✅ Save as PDF in landscape orientation
   const handleSaveAsPDF = async () => {
     const element = document.getElementById("quotation-table");
     if (!element) return;
@@ -170,7 +186,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     const canvas = await html2canvas(element, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
 
-    const pdf = new jsPDF("l", "mm", "a4"); // Landscape orientation for PDF
+    const pdf = new jsPDF("l", "mm", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
@@ -183,23 +199,21 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
   return (
     <div className="relative overflow-x-auto">
-      {/* ✅ CSS for landscape printing */}
       <style jsx>{`
         @media print {
           @page {
-            size: A4 landscape; /* Set print orientation to landscape */
+            size: A4 landscape;
           }
           .no-print {
-            display: none !important; /* Hide buttons during printing */
+            display: none !important;
           }
           #quotation-table {
             width: 100%;
-            font-size: 12px; /* Optimize font size for printing */
+            font-size: 12px;
           }
         }
       `}</style>
 
-      {/* ✅ Top-right Print & PDF buttons */}
       <div className="absolute top-0 right-0 flex flex-col gap-2 no-print">
         <button
           onClick={handlePrint}
@@ -209,7 +223,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         </button>
       </div>
 
-      {/* ✅ Column toggle checkboxes */}
       <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
         {Object.entries(visibleColumns).map(([key, value]) => (
           <label key={key}>
@@ -223,7 +236,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         ))}
       </div>
 
-      {/* ✅ Table */}
       <table
         id="quotation-table"
         className="tm_round_border table align-items-center justify-content-center mb-0"
@@ -299,107 +311,120 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           </tr>
         </thead>
         <tbody>
-          {items.map((item, index) => (
-            <tr key={index}>
-              {visibleColumns.srNo && <td>{index + 1}</td>}
-              {visibleColumns.image && (
-                <td>
-                  <div
-                    className="relative group"
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      position: "relative",
-                    }}
-                    title="Click to upload image"
-                    onClick={() =>
-                      document.getElementById(`fileInput-${index}`).click()
-                    }
-                  >
-                    <img
-                      src={
-                        item.preview ||
-                        "https://via.placeholder.com/60x60?text=+"
-                      }
-                      alt="Preview"
+          {items.map((item, index) => {
+            const product = products[item.itemcode] || {};
+            return (
+              <tr key={index}>
+                {visibleColumns.srNo && <td>{index + 1}</td>}
+                {visibleColumns.image && (
+                  <td>
+                    <div
+                      className="relative group"
                       style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
+                        width: "60px",
+                        height: "60px",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        position: "relative",
                       }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <FiPlusCircle
-                        color="white"
-                        size={24}
-                        title="Upload Image"
+                      title="Click to upload image"
+                      onClick={() =>
+                        document.getElementById(`fileInput-${index}`).click()
+                      }
+                    >
+                      <img
+                        src={
+                          item.preview ||
+                          "https://via.placeholder.com/60x60?text=+"
+                        }
+                        alt="Preview"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <FiPlusCircle
+                          color="white"
+                          size={24}
+                          title="Upload Image"
+                        />
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id={`fileInput-${index}`}
+                        style={{ display: "none" }}
+                        onChange={(e) => handleImageChange(e, index)}
                       />
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      id={`fileInput-${index}`}
-                      style={{ display: "none" }}
-                      onChange={(e) => handleImageChange(e, index)}
-                    />
-                  </div>
-                </td>
-              )}
-              {visibleColumns.customerCode && <td>{item.customercode}</td>}
-              {visibleColumns.customerDescription && (
-                <td>{item.customerdescription}</td>
-              )}
-              {visibleColumns.itemCode && <td>{item.itemcode}</td>}
-              {visibleColumns.itemName && (
-                <td>
-                  <div>{item.item_name}</div>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: "bold",
-                      color: "#6b7280",
-                    }}
-                  >
-                    {item?.cct && `CCT: ${item.cct} | `}
-                    {(item?.cutoutsize || item?.cutoutdia) &&
-                      `Cutout Size: ${item.cutoutsize ?? item.cutoutdia} | `}
-                    {item?.beamangle && `Beam Angle: ${item.beamangle} | `}
-                    {item?.Cri && `CRI: ${item.Cri} | `}
-                    {item?.bodycolor && `Body Color: ${item.bodycolor} | `}
-                    {item?.lumens && `Lumens: ${item.lumens}`}
-                  </span>
-                </td>
-              )}
-              {visibleColumns.unit && <td>{item.unit}</td>}
-              {visibleColumns.brand && <td>{item.brand}</td>}
-              {visibleColumns.qty && <td>{item.quantity}</td>}
-              {visibleColumns.mrp && <td>{item.mrp}</td>}
-              {visibleColumns.discount && <td>{item.discount}%</td>}
-              {visibleColumns.price && <td>{item.price}</td>}
-              {/* {visibleColumns.netPrice && <td>{item.netPrice}</td>} */}
-              {visibleColumns.netPrice && (
-                // calculate on the fly: price * (1 - discount/100)
-                <td>
-                  {(
-                    Number(item.mrp) *
-                    (1 - (Number(item.discount) || 0) / 100)
-                  ).toFixed(2)}
-                </td>
-              )}
-              {visibleColumns.amount && (
-                <td>
-                  {(
-                    Number(item.quantity) *
+                  </td>
+                )}
+                {visibleColumns.customerCode && <td>{item.customercode}</td>}
+                {visibleColumns.customerDescription && (
+                  <td>{item.customerdescription}</td>
+                )}
+                {visibleColumns.itemCode && <td>{item.itemcode}</td>}
+                {visibleColumns.itemName && (
+                  <td>
+                    <div>{item.item_name}</div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {product?.cct && product.cct !== "NULL"
+                        ? `CCT: ${product.cct} | `
+                        : item?.cct && `CCT: ${item.cct} | `}
+                      {(product?.cutoutsize || product?.cutoutdia) &&
+                        `Cutout Size: ${
+                          product.cutoutsize ?? product.cutoutdia
+                        } | `}
+                      {product?.beamangle && product.beamangle !== "NULL"
+                        ? `Beam Angle: ${product.beamangle} | `
+                        : item?.beamangle && `Beam Angle: ${item.beamangle} | `}
+                      {product?.cri && product.cri !== "NONE"
+                        ? `CRI: ${product.cri} | `
+                        : item?.Cri && `CRI: ${item.Cri} | `}
+                      {product?.color
+                        ? `Body Color: ${product.color} | `
+                        : item?.bodycolor && `Body Color: ${item.bodycolor} | `}
+                      {product?.lumens && product.lumens !== "NONE"
+                        ? `Lumens: ${product.lumens}`
+                        : item?.lumens && `Lumens: ${item.lumens}`}
+                    </span>
+                  </td>
+                )}
+                {visibleColumns.unit && <td>{item.unit}</td>}
+                {visibleColumns.brand && <td>{item.brand}</td>}
+                {visibleColumns.qty && <td>{item.quantity}</td>}
+                {visibleColumns.mrp && <td>{item.mrp}</td>}
+                {visibleColumns.discount && <td>{item.discount}%</td>}
+                {visibleColumns.price && <td>{item.price}</td>}
+                {visibleColumns.netPrice && (
+                  <td>
+                    {(
                       Number(item.mrp) *
-                    (1 - (Number(item.discount) || 0) / 100)
-                  ).toFixed(2)}
-                </td>
-              )}
-            </tr>
-          ))}
+                      (1 - (Number(item.discount) || 0) / 100)
+                    ).toFixed(2)}
+                  </td>
+                )}
+                {visibleColumns.amount && (
+                  <td>
+                    {(
+                      Number(item.quantity) *
+                      Number(item.mrp) *
+                      (1 - (Number(item.discount) || 0) / 100)
+                    ).toFixed(2)}
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

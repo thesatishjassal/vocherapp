@@ -6,6 +6,7 @@ import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import GetSalesOrdersTable from "../components/GetsalesTables";
 
 const SalesOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -238,13 +239,14 @@ const SalesOrder = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <QuotationTable
+                  {/* <QuotationTable
                     FiltercolModal={FiltercolModal}
                     ShowHideFiltercolModal={ShowHideFiltercolModal}
                     onClose={closeModal}
                     onRowsChange={handleRowsChange}
                     onTotalAmountChange={handleTotalAmountChange}
-                  />
+                  /> */}
+                  <GetSalesOrdersTable />
                   {showModalClientDetails && (
                     <CustomerModal
                       onClose={closeModal}

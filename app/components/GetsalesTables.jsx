@@ -7,15 +7,25 @@ import { toast } from "react-toastify";
 
 const SALESORDER_API_URL = "https://api.panvic.in/salesorder/";
 const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+const QUOTATION_API_URL = "https://api.panvic.in/quotation/";
 
 const GetSalesOrdersTable = () => {
   const [salesOrders, setSalesOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("latest");
 
+  // quotation state
+  const [quotations, setQuotations] = useState([]);
+  const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [quotationItems, setQuotationItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  // Fetch all clients map
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      const response = await axios.get(CLIENTS_API_URL, {
+        withCredentials: true,
+      });
       return response.data.reduce((acc, client) => {
         acc[client.id] = client.businessname;
         return acc;
@@ -27,6 +37,7 @@ const GetSalesOrdersTable = () => {
     }
   };
 
+  // Fetch sales orders
   useEffect(() => {
     const fetchSalesOrders = async () => {
       try {
@@ -41,7 +52,9 @@ const GetSalesOrdersTable = () => {
           status: so.status || "Active",
         }));
 
-        const sorted = enrichedOrders.sort((a, b) => b.salesorder_id - a.salesorder_id);
+        const sorted = enrichedOrders.sort(
+          (a, b) => b.salesorder_id - a.salesorder_id
+        );
         setSalesOrders(sorted);
       } catch (error) {
         console.error("Error fetching sales orders:", error);
@@ -52,11 +65,43 @@ const GetSalesOrdersTable = () => {
     fetchSalesOrders();
   }, []);
 
+  // Fetch all quotations for dropdown
+  useEffect(() => {
+    axios
+      .get(QUOTATION_API_URL)
+      .then((res) => setQuotations(res.data))
+      .catch((err) => {
+        console.error("Error fetching quotations:", err);
+        toast.error("Failed to load quotations!");
+      });
+  }, []);
+
+  // Fetch quotation items when selection changes
+  useEffect(() => {
+    if (!selectedQuotation) return;
+
+    setLoadingItems(true);
+    axios
+      .get(`${QUOTATION_API_URL}${selectedQuotation}/items/`)
+      .then((res) => {
+        setQuotationItems(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching quotation items:", err);
+        toast.error("Failed to load quotation items!");
+      })
+      .finally(() => setLoadingItems(false));
+  }, [selectedQuotation]);
+
   const filteredSalesOrders = salesOrders
     .filter((so) => {
       const match =
-        (so.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (so.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (so.client_name?.toLowerCase() || "").includes(
+          searchQuery.toLowerCase()
+        ) ||
+        (so.salesperson?.toLowerCase() || "").includes(
+          searchQuery.toLowerCase()
+        ) ||
         (so.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
       return match;
     })
@@ -83,12 +128,13 @@ const GetSalesOrdersTable = () => {
 
   return (
     <div className="card">
-      <div className="card-header pb-0">
+      {/* <div className="card-header pb-0">
         <h6>Manage Sales Orders</h6>
-      </div>
+      </div> */}
 
       <div className="card-body pt-0 pb-2">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
+        {/* Filter & Actions */}
+        {/* <div className="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
           <input
             type="text"
             placeholder="Search by Salesperson, Subject, or Client"
@@ -123,63 +169,60 @@ const GetSalesOrdersTable = () => {
               + Sale Order
             </a>
           </div>
+        </div> */}
+
+        {/* Select Quotation */}
+        <div className="mb-4">
+          <label className="form-label">Select Quotation:</label>
+          <select
+            className="form-select"
+            value={selectedQuotation || ""}
+            onChange={(e) => setSelectedQuotation(e.target.value)}
+          >
+            <option value="">-- Choose Quotation --</option>
+            {quotations.map((q) => (
+              <option key={q.id} value={q.quotation_id}>
+                Quotation #{q.quotation_id}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="table-responsive">
-          <table className="table align-items-center mb-0">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Client Name</th>
-                <th>Sale Order No</th>
-                <th>Salesperson</th>
-                <th>Subject</th>
-                <th>Incl. GST</th>
-                <th>Without GST</th>
-                <th>GST</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSalesOrders.length > 0 ? (
-                filteredSalesOrders.map((so) => (
-                  <tr key={so.salesorder_id}>
-                    <td>{so.salesorder_id}</td>
-                    <td>{so.client_name}</td>
-                    <td>{so.salesorder_no}</td>
-                    <td>{so.salesperson}</td>
-                    <td>{so.subject}</td>
-                    <td>{so.amount_including_gst}</td>
-                    <td>{so.without_gst}</td>
-                    <td>{so.gst_amount}</td>
-                    <td>{so.amount_with_gst}</td>
-                    <td>
-                      <span className={getBadgeClass(so.status)}>
-                        {so.status}
-                      </span>
-                    </td>
-                    <td>
-                      <Link href={`/editsalesorder/${so.salesorder_id}`}>
-                        <i className="fas fa-pen text-primary me-2" title="Edit"></i>
-                      </Link>
-                      <Link href={`/viewsales/${so.salesorder_id}`}>
-                        <i className="fas fa-eye text-info" title="View"></i>
-                      </Link>
-                    </td>
+        {/* Quotation Items Table */}
+        {selectedQuotation && (
+          <div className="table-responsive mb-4">
+            <h6>Quotation Items</h6>
+            {loadingItems ? (
+              <p>Loading items...</p>
+            ) : (
+              <table className="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>ItemCode</th>
+                    <th>Item Name</th>
+                    <th>Unit</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No sales orders found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {quotationItems.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.itemcode}</td>
+                      <td>{item.item_name}</td>
+                      <td>{item.unit}</td>
+                      <td>{item.quantity}</td>
+                      <td>{item.price}</td>
+                      <td>{item.quantity * item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
