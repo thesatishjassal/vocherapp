@@ -79,13 +79,6 @@ const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="card p-4 shadow-sm border-0 rounded-3">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="fw-bold text-primary mb-0">
-          <i className="bi bi-cart-check me-2"></i>
-          Create Sales Order
-        </h5>
-      </div>
-
       {/* Radio Button Switcher */}
       <div className="mb-4">
         <label className="form-label fw-semibold text-secondary">
