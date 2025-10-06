@@ -1,5 +1,4 @@
-import GetquotationTables from "../components/GetquotationTables";
-import GetSalesTable from "../components/GetsalesTables";
+import GetSalesOrders from "../components/Getallsalesorders";
 
 const GetOutVouchers = () => {
   return (
@@ -14,7 +13,7 @@ const GetOutVouchers = () => {
           </li>
         </ol>
       </nav>
-      <GetSalesTable />
+      <GetSalesOrders />
     </>
   );
 };
