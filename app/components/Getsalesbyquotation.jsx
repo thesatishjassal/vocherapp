@@ -14,10 +14,9 @@ const GetSalesOrdersByQuotation = () => {
   const [selectedQuotation, setSelectedQuotation] = useState("");
   const [quotationItems, setQuotationItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [optionType, setOptionType] = useState("quotation");
+const [searchTerm, setSearchTerm] = useState("");
 
-  const [optionType, setOptionType] = useState("quotation"); // 'quotation' | 'custom'
-
-  // For modal add item
   const [showAddModal, setShowAddModal] = useState(false);
   const [newRow, setNewRow] = useState({});
   const [rows, setRows] = useState([]);
@@ -39,7 +38,6 @@ const GetSalesOrdersByQuotation = () => {
     remarks: useRef(null),
   };
 
-  // Fetch quotations for dropdown
   useEffect(() => {
     axios
       .get(QUOTATION_API_URL)
@@ -47,7 +45,6 @@ const GetSalesOrdersByQuotation = () => {
       .catch(() => toast.error("Failed to load quotations"));
   }, []);
 
-  // Fetch quotation items
   useEffect(() => {
     if (!selectedQuotation) return;
     setLoadingItems(true);
@@ -58,7 +55,6 @@ const GetSalesOrdersByQuotation = () => {
       .finally(() => setLoadingItems(false));
   }, [selectedQuotation]);
 
-  // Handle Add Row
   const handleAddRow = (newItem) => {
     if (editRowIndex !== null) {
       const updatedRows = [...rows];
@@ -70,7 +66,6 @@ const GetSalesOrdersByQuotation = () => {
     }
   };
 
-  // Handle field change
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
   };
@@ -83,52 +78,137 @@ const GetSalesOrdersByQuotation = () => {
   };
 
   return (
-    <div className="card p-3">
-      <h5 className="fw-bold mb-3">Create Sales Order</h5>
+    <div className="card p-4 shadow-sm border-0 rounded-3">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h5 className="fw-bold text-primary mb-0">
+          <i className="bi bi-cart-check me-2"></i>
+          Create Sales Order
+        </h5>
+      </div>
 
-      {/* Option Switcher */}
-      <div className="mb-4 d-flex gap-3">
-        <button
-          className={`btn ${optionType === "quotation" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setOptionType("quotation")}
-        >
-          From Quotation
-        </button>
-        <button
-          className={`btn ${optionType === "custom" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setOptionType("custom")}
-        >
-          Custom Form
-        </button>
+      {/* Radio Button Switcher */}
+      <div className="mb-4">
+        <label className="form-label fw-semibold text-secondary">
+          Choose Sales Order Type:
+        </label>
+        <div className="d-flex align-items-center gap-4 mt-2">
+          <div className="form-check d-flex align-items-center">
+            <input
+              className="form-check-input me-2"
+              type="radio"
+              id="radioQuotation"
+              name="optionType"
+              value="quotation"
+              checked={optionType === "quotation"}
+              onChange={() => setOptionType("quotation")}
+            />
+            <label className="form-check-label" htmlFor="radioQuotation">
+              <i className="bi bi-receipt me-1 text-primary"></i> From Quotation
+            </label>
+          </div>
+
+          <div className="form-check d-flex align-items-center">
+            <input
+              className="form-check-input me-2"
+              type="radio"
+              id="radioCustom"
+              name="optionType"
+              value="custom"
+              checked={optionType === "custom"}
+              onChange={() => setOptionType("custom")}
+            />
+            <label className="form-check-label" htmlFor="radioCustom">
+              <i className="bi bi-pencil-square me-1 text-success"></i> Custom Form
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* OPTION 1: From Quotation */}
       {optionType === "quotation" && (
         <>
-          <div className="mb-4">
-            <label className="form-label">Select Quotation:</label>
-            <select
-              className="form-select"
-              value={selectedQuotation}
-              onChange={(e) => setSelectedQuotation(e.target.value)}
-            >
-              <option value="">-- Choose Quotation --</option>
-              {quotations.map((q) => (
-                <option key={q.quotation_id} value={q.quotation_id}>
-                  Quotation #{q.quotation_id}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Improved “Select Quotation” Section */}
+<div className="mb-4">
+  <label className="form-label fw-semibold text-secondary d-block mb-2">
+    <i className="bi bi-receipt-cutoff me-2 text-primary"></i>
+    Select Quotation
+  </label>
+
+  <div
+    className="d-grid align-items-center gap-2 p-3 rounded-3 "
+    style={{
+      gridTemplateColumns: "1fr auto",
+      // background: "#f8fafc",
+      border: "1px solid #e9e9e9ff",
+    }}
+  >
+    {/* Search Input */}
+    <div className="position-relative">
+      <i
+        className="bi bi-search position-absolute"
+        style={{
+          top: "50%",
+          left: "10px",
+          transform: "translateY(-50%)",
+          color: "#6b7280",
+        }}
+      ></i>
+      <input
+        type="text"
+        placeholder="Search by quotation no..."
+        className="form-control ps-4 py-2"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{
+          borderRadius: "8px",
+          borderColor: "#d1d5db",
+          fontSize: "14px",
+        }}
+      />
+    </div>
+
+    {/* Dropdown */}
+    <select
+      className="form-select py-2"
+      value={selectedQuotation}
+      onChange={(e) => setSelectedQuotation(e.target.value)}
+      style={{
+        borderRadius: "8px",
+        // borderColor: "#d1d5db",
+        fontSize: "14px",
+      }}
+    >
+      <option value="">-- Choose Quotation --</option>
+      {quotations
+        .filter((q) =>
+          q.quotation_id
+            ?.toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        )
+        .map((q) => (
+          <option key={q.quotation_id} value={q.quotation_id}>
+            Quotation #{q.quotation_id}
+          </option>
+        ))}
+    </select>
+  </div>
+</div>
+
 
           {selectedQuotation && (
             <div className="table-responsive mb-4">
-              <h6 className="fw-semibold">Quotation Items</h6>
+              <h6 className="fw-semibold text-secondary mb-3">
+                <i className="bi bi-box-seam me-2 text-primary"></i>
+                Quotation Items
+              </h6>
               {loadingItems ? (
-                <p>Loading...</p>
+                <div className="text-center py-3">
+                  <div className="spinner-border text-primary" role="status"></div>
+                </div>
               ) : (
-                <table className="table table-bordered table-striped">
-                  <thead>
+                <table className="table table-bordered table-striped align-middle shadow-sm">
+                  <thead className="table-light">
                     <tr>
                       <th>Item Code</th>
                       <th>Item Name</th>
@@ -161,18 +241,20 @@ const GetSalesOrdersByQuotation = () => {
       {optionType === "custom" && (
         <div>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h6 className="fw-semibold mb-0">Custom Sales Order Items</h6>
+            <h6 className="fw-semibold text-secondary mb-0">
+              <i className="bi bi-list-check me-2 text-success"></i> Custom Sales Order Items
+            </h6>
             <button
-              className="btn btn-success btn-sm"
+              className="btn btn-success btn-sm shadow-sm"
               onClick={() => setShowAddModal(true)}
             >
-              + Add Item
+              <i className="bi bi-plus-lg me-1"></i> Add Item
             </button>
           </div>
 
           {rows.length > 0 ? (
-            <table className="table table-bordered table-hover align-middle">
-              <thead>
+            <table className="table table-bordered table-hover align-middle shadow-sm">
+              <thead className="table-light">
                 <tr>
                   <th>Item Code</th>
                   <th>Item Name</th>
@@ -217,10 +299,9 @@ const GetSalesOrdersByQuotation = () => {
               </tbody>
             </table>
           ) : (
-            <p className="text-muted">No items added yet.</p>
+            <p className="text-muted fst-italic">No items added yet.</p>
           )}
 
-          {/* Add Item Modal */}
           <AddProductModal
             showAddModal={showAddModal}
             setShowAddModal={setShowAddModal}
