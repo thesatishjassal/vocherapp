@@ -44,9 +44,9 @@ const SalesOrder = () => {
   const handleGSTChange = (details) => setGstDetails(details);
 
   const generateQuotationNumber = () => {
-    if (QuotationSequence === null) return "PLQOT-Loading...";
+    if (QuotationSequence === null) return "PLSAL-Loading...";
     const sequenceStr = QuotationSequence.toString().padStart(3, "0");
-    return `PLQOT-${sequenceStr}`;
+    return `PLSO-${sequenceStr}`;
   };
 
   useEffect(() => {
@@ -246,8 +246,8 @@ const SalesOrder = () => {
                 Salesperson: {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
                 {quotationInfo && (
                   <p style={{ margin: 0 }}>
-                    <strong>Payment Method:</strong> <b>{quotationInfo.PaymentMethod}</b> &nbsp; | &nbsp;
-                    <strong>Freight:</strong> <b>{quotationInfo.FreightStatus}</b>
+                    Payment Method: <b>{quotationInfo.PaymentMethod}</b> &nbsp; | &nbsp;
+                    Freight: <b>{quotationInfo.FreightStatus}</b>
                   </p>
                 )}
               </div>
