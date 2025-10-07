@@ -15,7 +15,7 @@ const GetSalesOrdersByQuotation = () => {
   const [quotationItems, setQuotationItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
   const [optionType, setOptionType] = useState("quotation");
-const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newRow, setNewRow] = useState({});
@@ -78,9 +78,9 @@ const [searchTerm, setSearchTerm] = useState("");
   };
 
   return (
-    <div className="card p-4 shadow-sm border-0 rounded-3">
+    <div>
       {/* Radio Button Switcher */}
-      <div className="mb-4">
+      <div className="mb-4 no-print">
         <label className="form-label fw-semibold text-secondary">
           Choose Sales Order Type:
         </label>
@@ -111,7 +111,8 @@ const [searchTerm, setSearchTerm] = useState("");
               onChange={() => setOptionType("custom")}
             />
             <label className="form-check-label" htmlFor="radioCustom">
-              <i className="bi bi-pencil-square me-1 text-success"></i> Custom Form
+              <i className="bi bi-pencil-square me-1 text-success"></i> Custom
+              Form
             </label>
           </div>
         </div>
@@ -121,73 +122,72 @@ const [searchTerm, setSearchTerm] = useState("");
       {optionType === "quotation" && (
         <>
           {/* Improved “Select Quotation” Section */}
-<div className="mb-4">
-  <label className="form-label fw-semibold text-secondary d-block mb-2">
-    <i className="bi bi-receipt-cutoff me-2 text-primary"></i>
-    Select Quotation
-  </label>
+          <div className="mb-4 no-print">
+            <label className="form-label fw-semibold text-secondary d-block mb-2">
+              <i className="bi bi-receipt-cutoff me-2 text-primary"></i>
+              Select Quotation
+            </label>
 
-  <div
-    className="d-grid align-items-center gap-2 p-3 rounded-3 "
-    style={{
-      gridTemplateColumns: "1fr auto",
-      // background: "#f8fafc",
-      border: "1px solid #e9e9e9ff",
-    }}
-  >
-    {/* Search Input */}
-    <div className="position-relative">
-      <i
-        className="bi bi-search position-absolute"
-        style={{
-          top: "50%",
-          left: "10px",
-          transform: "translateY(-50%)",
-          color: "#6b7280",
-        }}
-      ></i>
-      <input
-        type="text"
-        placeholder="Search by quotation no..."
-        className="form-control ps-4 py-2"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{
-          borderRadius: "8px",
-          borderColor: "#d1d5db",
-          fontSize: "14px",
-        }}
-      />
-    </div>
+            <div
+              className="d-grid align-items-center gap-2 p-3 rounded-3 "
+              style={{
+                gridTemplateColumns: "1fr auto",
+                // background: "#f8fafc",
+                border: "1px solid #e9e9e9ff",
+              }}
+            >
+              {/* Search Input */}
+              <div className="position-relative">
+                <i
+                  className="bi bi-search position-absolute"
+                  style={{
+                    top: "50%",
+                    left: "10px",
+                    transform: "translateY(-50%)",
+                    color: "#6b7280",
+                  }}
+                ></i>
+                <input
+                  type="text"
+                  placeholder="Search by quotation no..."
+                  className="form-control ps-4 py-2"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    borderRadius: "8px",
+                    borderColor: "#d1d5db",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
 
-    {/* Dropdown */}
-    <select
-      className="form-select py-2"
-      value={selectedQuotation}
-      onChange={(e) => setSelectedQuotation(e.target.value)}
-      style={{
-        borderRadius: "8px",
-        // borderColor: "#d1d5db",
-        fontSize: "14px",
-      }}
-    >
-      <option value="">-- Choose Quotation --</option>
-      {quotations
-        .filter((q) =>
-          q.quotation_id
-            ?.toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        )
-        .map((q) => (
-          <option key={q.quotation_id} value={q.quotation_id}>
-            Quotation #{q.quotation_id}
-          </option>
-        ))}
-    </select>
-  </div>
-</div>
-
+              {/* Dropdown */}
+              <select
+                className="form-select py-2"
+                value={selectedQuotation}
+                onChange={(e) => setSelectedQuotation(e.target.value)}
+                style={{
+                  borderRadius: "8px",
+                  // borderColor: "#d1d5db",
+                  fontSize: "14px",
+                }}
+              >
+                <option value="">-- Choose Quotation --</option>
+                {quotations
+                  .filter((q) =>
+                    q.quotation_id
+                      ?.toString()
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase())
+                  )
+                  .map((q) => (
+                    <option key={q.quotation_id} value={q.quotation_id}>
+                      Quotation #{q.quotation_id}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
 
           {selectedQuotation && (
             <div className="table-responsive mb-4">
@@ -197,7 +197,10 @@ const [searchTerm, setSearchTerm] = useState("");
               </h6>
               {loadingItems ? (
                 <div className="text-center py-3">
-                  <div className="spinner-border text-primary" role="status"></div>
+                  <div
+                    className="spinner-border text-primary"
+                    role="status"
+                  ></div>
                 </div>
               ) : (
                 <table className="table table-bordered table-striped align-middle shadow-sm">
@@ -233,9 +236,10 @@ const [searchTerm, setSearchTerm] = useState("");
       {/* OPTION 2: Custom Form */}
       {optionType === "custom" && (
         <div>
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex justify-content-between align-items-center mb-3 no-print">
             <h6 className="fw-semibold text-secondary mb-0">
-              <i className="bi bi-list-check me-2 text-success"></i> Custom Sales Order Items
+              <i className="bi bi-list-check me-2 text-success"></i> Custom
+              Sales Order Items
             </h6>
             <button
               className="btn btn-success btn-sm shadow-sm"
@@ -246,7 +250,9 @@ const [searchTerm, setSearchTerm] = useState("");
           </div>
 
           {rows.length > 0 ? (
-            <table className="table table-bordered table-hover align-middle shadow-sm">
+            <table className="table Quotation Info Details
+
+table-hover align-middle shadow-sm mb-0">
               <thead className="table-light">
                 <tr>
                   <th>Item Code</th>
@@ -255,7 +261,7 @@ const [searchTerm, setSearchTerm] = useState("");
                   <th>Unit</th>
                   <th>Net Price</th>
                   <th>Amount</th>
-                  <th>Actions</th>
+                  <th className="no-print">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -267,24 +273,24 @@ const [searchTerm, setSearchTerm] = useState("");
                     <td>{row.unit}</td>
                     <td>{row.netPrice}</td>
                     <td>{row.amount}</td>
-                    <td>
+                    <td className="d-flex gap-2 no-print">
                       <button
-                        className="btn btn-sm btn-outline-primary me-2"
+                        className="btn"
                         onClick={() => {
                           setNewRow(row);
                           setEditRowIndex(i);
                           setShowAddModal(true);
                         }}
                       >
-                        Edit
+                        ✏️
                       </button>
                       <button
-                        className="btn btn-sm btn-outline-danger"
+                        className="btn"
                         onClick={() => {
                           setRows(rows.filter((_, idx) => idx !== i));
                         }}
                       >
-                        Delete
+                        🗑️
                       </button>
                     </td>
                   </tr>

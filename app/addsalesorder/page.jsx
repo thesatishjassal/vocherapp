@@ -1,19 +1,16 @@
 "use client";
-import QuotaionInfo from "../components/QuotaionInfo";
-import CustomerModal from "../components/customerModal";
-import QuotationTable from "../components/QuotationTable";
-import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import SalesOrderInfo from "../components/SalesInfo";
+import CustomerModal from "../components/customerModal";
+import GSTCalculator from "../components/GSTCalculator";
 import GetSalesOrdersTable from "../components/Getsalesbyquotation";
 
 const SalesOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [FiltercolModal, setFiltercolModal] = useState(false);
-  const [ShowHideFiltercolModal, setShowHideFilterModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quotationInfo, setQuotationInfo] = useState(null);
   const [quotationId, setQuotationId] = useState(1);
@@ -26,36 +23,25 @@ const SalesOrder = () => {
     gstPercentage: 0,
     gstType: "include",
   });
-  const [remarks, setRemarks] = useState(""); // remarks textarea
-  const [warrantyGuarantee, setWarrantyGuarantee] = useState();
-  const [paymentMethod, setPaymentMethod] = useState(""); // ✅ new dropdown state
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const [freightMethod, setFreightMethod] = useState(""); // ✅ Freight dropdown
+  const [remarks, setRemarks] = useState("");
+  const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [freightMethod, setFreightMethod] = useState("");
 
-  const handleQuotationConfirm = (data) => {
-    setQuotationInfo(data);
-  };
+  const handleQuotationConfirm = (data) => setQuotationInfo(data);
 
   const closeModal = () => {
     setShowModalClientDetails(false);
-    setShowHideFilterModal(false);
-  };
-
-  const handleTotalAmountChange = (newTotalAmount) => {
-    setTotalAmount(newTotalAmount);
   };
 
   const handleRowsChange = (rows) => {
     setRowsData(rows);
+    const total = rows.reduce((sum, r) => sum + (r.amount || 0), 0);
+    setTotalAmount(total);
   };
 
-  const handleClientConfirm = (selectedClient) => {
-    setSelectedCustomer(selectedClient);
-  };
-
-  const handleGSTChange = (details) => {
-    setGstDetails(details);
-  };
+  const handleClientConfirm = (selectedClient) => setSelectedCustomer(selectedClient);
+  const handleGSTChange = (details) => setGstDetails(details);
 
   const generateQuotationNumber = () => {
     if (QuotationSequence === null) return "PLQOT-Loading...";
@@ -71,13 +57,9 @@ const SalesOrder = () => {
           headers: { "Content-Type": "application/json" },
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const quotations = await response.json();
-        console.log("Fetched quotations:", quotations);
-
         if (quotations && quotations.length > 0) {
           const lastSequence = quotations
             .map((voucher) => {
@@ -123,16 +105,14 @@ const SalesOrder = () => {
         warranty_guarantee: warrantyGuarantee,
         remarks: remarks,
         status: "active",
-        payment_method: paymentMethod || "Not Selected", // ✅ added here
+        payment_method: paymentMethod || "Not Selected",
         client_id: selectedCustomer?.id || 3,
       };
 
       const response = await axios.post(
         "https://api.panvic.in/salesorder/",
         quotationData,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       const savedQuotationId = response.data.quotation_id;
@@ -161,6 +141,7 @@ const SalesOrder = () => {
             { headers: { "Content-Type": "application/json" } }
           );
         });
+
         await Promise.all(itemPromises);
       }
 
@@ -179,6 +160,7 @@ const SalesOrder = () => {
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
+            {/* Header */}
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
@@ -191,38 +173,26 @@ const SalesOrder = () => {
                 </div>
                 <p className="tm_invoice_number tm_m0">
                   Sales Order No:{" "}
-                  <b className="tm_primary_color">
-                    {generateQuotationNumber()}
-                  </b>
+                  <b className="tm_primary_color">{generateQuotationNumber()}</b>
                 </p>
               </div>
             </div>
 
+            {/* Date */}
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list mr-2">
                 <p className="tm_invoice_date tm_m0">
-                  Date:{" "}
-                  <b className="tm_primary_color">
-                    {new Date().toLocaleDateString("en-GB")}
-                  </b>
+                  Date: <b className="tm_primary_color">{new Date().toLocaleDateString("en-GB")}</b>
                 </p>
-              </div> 
-     
+              </div>
             </div>
 
+            {/* Customer & Company Info */}
             <div
-              className="tm_invoice_head tm_mb10"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+              className="tm_invoice_head tm_mb10 d-flex justify-content-between"
             >
-              <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
+              <div className="tm_invoice_left mt-0" style={{ flex: 1 }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Customer Details:</b>{" "}
                   <button
@@ -233,224 +203,133 @@ const SalesOrder = () => {
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                <p style={{ textAlign: "justify" }}>
-                  Name:{" "}
-                  <b>{selectedCustomer && selectedCustomer.client_name}</b>{" "}
-                  <br />
-                  City: <b>{selectedCustomer && selectedCustomer.city}</b>{" "}
-                  <br />
-                </p>
+
+                {selectedCustomer && (
+                  <div style={{ lineHeight: "1.6" }}>
+                    {selectedCustomer.client_name && <p><strong>Client Name:</strong> {selectedCustomer.client_name}</p>}
+                    {selectedCustomer.businessname && <p><strong>Business Name:</strong> {selectedCustomer.businessname}</p>}
+                    {(selectedCustomer.client_phone || selectedCustomer.client_email) && (
+                      <p>
+                        {selectedCustomer.client_phone && <> <strong>Mobile:</strong> {selectedCustomer.client_phone} </>}
+                        {selectedCustomer.client_phone && selectedCustomer.client_email && " | "}
+                        {selectedCustomer.client_email && <> <strong>Email:</strong> {selectedCustomer.client_email} </>}
+                      </p>
+                    )}
+                    {(selectedCustomer.address || selectedCustomer.city || selectedCustomer.state || selectedCustomer.pincode) && (
+                      <p>
+                        {selectedCustomer.address && <> <strong>Address:</strong> {selectedCustomer.address} </>}
+                        {selectedCustomer.address && (selectedCustomer.city || selectedCustomer.state || selectedCustomer.pincode) && ", "}
+                        {selectedCustomer.city && <> <strong>City:</strong> {selectedCustomer.city} </>}
+                        {selectedCustomer.state && `, ${selectedCustomer.state}`}
+                        {selectedCustomer.pincode && ` - ${selectedCustomer.pincode}`}
+                      </p>
+                    )}
+                    {selectedCustomer.gst_number && <p><strong>GST No:</strong> {selectedCustomer.gst_number}</p>}
+                  </div>
+                )}
               </div>
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
+
+              <div className="tm_invoice_right tm_text_right" style={{ flex: 1 }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                   {InfoModal && (
-                    <QuotaionInfo
-                      setInfoModal={setInfoModal}
-                      onConfirm={handleQuotationConfirm}
-                    />
+                    <SalesOrderInfo setInfoModal={setInfoModal} onConfirm={handleQuotationConfirm} />
                   )}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setInfoModal(true)}
-                  >
+                  <button type="button" className="btn modalaction_btn no-print" onClick={() => setInfoModal(true)}>
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                Address:{" "}
-                <b>
-                  Nakodar Road Beside Silver OAK Appartments Jalandhar City,
-                  Punjab-144003
-                </b>
+                Address: <b>Nakodar Road Beside Silver OAK Appartments Jalandhar City, Punjab-144003</b>
                 <br />
-                GST: <b>03ADWPG0246P1Z8</b> <br />
-                Salesperson:{" "}
-                {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
+                GST: <b>03ADWPG0246P1Z8</b>
                 <br />
+                Salesperson: {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
+                {quotationInfo && (
+                  <p style={{ margin: 0 }}>
+                    <strong>Payment Method:</strong> <b>{quotationInfo.PaymentMethod}</b> &nbsp; | &nbsp;
+                    <strong>Freight:</strong> <b>{quotationInfo.FreightStatus}</b>
+                  </p>
+                )}
               </div>
             </div>
 
-            <div
-              className="d-flex mb-2"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            {/* Subject */}
+            <div className="d-flex mb-2 justify-content-between">
               <p className="tm_mb2">
-                Subject:{" "}
-                {quotationInfo && (
-                  <b className="tm_primary_color">{quotationInfo.Subject}</b>
-                )}
+                Subject: {quotationInfo && <b className="tm_primary_color">{quotationInfo.Subject}</b>}
               </p>
             </div>
 
+            {/* Items Table */}
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <GetSalesOrdersTable />
+                  <GetSalesOrdersTable onRowsChange={handleRowsChange} />
                   {showModalClientDetails && (
-                    <CustomerModal
-                      onClose={closeModal}
-                      client={showModalClientDetails}
-                      onConfirm={handleClientConfirm}
-                    />
+                    <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
                   )}
                 </div>
               </div>
 
-              <div className="tm_invoice_footer my-2">
+              <div className="tm_invoice_footer my-2 d-flex justify-content-between">
                 <div className="tm_left_footer px-0">
-                  {/* ✅ Payment Method Dropdown */}
-
-                  {/* Remarks */}
                   <textarea
                     className="form-control tm_remarks_box no-print"
                     placeholder="Enter remarks here..."
                     rows="1"
-                    cols="30"
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
                   ></textarea>
                 </div>
 
                 <div className="tm_right_footer">
-                  <GSTCalculator
-                    totalAmount={totalAmount}
-                    onGSTChange={handleGSTChange}
-                  />
+                  <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
                 </div>
               </div>
             </div>
 
             <hr />
-            <p>
-              <b>
-                <i>
-                  Thank You for considering us for your needs. Here is the
-                  purposal as you requested.
-                </i>
-              </b>
-            </p>
+            <p><b><i>Thank You for considering us for your needs. Here is the proposal as you requested.</i></b></p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              <p>
-                GST: <b>Including in above prices as per applicable.</b>
-              </p>
-              <p>
-                Payment Terms: <b>100% in advance with order.</b>
-              </p>
-              <p>
-                Validity: <b>15 days from the date of quotation.</b>
-              </p>
+              <p>GST: <b>Including in above prices as per applicable.</b></p>
+              <p>Payment Terms: <b>100% in advance with order.</b></p>
+              <p>Validity: <b>15 days from the date of quotation.</b></p>
               <p className="m-0">
                 Warranty/Guarantee: <b>as per company norms.</b>
                 <textarea
                   className="form-control tm_remarks_box no-print"
                   placeholder="Enter warranty/guarantee details..."
                   rows="1"
-                  cols="30"
                   value={warrantyGuarantee}
                   onChange={(e) => setWarrantyGuarantee(e.target.value)}
                 ></textarea>
               </p>
-              <p>
-                Responsibility:{" "}
-                <b>
-                  Our responsibility for material counting ceases immediately
-                  after delivery.
-                </b>
-              </p>
-              <p>
-                Installation & Fixing:{" "}
-                <b>
-                  If required, for any electrical job, we will arrange a
-                  technician at extra cost. Installation will take 4-5 days from
-                  the date of order.
-                </b>
-              </p>
-              <p>
-                Freight Charges: <b>Extra as per actual.</b>
-              </p>
-              <p>
-                Bank Details:{" "}
-                <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code:
-                  ICIC0001510, Jalandhar.
-                  <br />
-                  We hope you will find our offer in quotation and look forward to
-                  your positive response. Please feel free to contact us for any
-                  queries.
-                </b>
-              </p>
+              <p>Responsibility: <b>Our responsibility for material counting ceases immediately after delivery.</b></p>
+              <p>Installation & Fixing: <b>If required, we will arrange a technician at extra cost. Installation takes 4-5 days from order date.</b></p>
+              <p>Freight Charges: <b>Extra as per actual.</b></p>
+              <p>Bank Details: <b>PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar.</b></p>
               <hr />
-              <p>
-                For:- Panvik Lighting This is a computer generated document, hence
-                signature is not required.
-              </p>
+              <p>For:- Panvik Lighting This is a computer generated document, hence signature is not required.</p>
             </div>
           </div>
-        </div>
 
-        <div className="tm_invoice_btns tm_hide_print">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
-            <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <rect
-                  x="128"
-                  y="240"
-                  width="256"
-                  height="208"
-                  rx="24.32"
-                  ry="24.32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></rect>
-                <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <circle cx="392" cy="184" r="24" fill="currentColor"></circle>
-              </svg>
-            </span>
-            <span className="tm_btn_text">Print</span>
-          </button>
+          {/* Buttons */}
+          <div className="tm_invoice_btns tm_hide_print">
+            <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
+              <span className="tm_btn_icon">
+                <i className="fa-solid fa-print"></i>
+              </span>
+              <span className="tm_btn_text">Print</span>
+            </button>
 
-          <button
-            id="tm_download_btn"
-            className="tm_invoice_btn tm_color2"
-            onClick={handleSaveQuotation}
-          >
-            <span className="tm_btn_icon">
-              <i className="fa-solid fa-upload"></i>
-            </span>
-            <span className="tm_btn_text">Publish</span>
-          </button>
+            <button id="tm_download_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveQuotation}>
+              <span className="tm_btn_icon">
+                <i className="fa-solid fa-upload"></i>
+              </span>
+              <span className="tm_btn_text">Publish</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
