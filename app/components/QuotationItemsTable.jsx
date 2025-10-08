@@ -377,25 +377,47 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         color: "#6b7280",
                       }}
                     >
-                      {product?.cct && product.cct !== "NULL"
-                        ? `CCT: ${product.cct} | `
-                        : item?.cct && `CCT: ${item.cct} | `}
-                      {(product?.cutoutsize || product?.cutoutdia) &&
-                        `Cutout Size: ${
-                          product.cutoutsize ?? product.cutoutdia
-                        } | `}
-                      {product?.beamangle && product.beamangle !== "NULL"
-                        ? `Beam Angle: ${product.beamangle} | `
-                        : item?.beamangle && `Beam Angle: ${item.beamangle} | `}
-                      {product?.cri && product.cri !== "NONE"
-                        ? `CRI: ${product.cri} | `
-                        : item?.Cri && `CRI: ${item.Cri} | `}
-                      {product?.color
-                        ? `Body Color: ${product.color} | `
-                        : item?.bodycolor && `Body Color: ${item.bodycolor} | `}
-                      {product?.lumens && product.lumens !== "NONE"
-                        ? `Lumens: ${product.lumens}`
-                        : item?.lumens && `Lumens: ${item.lumens}`}
+                      {(product?.cct &&
+                        product.cct !== "NULL" &&
+                        product.cct !== "0") ||
+                      (item?.cct && item.cct !== "0")
+                        ? `CCT: ${product?.cct ?? item?.cct} | `
+                        : null}
+
+                      {(product?.cutoutsize && product.cutoutsize !== "0") ||
+                      (product?.cutoutdia && product.cutoutdia !== "0")
+                        ? `Cutout Size: ${
+                            product.cutoutsize ?? product.cutoutdia
+                          } | `
+                        : null}
+
+                      {(product?.beamangle &&
+                        product.beamangle !== "NULL" &&
+                        product.beamangle !== "0") ||
+                      (item?.beamangle && item.beamangle !== "0")
+                        ? `Beam Angle: ${
+                            product?.beamangle ?? item?.beamangle
+                          } | `
+                        : null}
+
+                      {(product?.cri &&
+                        product.cri !== "NONE" &&
+                        product.cri !== "0") ||
+                      (item?.Cri && item.Cri !== "0")
+                        ? `CRI: ${product?.cri ?? item?.Cri} | `
+                        : null}
+
+                      {(product?.color && product.color !== "0") ||
+                      (item?.bodycolor && item.bodycolor !== "0")
+                        ? `Body Color: ${product?.color ?? item?.bodycolor} | `
+                        : null}
+
+                      {(product?.lumens &&
+                        product.lumens !== "NONE" &&
+                        product.lumens !== "0") ||
+                      (item?.lumens && item.lumens !== "0")
+                        ? `Lumens: ${product?.lumens ?? item?.lumens}`
+                        : null}
                     </span>
                   </td>
                 )}
