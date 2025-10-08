@@ -5,6 +5,7 @@ import UpdateProductForm from "./UpdateProductForm";
 import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
 import CSVUploadModal from "./CSVUpload";
+import SimpleCSVUploader from "./UpdateProductsCSV"; // ✅ New import
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -27,6 +28,7 @@ const ProductsTable = () => {
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 25;
+  const [showSimpleCSVUploader, setShowSimpleCSVUploader] = useState(false); // ✅ New state
 
   // Refs to track previous filter/sort values
   const prevSearchQuery = useRef("");
@@ -543,6 +545,20 @@ const ProductsTable = () => {
         </p>
       </div>
 
+      <button
+        className="btn btn-primary btn-md"
+        onClick={() => setShowSimpleCSVUploader(true)}
+      >
+        Update Products via CSV
+      </button>
+      {showSimpleCSVUploader && (
+        <SimpleCSVUploader
+          show={showSimpleCSVUploader}
+          onClose={() => setShowSimpleCSVUploader(false)}
+          fetchProducts={fetchProducts}
+        />
+      )}
+
       {/* Modals */}
       {showAddModal && (
         <AddProductForm
@@ -659,58 +675,58 @@ const ProductsTable = () => {
                 <strong>Category:</strong> {selectedProduct.category}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Subcategory:</strong> {selectedProduct.subcategory}
+                <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Brand:</strong> {selectedProduct.brand}
+                <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Model:</strong> {selectedProduct.model}
+                <strong>Model:</strong> {selectedProduct.model || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Size:</strong> {selectedProduct.size}
+                <strong>Size:</strong> {selectedProduct.size || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Color:</strong> {selectedProduct.color}
+                <strong>Color:</strong> {selectedProduct.color || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Price:</strong> ₹{selectedProduct.price}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Rack Code:</strong> {selectedProduct.rackcode}
+                <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Quantity:</strong> {selectedProduct.quantity}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty}
+                <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Unit:</strong> {selectedProduct.unit}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>CCT:</strong> {selectedProduct.cct}
+                <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Beam Angle:</strong> {selectedProduct.beamangle}
+                <strong>Beam Angle:</strong> {selectedProduct.beamangle || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia}
+                <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia || "N/A"}
               </p>
               {/* New fields added */}
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>CRI:</strong> {selectedProduct.cri}
+                <strong>CRI:</strong> {selectedProduct.cri || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Lumens:</strong> {selectedProduct.lumens}
+                <strong>Lumens:</strong> {selectedProduct.lumens || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Watt:</strong> {selectedProduct.watt}
+                <strong>Watt:</strong> {selectedProduct.watt || "N/A"}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <i>Description</i>:
               </p>
-              <div>{formatText(selectedProduct.description)}</div>
+              <div>{formatText(selectedProduct.description) || "N/A"}</div>
             </div> </div>
             <div
               style={{
