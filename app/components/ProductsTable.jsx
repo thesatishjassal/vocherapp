@@ -659,58 +659,58 @@ const ProductsTable = () => {
                 <strong>Category:</strong> {selectedProduct.category}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Subcategory:</strong> {selectedProduct.subcategory || "N/A"}
+                <strong>Subcategory:</strong> {selectedProduct.subcategory}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Brand:</strong> {selectedProduct.brand || "N/A"}
+                <strong>Brand:</strong> {selectedProduct.brand}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Model:</strong> {selectedProduct.model || "N/A"}
+                <strong>Model:</strong> {selectedProduct.model}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Size:</strong> {selectedProduct.size || "N/A"}
+                <strong>Size:</strong> {selectedProduct.size}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Color:</strong> {selectedProduct.color || "N/A"}
+                <strong>Color:</strong> {selectedProduct.color}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Price:</strong> ₹{selectedProduct.price}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Rack Code:</strong> {selectedProduct.rackcode || "N/A"}
+                <strong>Rack Code:</strong> {selectedProduct.rackcode}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Quantity:</strong> {selectedProduct.quantity}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty || "N/A"}
+                <strong>Reorder Quantity:</strong> {selectedProduct.reorderqty}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <strong>Unit:</strong> {selectedProduct.unit}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>CCT:</strong> {selectedProduct.cct || "N/A"}
+                <strong>CCT:</strong> {selectedProduct.cct}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Beam Angle:</strong> {selectedProduct.beamangle || "N/A"}
+                <strong>Beam Angle:</strong> {selectedProduct.beamangle}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia || "N/A"}
+                <strong>Cutout Dia:</strong> {selectedProduct.cutoutdia}
               </p>
               {/* New fields added */}
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>CRI:</strong> {selectedProduct.cri || "N/A"}
+                <strong>CRI:</strong> {selectedProduct.cri}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Lumens:</strong> {selectedProduct.lumens || "N/A"}
+                <strong>Lumens:</strong> {selectedProduct.lumens}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
-                <strong>Watt:</strong> {selectedProduct.watt || "N/A"}
+                <strong>Watt:</strong> {selectedProduct.watt}
               </p>
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <i>Description</i>:
               </p>
-              <div>{formatText(selectedProduct.description) || "N/A"}</div>
+              <div>{formatText(selectedProduct.description)}</div>
             </div> </div>
             <div
               style={{
