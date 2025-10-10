@@ -726,7 +726,7 @@ const ProductsTable = () => {
               <p style={{ fontSize: "14px", color: "#666", marginBottom: 8 }}>
                 <i>Description</i>:
               </p>
-              <div>{formatText(selectedProduct.description) || "N/A"}</div>
+              <div>{selectedProduct.description || "N/A"}</div>
             </div> </div>
             <div
               style={{
