@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
@@ -15,7 +16,7 @@ const GetSalesOrdersTable = () => {
     mature: false,
     lost: false,
   });
-  const [sortOrder, setSortOrder] = useState("latest");
+  const [sortOrder, setSortOrder] = useState("oldest");
 
   const formatSalesOrderNo = (soNo) => {
     if (!soNo) return "N/A";
@@ -50,7 +51,7 @@ const GetSalesOrdersTable = () => {
           status: so.status || "Active",
         }));
         const sortedSalesOrders = salesOrdersWithClientNames.sort(
-          (a, b) => b.salesOrder_id - a.salesOrder_id
+          (a, b) => a.salesorder_id - b.salesorder_id
         );
         setSalesOrders(sortedSalesOrders);
       } catch (error) {
@@ -66,7 +67,7 @@ const GetSalesOrdersTable = () => {
     try {
       const response = await axios.delete(`${API_URL}${id}/`, { withCredentials: true });
       if (response.status === 204 || response.status === 200) {
-        setSalesOrders((prev) => prev.filter((so) => so.salesOrder_id !== id));
+        setSalesOrders((prev) => prev.filter((so) => so.salesorder_id !== id));
         toast.success("Sales order deleted successfully!");
       }
     } catch (error) {
@@ -81,10 +82,10 @@ const GetSalesOrdersTable = () => {
       if (response.status === 200 || response.status === 201) {
         const newSO = {
           ...response.data,
-          client_name: salesOrders.find((so) => so.salesOrder_id === id)?.client_name || null,
+          client_name: salesOrders.find((so) => so.salesorder_id === id)?.client_name || null,
           status: response.data.status || "Active",
         };
-        setSalesOrders((prev) => [newSO, ...prev].sort((a, b) => b.salesOrder_id - a.salesOrder_id));
+        setSalesOrders((prev) => [newSO, ...prev].sort((a, b) => a.salesorder_id - b.salesorder_id));
         toast.success("Sales order cloned successfully!");
       }
     } catch (error) {
@@ -97,7 +98,7 @@ const GetSalesOrdersTable = () => {
       const response = await axios.put(`${API_URL}${id}/`, { status: newStatus }, { withCredentials: true });
       if (response.status === 200 || response.status === 201) {
         setSalesOrders((prev) =>
-          prev.map((so) => (so.salesOrder_id === id ? { ...so, status: newStatus } : so))
+          prev.map((so) => (so.salesorder_id === id ? { ...so, status: newStatus } : so))
         );
         toast.success(`Status updated to ${newStatus}`);
       }
@@ -132,8 +133,8 @@ const GetSalesOrdersTable = () => {
       return matchesSearch && (selectedStatuses.length === 0 || selectedStatuses.includes(status));
     })
     .sort((a, b) => {
-      if (sortOrder === "latest") return b.salesOrder_id - a.salesOrder_id;
-      if (sortOrder === "oldest") return a.salesOrder_id - b.salesOrder_id;
+      if (sortOrder === "latest") return b.salesorder_id - a.salesorder_id;
+      if (sortOrder === "oldest") return a.salesorder_id - b.salesorder_id;
       if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
       if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
       return 0;
@@ -153,17 +154,24 @@ const GetSalesOrdersTable = () => {
     }
   };
 
-  const formatDateTime = (isoString) => {
-    if (!isoString) return "N/A";
-    return new Date(isoString).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
+const formatDateTime = (isoString) => {
+  if (!isoString) return "N/A";
+  const date = new Date(isoString);
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) return "Invalid Date";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata", // Ensures correct Indian time
+  });
+};
+
 
   return (
     <div className="card">
@@ -197,58 +205,37 @@ const GetSalesOrdersTable = () => {
             </thead>
             <tbody>
               {filteredSalesOrders.length > 0 ? (
-                filteredSalesOrders.map((so) => (
-                  <tr key={so.salesOrder_id}>
+                filteredSalesOrders.map((so, index) => (
+                  <tr key={so.salesorder_id}>
+                    <td>{index + 1}</td>
                     <td>{formatDateTime(so.date)}</td>
-                    <td className="d-none d-md-table-cell">{so.salesOrder_id}</td>
+                    <td className="d-none d-md-table-cell">{so.salesorder_id}</td>
                     <td>{so.client_name || "N/A"}</td>
-                    <td>{formatSalesOrderNo(so.salesOrder_no)}</td>
+                    <td>{formatSalesOrderNo(so.salesorder_no)}</td>
                     <td className="d-none d-lg-table-cell">{so.salesperson}</td>
-                    <td>{so.subject}</td>
-                    <td className="d-none d-lg-table-cell">{so.without_gst}</td>
+                    <td>{so.freight || "N/A"}</td>
+                    <td>{so.payment_method || "N/A"}</td>
                     <td className="d-none d-lg-table-cell">{so.gst_amount}</td>
                     <td>{so.amount_with_gst}</td>
-                    <td>{so.payment_method || "N/A"}</td>
-                    <td>{so.freight || "N/A"}</td>
-                    <td>
-                      <span className={getBadgeClass(so.status)}>
-                        {so.status || "Active"}
-                      </span>
-                    </td>
                     <td className="action-column">
-                      <Link href={`/editsalesorder/${so.salesOrder_id}`}>
+                      <Link href={`/editsalesorder/${so.salesorder_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>
                       </Link>
-                      <Link href={`/viewsalesorder/${so.salesOrder_id}`}>
+                      <Link href={`/viewsalesorder/${so.salesorder_id}`}>
                         <i className="fas fa-eye text-primary me-2" title="View"></i>
                       </Link>
                       <i
                         className="fas fa-trash text-danger me-2"
                         title="Delete"
-                        onClick={() => handleDelete(so.salesOrder_id)}
+                        onClick={() => handleDelete(so.salesorder_id)}
                         style={{ cursor: "pointer" }}
                       ></i>
-                      <i
-                        className="fas fa-copy text-secondary me-2"
-                        title="Clone"
-                        onClick={() => handleClone(so.salesOrder_id)}
-                        style={{ cursor: "pointer" }}
-                      ></i>
-                      <select
-                        className="form-select form-select-sm d-inline w-auto"
-                        value={so.status || "Active"}
-                        onChange={(e) => handleStatusChange(so.salesOrder_id, e.target.value)}
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Mature">Mature</option>
-                        <option value="Lost">Lost</option>
-                      </select>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="13" className="text-center">
+                  <td colSpan="11" className="text-center">
                     No sales orders found.
                   </td>
                 </tr>

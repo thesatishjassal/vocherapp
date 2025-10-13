@@ -250,9 +250,7 @@ const GetSalesOrdersByQuotation = () => {
           </div>
 
           {rows.length > 0 ? (
-            <table className="table Quotation Info Details
-
-table-hover align-middle shadow-sm mb-0">
+            <table className="table Quotation Info Details table-hover align-middle shadow-sm mb-0">
               <thead className="table-light">
                 <tr>
                   <th>Item Code</th>

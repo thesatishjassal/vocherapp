@@ -9,6 +9,7 @@ const SalesOrderInfo = ({ setInfoModal, onConfirm }) => {
     AmountPaid: "",
     AmountToPay: "",
     FreightStatus: "",
+    IssueSlipNo: "", // ✅ New field
   });
 
   const handleChange = (e) => {
@@ -29,6 +30,7 @@ const SalesOrderInfo = ({ setInfoModal, onConfirm }) => {
       AmountPaid: "",
       AmountToPay: "",
       FreightStatus: "",
+      IssueSlipNo: "", // ✅ Reset new field
     });
     setInfoModal(false);
   };
@@ -65,7 +67,7 @@ const SalesOrderInfo = ({ setInfoModal, onConfirm }) => {
 
               <div className="modal-body py-3">
                 <form onSubmit={handleSubmit} className="row g-3">
-                  {/* Salesperson & Subject */}
+                  {/* Salesperson */}
                   <div className="col-md-6">
                     <input
                       type="text"
@@ -78,12 +80,26 @@ const SalesOrderInfo = ({ setInfoModal, onConfirm }) => {
                     />
                   </div>
 
+                  {/* Subject */}
                   <div className="col-md-6">
                     <input
                       type="text"
                       name="Subject"
                       placeholder="Subject"
                       value={formData.Subject}
+                      onChange={handleChange}
+                      className="form-control"
+                      required
+                    />
+                  </div>
+
+                  {/* ✅ Issue Slip No */}
+                  <div className="col-md-6">
+                    <input
+                      type="text"
+                      name="IssueSlipNo"
+                      placeholder="Issue Slip No"
+                      value={formData.IssueSlipNo}
                       onChange={handleChange}
                       className="form-control"
                       required

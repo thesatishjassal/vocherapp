@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -12,9 +12,9 @@ const SalesOrder = () => {
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [quotationInfo, setQuotationInfo] = useState(null);
-  const [quotationId, setQuotationId] = useState(1);
-  const [QuotationSequence, setQuotationSequence] = useState(null);
+  const [salesOrderInfo, setSalesOrderInfo] = useState(null);
+  const [salesOrderId, setSalesOrderId] = useState(1);
+  const [salesOrderSequence, setSalesOrderSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
     gstAmount: 0,
@@ -24,11 +24,8 @@ const SalesOrder = () => {
     gstType: "include",
   });
   const [remarks, setRemarks] = useState("");
-  const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [freightMethod, setFreightMethod] = useState("");
 
-  const handleQuotationConfirm = (data) => setQuotationInfo(data);
+  const handleSalesOrderConfirm = (data) => setSalesOrderInfo(data);
 
   const closeModal = () => {
     setShowModalClientDetails(false);
@@ -43,14 +40,14 @@ const SalesOrder = () => {
   const handleClientConfirm = (selectedClient) => setSelectedCustomer(selectedClient);
   const handleGSTChange = (details) => setGstDetails(details);
 
-  const generateQuotationNumber = () => {
-    if (QuotationSequence === null) return "PLSAL-Loading...";
-    const sequenceStr = QuotationSequence.toString().padStart(3, "0");
+  const generateSalesOrderNumber = () => {
+    if (salesOrderSequence === null) return "PLSO-Loading...";
+    const sequenceStr = salesOrderSequence.toString().padStart(3, "0");
     return `PLSO-${sequenceStr}`;
   };
 
   useEffect(() => {
-    const fetchLastQuotationData = async () => {
+    const fetchLastSalesOrderData = async () => {
       try {
         const response = await fetch("https://api.panvic.in/salesorder/", {
           method: "GET",
@@ -59,101 +56,123 @@ const SalesOrder = () => {
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const quotations = await response.json();
-        if (quotations && quotations.length > 0) {
-          const lastSequence = quotations
-            .map((voucher) => {
-              const match = voucher.quotation_no
-                ? voucher.quotation_no.match(/^PLQOT-(\d+)$/)
+        const salesOrders = await response.json();
+        if (salesOrders && salesOrders.length > 0) {
+          const lastSequence = salesOrders
+            .map((order) => {
+              const match = order.salesorder_no
+                ? order.salesorder_no.match(/^PLSO-(\d+)$/)
                 : null;
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
 
           const nextSequence = lastSequence + 1;
-          setQuotationSequence(nextSequence);
-          setQuotationId(quotations.length + 1);
+          setSalesOrderSequence(nextSequence);
+          setSalesOrderId(salesOrders.length + 1);
         } else {
-          setQuotationId(1);
-          setQuotationSequence(1);
+          setSalesOrderId(1);
+          setSalesOrderSequence(1);
         }
       } catch (error) {
-        console.error("Error fetching quotations:", error);
-        setQuotationId(1);
-        setQuotationSequence(1);
+        console.error("Error fetching sales orders:", error);
+        setSalesOrderId(1);
+        setSalesOrderSequence(1);
       }
     };
 
-    fetchLastQuotationData();
+    fetchLastSalesOrderData();
   }, []);
+const handleSaveSalesOrder = async () => {
+  if (salesOrderSequence === null) {
+    toast.warning("Sales order number is still loading. Please wait.");
+    return;
+  }
 
-  const handleSaveQuotation = async () => {
-    if (QuotationSequence === null) {
-      toast.warning("Quotation number is still loading. Please wait.");
-      return;
-    }
+  try {
+    // 1️⃣ Prepare sales order data
+    const salesOrderData = {
+      salesorder_no: generateSalesOrderNumber(),
+      salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
+      subject: salesOrderInfo?.Subject || "Sales Order for Products/Services",
+      amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+      without_gst: Math.round(gstDetails.withoutGST) || 0,
+      gst_amount: Math.round(gstDetails.gstAmount) || 0,
+      amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+      remarks: remarks,
+      status: "active",
+      date: new Date().toISOString(),
+      payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
+      freight: salesOrderInfo?.FreightStatus || "Not Selected",
+      issue_slip_no: salesOrderInfo?.IssueSlipNo || "",
+      client_id: selectedCustomer?.id || 3,
+    };
 
-    try {
-      const quotationData = {
-        quotation_no: generateQuotationNumber(),
-        salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
-        subject: quotationInfo?.Subject || "Quotation for Products/Services",
-        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-        without_gst: Math.round(gstDetails.withoutGST) || 0,
-        gst_amount: Math.round(gstDetails.gstAmount) || 0,
-        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-        warranty_guarantee: warrantyGuarantee,
-        remarks: remarks,
-        status: "active",
-        payment_method: paymentMethod || "Not Selected",
-        client_id: selectedCustomer?.id || 3,
-      };
+    // 2️⃣ Save sales order
+    const response = await axios.post(
+      "https://api.panvic.in/salesorder/",
+      salesOrderData,
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-      const response = await axios.post(
-        "https://api.panvic.in/salesorder/",
-        quotationData,
-        { headers: { "Content-Type": "application/json" } }
-      );
+    const savedSalesOrderId = response.data.salesorder_id;
+    console.log("Sales Order saved with ID:", savedSalesOrderId);
 
-      const savedQuotationId = response.data.quotation_id;
+    // 3️⃣ Save sales order items if any
+    if (rowsData.length > 0) {
+      console.log("Preparing to save items:", rowsData);
+      console.log("Rows to save as items:", rowsData);
+      if (!rowsData || rowsData.length === 0) {
+        console.warn("No sales order items to save.");
+        return;
+      }
 
-      if (rowsData.length > 0) {
-        const itemPromises = rowsData.map(async (item) => {
+      const itemPromises = rowsData.map(async (item) => {
+        try {
           const itemData = {
-            quotation_id: savedQuotationId,
             product_id: item.itemCode,
             customercode: item.customerCode || "N/A",
             customerdescription: item.customerDescription || "N/A",
             image: item.image || "https://example.com/default-image.jpg",
             itemcode: item.itemCode,
             brand: item.brand || "N/A",
-            mrp: parseFloat(item.mrp) || 0,
-            price: parseFloat(item.amount) || 0,
-            quantity: parseInt(item.qty, 10) || 0,
-            discount: parseFloat(item.discount) || 0,
+            mrp: parseFloat(item.mrp || 0),
+            price: parseFloat(item.amount || 0),
+            quantity: parseInt(item.qty || 0, 10),
+            discount: parseFloat(item.discount || 0),
             item_name: item.itemName || "N/A",
             unit: item.unit || "pcs",
           };
 
-          return axios.post(
-            `https://api.panvic.in/salesorder/${savedQuotationId}/items/`,
+          console.log("Posting item:", itemData);
+
+          const itemResponse = await axios.post(
+            `https://api.panvic.in/salesorder/${savedSalesOrderId}/items/`,
             itemData,
             { headers: { "Content-Type": "application/json" } }
           );
-        });
 
-        await Promise.all(itemPromises);
-      }
+          console.log("Item saved:", itemResponse.data);
+        } catch (err) {
+          console.error("Failed to save item:", item.itemCode, err.response?.data || err.message);
+        }
+      });
 
-      setQuotationSequence(QuotationSequence + 1);
-      setQuotationId(quotationId + 1);
-      toast.success("Quotation saved successfully!");
-      window.location.href = "/getquotation";
-    } catch (error) {
-      console.error("Error saving quotation:", error);
-      toast.error("Failed to save quotation. Please try again.");
+      // Wait for all items to finish
+    await Promise.all(itemPromises);
+    console.log("All items saved successfully");
     }
-  };
+
+    // 4️⃣ Update sequences and notify user
+    setSalesOrderSequence(salesOrderSequence + 1);
+    setSalesOrderId(salesOrderId + 1);
+    toast.success("Sales order and items saved successfully!");
+
+  } catch (error) {
+    console.error("Error saving sales order:", error.response?.data || error.message);
+    toast.error("Failed to save sales order. Please try again.");
+  }
+};
 
   return (
     <div className="card tm_container my-4">
@@ -173,7 +192,7 @@ const SalesOrder = () => {
                 </div>
                 <p className="tm_invoice_number tm_m0">
                   Sales Order No:{" "}
-                  <b className="tm_primary_color">{generateQuotationNumber()}</b>
+                  <b className="tm_primary_color">{generateSalesOrderNumber()}</b>
                 </p>
               </div>
             </div>
@@ -233,7 +252,7 @@ const SalesOrder = () => {
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                   {InfoModal && (
-                    <SalesOrderInfo setInfoModal={setInfoModal} onConfirm={handleQuotationConfirm} />
+                    <SalesOrderInfo setInfoModal={setInfoModal} onConfirm={handleSalesOrderConfirm} />
                   )}
                   <button type="button" className="btn modalaction_btn no-print" onClick={() => setInfoModal(true)}>
                     <i className="fa-solid fa-pen-to-square"></i>
@@ -243,11 +262,12 @@ const SalesOrder = () => {
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b>
                 <br />
-                Salesperson: {quotationInfo && <b>{quotationInfo.Salesperson}</b>}
-                {quotationInfo && (
+                Salesperson: {salesOrderInfo && <b>{salesOrderInfo.Salesperson}</b>}
+                {salesOrderInfo && (
                   <p style={{ margin: 0 }}>
-                    Payment Method: <b>{quotationInfo.PaymentMethod}</b> &nbsp; | &nbsp;
-                    Freight: <b>{quotationInfo.FreightStatus}</b>
+                    Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp; | &nbsp;
+                    Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp; | &nbsp;
+                    Issue Slip No: <b>{salesOrderInfo.IssueSlipNo}</b>
                   </p>
                 )}
               </div>
@@ -256,7 +276,7 @@ const SalesOrder = () => {
             {/* Subject */}
             <div className="d-flex mb-2 justify-content-between">
               <p className="tm_mb2">
-                Subject: {quotationInfo && <b className="tm_primary_color">{quotationInfo.Subject}</b>}
+                Subject: {salesOrderInfo && <b className="tm_primary_color">{salesOrderInfo.Subject}</b>}
               </p>
             </div>
 
@@ -297,13 +317,6 @@ const SalesOrder = () => {
               <p>Validity: <b>15 days from the date of quotation.</b></p>
               <p className="m-0">
                 Warranty/Guarantee: <b>as per company norms.</b>
-                <textarea
-                  className="form-control tm_remarks_box no-print"
-                  placeholder="Enter warranty/guarantee details..."
-                  rows="1"
-                  value={warrantyGuarantee}
-                  onChange={(e) => setWarrantyGuarantee(e.target.value)}
-                ></textarea>
               </p>
               <p>Responsibility: <b>Our responsibility for material counting ceases immediately after delivery.</b></p>
               <p>Installation & Fixing: <b>If required, we will arrange a technician at extra cost. Installation takes 4-5 days from order date.</b></p>
@@ -323,7 +336,7 @@ const SalesOrder = () => {
               <span className="tm_btn_text">Print</span>
             </button>
 
-            <button id="tm_download_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveQuotation}>
+            <button id="tm_download_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveSalesOrder}>
               <span className="tm_btn_icon">
                 <i className="fa-solid fa-upload"></i>
               </span>
