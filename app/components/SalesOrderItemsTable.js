@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FiPlusCircle } from "react-icons/fi";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
 
 const SalesOrderItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
