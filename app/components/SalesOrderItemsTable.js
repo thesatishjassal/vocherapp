@@ -179,20 +179,20 @@ const SalesOrderItemsTable = ({ quotation_id, selectedRevision }) => {
     window.print();
   };
 
-  const handleSaveAsPDF = async () => {
-    const element = document.getElementById("quotation-table");
-    if (!element) return;
+  // const handleSaveAsPDF = async () => {
+  //   const element = document.getElementById("quotation-table");
+  //   if (!element) return;
 
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+  //   const canvas = await html2canvas(element, { scale: 2 });
+  //   const imgData = canvas.toDataURL("image/png");
 
-    const pdf = new jsPDF("l", "mm", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  //   const pdf = new jsPDF("l", "mm", "a4");
+  //   const pdfWidth = pdf.internal.pageSize.getWidth();
+  //   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("quotation-items.pdf");
-  };
+  //   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //   pdf.save("quotation-items.pdf");
+  // };
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
