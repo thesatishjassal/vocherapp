@@ -2,13 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import AddProductModal from "./AddProductModal";
+import AddProductModal from "./SalesAddProductModal";
 
-const SALESORDER_API_URL = "https://api.panvic.in/salesorder/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
 const QUOTATION_API_URL = "https://api.panvic.in/quotation/";
 
-const GetSalesOrdersByQuotation = () => {
+const GetSalesOrdersByQuotation = ({ onRowsChange }) => {
   const [salesOrders, setSalesOrders] = useState([]);
   const [quotations, setQuotations] = useState([]);
   const [selectedQuotation, setSelectedQuotation] = useState("");
@@ -30,6 +28,7 @@ const GetSalesOrdersByQuotation = () => {
     qty: useRef(null),
     brand: useRef(null),
     unit: useRef(null),
+    cct: useRef(null),
     mrp: useRef(null),
     discount: useRef(null),
     netPrice: useRef(null),
@@ -55,11 +54,41 @@ const GetSalesOrdersByQuotation = () => {
       .finally(() => setLoadingItems(false));
   }, [selectedQuotation]);
 
+  useEffect(() => {
+    if (optionType === "quotation") {
+      const mappedRows = quotationItems.map((item) => ({
+        itemCode: item.itemcode,
+        itemName: item.item_name,
+        qty: item.quantity,
+        cct: item.cct,
+        unit: item.unit,
+        netPrice: item.netPrice,
+        cct: item.color,
+        amount: item.quantity * item.netPrice,
+        customerCode: "N/A",
+        customerDescription: "N/A",
+        brand: "N/A",
+        mrp: 0,
+        discount: 0,
+        image: "https://example.com/default-image.jpg",
+        remarks: "",
+      }));
+      onRowsChange(mappedRows);
+    }
+  }, [quotationItems, optionType, onRowsChange]);
+
+  useEffect(() => {
+    if (optionType === "custom") {
+      onRowsChange(rows);
+    }
+  }, [rows, optionType, onRowsChange]);
+
   const handleAddRow = (newItem) => {
     if (editRowIndex !== null) {
       const updatedRows = [...rows];
       updatedRows[editRowIndex] = newItem;
       setRows(updatedRows);
+      console.log(updatedRows);
       setEditRowIndex(null);
     } else {
       setRows((prev) => [...prev, newItem]);
@@ -68,6 +97,7 @@ const GetSalesOrdersByQuotation = () => {
 
   const handleFieldChange = (field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
+    console.log(newRow);
   };
 
   const handleKeyDown = (e, nextField) => {
@@ -208,6 +238,7 @@ const GetSalesOrdersByQuotation = () => {
                     <tr>
                       <th>Item Code</th>
                       <th>Item Name</th>
+                      <th>Color</th>
                       <th>Unit</th>
                       <th>Qty</th>
                       <th>Price</th>
@@ -219,10 +250,11 @@ const GetSalesOrdersByQuotation = () => {
                       <tr key={item.id}>
                         <td>{item.itemcode}</td>
                         <td>{item.item_name}</td>
+                        <td>{item.cct}</td>
                         <td>{item.unit}</td>
                         <td>{item.quantity}</td>
-                        <td>{item.price}</td>
-                        <td>{item.quantity * item.price}</td>
+                        <td>{item.netPrice !== 0 ? item.netPrice : item.price}</td>
+                        <td>{item.quantity * item.netPrice}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -255,9 +287,10 @@ const GetSalesOrdersByQuotation = () => {
                 <tr>
                   <th>Item Code</th>
                   <th>Item Name</th>
-                  <th>Qty</th>
+                  <th>Color</th>
                   <th>Unit</th>
-                  <th>Net Price</th>
+                  <th>Qty</th>
+                  <th>Price</th>
                   <th>Amount</th>
                   <th className="no-print">Actions</th>
                 </tr>
@@ -267,8 +300,9 @@ const GetSalesOrdersByQuotation = () => {
                   <tr key={i}>
                     <td>{row.itemCode}</td>
                     <td>{row.itemName}</td>
-                    <td>{row.qty}</td>
+                    <td>{row.color}</td>
                     <td>{row.unit}</td>
+                    <td>{row.qty}</td>
                     <td>{row.netPrice}</td>
                     <td>{row.amount}</td>
                     <td className="d-flex gap-2 no-print">

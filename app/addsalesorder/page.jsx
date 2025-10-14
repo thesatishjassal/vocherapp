@@ -1,5 +1,5 @@
-"use client"
-import React, { useState, useEffect } from "react";
+"use client";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import SalesOrderInfo from "../components/SalesInfo";
@@ -10,12 +10,11 @@ import GetSalesOrdersTable from "../components/Getsalesbyquotation";
 const SalesOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [rowsData, setRowsData] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [salesOrderInfo, setSalesOrderInfo] = useState(null);
   const [salesOrderId, setSalesOrderId] = useState(1);
   const [salesOrderSequence, setSalesOrderSequence] = useState(null);
-  const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
     gstAmount: 0,
     totalWithGST: 0,
@@ -25,20 +24,34 @@ const SalesOrder = () => {
   });
   const [remarks, setRemarks] = useState("");
 
-  const handleSalesOrderConfirm = (data) => setSalesOrderInfo(data);
+  // ✅ FIX: useMemo ensures recalculation happens on change
+  const totalAmount = useMemo(() => {
+    const total = rowsData.reduce((sum, r) => {
+      const amt = parseFloat(r.amount) || 0;
+      return sum + amt;
+    }, 0);
+    return total;
+  }, [rowsData]);
 
-  const closeModal = () => {
+  const handleSalesOrderConfirm = useCallback(
+    (data) => setSalesOrderInfo(data),
+    []
+  );
+
+  const closeModal = useCallback(() => {
     setShowModalClientDetails(false);
-  };
+  }, []);
 
-  const handleRowsChange = (rows) => {
-    setRowsData(rows);
-    const total = rows.reduce((sum, r) => sum + (r.amount || 0), 0);
-    setTotalAmount(total);
-  };
+  const handleRowsChange = useCallback((rows) => {
+    setRowsData(rows || []);
+  }, []);
 
-  const handleClientConfirm = (selectedClient) => setSelectedCustomer(selectedClient);
-  const handleGSTChange = (details) => setGstDetails(details);
+  const handleClientConfirm = useCallback(
+    (selectedClient) => setSelectedCustomer(selectedClient),
+    []
+  );
+
+  const handleGSTChange = useCallback((details) => setGstDetails(details), []);
 
   const generateSalesOrderNumber = () => {
     if (salesOrderSequence === null) return "PLSO-Loading...";
@@ -54,7 +67,8 @@ const SalesOrder = () => {
           headers: { "Content-Type": "application/json" },
         });
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
 
         const salesOrders = await response.json();
         if (salesOrders && salesOrders.length > 0) {
@@ -83,47 +97,43 @@ const SalesOrder = () => {
 
     fetchLastSalesOrderData();
   }, []);
-const handleSaveSalesOrder = async () => {
-  if (salesOrderSequence === null) {
-    toast.warning("Sales order number is still loading. Please wait.");
-    return;
-  }
 
-  try {
-    // 1️⃣ Prepare sales order data
-    const salesOrderData = {
-      salesorder_no: generateSalesOrderNumber(),
-      salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
-      subject: salesOrderInfo?.Subject || "Sales Order for Products/Services",
-      amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-      without_gst: Math.round(gstDetails.withoutGST) || 0,
-      gst_amount: Math.round(gstDetails.gstAmount) || 0,
-      amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-      remarks: remarks,
-      status: "active",
-      date: new Date().toISOString(),
-      payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
-      freight: salesOrderInfo?.FreightStatus || "Not Selected",
-      issue_slip_no: salesOrderInfo?.IssueSlipNo || "",
-      client_id: selectedCustomer?.id || 3,
-    };
+  const handleSaveSalesOrder = async () => {
+    if (salesOrderSequence === null) {
+      toast.warning("Sales order number is still loading. Please wait.");
+      return;
+    }
 
-    // 2️⃣ Save sales order
-    const response = await axios.post(
-      "https://api.panvic.in/salesorder/",
-      salesOrderData,
-      { headers: { "Content-Type": "application/json" } }
-    );
+    try {
+      const salesOrderData = {
+        salesorder_no: generateSalesOrderNumber(),
+        salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
+        subject:
+          salesOrderInfo?.Subject || "Sales Order for Products/Services",
+        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+        without_gst: Math.round(gstDetails.withoutGST) || 0,
+        gst_amount: Math.round(gstDetails.gstAmount) || 0,
+        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+        remarks: remarks,
+        status: "active",
+        date: new Date().toISOString(),
+        payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
+        freight: salesOrderInfo?.FreightStatus || "Not Selected",
+        issue_slip_no: salesOrderInfo?.IssueSlipNo || "",
+        client_id: selectedCustomer?.id || 3,
+      };
 
-    const savedSalesOrderId = response.data.salesorder_id;
-    console.log("Sales Order saved with ID:", savedSalesOrderId);
+      const response = await axios.post(
+        "https://api.panvic.in/salesorder/",
+        salesOrderData,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-    // 3️⃣ Save sales order items if any
-    if (rowsData.length > 0) {
-      console.log("Preparing to save items:", rowsData);
-      console.log("Rows to save as items:", rowsData);
+      const savedSalesOrderId = response.data.salesorder_id;
+      console.log("Sales Order saved with ID:", savedSalesOrderId);
+
       if (!rowsData || rowsData.length === 0) {
-        console.warn("No sales order items to save.");
+        toast.info("No sales order items to save.");
         return;
       }
 
@@ -142,9 +152,9 @@ const handleSaveSalesOrder = async () => {
             discount: parseFloat(item.discount || 0),
             item_name: item.itemName || "N/A",
             unit: item.unit || "pcs",
+            color: item.color ,
+            remarks: item.remarks ,
           };
-
-          console.log("Posting item:", itemData);
 
           const itemResponse = await axios.post(
             `https://api.panvic.in/salesorder/${savedSalesOrderId}/items/`,
@@ -153,27 +163,27 @@ const handleSaveSalesOrder = async () => {
           );
 
           console.log("Item saved:", itemResponse.data);
+          window.location.href = "/saleorders";
         } catch (err) {
-          console.error("Failed to save item:", item.itemCode, err.response?.data || err.message);
+          console.error(
+            "Failed to save item:",
+            item.itemCode,
+            err.response?.data || err.message
+          );
         }
       });
 
-      // Wait for all items to finish
-    await Promise.all(itemPromises);
-    console.log("All items saved successfully");
+      await Promise.all(itemPromises);
+
+      setSalesOrderSequence(salesOrderSequence + 1);
+      setSalesOrderId(salesOrderId + 1);
+      toast.success("Sales order and items saved successfully!");
+    } catch (error) {
+      console.error("Error saving sales order:", error.response?.data || error.message);
+      toast.error("Failed to save sales order. Please try again.");
     }
-
-    // 4️⃣ Update sequences and notify user
-    setSalesOrderSequence(salesOrderSequence + 1);
-    setSalesOrderId(salesOrderId + 1);
-    toast.success("Sales order and items saved successfully!");
-
-  } catch (error) {
-    console.error("Error saving sales order:", error.response?.data || error.message);
-    toast.error("Failed to save sales order. Please try again.");
-  }
-};
-
+  };
+  
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -192,7 +202,9 @@ const handleSaveSalesOrder = async () => {
                 </div>
                 <p className="tm_invoice_number tm_m0">
                   Sales Order No:{" "}
-                  <b className="tm_primary_color">{generateSalesOrderNumber()}</b>
+                  <b className="tm_primary_color">
+                    {generateSalesOrderNumber()}
+                  </b>
                 </p>
               </div>
             </div>
@@ -202,15 +214,16 @@ const handleSaveSalesOrder = async () => {
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list mr-2">
                 <p className="tm_invoice_date tm_m0">
-                  Date: <b className="tm_primary_color">{new Date().toLocaleDateString("en-GB")}</b>
+                  Date:{" "}
+                  <b className="tm_primary_color">
+                    {new Date().toLocaleDateString("en-GB")}
+                  </b>
                 </p>
               </div>
             </div>
 
             {/* Customer & Company Info */}
-            <div
-              className="tm_invoice_head tm_mb10 d-flex justify-content-between"
-            >
+            <div className="tm_invoice_head tm_mb10 d-flex justify-content-between">
               <div className="tm_invoice_left mt-0" style={{ flex: 1 }}>
                 <p className="tm_mb2">
                   <b className="tm_primary_color">Customer Details:</b>{" "}
@@ -225,49 +238,114 @@ const handleSaveSalesOrder = async () => {
 
                 {selectedCustomer && (
                   <div style={{ lineHeight: "1.6" }}>
-                    {selectedCustomer.client_name && <p><strong>Client Name:</strong> {selectedCustomer.client_name}</p>}
-                    {selectedCustomer.businessname && <p><strong>Business Name:</strong> {selectedCustomer.businessname}</p>}
-                    {(selectedCustomer.client_phone || selectedCustomer.client_email) && (
+                    {selectedCustomer.client_name && (
                       <p>
-                        {selectedCustomer.client_phone && <> <strong>Mobile:</strong> {selectedCustomer.client_phone} </>}
-                        {selectedCustomer.client_phone && selectedCustomer.client_email && " | "}
-                        {selectedCustomer.client_email && <> <strong>Email:</strong> {selectedCustomer.client_email} </>}
+                        <strong>Client Name:</strong>{" "}
+                        {selectedCustomer.client_name}
                       </p>
                     )}
-                    {(selectedCustomer.address || selectedCustomer.city || selectedCustomer.state || selectedCustomer.pincode) && (
+                    {selectedCustomer.businessname && (
                       <p>
-                        {selectedCustomer.address && <> <strong>Address:</strong> {selectedCustomer.address} </>}
-                        {selectedCustomer.address && (selectedCustomer.city || selectedCustomer.state || selectedCustomer.pincode) && ", "}
-                        {selectedCustomer.city && <> <strong>City:</strong> {selectedCustomer.city} </>}
+                        <strong>Business Name:</strong>{" "}
+                        {selectedCustomer.businessname}
+                      </p>
+                    )}
+                    {(selectedCustomer.client_phone ||
+                      selectedCustomer.client_email) && (
+                      <p>
+                        {selectedCustomer.client_phone && (
+                          <>
+                            {" "}
+                            <strong>Mobile:</strong>{" "}
+                            {selectedCustomer.client_phone}{" "}
+                          </>
+                        )}
+                        {selectedCustomer.client_phone &&
+                          selectedCustomer.client_email &&
+                          " | "}
+                        {selectedCustomer.client_email && (
+                          <>
+                            {" "}
+                            <strong>Email:</strong>{" "}
+                            {selectedCustomer.client_email}{" "}
+                          </>
+                        )}
+                      </p>
+                    )}
+                    {(selectedCustomer.address ||
+                      selectedCustomer.city ||
+                      selectedCustomer.state ||
+                      selectedCustomer.pincode) && (
+                      <p>
+                        {selectedCustomer.address && (
+                          <>
+                            {" "}
+                            <strong>Address:</strong>{" "}
+                            {selectedCustomer.address}{" "}
+                          </>
+                        )}
+                        {selectedCustomer.address &&
+                          (selectedCustomer.city ||
+                            selectedCustomer.state ||
+                            selectedCustomer.pincode) &&
+                          ", "}
+                        {selectedCustomer.city && (
+                          <>
+                            {" "}
+                            <strong>City:</strong>{" "}
+                            {selectedCustomer.city}{" "}
+                          </>
+                        )}
                         {selectedCustomer.state && `, ${selectedCustomer.state}`}
-                        {selectedCustomer.pincode && ` - ${selectedCustomer.pincode}`}
+                        {selectedCustomer.pincode &&
+                          ` - ${selectedCustomer.pincode}`}
                       </p>
                     )}
-                    {selectedCustomer.gst_number && <p><strong>GST No:</strong> {selectedCustomer.gst_number}</p>}
+                    {selectedCustomer.gst_number && (
+                      <p>
+                        <strong>GST No:</strong> {selectedCustomer.gst_number}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
 
-              <div className="tm_invoice_right tm_text_right" style={{ flex: 1 }}>
+              <div
+                className="tm_invoice_right tm_text_right"
+                style={{ flex: 1 }}
+              >
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                   {InfoModal && (
-                    <SalesOrderInfo setInfoModal={setInfoModal} onConfirm={handleSalesOrderConfirm} />
+                    <SalesOrderInfo
+                      setInfoModal={setInfoModal}
+                      onConfirm={handleSalesOrderConfirm}
+                    />
                   )}
-                  <button type="button" className="btn modalaction_btn no-print" onClick={() => setInfoModal(true)}>
+                  <button
+                    type="button"
+                    className="btn modalaction_btn no-print"
+                    onClick={() => setInfoModal(true)}
+                  >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
                 </p>
-                Address: <b>Nakodar Road Beside Silver OAK Appartments Jalandhar City, Punjab-144003</b>
+                Address:{" "}
+                <b>
+                  Nakodar Road Beside Silver OAK Appartments Jalandhar City,
+                  Punjab-144003
+                </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b>
                 <br />
-                Salesperson: {salesOrderInfo && <b>{salesOrderInfo.Salesperson}</b>}
+                Salesperson:{" "}
+                {salesOrderInfo && <b>{salesOrderInfo.Salesperson}</b>}
                 {salesOrderInfo && (
                   <p style={{ margin: 0 }}>
-                    Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp; | &nbsp;
-                    Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp; | &nbsp;
-                    Issue Slip No: <b>{salesOrderInfo.IssueSlipNo}</b>
+                    Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp;
+                    | &nbsp; Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp;
+                    | &nbsp; Issue Slip No:{" "}
+                    <b>{salesOrderInfo.IssueSlipNo}</b>
                   </p>
                 )}
               </div>
@@ -276,7 +354,12 @@ const handleSaveSalesOrder = async () => {
             {/* Subject */}
             <div className="d-flex mb-2 justify-content-between">
               <p className="tm_mb2">
-                Subject: {salesOrderInfo && <b className="tm_primary_color">{salesOrderInfo.Subject}</b>}
+                Subject:{" "}
+                {salesOrderInfo && (
+                  <b className="tm_primary_color">
+                    {salesOrderInfo.Subject}
+                  </b>
+                )}
               </p>
             </div>
 
@@ -286,7 +369,11 @@ const handleSaveSalesOrder = async () => {
                 <div className="tm_table_responsive">
                   <GetSalesOrdersTable onRowsChange={handleRowsChange} />
                   {showModalClientDetails && (
-                    <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
+                    <CustomerModal
+                      onClose={closeModal}
+                      client={showModalClientDetails}
+                      onConfirm={handleClientConfirm}
+                    />
                   )}
                 </div>
               </div>
@@ -303,40 +390,43 @@ const handleSaveSalesOrder = async () => {
                 </div>
 
                 <div className="tm_right_footer">
-                  <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
+                  {/* ✅ Pass recalculated totalAmount */}
+                  <GSTCalculator
+                    totalAmount={totalAmount}
+                    onGSTChange={handleGSTChange}
+                  />
                 </div>
               </div>
             </div>
 
             <hr />
-            <p><b><i>Thank You for considering us for your needs. Here is the proposal as you requested.</i></b></p>
-            <div className="term_box">
-              <h6>Terms and Conditions:</h6>
-              <p>GST: <b>Including in above prices as per applicable.</b></p>
-              <p>Payment Terms: <b>100% in advance with order.</b></p>
-              <p>Validity: <b>15 days from the date of quotation.</b></p>
-              <p className="m-0">
-                Warranty/Guarantee: <b>as per company norms.</b>
-              </p>
-              <p>Responsibility: <b>Our responsibility for material counting ceases immediately after delivery.</b></p>
-              <p>Installation & Fixing: <b>If required, we will arrange a technician at extra cost. Installation takes 4-5 days from order date.</b></p>
-              <p>Freight Charges: <b>Extra as per actual.</b></p>
-              <p>Bank Details: <b>PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar.</b></p>
-              <hr />
-              <p>For:- Panvik Lighting This is a computer generated document, hence signature is not required.</p>
-            </div>
+            <p>
+              <b>
+                <i>
+                  Thank You for considering us for your needs. 
+                </i>
+              </b>
+            </p>
           </div>
 
           {/* Buttons */}
           <div className="tm_invoice_btns tm_hide_print">
-            <button type="button" onClick={() => window.print()} className="tm_invoice_btn tm_color1">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="tm_invoice_btn tm_color1"
+            >
               <span className="tm_btn_icon">
                 <i className="fa-solid fa-print"></i>
               </span>
               <span className="tm_btn_text">Print</span>
             </button>
 
-            <button id="tm_download_btn" className="tm_invoice_btn tm_color2" onClick={handleSaveSalesOrder}>
+            <button
+              id="tm_download_btn"
+              className="tm_invoice_btn tm_color2"
+              onClick={handleSaveSalesOrder}
+            >
               <span className="tm_btn_icon">
                 <i className="fa-solid fa-upload"></i>
               </span>

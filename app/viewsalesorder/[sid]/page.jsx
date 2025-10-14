@@ -16,10 +16,10 @@ export default async function ViewSalesOrder({ params }) {
     const salesOrderResponse = await axios.get(`${SALESORDER_API_URL}/${sid}`, {
       withCredentials: true,
     });
-
     if (salesOrderResponse.data) {
+      console.log("Sales Order Response:", salesOrderResponse.data);
       salesOrder = salesOrderResponse.data;
-
+      
       // Fetch Client Details
       if (salesOrder.client_id) {
         const clientResponse = await axios.get(CLIENT_API_URL, {
@@ -46,7 +46,7 @@ export default async function ViewSalesOrder({ params }) {
   }
 
   return (
-    <div className="card tm_container my-4">
+    <div className="card tm_container my-4 sales-order-view">
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1">
           <div className="tm_invoice_in">
@@ -206,7 +206,7 @@ export default async function ViewSalesOrder({ params }) {
 
                 <p style={{ margin: 0 }}>
                   Payment Method: <b>{salesOrder?.payment_method}</b> &nbsp; |
-                  &nbsp; Freight: <b>{salesOrder?.freight}</b> &nbsp; | &nbsp;
+                  &nbsp; Freight: <b>{salesOrder?.freight}</b> <br />
                   Issue Slip No: <b>{salesOrder?.issue_slip_no}</b>
                 </p>
               </div>
@@ -219,7 +219,7 @@ export default async function ViewSalesOrder({ params }) {
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <SalesOrderItemsTable
-                    salesorder_id={salesOrder.salesorder_id}
+                    salesorder_id={salesOrder?.salesorder_id}
                   />
                 </div>
               </div>
@@ -273,41 +273,14 @@ export default async function ViewSalesOrder({ params }) {
                 </table>
               </div>
             </div>
-            <p>
+      <p>
               <b>
                 <i>
-                  Thank you for your order. We appreciate your business and look
-                  forward to serving you again.
+                  Thank You for considering us for your needs.
                 </i>
               </b>
             </p>
-            <div className="term_box">
-              <h6>Terms and Conditions:</h6>
-              <p>
-                Payment Method: <b>{salesOrder.payment_method}</b>
-              </p>
-              <p>
-                Freight: <b>{salesOrder.freight}</b>
-              </p>
-              <p>
-                Issue Slip No: <b>{salesOrder.issue_slip_no}</b>
-              </p>
-              <p>
-                GST: <b>Included as applicable.</b>
-              </p>
-              <p>
-                Bank Details:
-                <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
-                  Code: ICIC0001510, Jalandhar.
-                </b>
-              </p>
-              <hr />
-              <p>
-                For:- Panvik Lighting This is a computer-generated document,
-                hence signature is not required.
-              </p>
-            </div>
+      
           </div>
         </div>
       </div>
