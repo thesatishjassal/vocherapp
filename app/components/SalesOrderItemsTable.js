@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FiPlusCircle } from "react-icons/fi";
+// import { FiPlusCircle } from "react-icons/fi";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
 
 const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
-  const [products, setProducts] = useState({});
+  // const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   console.log("Quotation ID:", salesorder_id);
@@ -91,31 +91,31 @@ const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
   }, [salesorder_id, selectedRevision]);
 
 
-  const handleImageChange = async (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleImageChange = async (e, index) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const preview = URL.createObjectURL(file);
-    const updatedItems = [...items];
-    updatedItems[index].preview = preview;
-    setItems(updatedItems);
+  //   const preview = URL.createObjectURL(file);
+  //   const updatedItems = [...items];
+  //   updatedItems[index].preview = preview;
+  //   setItems(updatedItems);
 
-    const formData = new FormData();
-    formData.append("image", file);
+  //   const formData = new FormData();
+  //   formData.append("image", file);
 
-    try {
-      const response = await axios.patch(
-        `https://api.panvic.in/salesorder/${salesorder_id}/items/${items[index].id}/`,
-        formData
-      );
-      updatedItems[index].image = response.data.image;
-      setItems([...updatedItems]);
-      toast.success("Image uploaded successfully");
-    } catch (error) {
-      toast.error("Failed to upload image");
-      // Optionally revert preview if failed
-    }
-  };
+  //   try {
+  //     const response = await axios.patch(
+  //       `https://api.panvic.in/salesorder/${salesorder_id}/items/${items[index].id}/`,
+  //       formData
+  //     );
+  //     updatedItems[index].image = response.data.image;
+  //     setItems([...updatedItems]);
+  //     toast.success("Image uploaded successfully");
+  //   } catch (error) {
+  //     toast.error("Failed to upload image");
+  //     // Optionally revert preview if failed
+  //   }
+  // };
 
   const handleCheckboxChange = (column) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
