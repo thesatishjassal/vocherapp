@@ -80,7 +80,11 @@ const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
         });
         setItems(enhancedItems);
         console.log("Fetched Items:", enhancedItems);
-          setLoading(false);
+      } catch (_error) {
+        toast.error("Failed to load items");
+      } 
+      finally {
+        setLoading(false);
       }
     };
 
