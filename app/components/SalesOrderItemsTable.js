@@ -80,10 +80,7 @@ const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
         });
         setItems(enhancedItems);
         console.log("Fetched Items:", enhancedItems);
-      } catch (error) {
-        toast.error("Failed to load items");
-      } finally {
-        setLoading(false);
+          setLoading(false);
       }
     };
 
@@ -279,7 +276,7 @@ const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
         </thead>
         <tbody>
           {items.map((item, index) => {
-            const product = products[item.itemcode] || {};
+            // const product = products[item.itemcode] || {};
             return (
               <tr key={index}>
                 {visibleColumns.srNo && <td>{index + 1}</td>}
