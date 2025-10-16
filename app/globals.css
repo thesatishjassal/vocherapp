@@ -838,3 +838,6 @@ label, .form-label {
 .css-1xc3v61-indicatorContainer {
     display: none !important;
 }
+.sales-order-view p {
+    font-size: 13px;
+}

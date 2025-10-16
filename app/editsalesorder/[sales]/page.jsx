@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const EditQuotation = () => {
+const EditSaleOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -31,8 +31,8 @@ const EditQuotation = () => {
   const [remarks, setRemarks] = useState(""); // State for remarks textarea
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("1 year warranty against manufacturing defects"); // State for warranty/guarantee textarea
   const { sales } = useParams();
-
-  const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+  console.log("Sales Order ID from URL:", sales); 
+  const SALESORDER_API_URL = "https://api.panvic.in/salesorders";
   const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
@@ -43,10 +43,10 @@ const EditQuotation = () => {
 
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`${QUOTATION_API_URL}/${sales}`, {
+        const response = await axios.get(`${SALESORDER_API_URL}/${sales}/`, {
           withCredentials: true,
         });
-        console.log(response.data);
+        console.log("Data", response.data);
         if (response.data) {
           setQuotation(response.data);
           setRemarks(response.data.remarks || ""); // Set initial remarks from API
@@ -140,7 +140,7 @@ const EditQuotation = () => {
       console.log("Quotation data to be sent:", quotationData);
 
       const quotationResponse = await axios.put(
-        `${QUOTATION_API_URL}/${sales}`,
+        `${SALESORDER_API_URL}/${sales}`,
         quotationData,
         {
           headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ const EditQuotation = () => {
         console.log("Items data to be sent as a list:", itemsData);
 
         const itemsResponse = await axios.put(
-          `${QUOTATION_API_URL}/${sales}/items/`,
+          `${SALESORDER_API_URL}/${sales}/items/`,
           itemsData,
           {
             headers: { "Content-Type": "application/json" },
@@ -321,4 +321,4 @@ const EditQuotation = () => {
   );
 };
 
-export default EditQuotation;
+export default EditSaleOrder;

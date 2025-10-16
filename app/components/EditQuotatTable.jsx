@@ -56,8 +56,8 @@ const QuotatTable = React.memo(({
   });
   const [totalAmount, setTotalAmount] = useState(0);
   const [columns, setColumns] = useState({
-    customerCode: true,
-    customerDescription: true,
+    customerCode: false,
+    customerDescription: false,
     Image: true,
     ItemCode: true,
     Brand: true,
@@ -97,7 +97,7 @@ const QuotatTable = React.memo(({
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.panvic.in/quotation/${qouteId}/items/`);
+        const response = await fetch(`https://api.panvic.in/salesorder/${qouteId}/items/`);
         if (!response.ok) throw new Error("Failed to fetch quotation items");
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
@@ -270,7 +270,7 @@ const QuotatTable = React.memo(({
           lumens: null,
         };
         const response = await axios.post(
-          `https://api.panvic.in/quotation/${qouteId}/items/`,
+          `https://api.panvic.in/salesorder/${qouteId}/items/`,
           newItem,
           { withCredentials: true }
         );
@@ -357,7 +357,7 @@ const QuotatTable = React.memo(({
       try {
         const calculatedAmount = Number(editRow.qty || 0) * Number(editRow.netPrice || 0);
         const response = await axios.put(
-          `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}`,
+          `https://api.panvic.in/salesorder/${qouteId}/items/${editRow.id}/`,
           {
             product_id: editRow.itemCode || "",
             customercode: editRow.customerCode || "",
@@ -418,7 +418,7 @@ const QuotatTable = React.memo(({
       const itemId = row.id;
       const amountToSubtract = row.amount;
       try {
-        await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}`, {
+        await axios.delete(`https://api.panvic.in/salesorder/${qouteId}/items/${itemId}/`, {
           withCredentials: true,
         });
         setRows((prevRows) => prevRows.filter((_, i) => i !== index));
@@ -463,9 +463,8 @@ const QuotatTable = React.memo(({
           <thead>
             <tr>
               <th>SR NO</th>
-              {columns.Image && <th>Image</th>}
-              {columns.customerCode && <th>Cust Code</th>}
-              {columns.customerDescription && <th>Cust Desc</th>}
+              {/* {columns.customerCode && <th>Cust Code</th>} */}
+              {/* {columns.customerDescription && <th>Cust Desc</th>} */}
               {columns.ItemCode && <th>Item Code</th>}
               <th>Item Name</th>
               {columns.Brand && <th>Brand</th>}
@@ -482,17 +481,6 @@ const QuotatTable = React.memo(({
             {rows.map((row, index) => (
               <tr key={row.id}>
                 <td>{index + 1}</td>
-                {columns.Image && (
-                  <td>
-                    {row.image && (
-                      <img
-                        src={`https://api.panvic.in${row.image}`}
-                        alt={row.itemName}
-                        className="product_img"
-                      />
-                    )}
-                  </td>
-                )}
                 {columns.customerCode && (
                   <td>
                     {editRowIndex === index ? (

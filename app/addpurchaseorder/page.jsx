@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import SalesOrderInfo from "../components/SalesInfo";
+import PurchaseOrderInfo from "../components/PurchaseInfo";
 import CustomerModal from "../components/customerModal";
 import GSTCalculator from "../components/GSTCalculator";
-import GetSalesOrdersTable from "../components/Getsalesbyquotation";
+import NewPurcahseOrderItems from "../components/GetPurchaseOrdersTable";
 
-const SalesOrder = () => {
+const AddPurchaseOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [rowsData, setRowsData] = useState([]);
@@ -54,9 +54,9 @@ const SalesOrder = () => {
   const handleGSTChange = useCallback((details) => setGstDetails(details), []);
 
   const generateSalesOrderNumber = () => {
-    if (salesOrderSequence === null) return "PLSO-Loading...";
+    if (salesOrderSequence === null) return "PLPO-Loading...";
     const sequenceStr = salesOrderSequence.toString().padStart(3, "0");
-    return `PLSO-${sequenceStr}`;
+    return `PLPO-${sequenceStr}`;
   };
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const SalesOrder = () => {
           const lastSequence = salesOrders
             .map((order) => {
               const match = order.salesorder_no
-                ? order.salesorder_no.match(/^PLSO-(\d+)$/)
+                ? order.salesorder_no.match(/^PLPO-(\d+)$/)
                 : null;
               return match ? parseInt(match[1], 10) : 0;
             })
@@ -89,7 +89,7 @@ const SalesOrder = () => {
           setSalesOrderSequence(1);
         }
       } catch (error) {
-        console.error("Error fetching sales orders:", error);
+        console.error("Error fetching Purchase Orders:", error);
         setSalesOrderId(1);
         setSalesOrderSequence(1);
       }
@@ -100,7 +100,7 @@ const SalesOrder = () => {
 
 const handleSaveSalesOrder = async () => {
   if (salesOrderSequence === null) {
-    toast.warning("Sales order number is still loading. Please wait.");
+    toast.warning("Purchase Order number is still loading. Please wait.");
     return;
   }
 
@@ -108,7 +108,7 @@ const handleSaveSalesOrder = async () => {
     const salesOrderData = {
       salesorder_no: generateSalesOrderNumber(),
       salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
-      subject: salesOrderInfo?.Subject || "Sales Order for Products/Services",
+      subject: salesOrderInfo?.Subject || "Purchase Order for Products/Services",
       amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
       without_gst: Math.round(gstDetails.withoutGST) || 0,
       gst_amount: Math.round(gstDetails.gstAmount) || 0,
@@ -129,10 +129,10 @@ const handleSaveSalesOrder = async () => {
     );
 
     const savedSalesOrderId = response.data.salesorder_id;
-    console.log("Sales Order saved with ID:", savedSalesOrderId);
+    console.log("Purchase Order saved with ID:", savedSalesOrderId);
 
     if (!rowsData || rowsData.length === 0) {
-      toast.info("No sales order items to save.");
+      toast.info("No Purchase Order items to save.");
       return;
     }
 
@@ -164,15 +164,15 @@ const handleSaveSalesOrder = async () => {
 
     await Promise.all(itemPromises); // wait until ALL items are saved ✅
 
-    toast.success("Sales order and items saved successfully!");
+    toast.success("Purchase Order and items saved successfully!");
     setSalesOrderSequence((prev) => prev + 1);
     setSalesOrderId((prev) => prev + 1);
 
     // ✅ Redirect after all saves
     window.location.href = "/saleorders";
   } catch (error) {
-    console.error("Error saving sales order:", error.response?.data || error.message);
-    toast.error("Failed to save sales order. Please try again.");
+    console.error("Error saving Purchase Order:", error.response?.data || error.message);
+    toast.error("Failed to save Purchase Order. Please try again.");
   }
 };
 
@@ -190,10 +190,10 @@ const handleSaveSalesOrder = async () => {
               </div>
               <div className="tm_invoice_right tm_text_right">
                 <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  SALES ORDER
+                  PURCHASE ORDER
                 </div>
                 <p className="tm_invoice_number tm_m0">
-                  Sales Order No:{" "}
+                  Purchase Order No:{" "}
                   <b className="tm_primary_color">
                     {generateSalesOrderNumber()}
                   </b>
@@ -309,7 +309,7 @@ const handleSaveSalesOrder = async () => {
                 <p className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                   {InfoModal && (
-                    <SalesOrderInfo
+                    <PurchaseOrderInfo
                       setInfoModal={setInfoModal}
                       onConfirm={handleSalesOrderConfirm}
                     />
@@ -336,8 +336,8 @@ const handleSaveSalesOrder = async () => {
                   <p style={{ margin: 0 }}>
                     Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp;
                     | &nbsp; Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp;
-                    | &nbsp; Issue Slip No:{" "}
-                    <b>{salesOrderInfo.IssueSlipNo}</b>
+                    | &nbsp; Referred By:{" "}
+                    <b>{salesOrderInfo.refredBy}</b>
                   </p>
                 )}
               </div>
@@ -359,7 +359,7 @@ const handleSaveSalesOrder = async () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <GetSalesOrdersTable onRowsChange={handleRowsChange} />
+                  <NewPurcahseOrderItems onRowsChange={handleRowsChange} />
                   {showModalClientDetails && (
                     <CustomerModal
                       onClose={closeModal}
@@ -431,4 +431,4 @@ const handleSaveSalesOrder = async () => {
   );
 };
 
-export default SalesOrder;
+export default AddPurchaseOrder;
