@@ -842,10 +842,6 @@ label, .form-label {
     font-size: 13px;
 }
 /* Highlight new client */
-.new-client {
-  background-color: #f5f5f5; /* Light grey background */
-  transition: background-color 1s ease;
-}
 
 /* Micro link styling */
 .micro-links {

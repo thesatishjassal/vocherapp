@@ -52,6 +52,7 @@ const AddClientForm = () => {
         setNewClientId(response.data.id); // Track new client for highlight
         resetForm();
         setShowModal(false);
+        window.location.reload();
       } catch (error) {
         console.error("Add client error:", error);
         if (error.response?.data?.detail === "Phone Number already exists!") {

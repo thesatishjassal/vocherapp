@@ -48,6 +48,43 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
   return (
     <>
       <div className="table-responsive">
+                              <div className="micro-links d-flex gap-1">Go to: 
+                        <Link
+                          href={`/getquotation`}
+                          className="micro-link"
+                          title="Go to Quotation"
+                        >
+                          Quotations
+                        </Link>
+                        <Link
+                          href={`/saleorders`}
+                          className="micro-link"
+                          title="Go to Sales Order"
+                        >
+                          Sales Orders
+                        </Link>
+                        <Link
+                          href={`/getinvouchers`}
+                          className="micro-link"
+                          title="Go to Invoice"
+                        >
+                          In Voucher
+                        </Link>
+                        <Link
+                          href={`/getoutvouchers`}
+                          className="micro-link"
+                          title="Go to Out Voucher"
+                        >
+                          Out Vocuher
+                        </Link>
+                        <Link
+                          href={`/purchase-orders`}
+                          className="micro-link"
+                          title="Go to Purchase Order"
+                        >
+                          Purchase Order
+                        </Link>
+                      </div>
         <table className="tm_round_border table align-items-center justify-content-center mb-0">
           <thead>
             <tr>
@@ -123,7 +160,7 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
                       >
                         <i className="fa fa-trash"></i>
                       </button>
-                  
+
                     </div>
                   </td>
                 </tr>
