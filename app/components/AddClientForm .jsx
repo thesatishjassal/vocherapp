@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
@@ -10,16 +10,16 @@ import GetClients from "./getClients";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// ✅ Updated validation schema
+// Validation schema
 const validationSchema = Yup.object({
   client_name: Yup.string().required("Client Name is required"),
-  address: Yup.string(), // ✅ Optional
-  gst_number: Yup.string(), // ✅ Optional
+  address: Yup.string(),
+  gst_number: Yup.string(),
   client_phone: Yup.string().required("Contact Number is required"),
-  client_email: Yup.string().email("Invalid email format"), // ✅ Optional
+  client_email: Yup.string().email("Invalid email format"),
   client_type: Yup.string().required("Client Type is required"),
-  businessname: Yup.string(), // ✅ Optional
-  pincode: Yup.string(), // ✅ Optional
+  businessname: Yup.string(),
+  pincode: Yup.string(),
   city: Yup.string().required("City is required"),
   state: Yup.string().required("State is required"),
 });
@@ -27,6 +27,8 @@ const validationSchema = Yup.object({
 const AddClientForm = () => {
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newClientId, setNewClientId] = useState(null);
 
   const formik = useFormik({
     initialValues: {
@@ -46,7 +48,8 @@ const AddClientForm = () => {
       try {
         const response = await axios.post(`${API_URL}/clients/`, values);
         toast.success("Client added successfully!");
-        setClients((prevClients) => [...prevClients, response.data]);
+        setClients((prevClients) => [response.data, ...prevClients]); // Add new client to top
+        setNewClientId(response.data.id); // Track new client for highlight
         resetForm();
         setShowModal(false);
       } catch (error) {
@@ -60,8 +63,23 @@ const AddClientForm = () => {
     },
   });
 
-  const handleChange = (e) => {
-    formik.handleChange(e);
+  // Fetch clients on mount
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/clients/`);
+        setClients(response.data.reverse()); // Reverse to show newest first
+      } catch (error) {
+        console.error("Fetch clients error:", error);
+        toast.error("Failed to fetch clients.");
+      }
+    };
+    fetchClients();
+  }, []);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   return (
@@ -69,19 +87,18 @@ const AddClientForm = () => {
       <div className="row mx-auto p-0">
         <div className="col-12 p-0">
           <div className="card shadow-sm mb-4 rounded-3">
-            <div className="card-header  text-white p-3">
+            <div className="card-header text-white p-3">
               <h6 className="mb-0">Client Invoices</h6>
             </div>
             <div className="card-body p-4">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
                 <input
                   type="text"
-                  placeholder="Search by Client or Project"
-                  className="form-control w-100 w-md-auto"
-                  name="searchTerm"
-                  value={formik.values.searchTerm || ""}
-                  onChange={formik.handleChange}
-                  aria-label="Search by Client or Project"
+                  placeholder="Search by Client, Business, or Phone"
+                  className="form-control w-100 w-md-50"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  aria-label="Search clients"
                 />
                 <button
                   className="btn btn-primary w-100 w-md-auto"
@@ -91,7 +108,26 @@ const AddClientForm = () => {
                   Add New
                 </button>
               </div>
-              <GetClients />
+              <GetClients
+                clients={clients.filter((client) =>
+                  `${client.client_name} ${client.businessname} ${client.client_phone}`
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+                )}
+                newClientId={newClientId}
+                refreshClients={() => {
+                  const fetchClients = async () => {
+                    try {
+                      const response = await axios.get(`${API_URL}/clients/`);
+                      setClients(response.data.reverse());
+                    } catch (error) {
+                      console.error("Fetch clients error:", error);
+                      toast.error("Failed to fetch clients.");
+                    }
+                  };
+                  fetchClients();
+                }}
+              />
               {showModal && (
                 <div
                   className="modal fade show"
@@ -116,11 +152,12 @@ const AddClientForm = () => {
                           className="btn-close"
                           onClick={() => setShowModal(false)}
                           aria-label="Close"
-                        ><i className="fa-solid fa-xmark"></i></button>
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
                       </div>
                       <div className="modal-body p-4">
                         <form onSubmit={formik.handleSubmit} className="row g-3">
-                          {/* Business Details Field Group */}
                           <fieldset className="col-12">
                             <div className="row g-3">
                               <div className="col-6 col-md-6">
@@ -133,7 +170,7 @@ const AddClientForm = () => {
                                   name="businessname"
                                   placeholder="Enter Business Name"
                                   value={formik.values.businessname}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.businessname && formik.errors.businessname
                                       ? "is-invalid"
@@ -156,7 +193,7 @@ const AddClientForm = () => {
                                   name="gst_number"
                                   placeholder="Enter GST Number"
                                   value={formik.values.gst_number}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.gst_number && formik.errors.gst_number
                                       ? "is-invalid"
@@ -179,7 +216,7 @@ const AddClientForm = () => {
                                   name="address"
                                   placeholder="Enter Address"
                                   value={formik.values.address}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.address && formik.errors.address
                                       ? "is-invalid"
@@ -200,7 +237,7 @@ const AddClientForm = () => {
                                   name="pincode"
                                   placeholder="Enter Pincode"
                                   value={formik.values.pincode}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.pincode && formik.errors.pincode
                                       ? "is-invalid"
@@ -221,7 +258,7 @@ const AddClientForm = () => {
                                   name="city"
                                   placeholder="Enter City"
                                   value={formik.values.city}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.city && formik.errors.city ? "is-invalid" : ""
                                   }`}
@@ -240,7 +277,7 @@ const AddClientForm = () => {
                                   name="state"
                                   placeholder="Enter State"
                                   value={formik.values.state}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.state && formik.errors.state ? "is-invalid" : ""
                                   }`}
@@ -251,8 +288,6 @@ const AddClientForm = () => {
                               </div>
                             </div>
                           </fieldset>
-
-                          {/* Contact Details Field Group */}
                           <fieldset className="col-12">
                             <div className="row g-3">
                               <div className="col-6 col-md-6">
@@ -265,7 +300,7 @@ const AddClientForm = () => {
                                   name="client_name"
                                   placeholder="Enter Client Name"
                                   value={formik.values.client_name}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.client_name && formik.errors.client_name
                                       ? "is-invalid"
@@ -288,7 +323,7 @@ const AddClientForm = () => {
                                   name="client_phone"
                                   placeholder="Enter Contact Number"
                                   value={formik.values.client_phone}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.client_phone && formik.errors.client_phone
                                       ? "is-invalid"
@@ -311,7 +346,7 @@ const AddClientForm = () => {
                                   name="client_email"
                                   placeholder="Enter Email Address"
                                   value={formik.values.client_email}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-control ${
                                     formik.touched.client_email && formik.errors.client_email
                                       ? "is-invalid"
@@ -332,7 +367,7 @@ const AddClientForm = () => {
                                   id="client_type"
                                   name="client_type"
                                   value={formik.values.client_type}
-                                  onChange={handleChange}
+                                  onChange={formik.handleChange}
                                   className={`form-select ${
                                     formik.touched.client_type && formik.errors.client_type
                                       ? "is-invalid"
@@ -352,8 +387,6 @@ const AddClientForm = () => {
                               </div>
                             </div>
                           </fieldset>
-
-                          {/* Form Footer */}
                           <div className="modal-footer border-0 p-4">
                             <div className="d-flex justify-content-end gap-2">
                               <button

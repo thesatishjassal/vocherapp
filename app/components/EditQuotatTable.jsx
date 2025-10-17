@@ -97,7 +97,7 @@ const QuotatTable = React.memo(({
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.panvic.in/salesorder/${qouteId}/items/`);
+        const response = await fetch(`https://api.panvic.in/quotation/${qouteId}/items/`);
         if (!response.ok) throw new Error("Failed to fetch quotation items");
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
@@ -270,7 +270,7 @@ const QuotatTable = React.memo(({
           lumens: null,
         };
         const response = await axios.post(
-          `https://api.panvic.in/salesorder/${qouteId}/items/`,
+          `https://api.panvic.in/quotation/${qouteId}/items/`,
           newItem,
           { withCredentials: true }
         );
@@ -357,7 +357,7 @@ const QuotatTable = React.memo(({
       try {
         const calculatedAmount = Number(editRow.qty || 0) * Number(editRow.netPrice || 0);
         const response = await axios.put(
-          `https://api.panvic.in/salesorder/${qouteId}/items/${editRow.id}/`,
+          `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}/`,
           {
             product_id: editRow.itemCode || "",
             customercode: editRow.customerCode || "",
@@ -418,7 +418,7 @@ const QuotatTable = React.memo(({
       const itemId = row.id;
       const amountToSubtract = row.amount;
       try {
-        await axios.delete(`https://api.panvic.in/salesorder/${qouteId}/items/${itemId}/`, {
+        await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`, {
           withCredentials: true,
         });
         setRows((prevRows) => prevRows.filter((_, i) => i !== index));
