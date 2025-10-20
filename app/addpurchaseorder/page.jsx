@@ -62,7 +62,7 @@ const AddPurchaseOrder = () => {
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/purchaseorder/", {
+        const response = await fetch("https://api.panvic.in/salesorder/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -123,7 +123,7 @@ const handleSaveSalesOrder = async () => {
     };
 
     const response = await axios.post(
-      "https://api.panvic.in/purchaseorder/",
+      "https://api.panvic.in/salesorder/",
       salesOrderData,
       { headers: { "Content-Type": "application/json" } }
     );
@@ -156,7 +156,7 @@ const handleSaveSalesOrder = async () => {
       };
 
       return axios.post(
-        `https://api.panvic.in/purchaseorder/${savedSalesOrderId}/items/`,
+        `https://api.panvic.in/salesorder/${savedSalesOrderId}/items/`,
         itemData,
         { headers: { "Content-Type": "application/json" } }
       );
