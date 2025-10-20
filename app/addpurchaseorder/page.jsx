@@ -53,7 +53,7 @@ const AddPurchaseOrder = () => {
 
   const handleGSTChange = useCallback((details) => setGstDetails(details), []);
 
-  const generateSalesOrderNumber = () => {
+  const generatePurchaseOrderNumber = () => {
     if (salesOrderSequence === null) return "PLPO-Loading...";
     const sequenceStr = salesOrderSequence.toString().padStart(3, "0");
     return `PLPO-${sequenceStr}`;
@@ -62,7 +62,7 @@ const AddPurchaseOrder = () => {
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/salesorder/", {
+        const response = await fetch("https://api.panvic.in/purchaseorder/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -74,8 +74,8 @@ const AddPurchaseOrder = () => {
         if (salesOrders && salesOrders.length > 0) {
           const lastSequence = salesOrders
             .map((order) => {
-              const match = order.salesorder_no
-                ? order.salesorder_no.match(/^PLPO-(\d+)$/)
+              const match = order.purchaseorder_no
+                ? order.purchaseorder_no.match(/^PLPO-(\d+)$/)
                 : null;
               return match ? parseInt(match[1], 10) : 0;
             })
@@ -106,7 +106,7 @@ const handleSaveSalesOrder = async () => {
 
   try {
     const salesOrderData = {
-      salesorder_no: generateSalesOrderNumber(),
+      purchaseorder_no: generatePurchaseOrderNumber(),
       salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
       subject: salesOrderInfo?.Subject || "Purchase Order for Products/Services",
       amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
@@ -118,18 +118,18 @@ const handleSaveSalesOrder = async () => {
       date: new Date().toISOString(),
       payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
       freight: salesOrderInfo?.FreightStatus || "Not Selected",
-      issue_slip_no: salesOrderInfo?.IssueSlipNo || "",
+      issue_slip_no: salesOrderInfo?.issue_slip_no || "",
       client_id: selectedCustomer?.id || 3,
     };
 
     const response = await axios.post(
-      "https://api.panvic.in/salesorder/",
+      "https://api.panvic.in/purchaseorder/",
       salesOrderData,
       { headers: { "Content-Type": "application/json" } }
     );
 
-    const savedSalesOrderId = response.data.salesorder_id;
-    console.log("Purchase Order saved with ID:", savedSalesOrderId);
+    const purchaseorder_id = response.data.purchaseorder_id;
+    console.log("Purchase Order saved with ID:", purchaseorder_id);
 
     if (!rowsData || rowsData.length === 0) {
       toast.info("No Purchase Order items to save.");
@@ -142,7 +142,7 @@ const handleSaveSalesOrder = async () => {
         product_id: item.itemCode,
         customercode: item.customerCode || "N/A",
         customerdescription: item.customerDescription || "N/A",
-        image: item.image || "https://example.com/default-image.jpg",
+        image: item.image || "",
         itemcode: item.itemCode,
         brand: item.brand || "N/A",
         mrp: parseFloat(item.mrp || 0),
@@ -156,7 +156,7 @@ const handleSaveSalesOrder = async () => {
       };
 
       return axios.post(
-        `https://api.panvic.in/salesorder/${savedSalesOrderId}/items/`,
+        `https://api.panvic.in/purchaseorder/${purchaseorder_id}/items/`,
         itemData,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -195,7 +195,7 @@ const handleSaveSalesOrder = async () => {
                 <p className="tm_invoice_number tm_m0">
                   Purchase Order No:{" "}
                   <b className="tm_primary_color">
-                    {generateSalesOrderNumber()}
+                    {generatePurchaseOrderNumber()}
                   </b>
                 </p>
               </div>
@@ -337,7 +337,7 @@ const handleSaveSalesOrder = async () => {
                     Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp;
                     | &nbsp; Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp;
                     | &nbsp; Referred By:{" "}
-                    <b>{salesOrderInfo.refredBy}</b>
+                    <b>{salesOrderInfo.issue_slip_no}</b>
                   </p>
                 )}
               </div>

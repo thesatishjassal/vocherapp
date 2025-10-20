@@ -3,13 +3,13 @@ import React, { useState } from "react";
 
 const PurchaseOrderInfo = ({ setInfoModal, onConfirm }) => {
   const [formData, setFormData] = useState({
-    Salesperson: "",
+    purchaseperson: "",
     Subject: "",
     PaymentMethod: "",
     AmountPaid: "",
     AmountToPay: "",
     FreightStatus: "",
-    refredBy: "", // ✅ New field
+    issue_slip_no: "", // ✅ New field
   });
 
   const handleChange = (e) => {
@@ -24,13 +24,13 @@ const PurchaseOrderInfo = ({ setInfoModal, onConfirm }) => {
     e.preventDefault();
     onConfirm(formData);
     setFormData({
-      Salesperson: "",
+      purchaseperson: "",
       Subject: "",
       PaymentMethod: "",
       AmountPaid: "",
       AmountToPay: "",
       FreightStatus: "",
-      refredBy: "", // ✅ Reset new field
+      issue_slip_no: "", // ✅ Reset new field
     });
     setInfoModal(false);
   };
@@ -67,13 +67,13 @@ const PurchaseOrderInfo = ({ setInfoModal, onConfirm }) => {
 
               <div className="modal-body py-3">
                 <form onSubmit={handleSubmit} className="row g-3">
-                  {/* Salesperson */}
+                  {/* purchaseperson */}
                   <div className="col-md-6">
                     <input
                       type="text"
-                      name="Salesperson"
-                      placeholder="Salesperson"
-                      value={formData.Salesperson}
+                      name="purchaseperson"
+                      placeholder="purchaseperson"
+                      value={formData.purchaseperson}
                       onChange={handleChange}
                       className="form-control"
                       required
@@ -97,9 +97,9 @@ const PurchaseOrderInfo = ({ setInfoModal, onConfirm }) => {
                   <div className="col-md-6">
                     <input
                       type="text"
-                      name="refredBy"
+                      name="issue_slip_no"
                       placeholder="Referred By"
-                      value={formData.refredBy}
+                      value={formData.issue_slip_no}
                       onChange={handleChange}
                       className="form-control"
                       required

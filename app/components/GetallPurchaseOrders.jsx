@@ -5,11 +5,11 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/purchaseorders/";
+const API_URL = "https://api.panvic.in/purchaseorder/";
 const CLIENTS_API_URL = "https://api.panvic.in/clients/";
 
 const GetPurchaseOrderTable = () => {
-  const [salesOrders, setSalesOrders] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilters, setStatusFilters] = useState({
     active: false,
@@ -18,10 +18,9 @@ const GetPurchaseOrderTable = () => {
   });
   const [sortOrder, setSortOrder] = useState("oldest");
 
-  const formatSalesOrderNo = (soNo) => {
-    if (!soNo) return "N/A";
-    const isNumeric = /^\d+$/.test(soNo);
-    return isNumeric ? `PLSO-${soNo}` : soNo;
+  const formatPurchaseOrderNo = (poNo) => {
+    if (!poNo) return "N/A";
+    return poNo;
   };
 
   const fetchAllClients = async () => {
@@ -39,139 +38,76 @@ const GetPurchaseOrderTable = () => {
   };
 
   useEffect(() => {
-    const fetchSalesOrders = async () => {
+    const fetchPurchaseOrders = async () => {
       try {
-        const [soResponse, clientsMap] = await Promise.all([
+        const [poResponse, clientsMap] = await Promise.all([
           axios.get(API_URL, { withCredentials: true }),
           fetchAllClients(),
         ]);
-        const salesOrdersWithClientNames = soResponse.data.map((so) => ({
-          ...so,
-          client_name: clientsMap[so.client_id] || null,
-          status: so.status || "Active",
+
+        const mappedPOs = poResponse.data.map((po) => ({
+          ...po,
+          client_name: clientsMap[po.client_id] || "N/A",
+          status: po.status || "active",
         }));
-        const sortedSalesOrders = salesOrdersWithClientNames.sort(
-          (a, b) => a.salesorder_id - b.salesorder_id
-        );
-        setSalesOrders(sortedSalesOrders);
+
+        const sortedPOs = mappedPOs.sort((a, b) => a.purchaseorder_id - b.purchaseorder_id);
+        setPurchaseOrders(sortedPOs);
       } catch (error) {
         toast.error("Failed to load Purchase Orders!");
         console.error("Fetch error:", error);
       }
     };
-    fetchSalesOrders();
+
+    fetchPurchaseOrders();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this sales order?")) return;
+    if (!confirm("Are you sure you want to delete this purchase order?")) return;
     try {
       const response = await axios.delete(`${API_URL}${id}/`, { withCredentials: true });
       if (response.status === 204 || response.status === 200) {
-        setSalesOrders((prev) => prev.filter((so) => so.salesorder_id !== id));
-        toast.success("Sales order deleted successfully!");
+        setPurchaseOrders((prev) => prev.filter((po) => po.purchaseorder_id !== id));
+        toast.success("Purchase order deleted successfully!");
       }
     } catch (error) {
       toast.error(`Failed to delete: ${error.message}`);
     }
   };
 
-  const handleClone = async (id) => {
-    if (!confirm("Are you sure you want to clone this sales order?")) return;
-    try {
-      const response = await axios.post(`${API_URL}${id}/clone`, {}, { withCredentials: true });
-      if (response.status === 200 || response.status === 201) {
-        const newSO = {
-          ...response.data,
-          client_name: salesOrders.find((so) => so.salesorder_id === id)?.client_name || null,
-          status: response.data.status || "Active",
-        };
-        setSalesOrders((prev) => [newSO, ...prev].sort((a, b) => a.salesorder_id - b.salesorder_id));
-        toast.success("Sales order cloned successfully!");
-      }
-    } catch (error) {
-      toast.error(`Failed to clone: ${error.message}`);
-    }
+  const formatDateTime = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Kolkata",
+    });
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      const response = await axios.put(`${API_URL}${id}/`, { status: newStatus }, { withCredentials: true });
-      if (response.status === 200 || response.status === 201) {
-        setSalesOrders((prev) =>
-          prev.map((so) => (so.salesorder_id === id ? { ...so, status: newStatus } : so))
-        );
-        toast.success(`Status updated to ${newStatus}`);
-      }
-    } catch (error) {
-      toast.error(`Failed to update status: ${error.message}`);
-    }
-  };
-
-  const handleCheckboxChange = (status) => {
-    setStatusFilters((prev) => ({ ...prev, [status]: !prev[status] }));
-  };
-
-  const statusCounts = salesOrders.reduce(
-    (acc, so) => {
-      const status = so.status?.toLowerCase() || "active";
-      if (status === "active") acc.active += 1;
-      if (status === "mature") acc.mature += 1;
-      if (status === "lost") acc.lost += 1;
-      return acc;
-    },
-    { active: 0, mature: 0, lost: 0 }
-  );
-
-  const filteredSalesOrders = salesOrders
-    .filter((so) => {
+  const filteredPOs = purchaseOrders
+    .filter((po) => {
       const matchesSearch =
-        (so.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (so.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (so.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
-      const status = so.status?.toLowerCase() || "active";
+        (po.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (po.purchaseperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (po.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+      const status = po.status?.toLowerCase() || "active";
       const selectedStatuses = Object.keys(statusFilters).filter((key) => statusFilters[key]);
       return matchesSearch && (selectedStatuses.length === 0 || selectedStatuses.includes(status));
     })
     .sort((a, b) => {
-      if (sortOrder === "latest") return b.salesorder_id - a.salesorder_id;
-      if (sortOrder === "oldest") return a.salesorder_id - b.salesorder_id;
+      if (sortOrder === "latest") return b.purchaseorder_id - a.purchaseorder_id;
+      if (sortOrder === "oldest") return a.purchaseorder_id - b.purchaseorder_id;
       if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
       if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
       return 0;
     });
-
-  const getBadgeClass = (status) => {
-    const s = status?.toLowerCase() || "active";
-    switch (s) {
-      case "active":
-        return "badge bg-success";
-      case "mature":
-        return "badge bg-primary";
-      case "lost":
-        return "badge bg-danger";
-      default:
-        return "badge bg-success";
-    }
-  };
-
-const formatDateTime = (isoString) => {
-  if (!isoString) return "N/A";
-  const date = new Date(isoString);
-
-  // Check if date is valid
-  if (isNaN(date.getTime())) return "Invalid Date";
-
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata", // Ensures correct Indian time
-  });
-};
-
 
   return (
     <div className="card">
@@ -191,43 +127,40 @@ const formatDateTime = (isoString) => {
                 <th>Date</th>
                 <th className="d-none d-md-table-cell">ID</th>
                 <th>Client Name</th>
-                <th>Sales Order No</th>
-                <th className="d-none d-lg-table-cell">Salesperson</th>
-                {/* <th>Subject</th> */}
-                {/* <th className="d-none d-lg-table-cell">Without GST</th> */}
+                <th>Purchase Order No</th>
+                <th className="d-none d-lg-table-cell">Purchase Person</th>
                 <th>Freight</th>
                 <th>Payment Mode</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th>Total Amount</th>
-                {/* <th>Status</th> */}
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredSalesOrders.length > 0 ? (
-                filteredSalesOrders.map((so, index) => (
-                  <tr key={so.salesorder_id}>
+              {filteredPOs.length > 0 ? (
+                filteredPOs.map((po, index) => (
+                  <tr key={po.purchaseorder_id}>
                     <td>{index + 1}</td>
-                    <td>{formatDateTime(so.date)}</td>
-                    <td className="d-none d-md-table-cell">{so.salesorder_id}</td>
-                    <td>{so.client_name || "N/A"}</td>
-                    <td>{formatSalesOrderNo(so.salesorder_no)}</td>
-                    <td className="d-none d-lg-table-cell">{so.salesperson}</td>
-                    <td>{so.freight || "N/A"}</td>
-                    <td>{so.payment_method || "N/A"}</td>
-                    <td className="d-none d-lg-table-cell">{so.gst_amount}</td>
-                    <td>{so.amount_with_gst}</td>
+                    <td>{formatDateTime(po.date)}</td>
+                    <td className="d-none d-md-table-cell">{po.purchaseorder_id}</td>
+                    <td>{po.client_name}</td>
+                    <td>{formatPurchaseOrderNo(po.purchaseorder_no)}</td>
+                    <td className="d-none d-lg-table-cell">{po.purchaseperson || "N/A"}</td>
+                    <td>{po.freight || "N/A"}</td>
+                    <td>{po.payment_method || "N/A"}</td>
+                    <td className="d-none d-lg-table-cell">{po.gst_amount}</td>
+                    <td>{po.amount_with_gst}</td>
                     <td className="action-column">
-                      <Link href={`/editsalesorder/${so.salesorder_id}`}>
+                      <Link href={`/editpurchaseorder/${po.purchaseorder_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>
                       </Link>
-                      <Link href={`/viewsalesorder/${so.salesorder_id}`}>
+                      <Link href={`/viewpurchaseorder/${po.purchaseorder_id}`}>
                         <i className="fas fa-eye text-primary me-2" title="View"></i>
                       </Link>
                       <i
                         className="fas fa-trash text-danger me-2"
                         title="Delete"
-                        onClick={() => handleDelete(so.salesorder_id)}
+                        onClick={() => handleDelete(po.purchaseorder_id)}
                         style={{ cursor: "pointer" }}
                       ></i>
                     </td>
