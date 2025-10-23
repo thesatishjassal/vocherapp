@@ -21,6 +21,7 @@ const ProductsTable = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [filterBrand, setFilterBrand] = useState(""); // New state for brand filter
   const [showNoImageOnly, setShowNoImageOnly] = useState(false);
+  const [showNullOrZeroMRP, setShowNullOrZeroMRP] = useState(false);
   const [showModalExcel, setShowModalExcel] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +36,7 @@ const ProductsTable = () => {
   const prevFilterCategory = useRef("");
   const prevFilterBrand = useRef(""); // New ref for brand filter
   const prevShowNoImageOnly = useRef(false);
+  const prevShowNullOrZeroMRP = useRef(false);
   const prevSortColumn = useRef(null);
   const prevSortOrder = useRef("asc");
 
@@ -147,6 +149,7 @@ const ProductsTable = () => {
   const handleCategoryFilter = (e) => setFilterCategory(e.target.value);
   const handleBrandFilter = (e) => setFilterBrand(e.target.value); // New handler for brand filter
   const handleNoImageFilter = (e) => setShowNoImageOnly(e.target.checked);
+  const handleNullOrZeroMRPFilter = (e) => setShowNullOrZeroMRP(e.target.checked);
 
   // Sorting handler
   const handleSort = (column) => {
@@ -299,6 +302,11 @@ const ProductsTable = () => {
       filtered = filtered.filter((product) => !product.thumbnail);
     }
 
+    // Apply null or zero MRP filter
+    if (showNullOrZeroMRP) {
+      filtered = filtered.filter((product) => product.price == null || product.price === 0);
+    }
+
     // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
@@ -322,6 +330,7 @@ const ProductsTable = () => {
       filterCategory !== prevFilterCategory.current ||
       filterBrand !== prevFilterBrand.current ||
       showNoImageOnly !== prevShowNoImageOnly.current ||
+      showNullOrZeroMRP !== prevShowNullOrZeroMRP.current ||
       sortColumn !== prevSortColumn.current ||
       sortOrder !== prevSortOrder.current
     ) {
@@ -335,6 +344,7 @@ const ProductsTable = () => {
     prevFilterCategory.current = filterCategory;
     prevFilterBrand.current = filterBrand;
     prevShowNoImageOnly.current = showNoImageOnly;
+    prevShowNullOrZeroMRP.current = showNullOrZeroMRP;
     prevSortColumn.current = sortColumn;
     prevSortOrder.current = sortOrder;
   }, [
@@ -343,6 +353,7 @@ const ProductsTable = () => {
     filterCategory,
     filterBrand,
     showNoImageOnly,
+    showNullOrZeroMRP,
     sortColumn,
     sortOrder,
   ]);
@@ -810,6 +821,18 @@ const ProductsTable = () => {
               />
               <label className="form-check-label" htmlFor="noImageFilter">
                 Show products without images
+              </label>
+            </div>
+            <div className="form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="nullOrZeroMRPFilter"
+                checked={showNullOrZeroMRP}
+                onChange={handleNullOrZeroMRPFilter}
+              />
+              <label className="form-check-label" htmlFor="nullOrZeroMRPFilter">
+                Show products where MRP is null or 0
               </label>
             </div>
             <button className="btn btn-info btn-md" onClick={exportToCSV}>

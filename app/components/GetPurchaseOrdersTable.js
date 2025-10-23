@@ -26,15 +26,18 @@ const NewPurchaseOrderItems = ({ onRowsChange }) => {
   };
 
   const handleAddRow = (newItem) => {
+    let updatedRows;
     if (editRowIndex !== null) {
-      const updatedRows = [...rows];
+      updatedRows = [...rows];
       updatedRows[editRowIndex] = newItem;
-      setRows(updatedRows);
       setEditRowIndex(null);
     } else {
-      setRows((prev) => [...prev, newItem]);
+      updatedRows = [...rows, newItem];
     }
-    onRowsChange(rows);
+
+    setRows(updatedRows);
+    onRowsChange(updatedRows); // ✅ send updated array
+    console.log("✅ Updated Rows:", updatedRows);
   };
 
   const handleFieldChange = (field, value) => {
@@ -99,7 +102,11 @@ const NewPurchaseOrderItems = ({ onRowsChange }) => {
                   </button>
                   <button
                     className="btn"
-                    onClick={() => setRows(rows.filter((_, idx) => idx !== i))}
+                    onClick={() => {
+                      const updatedRows = rows.filter((_, idx) => idx !== i);
+                      setRows(updatedRows);
+                      onRowsChange(updatedRows);
+                    }}
                   >
                     🗑️
                   </button>

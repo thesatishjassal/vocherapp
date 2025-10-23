@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import PurchaseOrderInfo from "../components/PurchaseInfo";
 import CustomerModal from "../components/customerModal";
 import GSTCalculator from "../components/GSTCalculator";
-import NewPurcahseOrderItems from "../components/GetPurchaseOrdersTable";
+import NewPurchaseOrderItems from "../components/GetPurchaseOrdersTable";
 
 const AddPurchaseOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -24,7 +24,6 @@ const AddPurchaseOrder = () => {
   });
   const [remarks, setRemarks] = useState("");
 
-  // ✅ FIX: useMemo ensures recalculation happens on change
   const totalAmount = useMemo(() => {
     const total = rowsData.reduce((sum, r) => {
       const amt = parseFloat(r.amount) || 0;
@@ -43,6 +42,7 @@ const AddPurchaseOrder = () => {
   }, []);
 
   const handleRowsChange = useCallback((rows) => {
+    console.log("✅ Received rows from child:", rows);
     setRowsData(rows || []);
   }, []);
 
@@ -98,90 +98,90 @@ const AddPurchaseOrder = () => {
     fetchLastSalesOrderData();
   }, []);
 
-const handleSaveSalesOrder = async () => {
-  if (salesOrderSequence === null) {
-    toast.warning("Purchase Order number is still loading. Please wait.");
-    return;
-  }
-
-  try {
-    const salesOrderData = {
-      purchaseorder_no: generatePurchaseOrderNumber(),
-      salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
-      subject: salesOrderInfo?.Subject || "Purchase Order for Products/Services",
-      amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-      without_gst: Math.round(gstDetails.withoutGST) || 0,
-      gst_amount: Math.round(gstDetails.gstAmount) || 0,
-      amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-      remarks,
-      status: "active",
-      date: new Date().toISOString(),
-      payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
-      freight: salesOrderInfo?.FreightStatus || "Not Selected",
-      issue_slip_no: salesOrderInfo?.issue_slip_no || "",
-      client_id: selectedCustomer?.id || 3,
-    };
-
-    const response = await axios.post(
-      "https://api.panvic.in/purchaseorder/",
-      salesOrderData,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    const purchaseorder_id = response.data.purchaseorder_id;
-    console.log("Purchase Order saved with ID:", purchaseorder_id);
-
-    if (!rowsData || rowsData.length === 0) {
-      toast.info("No Purchase Order items to save.");
+  const handleSaveSalesOrder = async () => {
+    if (salesOrderSequence === null) {
+      toast.warning("Purchase Order number is still loading. Please wait.");
       return;
     }
 
-    // ✅ Wait for ALL items to be saved before redirecting
-    const itemPromises = rowsData.map((item) => {
-      const itemData = {
-        product_id: item.itemCode,
-        customercode: item.customerCode || "N/A",
-        customerdescription: item.customerDescription || "N/A",
-        image: item.image || "",
-        itemcode: item.itemCode,
-        brand: item.brand || "N/A",
-        mrp: parseFloat(item.mrp || 0),
-        price: parseFloat(item.amount || 0),
-        quantity: parseInt(item.qty || 0, 10),
-        discount: parseFloat(item.discount || 0),
-        item_name: item.itemName || "N/A",
-        unit: item.unit || "pcs",
-        color: item.color || "N/A",
-        remarks: item.remarks || "",
+    try {
+      const salesOrderData = {
+        purchaseorder_no: generatePurchaseOrderNumber(),
+        salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
+        subject:
+          salesOrderInfo?.Subject || "Purchase Order for Products/Services",
+        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+        without_gst: Math.round(gstDetails.withoutGST) || 0,
+        gst_amount: Math.round(gstDetails.gstAmount) || 0,
+        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+        remarks,
+        status: "active",
+        date: new Date().toISOString(),
+        payment_method: salesOrderInfo?.PaymentMethod || "Not Selected",
+        freight: salesOrderInfo?.FreightStatus || "Not Selected",
+        issue_slip_no: salesOrderInfo?.issue_slip_no || "",
+        client_id: selectedCustomer?.id || 3,
       };
 
-      return axios.post(
-        `https://api.panvic.in/purchaseorder/${purchaseorder_id}/items/`,
-        itemData,
+      const response = await axios.post(
+        "https://api.panvic.in/purchaseorder/",
+        salesOrderData,
         { headers: { "Content-Type": "application/json" } }
       );
-    });
 
-    await Promise.all(itemPromises); // wait until ALL items are saved ✅
+      const purchaseorder_id = response.data.purchaseorder_id;
+      console.log("✅ Purchase Order saved with ID:", purchaseorder_id);
+      console.log("✅ Items to save:", rowsData);
 
-    toast.success("Purchase Order and items saved successfully!");
-    setSalesOrderSequence((prev) => prev + 1);
-    setSalesOrderId((prev) => prev + 1);
+      if (!rowsData || rowsData.length === 0) {
+        toast.info("No Purchase Order items to save.");
+        return;
+      }
 
-    // ✅ Redirect after all saves
-    window.location.href = "/saleorders";
-  } catch (error) {
-    console.error("Error saving Purchase Order:", error.response?.data || error.message);
-    toast.error("Failed to save Purchase Order. Please try again.");
-  }
-};
+      const itemPromises = rowsData.map((item) => {
+        const itemData = {
+          product_id: item.itemCode,
+          customercode: item.customerCode || "N/A",
+          customerdescription: item.customerDescription || "N/A",
+          image: item.image || "",
+          itemcode: item.itemCode,
+          brand: item.brand || "N/A",
+          mrp: parseFloat(item.mrp || 0),
+          price: parseFloat(item.amount || 0),
+          quantity: parseInt(item.qty || 0, 10),
+          discount: parseFloat(item.discount || 0),
+          item_name: item.itemName || "N/A",
+          unit: item.unit || "pcs",
+          color: item.color || "N/A",
+          remarks: item.remarks || "",
+        };
+
+        return axios.post(
+          `https://api.panvic.in/purchaseorder/${purchaseorder_id}/items/`,
+          itemData,
+          { headers: { "Content-Type": "application/json" } }
+        );
+      });
+
+      await Promise.all(itemPromises);
+      toast.success("✅ Purchase Order and items saved successfully!");
+      setSalesOrderSequence((prev) => prev + 1);
+      setSalesOrderId((prev) => prev + 1);
+      window.location.href = "/purchase-orders";
+    } catch (error) {
+      console.error(
+        "❌ Error saving Purchase Order:",
+        error.response?.data || error.message
+      );
+      toast.error("Failed to save Purchase Order. Please try again.");
+    }
+  };
 
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
-            {/* Header */}
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
@@ -201,7 +201,6 @@ const handleSaveSalesOrder = async () => {
               </div>
             </div>
 
-            {/* Date */}
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list mr-2">
@@ -214,7 +213,6 @@ const handleSaveSalesOrder = async () => {
               </div>
             </div>
 
-            {/* Customer & Company Info */}
             <div className="tm_invoice_head tm_mb10 d-flex justify-content-between">
               <div className="tm_invoice_left mt-0" style={{ flex: 1 }}>
                 <p className="tm_mb2">
@@ -247,7 +245,6 @@ const handleSaveSalesOrder = async () => {
                       <p>
                         {selectedCustomer.client_phone && (
                           <>
-                            {" "}
                             <strong>Mobile:</strong>{" "}
                             {selectedCustomer.client_phone}{" "}
                           </>
@@ -257,40 +254,15 @@ const handleSaveSalesOrder = async () => {
                           " | "}
                         {selectedCustomer.client_email && (
                           <>
-                            {" "}
                             <strong>Email:</strong>{" "}
                             {selectedCustomer.client_email}{" "}
                           </>
                         )}
                       </p>
                     )}
-                    {(selectedCustomer.address ||
-                      selectedCustomer.city ||
-                      selectedCustomer.state ||
-                      selectedCustomer.pincode) && (
+                    {selectedCustomer.address && (
                       <p>
-                        {selectedCustomer.address && (
-                          <>
-                            {" "}
-                            <strong>Address:</strong>{" "}
-                            {selectedCustomer.address}{" "}
-                          </>
-                        )}
-                        {selectedCustomer.address &&
-                          (selectedCustomer.city ||
-                            selectedCustomer.state ||
-                            selectedCustomer.pincode) &&
-                          ", "}
-                        {selectedCustomer.city && (
-                          <>
-                            {" "}
-                            <strong>City:</strong>{" "}
-                            {selectedCustomer.city}{" "}
-                          </>
-                        )}
-                        {selectedCustomer.state && `, ${selectedCustomer.state}`}
-                        {selectedCustomer.pincode &&
-                          ` - ${selectedCustomer.pincode}`}
+                        <strong>Address:</strong> {selectedCustomer.address}
                       </p>
                     )}
                     {selectedCustomer.gst_number && (
@@ -332,18 +304,9 @@ const handleSaveSalesOrder = async () => {
                 <br />
                 Salesperson:{" "}
                 {salesOrderInfo && <b>{salesOrderInfo.Salesperson}</b>}
-                {salesOrderInfo && (
-                  <p style={{ margin: 0 }}>
-                    Payment Method: <b>{salesOrderInfo.PaymentMethod}</b> &nbsp;
-                    | &nbsp; Freight: <b>{salesOrderInfo.FreightStatus}</b>&nbsp;
-                    | &nbsp; Referred By:{" "}
-                    <b>{salesOrderInfo.issue_slip_no}</b>
-                  </p>
-                )}
               </div>
             </div>
 
-            {/* Subject */}
             <div className="d-flex mb-2 justify-content-between">
               <p className="tm_mb2">
                 Subject:{" "}
@@ -355,11 +318,10 @@ const handleSaveSalesOrder = async () => {
               </p>
             </div>
 
-            {/* Items Table */}
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <NewPurcahseOrderItems onRowsChange={handleRowsChange} />
+                  <NewPurchaseOrderItems onRowsChange={handleRowsChange} />
                   {showModalClientDetails && (
                     <CustomerModal
                       onClose={closeModal}
@@ -382,7 +344,6 @@ const handleSaveSalesOrder = async () => {
                 </div>
 
                 <div className="tm_right_footer">
-                  {/* ✅ Pass recalculated totalAmount */}
                   <GSTCalculator
                     totalAmount={totalAmount}
                     onGSTChange={handleGSTChange}
@@ -394,14 +355,11 @@ const handleSaveSalesOrder = async () => {
             <hr />
             <p>
               <b>
-                <i>
-                  Thank You for considering us for your needs. 
-                </i>
+                <i>Thank You for considering us for your needs.</i>
               </b>
             </p>
           </div>
 
-          {/* Buttons */}
           <div className="tm_invoice_btns tm_hide_print">
             <button
               type="button"
