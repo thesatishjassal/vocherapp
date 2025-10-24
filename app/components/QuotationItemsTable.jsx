@@ -202,7 +202,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       <style jsx>{`
         @media print {
           @page {
-            size: A4 landscape;
+            size: A4 Portrait;
           }
           .no-print {
             display: none !important;
@@ -268,11 +268,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 Item Name {getSortIndicator("item_name")}
               </th>
             )}
-            {visibleColumns.unit && (
-              <th onClick={() => requestSort("unit")}>
-                Unit {getSortIndicator("unit")}
-              </th>
-            )}
             {visibleColumns.brand && (
               <th onClick={() => requestSort("brand")}>
                 Brand {getSortIndicator("brand")}
@@ -281,6 +276,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.qty && (
               <th onClick={() => requestSort("quantity")}>
                 Qty {getSortIndicator("quantity")}
+              </th>
+            )}
+            {visibleColumns.unit && (
+              <th onClick={() => requestSort("unit")}>
+                Unit {getSortIndicator("unit")}
               </th>
             )}
             {visibleColumns.mrp && (
@@ -421,9 +421,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                     </span>
                   </td>
                 )}
-                {visibleColumns.unit && <td>{item.unit}</td>}
                 {visibleColumns.brand && <td>{item.brand}</td>}
                 {visibleColumns.qty && <td>{item.quantity}</td>}
+                {visibleColumns.unit && <td>{item.unit}</td>}
                 {visibleColumns.mrp && <td>{item.mrp}</td>}
                 {visibleColumns.discount && <td>{item.discount}%</td>}
                 {visibleColumns.price && <td>{item.price}</td>}
