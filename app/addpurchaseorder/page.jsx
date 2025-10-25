@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 import PurchaseOrderInfo from "../components/PurchaseInfo";
 import CustomerModal from "../components/customerModal";
 import GSTCalculator from "../components/GSTCalculator";
-import NewPurchaseOrderItems from "../components/GetPurchaseOrdersTable";
+// import NewPurchaseOrderItems from "../components/GetPurchaseOrdersTable";
+import PurchaseOrderSourceSelector from "../components/PurchaseOrderSourceSelector";
 
 const AddPurchaseOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -107,7 +108,7 @@ const AddPurchaseOrder = () => {
     try {
       const salesOrderData = {
         purchaseorder_no: generatePurchaseOrderNumber(),
-        salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
+        purchaseperson: salesOrderInfo?.purchaseperson || "Unknown Salesperson",
         subject:
           salesOrderInfo?.Subject || "Purchase Order for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
@@ -303,7 +304,10 @@ const AddPurchaseOrder = () => {
                 GST: <b>03ADWPG0246P1Z8</b>
                 <br />
                 Salesperson:{" "}
-                {salesOrderInfo && <b>{salesOrderInfo.Salesperson}</b>}
+                {salesOrderInfo && <b>{salesOrderInfo.purchaseperson}</b>} &nbsp; |
+                Payment Method: <b>{salesOrderInfo?.PaymentMethod}</b> &nbsp; |
+                  &nbsp; Freight: <b>{salesOrderInfo?.FreightStatus}</b> <br />
+                  {/* Issue Slip No: <b>{salesOrderInfo?.issue_slip_no}</b> */}
               </div>
             </div>
 
@@ -321,7 +325,7 @@ const AddPurchaseOrder = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <NewPurchaseOrderItems onRowsChange={handleRowsChange} />
+                  <PurchaseOrderSourceSelector onRowsChange={handleRowsChange} />
                   {showModalClientDetails && (
                     <CustomerModal
                       onClose={closeModal}

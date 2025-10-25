@@ -201,7 +201,7 @@ export default async function ViewSalesOrder({ params }) {
                   <br />
                   GST: <b>03ADWPG0246P1Z8</b>
                   <br />
-                  Salesperson: {salesOrder && <b>{salesOrder.salesperson}</b>}
+                  Salesperson: {salesOrder && <b>{salesOrder.purchaseperson}</b>}
                 </p>
 
                 <p style={{ margin: 0 }}>
