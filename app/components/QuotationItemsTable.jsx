@@ -377,6 +377,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         color: "#6b7280",
                       }}
                     >
+                      {/* CCT */}
                       {(product?.cct &&
                         product.cct !== "NULL" &&
                         product.cct !== "0") ||
@@ -384,6 +385,15 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         ? `CCT: ${product?.cct ?? item?.cct} | `
                         : null}
 
+                      {/* Watt */}
+                      {(product?.watt &&
+                        product.watt !== "NULL" &&
+                        product.watt !== "0") ||
+                      (item?.watt && item.watt !== "0")
+                        ? `Watt: ${product?.watt ?? item?.watt}W | `
+                        : null}
+
+                      {/* Cutout Size */}
                       {(product?.cutoutsize && product.cutoutsize !== "0") ||
                       (product?.cutoutdia && product.cutoutdia !== "0")
                         ? `Cutout Size: ${
@@ -391,15 +401,17 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                           } | `
                         : null}
 
+                      {/* Beam Angle */}
                       {(product?.beamangle &&
                         product.beamangle !== "NULL" &&
                         product.beamangle !== "0") ||
                       (item?.beamangle && item.beamangle !== "0")
                         ? `Beam Angle: ${
                             product?.beamangle ?? item?.beamangle
-                          } | `
+                          }° | `
                         : null}
 
+                      {/* CRI */}
                       {(product?.cri &&
                         product.cri !== "NONE" &&
                         product.cri !== "0") ||
@@ -407,11 +419,23 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         ? `CRI: ${product?.cri ?? item?.Cri} | `
                         : null}
 
+                      {/* Body Color */}
                       {(product?.color && product.color !== "0") ||
                       (item?.bodycolor && item.bodycolor !== "0")
                         ? `Body Color: ${product?.color ?? item?.bodycolor} | `
                         : null}
 
+                      {/* Light Color */}
+                      {(product?.lightcolor &&
+                        product.lightcolor !== "NULL" &&
+                        product.lightcolor !== "0") ||
+                      (item?.lightcolor && item.lightcolor !== "0")
+                        ? `Light Color: ${
+                            product?.lightcolor ?? item?.lightcolor
+                          } | `
+                        : null}
+
+                      {/* Lumens */}
                       {(product?.lumens &&
                         product.lumens !== "NONE" &&
                         product.lumens !== "0") ||

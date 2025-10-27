@@ -44,7 +44,7 @@ export default async function ViewQuotation({ params }) {
 
   if (!quotation) {
     return <p>No quotation found!</p>;
-  }
+  }  
 
   return (
     <div className="card tm_container my-4">
