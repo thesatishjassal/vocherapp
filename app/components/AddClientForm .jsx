@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import GetClients from "./getClients";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,6 +26,19 @@ const validationSchema = Yup.object({
 });
 
 const AddClientForm = () => {
+  const [userDetails, setUserDetails] = useState(null);
+  created_by: userDetails ? userDetails.name : "";
+   
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
+
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,6 +56,7 @@ const AddClientForm = () => {
       pincode: "",
       city: "",
       state: "",
+      created_by: created_by
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {

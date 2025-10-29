@@ -9,7 +9,7 @@ const Header = () => {
   useEffect(() => {
     // Try to get the user_details cookie
     const userDetailsCookie = Cookies.get("user_details");
-
+    console.log("User Details Cookie:", userDetailsCookie);
     if (userDetailsCookie) {
       // Parse and set the user details if the cookie exists
       setUserDetails(JSON.parse(userDetailsCookie));

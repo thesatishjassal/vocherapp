@@ -27,17 +27,17 @@ const useDebounce = (callback, delay) => {
   return debouncedCallback;
 };
 
-const QuotatTable = React.memo(({
+const PurchaseOrderTable = React.memo(({
   items = [],
   onTotalAmountChange,
   ShowHideFiltercolModal,
   onClose,
   onRowsChange,
-  qouteId,
+  purchaseordereId,
 }) => {
   // States (unchanged)
   const [rows, setRows] = useState(items);
-  const [isLoading, setIsLoading] = useState(!items.length && qouteId);
+  const [isLoading, setIsLoading] = useState(!items.length && purchaseordereId);
   const [filterColModal, setFilterColModal] = useState(false);
   const [newRow, setNewRow] = useState({
     customerCode: "",
@@ -88,16 +88,16 @@ const QuotatTable = React.memo(({
 
   // Debug re-renders (unchanged)
   useEffect(() => {
-    console.log("QuotatTable re-rendered", { qouteId, itemsLength: items.length });
-  }, [qouteId, items.length]);
+    console.log("QuotatTable re-rendered", { purchaseordereId, itemsLength: items.length });
+  }, [purchaseordereId, items.length]);
 
   // Fetch quotation items (unchanged)
   useEffect(() => {
-    if (!qouteId || items.length) return;
+    if (!purchaseordereId || items.length) return;
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.panvic.in/quotation/${qouteId}/items/`);
+        const response = await fetch(`https://api.panvic.in/purchaseorder/${purchaseordereId}/items/`);
         if (!response.ok) throw new Error("Failed to fetch quotation items");
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
@@ -130,7 +130,7 @@ const QuotatTable = React.memo(({
       }
     };
     fetchQuotationItems();
-  }, [qouteId, items.length]);
+  }, [purchaseordereId, items.length]);
 
   // Utility functions (unchanged)
   const calculateNetPrice = useCallback((mrp, discount) => {
@@ -233,7 +233,7 @@ const QuotatTable = React.memo(({
 
   // handleAddRow (defined before handleKeyDown to avoid ReferenceError)
   const handleAddRow = useCallback(async () => {
-    if (!qouteId) {
+    if (!purchaseordereId) {
       alert("Invalid quotation ID");
       return;
     }
@@ -270,7 +270,7 @@ const QuotatTable = React.memo(({
           lumens: null,
         };
         const response = await axios.post(
-          `https://api.panvic.in/quotation/${qouteId}/items/`,
+          `https://api.panvic.in/purchaseorder/${purchaseordereId}/items/`,
           newItem,
           { withCredentials: true }
         );
@@ -322,7 +322,7 @@ const QuotatTable = React.memo(({
     } else {
       alert("Please fill in all required fields.");
     }
-  }, [newRow, calculateNetPrice, calculateAmount, onTotalAmountChange, qouteId, inputRefs.customerCode]);
+  }, [newRow, calculateNetPrice, calculateAmount, onTotalAmountChange, purchaseordereId, inputRefs.customerCode]);
 
   // Handle key down for input navigation (unchanged)
   const handleKeyDown = useCallback(
@@ -357,7 +357,7 @@ const QuotatTable = React.memo(({
       try {
         const calculatedAmount = Number(editRow.qty || 0) * Number(editRow.netPrice || 0);
         const response = await axios.put(
-          `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}/`,
+          `https://api.panvic.in/purchaseorder/${purchaseordereId}/items/${editRow.id}/`,
           {
             product_id: editRow.itemCode || "",
             customercode: editRow.customerCode || "",
@@ -405,7 +405,7 @@ const QuotatTable = React.memo(({
     } else {
       alert("Please fill in all required fields.");
     }
-  }, [editRow, editRowIndex, qouteId]);
+  }, [editRow, editRowIndex, purchaseordereId]);
 
   const handleCancelEdit = useCallback(() => {
     setEditRowIndex(null);
@@ -418,7 +418,7 @@ const QuotatTable = React.memo(({
       const itemId = row.id;
       const amountToSubtract = row.amount;
       try {
-        await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`, {
+        await axios.delete(`https://api.panvic.in/quotation/${purchaseordereId}/items/${itemId}/`, {
           withCredentials: true,
         });
         setRows((prevRows) => prevRows.filter((_, i) => i !== index));
@@ -432,7 +432,7 @@ const QuotatTable = React.memo(({
         alert("Failed to delete item. Please try again.");
       }
     },
-    [rows, qouteId, onTotalAmountChange]
+    [rows, purchaseordereId, onTotalAmountChange]
   );
 
   // Update total amount (unchanged)
@@ -756,7 +756,7 @@ const QuotatTable = React.memo(({
                     value={newRow.discount}
                     onChange={(e) => debouncedHandleFieldChange("discount", e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e)}
-                    placeholder="Discount (%)"
+                    placeholder="Disc (%)"
                     className="form-control input-small"
                     ref={inputRefs.discount}
                   />
@@ -799,4 +799,4 @@ const QuotatTable = React.memo(({
   );
 });
 
-export default QuotatTable;
+export default PurchaseOrderTable;

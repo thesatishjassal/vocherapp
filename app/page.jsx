@@ -1,16 +1,13 @@
-"use client"
-"use client"; // 👈 This makes sure this component runs only on client side
+"use client";
 
 import { useEffect } from "react";
 
-const Welcome = () => {
+export default function Welcome() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname === "www.panvik.in") {
-        window.location.href = "https://www.panvik.com/";
+      window.location.href = "https://www.panvik.com/";
     }
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   return <h3>Welcome!</h3>;
-};
-
-export default Welcome;
+}
