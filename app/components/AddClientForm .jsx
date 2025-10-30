@@ -26,9 +26,13 @@ const validationSchema = Yup.object({
 });
 
 const AddClientForm = () => {
+  const [clients, setClients] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newClientId, setNewClientId] = useState(null);
+
   const [userDetails, setUserDetails] = useState(null);
-  created_by: userDetails ? userDetails.name : "";
-   
+
   useEffect(() => {
     // Try to get the user_details cookie
     const userDetailsCookie = Cookies.get("user_details");
@@ -38,11 +42,6 @@ const AddClientForm = () => {
       setUserDetails(JSON.parse(userDetailsCookie));
     }
   }, []);
-
-  const [clients, setClients] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [newClientId, setNewClientId] = useState(null);
 
   const formik = useFormik({
     initialValues: {
@@ -56,11 +55,15 @@ const AddClientForm = () => {
       pincode: "",
       city: "",
       state: "",
-      created_by: created_by
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
+               // 🧠 Add logged-in user's name to payload before sending
+        // const payload = {
+        //   ...values,
+        //   created_by: userDetails?.name || "Unknown",
+        // };
         const response = await axios.post(`${API_URL}/clients/`, values);
         toast.success("Client added successfully!");
         setClients((prevClients) => [response.data, ...prevClients]); // Add new client to top
