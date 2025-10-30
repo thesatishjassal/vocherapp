@@ -99,7 +99,8 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
                 { label: "Client Name", key: "client_name" },
                 { label: "Client Phone", key: "client_phone" },
                 { label: "Client Type", key: "client_type" },
-              ].map((col) => (
+                { label: "Creted By", key: "created_by" },
+              ].map((col) => (  
                 <th
                   key={col.key}
                   className={`text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ${
@@ -144,6 +145,7 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
                   <td>{client.client_name || "-"}</td>
                   <td>{client.client_phone || "-"}</td>
                   <td>{client.client_type || "-"}</td>
+                  <td>{client.created_by || "-"}</td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       <button

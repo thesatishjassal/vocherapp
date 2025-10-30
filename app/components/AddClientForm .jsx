@@ -55,25 +55,26 @@ const AddClientForm = () => {
       pincode: "",
       city: "",
       state: "",
+      created_by:""
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
                // 🧠 Add logged-in user's name to payload before sending
-        // const payload = {
-        //   ...values,
-        //   created_by: userDetails?.name || "Unknown",
-        // };
-        const response = await axios.post(`${API_URL}/clients/`, values);
+        const payload = {
+          ...values,
+          created_by: userDetails?.name || "Unknown",
+        };
+        console.log("Submitting payload:", payload);
+        const response = await axios.post(`${API_URL}/clients/`, payload);
         toast.success("Client added successfully!");
         setClients((prevClients) => [response.data, ...prevClients]); // Add new client to top
         setNewClientId(response.data.id); // Track new client for highlight
         resetForm();
         setShowModal(false);
-        window.location.reload();
       } catch (error) {
-        console.error("Add client error:", error);
-        if (error.response?.data?.detail === "Phone Number already exists!") {
+        console.error("Add client error:", error.response.data.detail);
+        if (error.response?.data?.detail === "Phone number already exists!") {
           toast.error("Phone Number already exists!");
         } else {
           toast.error("Failed to add client. Please try again.");
@@ -88,6 +89,7 @@ const AddClientForm = () => {
       try {
         const response = await axios.get(`${API_URL}/clients/`);
         setClients(response.data.reverse()); // Reverse to show newest first
+        console.log("Fetched clients:", response.data);
       } catch (error) {
         console.error("Fetch clients error:", error);
         toast.error("Failed to fetch clients.");
