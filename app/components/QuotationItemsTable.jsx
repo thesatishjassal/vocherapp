@@ -390,7 +390,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         product.watt !== "NULL" &&
                         product.watt !== "0") ||
                       (item?.watt && item.watt !== "0")
-                        ? `Watt: ${product?.watt ?? item?.watt}W | `
+                        ? `Watt: ${product?.watt ?? item?.watt} | `
                         : null}
 
                       {/* Cutout Size */}
