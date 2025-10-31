@@ -8,6 +8,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
+import Cookies from "js-cookie";
 
 const EditQuotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -31,6 +32,7 @@ const EditQuotation = () => {
     "1 year warranty against manufacturing defects"
   );
   const { quote } = useParams();
+  const [userDetails, setUserDetails] = useState(null);
 
   const QUOTATION_API_URL = "https://api.panvic.in/quotation";
   const CLIENT_API_URL = "https://api.panvic.in/clients/";
@@ -38,6 +40,17 @@ const EditQuotation = () => {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+useEffect(() => {
+  const userDetailsCookie = Cookies.get("user_details");
+  if (userDetailsCookie) {
+    try {
+      setUserDetails(JSON.parse(userDetailsCookie));
+    } catch (err) {
+      console.error("Invalid cookie JSON:", err);
+    }
+  }
+}, []);
   /* -------------------- Load quotation + client -------------------- */
   useEffect(() => {
     if (!quote) return;
@@ -114,6 +127,9 @@ const EditQuotation = () => {
         status: quotationInfo?.status || "active",
         client_id:
           selectedCustomer?.client_id || quotation?.client_id || 3,
+            // ✅ Just add these two
+        created_by: userDetails?.name || "System",
+        created_at: new Date().toISOString(),
       };
 
       await axios.put(`${QUOTATION_API_URL}/${quote}`, quotationData, {

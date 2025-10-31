@@ -6,6 +6,7 @@ import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const Quotation = () => {
   const [infoModal, setInfoModal] = useState(false);
@@ -27,6 +28,18 @@ const Quotation = () => {
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
+
+useEffect(() => {
+  const userDetailsCookie = Cookies.get("user_details");
+  if (userDetailsCookie) {
+    try {
+      setUserDetails(JSON.parse(userDetailsCookie));
+    } catch (err) {
+      console.error("Invalid cookie JSON:", err);
+    }
+  }
+}, []);
 
   const generateItemData = useCallback(
     ({ quotationId, item, warranty }) => ({
@@ -53,6 +66,7 @@ const Quotation = () => {
     []
   );
 
+  
   // Memoized callbacks
   const handleQuotationConfirm = useCallback((data) => {
     setQuotationInfo(data);
@@ -165,6 +179,10 @@ const Quotation = () => {
         remarks: remarks || "N/A",
         status: "active",
         client_id: selectedCustomer?.id || 3,
+
+          // ✅ Just add these two
+        created_by: userDetails?.name || "System",
+        created_at: new Date().toISOString(),
       };
 
       console.log("Sending quotationData:", quotationData);
