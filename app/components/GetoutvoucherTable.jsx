@@ -110,6 +110,7 @@ const GetOutvoucherTable = () => {
               <th onClick={() => handleSort("sales_person")} style={{ cursor: "pointer" }}>Sale Person</th>
               <th onClick={() => handleSort("number_of_packages")} style={{ cursor: "pointer" }}>No of Packages</th>
               <th onClick={() => handleSort("freight_amount")} style={{ cursor: "pointer" }}>Freight Amount</th>
+                <th onClick={() => handleSort("created_by")} style={{ cursor: "pointer" }}>Created By</th> {/* ✅ Added */}
               <th>Actions</th>
             </tr>
           </thead>
@@ -126,6 +127,8 @@ const GetOutvoucherTable = () => {
                   <td>{voucher.sales_person}</td>
                   <td>{voucher.number_of_packages}</td>
                   <td>{voucher.freight_amount}</td>
+                    <td>{voucher.created_by || "N/A"}</td>
+
                   <td>
                     <Link href={`/viewotv/${voucher.id}`}>
                       <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
