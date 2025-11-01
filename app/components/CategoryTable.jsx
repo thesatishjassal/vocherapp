@@ -13,7 +13,7 @@ const CategoryTable = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      try {
+      try {     
         const response = await axios.get(`${API_URL}/category/`, {
           withCredentials: true,
         });

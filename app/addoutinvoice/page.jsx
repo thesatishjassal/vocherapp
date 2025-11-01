@@ -8,6 +8,7 @@ import BasicInfoModal from "../components/AddBasicInfo";
 import CustomerModal from "../components/customerModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Cookies from "js-cookie";
 
 const Addoutinvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -23,6 +24,7 @@ const Addoutinvoice = () => {
   const [voucherRows, setVoucherRows] = useState([]);
   const [productsFetched, setProductsFetched] = useState(false);
   const [productIds, setProductIds] = useState(new Set());
+  const [userDetails, setUserDetails] = useState(null);
 
   const handleRowsUpdate = (updatedRows) => {
     console.log("Updated rows:", updatedRows);
@@ -79,6 +81,16 @@ const Addoutinvoice = () => {
 
   useEffect(() => {
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
   }, []);
 
   useEffect(() => {
@@ -173,6 +185,7 @@ const handleSubmit = async () => {
     mobile_number: basicinfoData?.ContactNumber || null,
     client_id: selectedCustomer?.id || null,
     remarks: null,
+    created_by: userDetails ? userDetails.name : "Unknown",
   };
 
   try {

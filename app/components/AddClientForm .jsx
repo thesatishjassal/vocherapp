@@ -254,7 +254,7 @@ const AddClientForm = () => {
                                 </label>
                                 <input
                                   type="text"
-                                  id="pincode"
+                             o     id="pincode"
                                   name="pincode"
                                   placeholder="Enter Pincode"
                                   value={formik.values.pincode}

@@ -259,6 +259,7 @@ const GetQuotationTables = () => {
                 <th className="d-none d-lg-table-cell">Without GST</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th>Total with GST</th>
+                <th>Created By</th> {/* 👈 Added column */}
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -276,11 +277,14 @@ const GetQuotationTables = () => {
                     <td className="d-none d-lg-table-cell">{q.without_gst}</td>
                     <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
                     <td>{q.amount_with_gst}</td>
+                    <td>{q.created_by || "N/A"}</td>
+
                     <td>
                       <span className={getBadgeClass(q.status)}>
                         {q.status || "Active"}
                       </span>
                     </td>
+
                     <td className="action-column">
                       <Link href={`/editquotation/${q.quotation_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>

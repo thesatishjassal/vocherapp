@@ -59,8 +59,8 @@ const GetInvoucherTable = () => {
   };
 
   const filteredVouchers = invouchers.filter((voucher) =>
-    voucher.voucher_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    voucher.invoice_number.toLowerCase().includes(searchQuery.toLowerCase())
+    voucher.voucher_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    voucher.invoice_number?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -72,7 +72,7 @@ const GetInvoucherTable = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <input
             type="text"
-            placeholder="Search by Client or Project"
+            placeholder="Search by Voucher or Invoice"
             className="form-control w-25"
             value={searchQuery}
             onChange={handleSearchChange}
@@ -97,9 +97,10 @@ const GetInvoucherTable = () => {
                 <th>Packages</th>
                 <th>Freight Status</th>
                 <th>GST Option</th>
-                <th>GST Percentage</th>
+                <th>GST %</th>
                 <th>GST Amount</th>
                 <th>Total Amount</th>
+                <th>Created By</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -118,9 +119,14 @@ const GetInvoucherTable = () => {
                   <td>{(voucher.gst_percentage || 0).toFixed(2)}%</td>
                   <td>{(voucher.gst_amount || 0).toFixed(2)}</td>
                   <td>{(voucher.total_amount || 0).toFixed(2)}</td>
+                  <td>{voucher.created_by || "System"}</td>
                   <td>
                     <Link href={`/viewinv/${voucher.voucher_id}`}>
-                      <u className="text-primary me-2" title="View" style={{ cursor: "pointer" }}>
+                      <u
+                        className="text-primary me-2"
+                        title="View"
+                        style={{ cursor: "pointer" }}
+                      >
                         <i className="fas fa-eye"></i>
                       </u>
                     </Link>
@@ -137,7 +143,7 @@ const GetInvoucherTable = () => {
               ))}
             </tbody>
           </table>
-        </div>  
+        </div>
       </div>
     </div>
   );

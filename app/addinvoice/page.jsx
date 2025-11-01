@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import CustomerModal from "../components/customerModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Cookies from "js-cookie";
 
 const AddInvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -20,6 +21,7 @@ const AddInvoice = () => {
   const [gstOption, setGstOption] = useState("Include");
   const [gstPercentage, setGstPercentage] = useState(0);
   const [remarks, setRemarks] = useState("");
+  const [userDetails, setUserDetails] = useState(null);
 
   const closeModal = () => setShowModalClientDetails(false);
 
@@ -55,7 +57,15 @@ const AddInvoice = () => {
     }
     return { baseAmount, gstAmount, totalWithGst };
   };
-
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
   // fetch next voucher details
   useEffect(() => {
     const fetchLastVoucherData = async () => {
@@ -149,6 +159,7 @@ const AddInvoice = () => {
       gst_percentage: gstOption === "Exclude" ? parseFloat(gstPercentage) : 0,
       gst_amount: gstAmount,
       remarks: remarks || "Urgent delivery",
+      created_by: userDetails ? userDetails.name : "Unknown",
     };
 
     try {
