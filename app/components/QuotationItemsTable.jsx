@@ -202,7 +202,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       <style jsx>{`
         @media print {
           @page {
-            size: A4 Portrait;
+            size: A4 Landscape;
           }
           .no-print {
             display: none !important;

@@ -6,6 +6,7 @@ import SalesOrderInfo from "../components/SalesInfo";
 import CustomerModal from "../components/customerModal";
 import GSTCalculator from "../components/GSTCalculator";
 import GetSalesOrdersTable from "../components/Getsalesbyquotation";
+import Cookies from "js-cookie";
 
 const SalesOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -23,6 +24,7 @@ const SalesOrder = () => {
     gstType: "include",
   });
   const [remarks, setRemarks] = useState("");
+  const [userDetails, setUserDetails] = useState(null);
 
   // ✅ FIX: useMemo ensures recalculation happens on change
   const totalAmount = useMemo(() => {
@@ -58,7 +60,15 @@ const SalesOrder = () => {
     const sequenceStr = salesOrderSequence.toString().padStart(3, "0");
     return `PLSO-${sequenceStr}`;
   };
-
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
@@ -120,6 +130,7 @@ const handleSaveSalesOrder = async () => {
       freight: salesOrderInfo?.FreightStatus || "Not Selected",
       issue_slip_no: salesOrderInfo?.IssueSlipNo || "",
       client_id: selectedCustomer?.id || 3,
+      created_by: userDetails ? userDetails.name : "null",
     };
 
     const response = await axios.post(

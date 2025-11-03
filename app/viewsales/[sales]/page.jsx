@@ -166,7 +166,7 @@ const ViewSales = () => {
             </div>
 
             <p>
-              <b className="tm_primary_color">Product Info:</b>
+              <b className="tm_primary_color">  Product Info:</b>
             </p>
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">

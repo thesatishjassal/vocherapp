@@ -7,6 +7,7 @@ import CustomerModal from "../components/customerModal";
 import GSTCalculator from "../components/GSTCalculator";
 // import NewPurchaseOrderItems from "../components/GetPurchaseOrdersTable";
 import PurchaseOrderSourceSelector from "../components/PurchaseOrderSourceSelector";
+import Cookies from "js-cookie";
 
 const AddPurchaseOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -24,6 +25,7 @@ const AddPurchaseOrder = () => {
     gstType: "include",
   });
   const [remarks, setRemarks] = useState("");
+  const [userDetails, setUserDetails] = useState(null);
 
   const totalAmount = useMemo(() => {
     const total = rowsData.reduce((sum, r) => {
@@ -59,7 +61,15 @@ const AddPurchaseOrder = () => {
     const sequenceStr = salesOrderSequence.toString().padStart(3, "0");
     return `PLPO-${sequenceStr}`;
   };
-
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
@@ -122,6 +132,7 @@ const AddPurchaseOrder = () => {
         freight: salesOrderInfo?.FreightStatus || "Not Selected",
         issue_slip_no: salesOrderInfo?.issue_slip_no || "",
         client_id: selectedCustomer?.id || 3,
+        created_by: userDetails ? userDetails.name : "null",
       };
 
       const response = await axios.post(

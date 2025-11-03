@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,6 +49,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [reorderEnabled, setReorderEnabled] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
 
   // const generateHSNCode = () => {
   //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -79,7 +81,15 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   });
 
   const selectedCategory = watch("category");
-
+  useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,6 +124,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         ...data,
         reorderEnabled,
         reorderqty: reorderEnabled ? data.reorderqty : "",
+        created_by: userDetails ? userDetails.name : "System",
       };
 
       const response = await fetch(`${API_URL}/products/`, {

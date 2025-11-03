@@ -6,6 +6,7 @@ import ImageUploadModal from "../components/ImageUploadModal";
 import ExcelUploaderModal from "./ExcelUploader";
 import CSVUploadModal from "./CSVUpload";
 import SimpleCSVUploader from "./UpdateProductsCSV"; // ✅ New import
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -925,11 +926,14 @@ const ProductsTable = () => {
                       {sortColumn === "quantity" &&
                         (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
+                    <th>
+                      Created By{" "}
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedProducts.length > 0 ? (
+                  {paginatedProducts.reverse().length > 0 ? (
                     paginatedProducts.map((product) => (
                       <tr key={product.id}>
                         <td>{product.itemcode}</td>
@@ -968,6 +972,7 @@ const ProductsTable = () => {
                         <td>{product.brand}</td>
                         <td>₹{product.price}</td>
                         <td>{product.quantity}</td>
+                        <td>{product.created_by}</td>
                         <td>
                           <i
                             className="fa-solid fa-eye me-2"

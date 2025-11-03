@@ -198,13 +198,14 @@ const formatDateTime = (isoString) => {
                 <th>Freight</th>
                 <th>Payment Mode</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
+                <th className="d-none d-lg-table-cell">Created By</th>
                 <th>Total Amount</th>
                 {/* <th>Status</th> */}
-                <th>Actions</th>
+                <th>Actions</th> 
               </tr>
             </thead>
             <tbody>
-              {filteredSalesOrders.length > 0 ? (
+              {filteredSalesOrders.reverse().length > 0 ? (
                 filteredSalesOrders.map((so, index) => (
                   <tr key={so.salesorder_id}>
                     <td>{index + 1}</td>
@@ -216,6 +217,7 @@ const formatDateTime = (isoString) => {
                     <td>{so.freight || "N/A"}</td>
                     <td>{so.payment_method || "N/A"}</td>
                     <td className="d-none d-lg-table-cell">{so.gst_amount}</td>
+                    <td className="d-none d-lg-table-cell">{so.created_by}</td>
                     <td>{so.amount_with_gst}</td>
                     <td className="action-column">
                       <Link href={`/editsalesorder/${so.salesorder_id}`}>

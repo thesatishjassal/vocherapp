@@ -132,12 +132,13 @@ const GetPurchaseOrderTable = () => {
                 <th>Freight</th>
                 <th>Payment Mode</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
+                <th className="d-none d-lg-table-cell">Created By</th>
                 <th>Total Amount</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredPOs.length > 0 ? (
+              {filteredPOs.reverse().length > 0 ? (
                 filteredPOs.map((po, index) => (
                   <tr key={po.purchaseorder_id}>
                     <td>{index + 1}</td>
@@ -149,6 +150,7 @@ const GetPurchaseOrderTable = () => {
                     <td>{po.freight || "N/A"}</td>
                     <td>{po.payment_method || "N/A"}</td>
                     <td className="d-none d-lg-table-cell">{po.gst_amount}</td>
+                    <td className="d-none d-lg-table-cell">{po.created_by}</td>
                     <td>{po.amount_with_gst}</td>
                     <td className="action-column">
                       <Link href={`/editpurchaseorder/${po.purchaseorder_id}`}>
