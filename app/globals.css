@@ -179,6 +179,13 @@ button.btn-close {
 .mini_banner.clientsbg{
   background-image: url("https://images.pexels.com/photos/4344860/pexels-photo-4344860.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
 }
+.mini_banner.switchescbg{
+  background-image: url("https://d68pxkftt5390.cloudfront.net/blog/b41896fa-5501-491f-ad57-67050b03722e.webp");
+}
+.mini_banner.Decore-Lights{
+  background-image: url("https://wpassets.graana.com/blog/wp-content/uploads/2023/06/Decore-Lights.jpg");
+}
+
 .mini_banner.warehouserack{
   background-image: url("https://images.pexels.com/photos/7019259/pexels-photo-7019259.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
 }
@@ -902,4 +909,7 @@ label, .form-label {
     font-size: 14px;
     padding: 4px;
   }
+}
+.breadcrumb-item a {
+    color: #1a1a1a;
 }

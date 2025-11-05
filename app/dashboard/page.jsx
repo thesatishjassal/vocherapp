@@ -309,7 +309,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">All Switches Catalogue</h5>
-                  <span className="micro_text">Wipro, L&T, Philips etc </span>
+                  <span className="micro_text">Wipro, L&T, OSUM, celestia </span>
                 </div>
               </div>
             </a>
