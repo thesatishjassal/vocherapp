@@ -260,6 +260,61 @@ export default function Home() {
             </a>
           </div>
         )}
+
+           <div className="col-lg-2 col-md-4 col-6 mb-3">
+            <a href="/FancyLightsCatalog">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/catalogue.webp"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">Fancy Lights catalogs </h5>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div className="col-lg-2 col-md-4 col-6 mb-3">
+            <a href="/switchquotation">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/catalogue.webp"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">All Ligthing catalogs  and Price List</h5>
+                  <span className="micro_text">Ledlum, Osram, Philips etc </span>
+                </div>
+              </div>x
+            </a>
+          </div>
+                    <div className="col-lg-2 col-md-4 col-6 mb-3">
+            <a href="/switchquotation">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/catalogue.webp"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">All Switches catalogs</h5>
+                  <span className="micro_text">Wipro, L&T, Philips etc </span>
+                </div>
+              </div>
+            </a>
+          </div>
+          
       </div>
     </>
   );

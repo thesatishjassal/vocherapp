@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const API_URL = "https://api.panvic.in/quotation/";
 const CLIENTS_API_URL = "https://api.panvic.in/clients/";
@@ -16,6 +17,17 @@ const GetQuotationTables = () => {
     lost: false,
   });
   const [sortOrder, setSortOrder] = useState("latest");
+  const [userDetails, setUserDetails] = useState(null);
+
+    useEffect(() => {
+    // Try to get the user_details cookie
+    const userDetailsCookie = Cookies.get("user_details");
+    console.log("User Details Cookie:", userDetailsCookie);
+    if (userDetailsCookie) {
+      // Parse and set the user details if the cookie exists
+      setUserDetails(JSON.parse(userDetailsCookie));
+    }
+  }, []);
 
   // Helper function to format quotation_no
   const formatQuotationNo = (quotationNo) => {
@@ -26,7 +38,9 @@ const GetQuotationTables = () => {
 
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      const response = await axios.get(CLIENTS_API_URL, {
+        withCredentials: true,
+      });
       return response.data.reduce((acc, client) => {
         acc[client.id] = client.businessname;
         return acc;
@@ -83,18 +97,26 @@ const GetQuotationTables = () => {
   const handleClone = async (quotationId) => {
     if (!confirm("Are you sure you want to clone this quotation?")) return;
     try {
-      const response = await axios.post(`${API_URL}${quotationId}/clone`, {}, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${API_URL}${quotationId}/clone`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       if (response.status === 200 || response.status === 201) {
         const newQuotation = {
           ...response.data,
-          client_name: quotations.find((q) => q.quotation_id === quotationId)?.client_name || null,
+          client_name:
+            quotations.find((q) => q.quotation_id === quotationId)
+              ?.client_name || null,
           status: response.data.status || "Active",
         };
-        setQuotations((prev) => [newQuotation, ...prev].sort(
-          (a, b) => b.quotation_id - a.quotation_id
-        ));
+        setQuotations((prev) =>
+          [newQuotation, ...prev].sort(
+            (a, b) => b.quotation_id - a.quotation_id
+          )
+        );
         toast.success("Quotation cloned successfully!");
       }
     } catch (error) {
@@ -142,8 +164,12 @@ const GetQuotationTables = () => {
   const filteredQuotations = quotations
     .filter((q) => {
       const matchesSearch =
-        (q.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (q.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (q.client_name?.toLowerCase() || "").includes(
+          searchQuery.toLowerCase()
+        ) ||
+        (q.salesperson?.toLowerCase() || "").includes(
+          searchQuery.toLowerCase()
+        ) ||
         (q.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
       const status = q.status?.toLowerCase() || "active";
       const selectedStatuses = Object.keys(statusFilters).filter(
@@ -157,8 +183,10 @@ const GetQuotationTables = () => {
     .sort((a, b) => {
       if (sortOrder === "latest") return b.quotation_id - a.quotation_id;
       if (sortOrder === "oldest") return a.quotation_id - b.quotation_id;
-      if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
-      if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
+      if (sortOrder === "amount_high")
+        return b.amount_with_gst - a.amount_with_gst;
+      if (sortOrder === "amount_low")
+        return a.amount_with_gst - b.amount_with_gst;
       return 0;
     });
 
@@ -287,10 +315,16 @@ const GetQuotationTables = () => {
 
                     <td className="action-column">
                       <Link href={`/editquotation/${q.quotation_id}`}>
-                        <i className="fas fa-pen text-primary me-2" title="Edit"></i>
+                        <i
+                          className="fas fa-pen text-primary me-2"
+                          title="Edit"
+                        ></i>
                       </Link>
                       <Link href={`/viewquotation/${q.quotation_id}`}>
-                        <i className="fas fa-eye text-primary me-2" title="View"></i>
+                        <i
+                          className="fas fa-eye text-primary me-2"
+                          title="View"
+                        ></i>
                       </Link>
                       <i
                         className="fas fa-trash text-danger me-2"
