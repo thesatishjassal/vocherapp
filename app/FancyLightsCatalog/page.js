@@ -97,7 +97,7 @@ export default function FancyLightsCatalog() {
   return (
     <div className="p-2 md:p-4">
       <h4 className="text-left mb-3 text-base md:text-lg font-semibold">
-        Fancy Lights Catalog Download
+        Fancy Lights Catalogue Download
       </h4>
 
       <div className="overflow-x-auto card">
@@ -126,6 +126,7 @@ export default function FancyLightsCatalog() {
                     href={item["Download File"]}
                     target="_blank"
                     rel="noopener noreferrer"
+                    download={true}
                     className="bg-blue-600 text-xs md:text-sm px-3 py-1 rounded hover:bg-blue-700"
                   >
                     Download
