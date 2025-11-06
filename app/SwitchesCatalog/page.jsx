@@ -6,7 +6,7 @@ const AddNewClient = () => {
       <div className="mini_banner switchescbg">
         <div className="content_box">
           <div>
-            <h2 className="title">Switches Catalog  </h2>
+            <h2 className="title"> Download catalogue  </h2>
           </div>
         </div>
       </div>
@@ -16,13 +16,13 @@ const AddNewClient = () => {
             <a href="/dashboard">Dashboard</a>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
-            SwitchesCatalog
+           catalogue
           </li>
         </ol>
       </nav>
       <SwitchesCatalog />
     </>
-  );
+  );xz
 };
 
 export default AddNewClient;
