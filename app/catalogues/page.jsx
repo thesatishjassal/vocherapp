@@ -1,6 +1,6 @@
 import SwitchesCatalog from "../components/SwitchesCatalog";
 
-const AddNewClient = () => {
+const catalogues = () => {
   return (
     <>
       <div className="mini_banner switchescbg">
@@ -25,4 +25,4 @@ const AddNewClient = () => {
   );xz
 };
 
-export default AddNewClient;
+export default catalogues;

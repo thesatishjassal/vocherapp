@@ -29,7 +29,7 @@ const Header = () => {
         {/* Center: Links */}
         <ul className="navbar-nav flex-row gap-4 mx-auto">
           <li className="nav-item">
-            <a className="nav-link fw-semibold text-light" href="/switchesCatalog">
+            <a className="nav-link fw-semibold text-light" href="/catalogues">
               Downloads
             </a>
           </li>
