@@ -15,8 +15,8 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedBrand, setSelectedBrand] = useState("All");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
 
   const fetchCatalogues = async () => {
     try {
@@ -44,7 +44,6 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
       const message = err.response?.data?.detail || "Failed to fetch catalogues.";
       setError(message);
       toast.error(message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -54,11 +53,11 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
     fetchCatalogues();
   }, [refreshCatalogues]);
 
-  // Extract unique categories and brands
-  const categories = ["All", ...new Set(data.map((item) => item.category))];
-  const brands = ["All", ...new Set(data.map((item) => item.brand))];
+  // Unique lists
+  const categories = [...new Set(data.map((item) => item.category))];
+  const brands = [...new Set(data.map((item) => item.brand))];
 
-  // Filter logic
+  // Filtering Logic
   useEffect(() => {
     let filtered = data;
 
@@ -68,16 +67,28 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
       );
     }
 
-    if (selectedCategory !== "All") {
-      filtered = filtered.filter((item) => item.category === selectedCategory);
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedCategories.includes(item.category)
+      );
     }
 
-    if (selectedBrand !== "All") {
-      filtered = filtered.filter((item) => item.brand === selectedBrand);
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedBrands.includes(item.brand)
+      );
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, selectedCategory, selectedBrand, data]);
+  }, [searchTerm, selectedCategories, selectedBrands, data]);
+
+  const toggleSelection = (value, setFunction, selectedList) => {
+    if (selectedList.includes(value)) {
+      setFunction(selectedList.filter((v) => v !== value));
+    } else {
+      setFunction([...selectedList, value]);
+    }
+  };
 
   const openWhatsAppModal = (catalogue) => {
     setSelectedCatalogue(catalogue);
@@ -108,15 +119,15 @@ If you’d like more information or a custom design, feel free to reply on Whats
 
   if (loading)
     return (
-      <div className="d-flex justify-content-center align-items-center py-2">
-        <p className="text-dark mb-0">Loading catalogues...</p>
+      <div className="d-flex justify-content-center align-items-center py-3">
+        <p className="text-dark fs-6 mb-0">Loading catalogues...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="d-flex justify-content-center align-items-center py-2">
-        <p className="text-danger mb-0 me-2">{error}</p>
+      <div className="d-flex justify-content-center align-items-center py-3">
+        <p className="text-danger mb-0 me-2 fs-6">{error}</p>
         <button onClick={fetchCatalogues} className="btn btn-dark btn-sm">
           Retry
         </button>
@@ -126,53 +137,88 @@ If you’d like more information or a custom design, feel free to reply on Whats
   return (
     <>
       <div className="card shadow-sm border-0">
-        <div className="card-body p-2">
+        <div className="card-body p-3">
           {/* 🔍 Search & Filter Bar */}
-          <div className="row g-2 mb-2 align-items-center">
-            <div className="col-md-4">
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                placeholder="Search by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+          <div className="mb-3">
+            <div className="row g-3 align-items-start">
+              {/* Search */}
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder="🔍 Search by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-            <div className="col-md-4">
-              <select
-                className="form-select form-select-sm"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map((cat, index) => (
-                  <option key={index} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Category Filters */}
+              <div className="col-md-4">
+                <div>
+                  <strong className="d-block mb-1 fs-6 text-dark">
+                    Filter by Category:
+                  </strong>
+                  <div className="d-flex flex-wrap gap-2">
+                    {categories.map((cat, i) => (
+                      <div key={i} className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={`cat-${i}`}
+                          checked={selectedCategories.includes(cat)}
+                          onChange={() =>
+                            toggleSelection(cat, setSelectedCategories, selectedCategories)
+                          }
+                        />
+                        <label
+                          className="form-check-label fs-6 text-dark"
+                          htmlFor={`cat-${i}`}
+                        >
+                          {cat}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-            <div className="col-md-4">
-              <select
-                className="form-select form-select-sm"
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-              >
-                {brands.map((brand, index) => (
-                  <option key={index} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              </select>
+              {/* Brand Filters */}
+              <div className="col-md-4">
+                <div>
+                  <strong className="d-block mb-1 fs-6 text-dark">
+                    Filter by Brand:
+                  </strong>
+                  <div className="d-flex flex-wrap gap-2">
+                    {brands.map((brand, i) => (
+                      <div key={i} className="form-check form-check-inline">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={`brand-${i}`}
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() =>
+                            toggleSelection(brand, setSelectedBrands, selectedBrands)
+                          }
+                        />
+                        <label
+                          className="form-check-label fs-6 text-dark"
+                          htmlFor={`brand-${i}`}
+                        >
+                          {brand}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* 📄 Table */}
           <div className="table-responsive">
             <table
-              className="table table-bordered table-hover table-sm mb-0 text-dark align-middle"
-              style={{ fontSize: "0.85rem" }}
+              className="table table-bordered table-hover mb-0 text-dark align-middle"
+              style={{ fontSize: "0.95rem" }}
             >
               <thead className="table-light">
                 <tr>
@@ -191,15 +237,14 @@ If you’d like more information or a custom design, feel free to reply on Whats
                 {filteredData.map((item, i) => (
                   <tr key={item.id}>
                     <td>{i + 1}</td>
-                    <td>{item.name}</td>
+                    <td className="fw-semibold">{item.name}</td>
                     <td>{item.category}</td>
                     <td>{item.brand}</td>
                     <td>{item.createdBy}</td>
                     <td>{item.createdAt}</td>
                     <td className="text-center">
                       <button
-                        className="btn btn-outline-success btn-sm py-0 px-1"
-                        style={{ fontSize: "0.75rem" }}
+                        className="btn btn-outline-success btn-sm py-1 px-2"
                         onClick={() => openWhatsAppModal(item)}
                       >
                         WhatsApp
@@ -210,8 +255,7 @@ If you’d like more information or a custom design, feel free to reply on Whats
                         href={item.googleDriveUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-outline-dark btn-sm py-0 px-1"
-                        style={{ fontSize: "0.75rem" }}
+                        className="btn btn-outline-dark btn-sm py-1 px-2"
                       >
                         View
                       </a>
@@ -219,15 +263,13 @@ If you’d like more information or a custom design, feel free to reply on Whats
                     <td className="text-center">
                       <button
                         onClick={() => onEdit(item)}
-                        className="btn btn-outline-primary btn-sm py-0 px-1 me-1"
-                        style={{ fontSize: "0.75rem" }}
+                        className="btn btn-outline-primary btn-sm py-1 px-2 me-1"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => onDelete(item.id)}
-                        className="btn btn-outline-danger btn-sm py-0 px-1"
-                        style={{ fontSize: "0.75rem" }}
+                        className="btn btn-outline-danger btn-sm py-1 px-2"
                       >
                         Delete
                       </button>
@@ -239,8 +281,8 @@ If you’d like more information or a custom design, feel free to reply on Whats
 
             {filteredData.length === 0 && (
               <p
-                className="text-center text-secondary py-2 mb-0"
-                style={{ fontSize: "0.85rem" }}
+                className="text-center text-secondary py-3 mb-0"
+                style={{ fontSize: "0.95rem" }}
               >
                 No catalogues found.
               </p>
@@ -267,12 +309,12 @@ If you’d like more information or a custom design, feel free to reply on Whats
                 ></button>
               </div>
               <div className="modal-body">
-                <label className="form-label" style={{ fontSize: "0.9rem" }}>
+                <label className="form-label fs-6">
                   Enter Client’s Mobile Number (with country code):
                 </label>
                 <input
                   type="text"
-                  className="form-control form-control-sm"
+                  className="form-control form-control-lg"
                   placeholder="e.g. 919876543210"
                   value={clientNumber}
                   onChange={(e) => setClientNumber(e.target.value)}
