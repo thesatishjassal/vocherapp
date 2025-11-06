@@ -63,7 +63,7 @@ export default function Home() {
       
       <div className="row mb-4">
         {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/addclient">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -85,7 +85,7 @@ export default function Home() {
 
 
         {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/products">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -107,7 +107,7 @@ export default function Home() {
 
 
         {(isAdmin || isStockManager) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/getinvouchers">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -120,7 +120,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">
-                    Add In Voucher
+                    In Voucher
                   </h5>
                   <span className="count text-sm">{inVoucherLength}</span>
                 </div>
@@ -130,7 +130,7 @@ export default function Home() {
         )}
 
         {(isAdmin || isStockManager) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
            <a href="/getoutvouchers">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -150,56 +150,9 @@ export default function Home() {
           </div>
         )}
 
-        {(isAdmin || isStockManager) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/report">
-              <div className="card">
-                <span className="mask opacity-10 border-radius-lg"></span>
-                <div className="card-body p-3 position-relative text-center">
-                  <div className="icon_wrapper">
-                    <img
-                      src="/assets/img/business-report-3d-icon.webp"
-                      alt=""
-                      className="client_img"
-                    />
-                  </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">Make Reports</h5>
-                  <span className="count text-sm">
-                    {clientsLength +
-                      inVoucherLength +
-                      outVoucherLength +
-                      quotationLength +
-                      productsLength}
-                  </span>
-                </div>
-              </div>
-            </a>
-          </div>
-        )}
 
         {(isAdmin || isSalesExecutiveOrArchitect) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/getquotation">
-              <div className="card">
-                <span className="mask opacity-10 border-radius-lg"></span>
-                <div className="card-body p-3 position-relative text-center">
-                  <div className="icon_wrapper">
-                    <img
-                      src="/assets/img/transaction-payment-purchase-business.webp"
-                      alt=""
-                      className="client_img"
-                    />
-                  </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">Quotation</h5>
-                  <span className="count text-sm">{quotationLength}</span>
-                </div>
-              </div>
-            </a>
-          </div>
-        )}
-
-        {(isAdmin || isSalesExecutiveOrArchitect) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/saleorders">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -220,7 +173,7 @@ export default function Home() {
         )}
 
         {(isAdmin || isSalesExecutiveOrArchitect) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/purchase-orders">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -240,8 +193,29 @@ export default function Home() {
           </div>
         )}
 
+      
         {(isAdmin || isSalesExecutiveOrArchitect) && (
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
+            <a href="/getquotation">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/transaction-payment-purchase-business.webp"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">Quotation</h5>
+                  <span className="count text-sm">{quotationLength}</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
+        {(isAdmin || isSalesExecutiveOrArchitect) && (
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/switchquotation">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
@@ -260,60 +234,6 @@ export default function Home() {
             </a>
           </div>
         )}
-
-           <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/FancyLightsCatalog">
-              <div className="card">
-                <span className="mask opacity-10 border-radius-lg"></span>
-                <div className="card-body p-3 position-relative text-center">
-                  <div className="icon_wrapper">
-                    <img
-                      src="/assets/img/catalogue.webp"
-                      alt=""
-                      className="client_img"
-                    />
-                  </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">Fancy Lights Catalogue </h5>
-                </div>
-              </div>
-            </a>
-          </div>
-          <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/switchquotation">
-              <div className="card">
-                <span className="mask opacity-10 border-radius-lg"></span>
-                <div className="card-body p-3 position-relative text-center">
-                  <div className="icon_wrapper">
-                    <img
-                      src="/assets/img/catalogue.webp"
-                      alt=""
-                      className="client_img"
-                    />
-                  </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">All Ligthing Catalogue  and Price List</h5>
-                  <span className="micro_text">Ledlum, Osram, Philips etc </span>
-                </div>
-              </div>x
-            </a>
-          </div>
-                    <div className="col-lg-2 col-md-4 col-6 mb-3">
-            <a href="/SwitchesCatalog">
-              <div className="card">
-                <span className="mask opacity-10 border-radius-lg"></span>
-                <div className="card-body p-3 position-relative text-center">
-                  <div className="icon_wrapper">
-                    <img
-                      src="/assets/img/catalogue.webp"
-                      alt=""
-                      className="client_img"
-                    />
-                  </div>
-                  <h5 className="font-weight-bolder mb-0 mt-3">All Switches Catalogue</h5>
-                  <span className="micro_text">Wipro, L&T, OSUM, celestia </span>
-                </div>
-              </div>
-            </a>
-          </div>
           
       </div>
     </>

@@ -6,11 +6,17 @@ import { toast } from "react-toastify";
 
 const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCatalogue, setSelectedCatalogue] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [clientNumber, setClientNumber] = useState("");
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedBrand, setSelectedBrand] = useState("All");
 
   const fetchCatalogues = async () => {
     try {
@@ -32,6 +38,7 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
         googleDriveUrl: item.google_drive_url,
       }));
       setData(formattedData);
+      setFilteredData(formattedData);
       setError(null);
     } catch (err) {
       const message = err.response?.data?.detail || "Failed to fetch catalogues.";
@@ -46,6 +53,31 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
   useEffect(() => {
     fetchCatalogues();
   }, [refreshCatalogues]);
+
+  // Extract unique categories and brands
+  const categories = ["All", ...new Set(data.map((item) => item.category))];
+  const brands = ["All", ...new Set(data.map((item) => item.brand))];
+
+  // Filter logic
+  useEffect(() => {
+    let filtered = data;
+
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter((item) => item.category === selectedCategory);
+    }
+
+    if (selectedBrand !== "All") {
+      filtered = filtered.filter((item) => item.brand === selectedBrand);
+    }
+
+    setFilteredData(filtered);
+  }, [searchTerm, selectedCategory, selectedBrand, data]);
 
   const openWhatsAppModal = (catalogue) => {
     setSelectedCatalogue(catalogue);
@@ -76,15 +108,15 @@ If you’d like more information or a custom design, feel free to reply on Whats
 
   if (loading)
     return (
-      <div className="d-flex justify-content-center align-items-center py-1">
+      <div className="d-flex justify-content-center align-items-center py-2">
         <p className="text-dark mb-0">Loading catalogues...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="d-flex justify-content-center align-items-center py-1">
-        <p className="text-danger mb-0 me-1">{error}</p>
+      <div className="d-flex justify-content-center align-items-center py-2">
+        <p className="text-danger mb-0 me-2">{error}</p>
         <button onClick={fetchCatalogues} className="btn btn-dark btn-sm">
           Retry
         </button>
@@ -93,12 +125,54 @@ If you’d like more information or a custom design, feel free to reply on Whats
 
   return (
     <>
-      <div className="card shadow-sm">
-        <div className="card-body p-1">
+      <div className="card shadow-sm border-0">
+        <div className="card-body p-2">
+          {/* 🔍 Search & Filter Bar */}
+          <div className="row g-2 mb-2 align-items-center">
+            <div className="col-md-4">
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Search by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-4">
+              <select
+                className="form-select form-select-sm"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categories.map((cat, index) => (
+                  <option key={index} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-md-4">
+              <select
+                className="form-select form-select-sm"
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+              >
+                {brands.map((brand, index) => (
+                  <option key={index} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 📄 Table */}
           <div className="table-responsive">
             <table
-              className="table table-bordered table-sm mb-0 text-dark"
-              style={{ fontSize: "0.875rem" }}
+              className="table table-bordered table-hover table-sm mb-0 text-dark align-middle"
+              style={{ fontSize: "0.85rem" }}
             >
               <thead className="table-light">
                 <tr>
@@ -114,7 +188,7 @@ If you’d like more information or a custom design, feel free to reply on Whats
                 </tr>
               </thead>
               <tbody>
-                {data.map((item, i) => (
+                {filteredData.map((item, i) => (
                   <tr key={item.id}>
                     <td>{i + 1}</td>
                     <td>{item.name}</td>
@@ -128,7 +202,7 @@ If you’d like more information or a custom design, feel free to reply on Whats
                         style={{ fontSize: "0.75rem" }}
                         onClick={() => openWhatsAppModal(item)}
                       >
-                        Share on WhatsApp
+                        WhatsApp
                       </button>
                     </td>
                     <td className="text-center">
@@ -163,8 +237,11 @@ If you’d like more information or a custom design, feel free to reply on Whats
               </tbody>
             </table>
 
-            {data.length === 0 && (
-              <p className="text-center text-secondary py-1 mb-0" style={{ fontSize: "0.875rem" }}>
+            {filteredData.length === 0 && (
+              <p
+                className="text-center text-secondary py-2 mb-0"
+                style={{ fontSize: "0.85rem" }}
+              >
                 No catalogues found.
               </p>
             )}
@@ -172,7 +249,7 @@ If you’d like more information or a custom design, feel free to reply on Whats
         </div>
       </div>
 
-      {/* WhatsApp Share Modal */}
+      {/* 📱 WhatsApp Share Modal */}
       {showModal && (
         <div
           className="modal fade show d-block"
