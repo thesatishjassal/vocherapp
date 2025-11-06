@@ -913,3 +913,6 @@ label, .form-label {
 .breadcrumb-item a {
     color: #1a1a1a;
 }
+.navbar .nav-link {
+    font-size: 14px;
+}
