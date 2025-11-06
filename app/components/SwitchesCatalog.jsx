@@ -1,94 +1,60 @@
-"use client";
-
-import React from "react";
-
-const data = [{
-  "Id" : 1,
-  "Name" : "Wipro NW Price list_July",
-  "Category" : "Switches",
-  "Brand" : "Wipro",
-  "DownloadFile" : "https://drive.google.com/file/d/1VnPgZIT40tjTFibt4FwksIQiltAzebXT/view?usp=sharing"
-},
-{
-  "Id" : 2,
-  "Name" : "OSUM CONVENTIONAL NEW",
-  "Category" : "Switches",
-  "Brand" : "OSUM",
-  "DownloadFile" : "https://drive.google.com/file/d/1X-RWtQSpgN1W53neqPB53dSG-vwKA8M3/view?usp=sharing"
-},
-{
-  "Id" : 3,
-  "Name" : "OSUM Brochure 2025 NEW",
-  "Category" : "Switches",
-  "Brand" : "OSUM",
-  "DownloadFile" : "https://drive.google.com/file/d/1OWuoFxT4Od5PKxZxQd7gamRucBd79HiN/view?usp=sharing"
-},
-{
-  "Id" : 4,
-  "Name" : "celestia switches brochure final 2024",
-  "Category" : "Switches",
-  "Brand" : "celestia",
-  "DownloadFile" : "https://drive.google.com/file/d/1DoWxjIEiDqMfopqWjHddHT0CKTTy9vLJ/view?usp=sharing"
-},
-{
-  "Id" : 5,
-  "Name" : "celestia pricelist final",
-  "Category" : "Switches",
-  "Brand" : "celestia",
-  "DownloadFile" : "https://drive.google.com/file/d/1bK2Pu-DLDaG0kEqyKzU6VGb9l_al_Cbd/view?usp=sharing"
-},
-{
-  "Id" : 6,
-  "Name" : "L&T Product Pricelist",
-  "Category" : "Switches",
-  "Brand" : "L&T",
-  "DownloadFile" : "https://drive.google.com/file/d/1PnNUuZqHfR-CFtSnM03nkOsmpkLYAiKz/view?usp=sharing"
-}];
+"use client"
+import { useState } from "react";
+import CatalogueUploadModal from "./CatalogueUploadModal";
+import CatalogueList from "./SwitchCatalogueList";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function SwitchesCatalog() {
+  const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const refreshCatalogues = () => {
+    // This will trigger re-fetch in CatalogueList via useEffect
+    window.dispatchEvent(new CustomEvent('refreshCatalogues'));
+  };
+
+  const handleEdit = (item) => {
+    setEditingItem(item);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this catalogue?")) return;
+    try {
+      await axios.delete(`https://api.panvic.in/catalogues/${id}`);
+      toast.success("Catalogue deleted successfully!");
+      refreshCatalogues();
+    } catch (error) {
+      const message = error.response?.data?.detail || "Failed to delete catalogue.";
+      toast.error(message);
+      console.error(error);
+    }
+  };
+
   return (
     <div className="p-2 md:p-4">
-      <h4 className="text-left mb-3 text-base md:text-lg font-semibold">
-        Switches Catalog 
-      </h4>
-
-      <div className="overflow-x-auto card">
-        <table className="tm_round_border table align-items-center justify-content-center w-full border-collapse">
-          <thead className="bg-gray-100 text-sm">
-            <tr>
-              <th className="p-2 text-left">SR NO</th>
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Brand</th>
-              <th className="p-2 text-center">Download</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr
-                key={index}
-                className="border-t text-sm hover:bg-gray-50 transition-colors"
-              >
-                <td className="p-2">{index + 1}</td>
-                <td className="p-2">{item.Name}</td>
-                <td className="p-2">{item.Category}</td>
-                <td className="p-2">{item.Brand}</td>
-                <td className="p-2 text-center">
-                  <a
-                    href={item["DownloadFile"]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download={true}
-                    className="bg-blue-600 text-xs md:text-sm px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Download
-                  </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="text-left text-base md:text-lg font-semibold">
+          Switches Catalog
+        </h4>
+        <button className="btn btn-success" onClick={() => { setEditingItem(null); setShowModal(true); }}>
+          + Add Catalogue
+        </button>
       </div>
+
+      <CatalogueList 
+        refreshCatalogues={refreshCatalogues}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <CatalogueUploadModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        refreshCatalogues={refreshCatalogues}
+        editingItem={editingItem}
+      />
     </div>
   );
 }
