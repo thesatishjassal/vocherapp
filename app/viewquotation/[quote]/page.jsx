@@ -129,6 +129,8 @@ export default async function ViewQuotation({ params }) {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
+                Contact no: <b> 94172-81252,98150-37755       </b> <br />
+                Email id: <b> panviklighting@gmail.com      </b> <br />
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>}
               </div>
             </div>
