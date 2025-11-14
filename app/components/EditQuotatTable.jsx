@@ -153,7 +153,7 @@ const QuotatTable = React.memo(({
     const cursorPosition = input.selectionStart;
 
     // For new row
-    if (!editRowIndex) {
+    if (editRowIndex === null) {
       setNewRow((prev) => {
         const updatedRow = { ...prev, [field]: value };
         if (field === "mrp" || field === "discount") {
