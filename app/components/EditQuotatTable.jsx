@@ -743,7 +743,7 @@ const QuotatTable = React.memo(({
         filterProducts={filterProducts}
       />
 
-      <CustomAddModal
+      {/* <CustomAddModal
         showCusAddModal={showCusAddModal}
         setShowCusAddModal={setShowCusAddModal}
         newRow={newRow}
@@ -753,7 +753,7 @@ const QuotatTable = React.memo(({
         inputRefs={inputRefs}
         editRowIndex={editRowIndex}
         handleSubmitCustomRow={handleSubmitCustomRow}
-      />
+      /> */}
 
       <div className="mt-3 d-flex gap-2 no-print">
         <button
@@ -763,13 +763,13 @@ const QuotatTable = React.memo(({
         >
           Add New Row
         </button>
-        <button
+        {/* <button
           className="btn btn-secondary w-100"
           onClick={() => setShowCusAddModal(true)}
           aria-label="Custom Add Row"
         >
           Custom Add
-        </button>
+        </button> */}
       </div>
     </div>
   );
