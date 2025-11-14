@@ -1,26 +1,35 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 const QuotaionInfo = ({ setInfoModal, onConfirm }) => {
   const [formData, setFormData] = useState({
     Subject: "",
     Salesperson: "",
   });
+  const [userDetails, setUserDetails] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
-    }));
+    })); 
   };
+  useEffect(() => {
+    const userDetailsCookie = Cookies.get("user_details");
+    if (userDetailsCookie) {
+      setUserDetails(JSON.parse(userDetailsCookie));
+      console.log("User Details:", userDetails);
+    }
+  }, [userDetails]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onConfirm(formData); // Pass data to parent component
     setFormData({
       Subject: "",
-      Salesperson: "",
+      Salesperson: userDetails.name,
     });
     setInfoModal(false);
   };
@@ -61,10 +70,11 @@ const QuotaionInfo = ({ setInfoModal, onConfirm }) => {
                           type="text"
                           name="Salesperson"
                           placeholder="Salesperson"
-                          value={formData.Salesperson}
+                          value={formData.Salesperson = userDetails ? userDetails.name : ""}
                           onChange={handleChange}
                           className="form-control"
                           required
+                          disabled
                         />
                       </div>
                       <div className="col-md-6">

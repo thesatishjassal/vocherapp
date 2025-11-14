@@ -1,41 +1,73 @@
+"use client"
 import axios from "axios";
 import QuotationItemsTable from "../../components/QuotationItemsTable";
 // import PrintButton from "../../../components/PrintButton";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 const QUOTATION_API_URL = "https://api.panvic.in/quotation";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
+import Cookies from "js-cookie";
 
-export default async function ViewQuotation({ params }) {
-  const { quote } = await params; // Await params to resolve dynamic route parameter
-  let quotation = null;
-  let client = null;
-  let error = null;
-  // console.log("Fetching quotation for:", quote);
-  try {
-    // Fetch Quotation
-    const quotationResponse = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
-      withCredentials: true,
-    });
+export default function ViewQuotation({ params }) {
+  const { quote } = params;
+  const [userDetails, setUserDetails] = useState(null);
+  const [quotation, setQuotation] = useState(null);
+  const [client, setClient] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    if (quotationResponse.data) {
-      quotation = quotationResponse.data;
-      // console.log("Quotation data:", quotation);
-      // Fetch Client
-      if (quotation.client_id) {
-        const clientResponse = await axios.get(CLIENT_API_URL, {
+  useEffect(() => {
+    const userDetailsCookie = Cookies.get("user_details");
+    if (userDetailsCookie) {
+      try {
+        setUserDetails(JSON.parse(userDetailsCookie));
+      } catch (err) {
+        console.error("Invalid cookie JSON:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Fetch Quotation
+        const quotationResponse = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
           withCredentials: true,
         });
-        client = clientResponse.data.find((c) => c.id === quotation.client_id);
-        // console.log("Client data:", client);
-        if (!client) {
-          error = "Client not found!";
+
+        if (quotationResponse.data) {
+          setQuotation(quotationResponse.data);
+          // Fetch Client
+          if (quotationResponse.data.client_id) {
+            const clientResponse = await axios.get(CLIENT_API_URL, {
+              withCredentials: true,
+            });
+            const foundClient = clientResponse.data.find((c) => c.id === quotationResponse.data.client_id);
+            setClient(foundClient);
+            if (!foundClient) {
+              setError("Client not found!");
+            }
+          }
+        } else {
+          setError("No quotation found!");
         }
+      } catch (err) {
+        setError("Failed to load quotation details!");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      error = "No quotation found!";
+    };
+
+    if (quote) {
+      fetchData();
     }
-  } catch (err) {
-    error = "Failed to load quotation details!";
+  }, [quote]);
+
+  if (isLoading) {
+    return <p>Loading...</p>;
   }
 
   if (error) {
@@ -131,7 +163,7 @@ export default async function ViewQuotation({ params }) {
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Contact no: <b> 94172-81252,98150-37755       </b> <br />
                 Email id: <b> panviklighting@gmail.com      </b> <br />
-                Salesperson: {quotation && <b>{quotation.salesperson}</b>}
+                Salesperson: {quotation && <b>{quotation.salesperson || "N/A"} </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             Subject:{" "}
