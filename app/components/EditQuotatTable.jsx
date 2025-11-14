@@ -450,8 +450,8 @@ const QuotatTable = React.memo(({
           <thead>
             <tr>
               <th>SR NO</th>
-              {/* {columns.customerCode && <th>Cust Code</th>} */}
-              {/* {columns.customerDescription && <th>Cust Desc</th>} */}
+              {columns.customerCode && <th>Cust Code</th>}
+              {columns.customerDescription && <th>Cust Desc</th>}
               {columns.ItemCode && <th>Item Code</th>}
               <th>Item Name</th>
               {columns.Brand && <th>Brand</th>}
