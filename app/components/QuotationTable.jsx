@@ -530,7 +530,7 @@ const QuotationTable = ({
 
       <div className="mt-3 d-flex gap-2 no-print">
         <button
-          className="btn btn-primary w-100"
+          className="btn btn-secondary w-100"
           onClick={() => setShowAddModal(true)}
           aria-label="Add New Row"
         >
@@ -543,18 +543,8 @@ const QuotationTable = ({
         >
           Custom Add
         </button>
-        <button
-          className="btn btn-outline-secondary w-100"
-          onClick={onClose}
-          aria-label="Close Table"
-        >
-          Close
-        </button>
       </div>
 
-      <div className="mt-3">
-        <h4>Total Amount: {totalAmount}</h4>
-      </div>
     </div>
   );
 };
