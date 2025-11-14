@@ -163,7 +163,7 @@ export default function ViewQuotation({ params }) {
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Contact no: <b> 94172-81252,98150-37755       </b> <br />
                 Email id: <b> panviklighting@gmail.com      </b> <br />
-                Salesperson: {quotation && <b>{quotation.salesperson || "N/A"} </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
+                Salesperson: {quotation && <b>{quotation.salesperson } </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             Subject:{" "}
