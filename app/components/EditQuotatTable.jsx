@@ -1,31 +1,9 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
+import AddProductModal from "./AddProductModal";
+import CustomAddModal from "./CustomAddModal";
 import axios from "axios";
-
-// Custom debounce hook (unchanged, but we'll minimize its use for better UX)
-const useDebounce = (callback, delay) => {
-  const timeoutRef = useRef(null);
-  const debouncedCallback = useCallback(
-    (...args) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    },
-    [callback, delay]
-  );
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-  return debouncedCallback;
-};
 
 const QuotatTable = React.memo(({
   items = [],
@@ -35,26 +13,12 @@ const QuotatTable = React.memo(({
   onRowsChange,
   qouteId,
 }) => {
-  // States (unchanged)
-  const [rows, setRows] = useState(items);
+  const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(!items.length && qouteId);
   const [filterColModal, setFilterColModal] = useState(false);
-  const [newRow, setNewRow] = useState({
-    customerCode: "",
-    customerDescription: "",
-    itemCode: "",
-    itemName: "",
-    brand: "",
-    qty: "",
-    unit: "",
-    mrp: "",
-    discount: "",
-    netPrice: 0,
-    price: 0,
-    amount: 0,
-    image: "",
-  });
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showCusAddModal, setShowCusAddModal] = useState(false);
+  const [productList, setProductList] = useState([]);
   const [columns, setColumns] = useState({
     customerCode: false,
     customerDescription: false,
@@ -68,33 +32,104 @@ const QuotatTable = React.memo(({
     Amount: true,
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
-  const [editRow, setEditRow] = useState(null);
 
-  // Input refs for new row (unchanged)
+  const [newRow, setNewRow] = useState({
+    customerCode: "",
+    customerDescription: "",
+    itemCode: "",
+    itemName: "",
+    cus_itemcode: "",
+    cus_itemname: "",
+    brand: "",
+    qty: "",
+    unit: "",
+    mrp: "",
+    discount: "",
+    amount: "",
+    netPrice: "",
+    image: "",
+    remarks: "",
+    cus_customercode: "",
+    cus_customerdescription: "",
+    cus_qty: "",
+    cus_brand: "",
+    cus_unit: "",
+    cus_mrp: "",
+    cus_discount: "",
+    cus_netprice: "",
+    cus_image: "",
+    cus_remarks: "",
+    price: 0,
+  });
+
   const inputRefs = useRef({
     customerCode: useRef(null),
     customerDescription: useRef(null),
     itemCode: useRef(null),
     itemName: useRef(null),
-    brand: useRef(null),
     qty: useRef(null),
+    brand: useRef(null),
     unit: useRef(null),
     mrp: useRef(null),
     discount: useRef(null),
-    image: useRef(null),
+    netPrice: useRef(null),
+    remarks: useRef(null),
+    cus_customercode: useRef(null),
+    cus_customerdescription: useRef(null),
+    cus_itemcode: useRef(null),
+    cus_itemname: useRef(null),
+    cus_qty: useRef(null),
+    cus_brand: useRef(null),
+    cus_unit: useRef(null),
+    cus_mrp: useRef(null),
+    cus_discount: useRef(null),
+    cus_netprice: useRef(null),
+    cus_image: useRef(null),
+    cus_remarks: useRef(null),
   }).current;
 
-  // ✅ NEW: Input refs for edit row (dynamic, focused on entering edit mode)
-  const editInputRefs = useRef({}).current;
-
-  // Debug re-renders (unchanged)
+  // Debug re-renders
   useEffect(() => {
     console.log("QuotatTable re-rendered", { qouteId, itemsLength: items.length });
   }, [qouteId, items.length]);
 
-  // Fetch quotation items (unchanged)
+  // Sync initial rows from props
   useEffect(() => {
-    if (!qouteId || items.length) return;
+    if (items.length > 0 && rows.length === 0) {
+      setRows(
+        items.map((item, index) => {
+          const mrp = Number(item.mrp) || 0;
+          const net = Number(item.net_price) || 0;
+          const discount = item.discount !== undefined
+            ? Number(item.discount)
+            : ((mrp - net) / mrp * 100) || 0;
+          const qtyValue = Number(item.quantity || item.qty || 0);
+          const amount = Number(item.price) || (qtyValue * net);
+          return {
+            id: item.id || index + 1,
+            customerCode: item.customercode || "",
+            customerDescription: item.customerdescription || "",
+            itemCode: item.itemcode || "",
+            itemName: item.item_name || "",
+            brand: item.brand || "",
+            qty: qtyValue,
+            unit: item.unit || "Piece",
+            mrp,
+            discount,
+            netPrice: net,
+            price: net,
+            amount,
+            image: item.image || "",
+            remarks: item.remarks || "",
+          };
+        })
+      );
+    }
+  }, [items, rows.length]);
+
+  // Fetch quotation items if qouteId and no items
+  useEffect(() => {
+    if (!qouteId || items.length || rows.length) return;
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
@@ -103,9 +138,11 @@ const QuotatTable = React.memo(({
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
           const netPrice =
-            item.netPrice ||
+            Number(item.net_price) ||
             (Number(item.mrp) * (1 - Number(item.discount || 0) / 100)) ||
             0;
+          const qtyValue = Number(item.quantity || item.qty || 0);
+          const amount = Number(item.price) || (qtyValue * netPrice);
           return {
             id: item.id || index + 1,
             customerCode: item.customercode || "",
@@ -113,13 +150,13 @@ const QuotatTable = React.memo(({
             itemCode: item.itemcode || "",
             itemName: item.item_name || "",
             brand: item.brand || "",
-            qty: item.quantity || "",
+            qty: qtyValue,
             unit: item.unit || "",
-            mrp: item.mrp || "",
-            discount: item.discount || "",
+            mrp: Number(item.mrp) || "",
+            discount: Number(item.discount) || "",
             netPrice,
             price: netPrice,
-            amount: item.price || Number(item.quantity) * netPrice || 0,
+            amount,
             image: item.image || "",
           };
         });
@@ -131,308 +168,465 @@ const QuotatTable = React.memo(({
       }
     };
     fetchQuotationItems();
-  }, [qouteId, items.length]);
+  }, [qouteId, items.length, rows.length]);
 
-  // Utility functions (unchanged)
-  const calculateNetPrice = useCallback((mrp, discount) => {
-    const mrpNum = Number(mrp) || 0;
-    const discountNum = Number(discount) || 0;
-    return mrpNum * (1 - discountNum / 100);
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("https://api.panvic.in/products/");
+        if (!response.ok) throw new Error("Failed to fetch products");
+        const data = await response.json();
+        const updatedData = data.map((item) => ({
+          ...item,
+          unit: item.unit || "Piece",
+          itemname: item.itemname?.substring(0, 100) || "",
+          itemcode: item.itemcode || "",
+          brand: item.brand || "",
+          price: item.price || "",
+          thumbnail: item.thumbnail || "",
+        }));
+        setProductList(updatedData);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+    fetchProducts();
   }, []);
 
-  const calculateAmount = useCallback((qty, netPrice) => {
-    const qtyNum = Number(qty) || 0;
-    const netPriceNum = Number(netPrice) || 0;
-    return qtyNum * netPriceNum;
-  }, []);
+  const totalAmount = rows.reduce(
+    (sum, row) => sum + (Number(row.amount) || 0),
+    0
+  );
 
-  // ✅ IMPROVED: Unified immediate handleFieldChange with cursor preservation (no debounce for better UX)
-  const handleFieldChange = useCallback((field, e, inputRef = null) => {
-    const value = e.target.value;
-    const input = e.target;
-    const cursorPosition = input.selectionStart;
+  useEffect(() => {
+    if (onRowsChange) onRowsChange(rows);
+    if (onTotalAmountChange) onTotalAmountChange(totalAmount);
+  }, [rows, onRowsChange, onTotalAmountChange, totalAmount]);
 
-    // For new row
-    if (editRowIndex === null) {
-      setNewRow((prev) => {
-        const updatedRow = { ...prev, [field]: value };
-        if (field === "mrp" || field === "discount") {
-          updatedRow.netPrice = calculateNetPrice(
-            field === "mrp" ? value : prev.mrp,
-            field === "discount" ? value : prev.discount
-          );
-          updatedRow.price = updatedRow.netPrice;
-          updatedRow.amount = calculateAmount(prev.qty, updatedRow.netPrice);
-        } else if (field === "qty") {
-          updatedRow.amount = calculateAmount(value, prev.netPrice);
-        }
-        return updatedRow;
-      });
-    } else {
-      // For edit row
-      setEditRow((prev) => {
-        const updatedRow = { ...prev, [field]: value };
-        if (field === "mrp" || field === "discount") {
-          updatedRow.netPrice = calculateNetPrice(
-            field === "mrp" ? value : prev.mrp,
-            field === "discount" ? value : prev.discount
-          );
-          updatedRow.price = updatedRow.netPrice;
-          updatedRow.amount = calculateAmount(prev.qty, updatedRow.netPrice);
-        } else if (field === "qty") {
-          updatedRow.amount = calculateAmount(value, prev.netPrice);
-        }
-        return updatedRow;
-      });
+  /* ---------- Helpers ---------- */
+  const calculateDiscount = (mrp, netPrice) => {
+    const mrpValue = Number(mrp) || 0;
+    const netValue = Number(netPrice) || 0;
+    if (!mrpValue) return 0;
+    return +(((mrpValue - netValue) / mrpValue) * 100).toFixed(2);
+  };
+
+  const calculateNetPrice = (mrp, discount) => {
+    const mrpValue = Number(mrp) || 0;
+    const discValue = Number(discount) || 0;
+    return +(mrpValue * (1 - discValue / 100)).toFixed(2);
+  };
+
+  const calculateAmount = (qty, netPrice) => {
+    const qtyValue = Number(qty) || 0;
+    const netValue = Number(netPrice) || 0;
+    return +(qtyValue * netValue).toFixed(2);
+  };
+
+  /* ---------- Handlers ---------- */
+  const filterProducts = (field, value, products) =>
+    products.filter((product) =>
+      field === "itemCode"
+        ? product.itemcode.toLowerCase().includes(value.toLowerCase())
+        : product.itemname.toLowerCase().includes(value.toLowerCase())
+    );
+
+  const resetNewRow = () => {
+    setNewRow({
+      customerCode: "",
+      customerDescription: "",
+      itemCode: "",
+      itemName: "",
+      cus_itemcode: "",
+      cus_itemname: "",
+      brand: "",
+      qty: "",
+      unit: "",
+      mrp: "",
+      discount: "",
+      amount: "",
+      netPrice: "",
+      image: "",
+      remarks: "",
+      cus_customercode: "",
+      cus_customerdescription: "",
+      cus_qty: "",
+      cus_brand: "",
+      cus_unit: "",
+      cus_mrp: "",
+      cus_discount: "",
+      cus_netprice: "",
+      cus_image: "",
+      cus_remarks: "",
+      price: 0,
+    });
+  };
+
+  const handleFieldChange = (field, value) => {
+    setNewRow((prev) => {
+      const next = { ...prev, [field]: value };
+      const mrp = Number(next.mrp);
+      const net = Number(next.netPrice);
+      const disc = Number(next.discount);
+      const qty = Number(next.qty);
+
+      if (["mrp", "netPrice"].includes(field)) {
+        next.discount = calculateDiscount(mrp, net);
+        next.amount = calculateAmount(qty, net);
+        next.price = net;
+      }
+      if (field === "discount") {
+        const computedNet = calculateNetPrice(mrp, disc);
+        next.netPrice = computedNet;
+        next.amount = calculateAmount(qty, computedNet);
+        next.price = computedNet;
+      }
+      if (field === "qty") {
+        next.amount = calculateAmount(qty, net);
+      }
+      return next;
+    });
+  };
+
+  const handleAddRow = async () => {
+    const { itemCode, itemName, qty, mrp, netPrice, discount } = newRow;
+    console.log("Adding/Updating row with data:", newRow);
+    if (!itemCode || !itemName || !qty || !netPrice) {
+      alert("Please fill in all required fields (Item Code, Item Name, Qty, Net Price).");
+      return;
     }
 
-    // Restore cursor position
-    setTimeout(() => {
-      if (input && document.activeElement === input) {
-        input.selectionStart = cursorPosition;
-        input.selectionEnd = cursorPosition;
-      }
-    }, 0);
-  }, [calculateNetPrice, calculateAmount, editRowIndex]);
-
-  // handleAddRow (updated to use unified handleFieldChange)
-  const handleAddRow = useCallback(async () => {
     if (!qouteId) {
       alert("Invalid quotation ID");
       return;
     }
-    const { qty, mrp, discount, itemCode, itemName } = newRow;
-    if (itemCode && itemName && qty && mrp) {
-      try {
-        const netPrice = calculateNetPrice(mrp, discount);
-        const amount = calculateAmount(qty, netPrice);
-        const newItem = {
-          product_id: itemCode || "",
-          customercode: newRow.customerCode || "",
-          customerdescription: newRow.customerDescription || "",
-          itemcode: itemCode || "",
-          item_name: itemName || "",
-          brand: newRow.brand || "",
-          quantity: Number(qty) || 0,
-          unit: newRow.unit || "",
-          mrp: Number(mrp) || 0,
-          discount: Number(discount) || 0,
-          netPrice: netPrice || 0,
-          price: netPrice || 0,
-          amount: amount || 0,
-          image: newRow.image || "",
-          // Add optional fields if required by backend
-          amount_including_gst: null,
-          without_gst: null,
-          gst_amount: null,
-          amount_with_gst: null,
-          remarks: null,
-          cct: null,
-          beamangle: null,
-          cri: null,
-          cutoutdia: null,
-          lumens: null,
+
+    const parsedMrp = Number(mrp);
+    const parsedNet = Number(netPrice);
+    const parsedDisc = discount === "" ? calculateDiscount(parsedMrp, parsedNet) : Number(discount);
+    const parsedQty = Number(qty);
+    const amount = calculateAmount(parsedQty, parsedNet);
+
+    const payload = {
+      product_id: itemCode || "",
+      customercode: newRow.customerCode || "",
+      customerdescription: newRow.customerDescription || "",
+      itemcode: itemCode || "",
+      item_name: itemName || "",
+      brand: newRow.brand || "",
+      quantity: parsedQty,
+      unit: newRow.unit || "Piece",
+      mrp: parsedMrp,
+      discount: parsedDisc,
+      net_price: parsedNet,
+      price: amount,
+      image: newRow.image || "",
+      amount_including_gst: null,
+      without_gst: null,
+      gst_amount: null,
+      amount_with_gst: null,
+      remarks: newRow.remarks || null,
+      cct: null,
+      beamangle: null,
+      cri: null,
+      cutoutdia: null,
+      lumens: null,
+    };
+
+    try {
+      let updatedRows;
+      let newTotal = totalAmount;
+      if (editRowIndex !== null) {
+        const itemId = rows[editRowIndex].id;
+        console.log("Updating item with ID:", itemId);
+        const response = await axios.put(
+          `https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`,
+          payload,
+          { withCredentials: true }
+        );
+        const updatedItem = response.data;
+        const updatedRow = {
+          id: updatedItem.item_id || rows[editRowIndex].id,
+          customerCode: payload.customercode,
+          customerDescription: payload.customerdescription,
+          itemCode: payload.itemcode,
+          itemName: payload.item_name,
+          brand: payload.brand,
+          qty: payload.quantity,
+          unit: payload.unit,
+          mrp: payload.mrp,
+          discount: payload.discount,
+          netPrice: payload.net_price,
+          price: payload.net_price,
+          amount: payload.price,
+          image: payload.image,
+          remarks: payload.remarks,
         };
+        updatedRows = rows.map((row, i) => (i === editRowIndex ? updatedRow : row));
+        newTotal = updatedRows.reduce((sum, r) => sum + Number(r.amount), 0);
+        onTotalAmountChange?.(newTotal);
+        setEditRowIndex(null);
+      } else {
+        console.log("Creating new item");
         const response = await axios.post(
           `https://api.panvic.in/quotation/${qouteId}/items/`,
-          newItem,
+          payload,
           { withCredentials: true }
         );
         const createdItem = response.data;
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            id: createdItem.item_id || prevRows.length + 1,
-            customerCode: createdItem.customercode || newRow.customerCode || "",
-            customerDescription: createdItem.customerdescription || newRow.customerDescription || "",
-            itemCode: createdItem.itemcode || itemCode || "",
-            itemName: createdItem.item_name || itemName || "",
-            brand: createdItem.brand || newRow.brand || "",
-            qty: createdItem.quantity || qty || "",
-            unit: createdItem.unit || newRow.unit || "",
-            mrp: createdItem.mrp || mrp || "",
-            discount: createdItem.discount || discount || "",
-            netPrice: createdItem.netPrice || netPrice || 0,
-            price: createdItem.netPrice || netPrice || 0,
-            amount: createdItem.amount || amount || 0,
-            image: createdItem.image || newRow.image || "",
-          },
-        ]);
-        setTotalAmount((prevTotal) => {
-          const updatedTotal = prevTotal + amount;
-          onTotalAmountChange?.(updatedTotal);
-          return updatedTotal;
-        });
-        setNewRow({
-          customerCode: "",
-          customerDescription: "",
-          itemCode: "",
-          itemName: "",
-          brand: "",
-          qty: "",
-          unit: "",
-          mrp: "",
-          discount: "",
-          netPrice: 0,
-          price: 0,
-          amount: 0,
-          image: "",
-        });
-        inputRefs.customerCode.current?.focus();
-      } catch (error) {
-        console.error("Error adding item:", error.response?.data || error.message);
-        alert(`Failed to add item: ${error.response?.data?.detail || "Please try again."}`);
+        console.log("Created item response:", createdItem);
+        const newItemRow = {
+          id: createdItem.item_id || rows.length + 1,
+          customerCode: payload.customercode,
+          customerDescription: payload.customerdescription,
+          itemCode: payload.itemcode,
+          itemName: payload.item_name,
+          brand: payload.brand,
+          qty: payload.quantity,
+          unit: payload.unit,
+          mrp: payload.mrp,
+          discount: payload.discount,
+          netPrice: payload.net_price,
+          price: payload.net_price,
+          amount: payload.price,
+          image: payload.image,
+          remarks: payload.remarks,
+        };
+        updatedRows = [...rows, newItemRow];
+        newTotal = totalAmount + amount;
+        onTotalAmountChange?.(newTotal);
       }
-    } else {
-      alert("Please fill in all required fields.");
+      setRows(updatedRows);
+      resetNewRow();
+      setShowAddModal(false);
+    } catch (error) {
+      console.error("Error adding/updating item:", error.response?.data || error.message);
+      alert(`Failed to ${editRowIndex !== null ? 'update' : 'add'} item: ${error.response?.data?.detail || "Please try again."}`);
     }
-  }, [newRow, calculateNetPrice, calculateAmount, onTotalAmountChange, qouteId, inputRefs.customerCode]);
+  };
 
-  // ✅ IMPROVED: handleSaveRow with validation feedback
-  const handleSaveRow = useCallback(async () => {
-    if (!editRow?.itemCode || !editRow.itemName || !editRow.qty || !editRow.mrp) {
-      alert("Please fill in all required fields (Item Code, Item Name, Qty, MRP).");
+  const handleSubmitCustomRowToDB = async (payload) => {
+    // For custom, post without product_id
+    const response = await axios.post(
+      `https://api.panvic.in/quotation/${qouteId}/items/`,
+      payload,
+      { withCredentials: true }
+    );
+    return response.data;
+  };
+
+  const handleSubmitCustomRow = async (rowData, editIndex) => {
+    if (!qouteId) {
+      alert("Invalid quotation ID");
       return;
     }
+
+    const qty = Number(rowData.cus_qty);
+    const mrp = Number(rowData.cus_mrp);
+    const net = Number(rowData.cus_netprice);
+    const discount =
+      rowData.cus_discount === ""
+        ? calculateDiscount(mrp, net)
+        : Number(rowData.cus_discount);
+    const amount = calculateAmount(qty, net);
+
+    const payload = {
+      product_id: null,
+      customercode: rowData.cus_customercode || "",
+      customerdescription: rowData.cus_customerdescription || "",
+      itemcode: rowData.cus_itemcode || "",
+      item_name: rowData.cus_itemname || "",
+      brand: rowData.cus_brand || "",
+      quantity: qty,
+      unit: rowData.cus_unit || "Piece",
+      mrp,
+      discount,
+      net_price: net,
+      price: amount,
+      image: rowData.cus_image || "",
+      amount_including_gst: null,
+      without_gst: null,
+      gst_amount: null,
+      amount_with_gst: null,
+      remarks: rowData.cus_remarks || null,
+      cct: null,
+      beamangle: null,
+      cri: null,
+      cutoutdia: null,
+      lumens: null,
+    };
+
+    let savedItem;
+    let updatedRows;
+    let newTotal = totalAmount;
     try {
-      const calculatedAmount = Number(editRow.qty || 0) * Number(editRow.netPrice || 0);
-      const response = await axios.put(
-        `https://api.panvic.in/quotation/${qouteId}/items/${editRow.id}/`,
-        {
-          product_id: editRow.itemCode || "",
-          customercode: editRow.customerCode || "",
-          customerdescription: editRow.customerDescription || "",
-          itemcode: editRow.itemCode || "",
-          item_name: editRow.itemName || "",
-          brand: editRow.brand || "",
-          quantity: Number(editRow.qty) || 0,
-          unit: editRow.unit || "",
-          mrp: Number(editRow.mrp) || 0,
-          discount: Number(editRow.discount) || 0,
-          netPrice: Number(editRow.netPrice) || 0,
-          price: calculatedAmount,
-          amount: calculatedAmount,
-          image: editRow.image || "",
-        },
-        { withCredentials: true }
-      );
-      const updatedItem = response.data;
-      const updatedRow = {
-        id: updatedItem.item_id || editRow.id,
-        customerCode: updatedItem.customercode || editRow.customerCode || "",
-        customerDescription: updatedItem.customerdescription || editRow.customerDescription || "",
-        itemCode: updatedItem.itemcode || editRow.itemCode || "",
-        itemName: updatedItem.item_name || editRow.itemName || "",
-        brand: updatedItem.brand || editRow.brand || "",
-        qty: updatedItem.quantity || editRow.qty || "",
-        unit: updatedItem.unit || editRow.unit || "",
-        mrp: updatedItem.mrp || editRow.mrp || "",
-        discount: updatedItem.discount || editRow.discount || "",
-        netPrice: updatedItem.netPrice || editRow.netPrice || 0,
-        price: updatedItem.netPrice || editRow.netPrice || 0,
-        amount: updatedItem.amount || editRow.amount || 0,
-        image: updatedItem.image || editRow.image || "",
-      };
-      setRows((prevRows) =>
-        prevRows.map((row, index) => (index === editRowIndex ? updatedRow : row))
-      );
-      setEditRowIndex(null);
-      setEditRow(null);
-      // ✅ NEW: Success feedback (could be a toast, but alert for simplicity)
-      // alert("Item updated successfully!");
+      if (editIndex !== null) {
+        const itemId = rows[editIndex].id;
+        console.log("Updating custom item with ID:", itemId);
+        const response = await axios.put(
+          `https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`,
+          payload,
+          { withCredentials: true }
+        );
+        savedItem = response.data;
+        const updatedRow = {
+          id: savedItem.item_id || rows[editIndex].id,
+          customerCode: payload.customercode,
+          customerDescription: payload.customerdescription,
+          itemCode: payload.itemcode,
+          itemName: payload.item_name,
+          brand: payload.brand,
+          qty: payload.quantity,
+          unit: payload.unit,
+          mrp: payload.mrp,
+          discount: payload.discount,
+          netPrice: payload.net_price,
+          price: payload.net_price,
+          amount: payload.price,
+          image: payload.image,
+          remarks: payload.remarks,
+        };
+        updatedRows = rows.map((row, i) => (i === editIndex ? updatedRow : row));
+        newTotal = updatedRows.reduce((sum, r) => sum + Number(r.amount), 0);
+        onTotalAmountChange?.(newTotal);
+        setEditRowIndex(null);
+      } else {
+        console.log("Creating new custom item");
+        savedItem = await handleSubmitCustomRowToDB(payload);
+        console.log("Created custom item response:", savedItem);
+        if (!savedItem) return;
+        const newRowData = {
+          id: savedItem.item_id || rows.length + 1,
+          customerCode: payload.customercode,
+          customerDescription: payload.customerdescription,
+          itemCode: payload.itemcode,
+          itemName: payload.item_name,
+          brand: payload.brand,
+          qty: payload.quantity,
+          unit: payload.unit,
+          mrp: payload.mrp,
+          discount: payload.discount,
+          netPrice: payload.net_price,
+          price: payload.net_price,
+          amount: payload.price,
+          image: payload.image,
+          remarks: payload.remarks,
+        };
+        updatedRows = [...rows, newRowData];
+        newTotal = totalAmount + amount;
+        onTotalAmountChange?.(newTotal);
+      }
+      setRows(updatedRows);
+      resetNewRow();
+      setShowCusAddModal(false);
     } catch (error) {
-      console.error("Error updating item:", error);
-      alert("Failed to update item. Please try again.");
+      console.error("Error adding/updating custom item:", error);
+      alert("Failed to add/update custom item. Please try again.");
     }
-  }, [editRow, editRowIndex, qouteId]);
+  };
 
-  const handleCancelEdit = useCallback(() => {
-    setEditRowIndex(null);
-    setEditRow(null);
-  }, []);
-
-  // ✅ NEW: Handle keydown for navigation and actions (unified for new/edit rows)
-  const handleKeyDown = useCallback((e, nextField = null, isEditMode = false) => {
+  const handleKeyDown = (e, nextField) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (nextField && editInputRefs[nextField]?.current) {
-        editInputRefs[nextField].current.focus();
-      } else if (isEditMode) {
-        handleSaveRow();
+      if (nextField && inputRefs[nextField]?.current) {
+        inputRefs[nextField].current.focus();
       } else {
-        handleAddRow();
+        if (showAddModal) handleAddRow();
+        else if (showCusAddModal) handleSubmitCustomRow(newRow, editRowIndex);
       }
-    } else if (e.key === "Escape" && isEditMode) {
-      e.preventDefault();
-      handleCancelEdit();
     }
-  }, [handleAddRow, handleSaveRow, handleCancelEdit]);
+  };
 
-  // ✅ NEW: Auto-focus first field on entering edit mode
-  useEffect(() => {
-    if (editRowIndex !== null && editInputRefs.itemCode) {
-      // Focus on itemCode as first editable field (adjust as needed)
-      setTimeout(() => {
-        editInputRefs.itemCode?.current?.focus();
-      }, 100); // Small delay to ensure refs are set
-    }
-  }, [editRowIndex]);
-
-  // Other functions (handleColumnVisibilityChange unchanged)
-  const handleColumnVisibilityChange = useCallback((updatedColumns) => {
+  const handleColumnVisibilityChange = (updatedColumns) => {
     setColumns(updatedColumns);
-  }, []);
+  };
 
-  // ✅ IMPROVED: handleEditRow with ref initialization
-  const handleEditRow = useCallback(
-    (index) => {
-      setEditRow({ ...rows[index] });
-      setEditRowIndex(index);
-      // Initialize edit refs if needed (they'll be set in render)
-    },
-    [rows]
-  );
+  const handleEditRow = (index) => {
+    const row = rows[index];
+    setNewRow({
+      ...newRow,
+      customerCode: row.customerCode || "",
+      customerDescription: row.customerDescription || "",
+      itemCode: row.itemCode || "",
+      itemName: row.itemName || "",
+      brand: row.brand || "",
+      qty: row.qty || "",
+      unit: row.unit || "Piece",
+      mrp: row.mrp || "",
+      discount: row.discount || "",
+      amount: row.amount || "",
+      netPrice: row.netPrice || "",
+      image: row.image || "",
+      remarks: row.remarks || "",
+      cus_customercode: row.customerCode || "",
+      cus_customerdescription: row.customerDescription || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
+      cus_qty: row.qty || "",
+      cus_brand: row.brand || "",
+      cus_unit: row.unit || "Piece",
+      cus_mrp: row.mrp || "",
+      cus_discount: row.discount || "",
+      cus_netprice: row.netPrice || "",
+      cus_image: row.image || "",
+      cus_remarks: row.remarks || "",
+    });
+    setEditRowIndex(index);
+    setShowAddModal(true);
+  };
 
-  // ✅ IMPROVED: handleDeleteRow with confirmation
-  const handleDeleteRow = useCallback(
-    async (index) => {
-      const row = rows[index];
-      const confirmDelete = window.confirm(`Are you sure you want to delete "${row.itemName}"? This action cannot be undone.`);
-      if (!confirmDelete) return;
+  const handleEditCustomRow = (index) => {
+    const row = rows[index];
+    setNewRow({
+      ...newRow,
+      customerCode: row.customerCode || "",
+      customerDescription: row.customerDescription || "",
+      itemCode: row.itemCode || "",
+      itemName: row.itemName || "",
+      brand: row.brand || "",
+      qty: row.qty || "",
+      unit: row.unit || "Piece",
+      mrp: row.mrp || "",
+      discount: row.discount || "",
+      amount: row.amount || "",
+      netPrice: row.netPrice || "",
+      image: row.image || "",
+      remarks: row.remarks || "",
+      cus_customercode: row.customerCode || "",
+      cus_customerdescription: row.customerDescription || "",
+      cus_itemcode: row.itemCode || "",
+      cus_itemname: row.itemName || "",
+      cus_qty: row.qty || "",
+      cus_brand: row.brand || "",
+      cus_unit: row.unit || "Piece",
+      cus_mrp: row.mrp || "",
+      cus_discount: row.discount || "",
+      cus_netprice: row.netPrice || "",
+      cus_image: row.image || "",
+      cus_remarks: row.remarks || "",
+    });
+    setEditRowIndex(index);
+    setShowCusAddModal(true);
+  };
 
-      const itemId = row.id;
-      const amountToSubtract = row.amount;
-      try {
-        await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`, {
-          withCredentials: true,
-        });
-        setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-        setTotalAmount((prevTotal) => {
-          const updatedTotal = prevTotal - amountToSubtract;
-          onTotalAmountChange?.(updatedTotal);
-          return updatedTotal;
-        });
-        // ✅ NEW: Success feedback
-        alert("Item deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting item:", error);
-        alert("Failed to delete item. Please try again.");
-      }
-    },
-    [rows, qouteId, onTotalAmountChange]
-  );
+  const handleDeleteRow = async (index) => {
+    const row = rows[index];
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${row.itemName}"? This action cannot be undone.`);
+    if (!confirmDelete) return;
 
-  // Update total amount (unchanged)
-  useEffect(() => {
-    const updatedTotal = rows.reduce((sum, row) => sum + Number(row.amount), 0);
-    setTotalAmount(updatedTotal);
-    onTotalAmountChange?.(updatedTotal);
-  }, [rows, onTotalAmountChange]);
-
-  // Sync rows with parent (unchanged)
-  useEffect(() => {
-    onRowsChange?.(rows);
-  }, [rows, onRowsChange]);
+    const itemId = row.id;
+    try {
+      await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`, {
+        withCredentials: true,
+      });
+      setRows((prevRows) => prevRows.filter((_, i) => i !== index));
+      alert("Item deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      alert("Failed to delete item. Please try again.");
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -441,15 +635,17 @@ const QuotatTable = React.memo(({
   return (
     <div>
       <ShowHideFilter
-        className="no-print"
+        className="no-print mb-3"
         columns={columns}
         onChange={handleColumnVisibilityChange}
       />
+
       <div className="table-responsive">
         <table className="tm_round_border table align-items-center justify-content-center mb-0">
           <thead>
             <tr>
               <th>SR NO</th>
+              {columns.Image && <th>Image</th>}
               {columns.customerCode && <th>Cust Code</th>}
               {columns.customerDescription && <th>Cust Desc</th>}
               {columns.ItemCode && <th>Item Code</th>}
@@ -461,344 +657,119 @@ const QuotatTable = React.memo(({
               {columns.Dist && <th>Dist (%)</th>}
               {columns.NetPrice && <th>Net Price</th>}
               {columns.Amount && <th>Amount</th>}
-              <th className="no-print">Actions</th>
+              <td className="no-print">Actions</td>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={row.id} className={editRowIndex === index ? "table-warning" : ""}> {/* ✅ NEW: Highlight edited row */}
+              <tr key={row.id}>
                 <td>{index + 1}</td>
-                {columns.customerCode && (
+                {columns.Image && (
                   <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="text"
-                        value={editRow?.customerCode || ""}
-                        onChange={(e) => handleFieldChange("customerCode", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "customerDescription", true)}
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.customerCode = el)}
-                      />
-                    ) : (
-                      row.customerCode || "-"
-                    )}
-                  </td>
-                )}
-                {columns.customerDescription && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="text"
-                        value={editRow?.customerDescription || ""}
-                        onChange={(e) => handleFieldChange("customerDescription", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "itemCode", true)}
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.customerDescription = el)}
-                      />
-                    ) : (
-                      row.customerDescription || "-"
-                    )}
-                  </td>
-                )}
-                {columns.ItemCode && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="text"
-                        value={editRow?.itemCode || ""}
-                        onChange={(e) => handleFieldChange("itemCode", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "itemName", true)}
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.itemCode = el)}
-                      />
-                    ) : (
-                      row.itemCode || "-"
-                    )}
-                  </td>
-                )}
-                <td>
-                  {editRowIndex === index ? (
-                    <input
-                      type="text"
-                      value={editRow?.itemName || ""}
-                      onChange={(e) => handleFieldChange("itemName", e)}
-                      onKeyDown={(e) => handleKeyDown(e, "brand", true)}
-                      className="form-control"
-                      ref={(el) => (editInputRefs.itemName = el)}
+                    <img
+                      src={row.image ? `https://api.panvic.in${row.image}` : ""}
+                      alt=""
+                      className="product_img thumbnail"
+                      style={{ maxHeight: "50px" }}
+                      onError={(e) => (e.target.style.display = "none")}
                     />
-                  ) : (
-                    row.itemName || "-"
+                  </td>
+                )}
+                {columns.customerCode && <td>{row.customerCode || "-"}</td>}
+                {columns.customerDescription && <td>{row.customerDescription || "-"}</td>}
+                {columns.ItemCode && <td>{row.itemCode || "-"}</td>}
+                <td>
+                  <div>{row.itemName || "-"}</div>
+                  {row.remarks && (
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        color: "#6c757d",
+                        fontSize: "0.9em",
+                        marginTop: "0.25em",
+                      }}
+                    >
+                      {row.remarks}
+                    </div>
                   )}
                 </td>
-                {columns.Brand && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="text"
-                        value={editRow?.brand || ""}
-                        onChange={(e) => handleFieldChange("brand", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "unit", true)}
-                        className="form-control"
-                        ref={(el) => (editInputRefs.brand = el)}
-                      />
-                    ) : (
-                      row.brand || "-"
-                    )}
-                  </td>
-                )}
-                <td>
-                  {editRowIndex === index ? (
-                    <input
-                      type="text"
-                      value={editRow?.unit || ""}
-                      onChange={(e) => handleFieldChange("unit", e)}
-                      onKeyDown={(e) => handleKeyDown(e, "mrp", true)}
-                      className="form-control input-small"
-                      ref={(el) => (editInputRefs.unit = el)}
-                    />
-                  ) : (
-                    row.unit || "-"
-                  )}
-                </td>
-                {columns.MRP && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="number"
-                        value={editRow?.mrp || ""}
-                        onChange={(e) => handleFieldChange("mrp", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "qty", true)}
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.mrp = el)}
-                      />
-                    ) : (
-                      row.mrp || "-"
-                    )}
-                  </td>
-                )}
-                {columns.Qty && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="number"
-                        value={editRow?.qty || ""}
-                        onChange={(e) => handleFieldChange("qty", e)}
-                        onKeyDown={(e) => handleKeyDown(e, "discount", true)}
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.qty = el)}
-                      />
-                    ) : (
-                      row.qty || "-"
-                    )}
-                  </td>
-                )}
-                {columns.Dist && (
-                  <td>
-                    {editRowIndex === index ? (
-                      <input
-                        type="number"
-                        value={editRow?.discount || ""}
-                        onChange={(e) => handleFieldChange("discount", e)}
-                        onKeyDown={(e) => handleKeyDown(e, null, true)} // Next is save
-                        className="form-control input-small"
-                        ref={(el) => (editInputRefs.discount = el)}
-                      />
-                    ) : (
-                      row.discount || "-"
-                    )}
-                  </td>
-                )}
-                {columns.NetPrice && (
-                  <td>
-                    {(editRowIndex === index ? editRow?.netPrice : row.netPrice)?.toFixed(2) || "0.00"}
-                  </td>
-                )}
-                {columns.Amount && (
-                  <td>
-                    {(editRowIndex === index ? editRow?.amount : row.amount)?.toFixed(2) || "0.00"}
-                  </td>
-                )}
+                {columns.Brand && <td>{row.brand || "-"}</td>}
+                <td>{row.unit || "-"}</td>
+                {columns.MRP && <td>{row.mrp || "-"}</td>}
+                {columns.Qty && <td>{row.qty || "-"}</td>}
+                {columns.Dist && <td>{row.discount || "-"}</td>}
+                {columns.NetPrice && <td>{(row.netPrice || 0).toFixed(2)}</td>}
+                {columns.Amount && <td>{(row.amount || 0).toFixed(2)}</td>}
                 <td className="no-print">
-                  {editRowIndex === index ? (
-                    <>
-                      <button className="btn action_btn btn-success" onClick={handleSaveRow}>
-                        <i className="fas fa-save"></i> Save
-                      </button>
-                      <button className="btn action_btn btn-secondary ml-2" onClick={handleCancelEdit}>
-                        <i className="fas fa-times"></i> Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button className="btn action_btn btn-warning" onClick={() => handleEditRow(index)}>
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="btn action_btn btn-danger ml-2" onClick={() => handleDeleteRow(index)}>
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </>
-                  )}
+                  <button
+                    className="btn action_btn btn-warning me-2"
+                    onClick={() => handleEditRow(index)}
+                    aria-label="Edit"
+                  >
+                    <i className="fas fa-edit"></i>
+                  </button>
+                  <button
+                    className="btn action_btn btn-info me-2"
+                    onClick={() => handleEditCustomRow(index)}
+                    aria-label="Edit Custom"
+                  >
+                    <i className="fas fa-edit"></i> Custom
+                  </button>
+                  <button
+                    className="btn action_btn btn-danger"
+                    onClick={() => handleDeleteRow(index)}
+                    aria-label="Delete"
+                  >
+                    <i className="fas fa-trash"></i>
+                  </button>
                 </td>
               </tr>
             ))}
-            {/* New row inputs (updated to use unified handleFieldChange and handleKeyDown) */}
-            <tr className="no-print">
-              <td>#</td>
-              {/* {columns.Image && <td>{newRow.image && <img src={newRow.image} alt="New item" className="product_img" />}</td>} */}
-              {columns.customerCode && (
-                <td>
-                  <input
-                    type="text"
-                    name="customerCode"
-                    value={newRow.customerCode}
-                    onChange={(e) => handleFieldChange("customerCode", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                    placeholder="Cust Code"
-                    className="form-control input-small"
-                    ref={inputRefs.customerCode}
-                  />
-                </td>
-              )}
-              {columns.customerDescription && (
-                <td>
-                  <input
-                    type="text"
-                    name="customerDescription"
-                    value={newRow.customerDescription}
-                    onChange={(e) => handleFieldChange("customerDescription", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                    placeholder="Cust Desc"
-                    className="form-control input-small"
-                    ref={inputRefs.customerDescription}
-                  />
-                </td>
-              )}
-              {columns.ItemCode && (
-                <td>
-                  <input
-                    type="text"
-                    name="itemCode"
-                    value={newRow.itemCode}
-                    onChange={(e) => handleFieldChange("itemCode", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                    placeholder="Item code"
-                    className="form-control input-small"
-                    ref={inputRefs.itemCode}
-                  />
-                </td>
-              )}
-              <td>
-                <input
-                  type="text"
-                  name="itemName"
-                  value={newRow.itemName}
-                  onChange={(e) => handleFieldChange("itemName", e)}
-                  onKeyDown={(e) => handleKeyDown(e, "brand")}
-                  placeholder="Item name"
-                  className="form-control"
-                  ref={inputRefs.itemName}
-                />
-              </td>
-              {columns.Brand && (
-                <td>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={newRow.brand}
-                    onChange={(e) => handleFieldChange("brand", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "unit")}
-                    placeholder="Brand"
-                    className="form-control"
-                    ref={inputRefs.brand}
-                  />
-                </td>
-              )}
-              <td>
-                <input
-                  type="text"
-                  name="unit"
-                  value={newRow.unit}
-                  onChange={(e) => handleFieldChange("unit", e)}
-                  onKeyDown={(e) => handleKeyDown(e, "mrp")}
-                  placeholder="Unit"
-                  className="form-control input-small"
-                  ref={inputRefs.unit}
-                />
-              </td>
-              {columns.MRP && (
-                <td>
-                  <input
-                    type="number"
-                    name="mrp"
-                    value={newRow.mrp}
-                    onChange={(e) => handleFieldChange("mrp", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "qty")}
-                    placeholder="MRP"
-                    className="form-control input-small"
-                    ref={inputRefs.mrp}
-                  />
-                </td>
-              )}
-              {columns.Qty && (
-                <td>
-                  <input
-                    type="number"
-                    name="qty"
-                    value={newRow.qty}
-                    onChange={(e) => handleFieldChange("qty", e)}
-                    onKeyDown={(e) => handleKeyDown(e, "discount")}
-                    placeholder="Qty"
-                    className="form-control input-small"
-                    ref={inputRefs.qty}
-                  />
-                </td>
-              )}
-              {columns.Dist && (
-                <td>
-                  <input
-                    type="number"
-                    name="discount"
-                    value={newRow.discount}
-                    onChange={(e) => handleFieldChange("discount", e)}
-                    onKeyDown={(e) => handleKeyDown(e)} // Triggers add
-                    placeholder="Discount (%)"
-                    className="form-control input-small"
-                    ref={inputRefs.discount}
-                  />
-                </td>
-              )}
-              {columns.NetPrice && (
-                <td>
-                  <input
-                    type="number"
-                    name="netPrice"
-                    value={newRow.netPrice.toFixed(2)}
-                    readOnly
-                    placeholder="Net Price"
-                    className="form-control input-small"
-                  />
-                </td>
-              )}
-              {columns.Amount && (
-                <td>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={newRow.amount.toFixed(2)}
-                    readOnly
-                    placeholder="Amount"
-                    className="form-control input-small"
-                  />
-                </td>
-              )}
-              <td className="no-print">
-                <button className="btn action_btn btn-primary" onClick={handleAddRow}>
-                  <i className="fas fa-plus"></i>
-                </button>
-              </td>
-            </tr>
           </tbody>
         </table>
+      </div>
+
+      <AddProductModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        newRow={newRow}
+        setNewRow={setNewRow}
+        handleFieldChange={handleFieldChange}
+        handleKeyDown={handleKeyDown}
+        inputRefs={inputRefs}
+        editRowIndex={editRowIndex}
+        handleAddRow={handleAddRow}
+        products={productList}
+        filterProducts={filterProducts}
+      />
+
+      <CustomAddModal
+        showCusAddModal={showCusAddModal}
+        setShowCusAddModal={setShowCusAddModal}
+        newRow={newRow}
+        setCustomNewRow={setNewRow}
+        handleFieldChange={handleFieldChange}
+        handleKeyDown={handleKeyDown}
+        inputRefs={inputRefs}
+        editRowIndex={editRowIndex}
+        handleSubmitCustomRow={handleSubmitCustomRow}
+      />
+
+      <div className="mt-3 d-flex gap-2 no-print">
+        <button
+          className="btn btn-secondary w-100"
+          onClick={() => setShowAddModal(true)}
+          aria-label="Add New Row"
+        >
+          Add New Row
+        </button>
+        <button
+          className="btn btn-secondary w-100"
+          onClick={() => setShowCusAddModal(true)}
+          aria-label="Custom Add Row"
+        >
+          Custom Add
+        </button>
       </div>
     </div>
   );
