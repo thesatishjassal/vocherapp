@@ -183,11 +183,6 @@ const AddProductModal = ({
       const amount = calculateAmount(value, newRow.netPrice);
       handleFieldChange("amount", amount);
     }
-
-    // Auto-open product finder
-    if (["itemCode", "itemName"].includes(field)) {
-      setShowFindProductModal(value.trim().length > 0);
-    }
   };
 
   // Handle product selection
@@ -275,8 +270,18 @@ const AddProductModal = ({
                     ref={inputRefs.customerDescription}
                     required
                   />
+                </div>      <div className="col-12">
+                  <button
+                    type="button"
+                    className="btn btn-secondary w-100"
+                    onClick={() => setShowFindProductModal(true)}
+                    title="Find Product"
+                  >
+                    <i className="fa-solid fa-magnifying-glass me-2"></i>Search the Product
+                  </button>
                 </div>
-                <div className="col-md-4">
+                <hr />
+                <div className="col-md-6">
                   <label className="form-label small fw-medium">Item Code</label>
                   <input
                     type="text"
@@ -287,10 +292,11 @@ const AddProductModal = ({
                     placeholder="Ex: ITEM00123"
                     className="form-control"
                     ref={inputRefs.itemCode}
+                    disabled
                     required
                   />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <label className="form-label small fw-medium">Item Name</label>
                   <input
                     type="text"
@@ -301,25 +307,13 @@ const AddProductModal = ({
                     placeholder="Ex: Stainless Steel Bottle"
                     className="form-control"
                     ref={inputRefs.itemName}
+                    disabled
                     required
                   />
                 </div>
-                <div className="col-md-4">
-                  <label className="form-label small fw-medium">Quantity</label>
-                  <input
-                    type="number"
-                    name="qty"
-                    value={newRow.qty || ""}
-                    onChange={(e) => handleLocalFieldChange("qty", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "brand")}
-                    placeholder="Enter quantity"
-                    className="form-control"
-                    ref={inputRefs.qty}
-                    min="1"
-                    required
-                  />
-                </div>
-                <div className="col-md-4">
+          
+                
+                <div className="col-md-3">
                   <label className="form-label small fw-medium">Brand</label>
                   <input
                     type="text"
@@ -333,7 +327,7 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <label className="form-label small fw-medium">Unit</label>
                   <input
                     type="text"
@@ -347,7 +341,7 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <label className="form-label small fw-medium">MRP</label>
                   <input
                     type="number"
@@ -363,7 +357,37 @@ const AddProductModal = ({
                     disabled
                   />
                 </div>
-                <div className="col-md-6">
+                    <div className="col-md-3">
+                  <label className="form-label small fw-medium">Amount</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={newRow.amount || ""}
+                    onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, "image")}
+                    placeholder="Auto-calculated (Qty * Net Price)"
+                    className="form-control"
+                    ref={inputRefs.amount}
+                    min="0"
+                    step="0.01"
+                    disabled
+                  />
+                </div><div className="col-md-3">
+                  <label className="form-label small fw-medium">Quantity</label>
+                  <input
+                    type="number"
+                    name="qty"
+                    value={newRow.qty || ""}
+                    onChange={(e) => handleLocalFieldChange("qty", e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, "brand")}
+                    placeholder="Enter quantity"
+                    className="form-control"
+                    ref={inputRefs.qty}
+                    min="1"
+                    required
+                  />
+                </div>
+                <div className="col-md-3">
                   <label className="form-label small fw-medium">Discount (%)</label>
                   <input
                     type="number"
@@ -395,23 +419,8 @@ const AddProductModal = ({
                     required
                   />
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Amount</label>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={newRow.amount || ""}
-                    onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "image")}
-                    placeholder="Auto-calculated (Qty * Net Price)"
-                    className="form-control"
-                    ref={inputRefs.amount}
-                    min="0"
-                    step="0.01"
-                    disabled
-                  />
-                </div>
-                <div className="col-md-12">
+            
+                {/* <div className="col-md-12">
                   <label className="form-label small fw-medium">Upload Image</label>
                   <input
                     type="file"
@@ -439,7 +448,7 @@ const AddProductModal = ({
                       onError={(e) => (e.target.style.display = "none")}
                     />
                   </div>
-                )}
+                )} */}
                 <div className="col-12">
                   <label className="form-label small fw-medium">Remarks</label>
                   <textarea
@@ -450,7 +459,7 @@ const AddProductModal = ({
                     placeholder="Any additional notes or info"
                     className="form-control"
                     ref={inputRefs.remarks}
-                    rows="3"
+                    rows="2"
                   />
                 </div>
               </div>

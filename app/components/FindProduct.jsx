@@ -36,8 +36,8 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
   }, []);
 
   if (!isClient) return null; // Prevent hydration error
-  if (isLoading) return <div>Loading products...</div>;
-  if (error) return <div>Error loading products: {error}</div>;
+  if (isLoading) return <div className="text-center py-4">Loading products...</div>;
+  if (error) return <div className="alert alert-danger mx-3 mt-3">Error loading products: {error}</div>;
 
   // Options for Select fields
   const productCodeOptions = items.map((product) => ({
@@ -87,41 +87,78 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
         display: showModal ? "block" : "none",
         backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}
+      tabIndex="-1"
     >
       <div className="modal-dialog modal-dialog-centered addwarehouseform">
         <div className="modal-content">
-          <div className="modal-header">
-            <h1 className="modal-title fs-5">Find Product</h1>
+          <div className="modal-header border-bottom">
+            <h1 className="modal-title fs-5 fw-semibold">Find Product</h1>
             <button
               type="button"
-              className="btn-close"
+              className="btn-close shadow-none"
               aria-label="Close"
               onClick={() => setShowModal(false)}
-            ><i className="fa-solid fa-xmark"></i></button>
+            >
+              <i className="fa-solid fa-xmark fs-5"></i>
+            </button>
           </div>
-          <div className="modal-body py-3">
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <div style={{ flex: 1 }}>
-                <label htmlFor="product_id">Item Code</label>
+          <div className="modal-body py-4">
+            <p className="text-muted small mb-3">Select either Item Code <strong>or</strong> Item Name to search quickly.</p>
+            <div className="row g-3">
+              <div className="col-12">
+                <label htmlFor="product_id" className="form-label fw-medium">Item Code</label>
                 <Select
+                  inputId="product_id"
                   options={productCodeOptions}
                   value={selectedCode}
                   onChange={handleCodeChange}
-                  placeholder="Select Item Code"
+                  placeholder="Type or select Item Code..."
                   isClearable
+                  isSearchable
+                  classNamePrefix="product-select"
+                  styles={{
+                    control: (provided) => ({
+                      ...provided,
+                      minHeight: '42px',
+                      borderColor: '#ced4da',
+                      boxShadow: 'none',
+                      '&:hover': { borderColor: '#adb5bd' },
+                    }),
+                  }}
                 />
               </div>
-              <div style={{ flex: 2 }}>
-                <label htmlFor="itemname">Item Name</label>
+              <div className="col-12">
+                <label htmlFor="itemname" className="form-label fw-medium">Item Name</label>
                 <Select
+                  inputId="itemname"
                   options={productNameOptions}
                   value={selectedName}
                   onChange={handleNameChange}
-                  placeholder="Select Item Name"
+                  placeholder="Type or select Item Name..."
                   isClearable
+                  isSearchable
+                  classNamePrefix="product-select"
+                  styles={{
+                    control: (provided) => ({
+                      ...provided,
+                      minHeight: '42px',
+                      borderColor: '#ced4da',
+                      boxShadow: 'none',
+                      '&:hover': { borderColor: '#adb5bd' },
+                    }),
+                  }}
                 />
               </div>
             </div>
+          </div>
+          <div className="modal-footer border-top py-2">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setShowModal(false)}
+            >
+              <i className="fa-solid fa-times me-1"></i>Cancel
+            </button>
           </div>
         </div>
       </div>
