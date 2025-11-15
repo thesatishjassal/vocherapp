@@ -916,3 +916,20 @@ label, .form-label {
 .navbar .nav-link {
     font-size: 14px;
 }
+/* FIX PDF MARGINS */
+@media print {
+  body {
+    margin: 25mm !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tm_invoice_wrap,
+  .tm_container,
+  .tm_invoice {
+    padding: 20px !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+}
