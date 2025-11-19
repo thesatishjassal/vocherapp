@@ -1,8 +1,10 @@
-"use client"
+"use client";
 import axios from "axios";
 import QuotationItemsTable from "../../components/QuotationItemsTable";
 // import PrintButton from "../../../components/PrintButton";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 
 const QUOTATION_API_URL = "https://api.panvic.in/quotation";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
@@ -15,6 +17,71 @@ export default function ViewQuotation({ params }) {
   const [client, setClient] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const generateAndUploadPDF = async () => {
+    try {
+      const invoiceElement = document.querySelector(".tm_invoice_wrap");
+
+      if (!invoiceElement) {
+        alert("Invoice not found!");
+        return;
+      }
+
+      // Capture screenshot (compressed)
+      const canvas = await html2canvas(invoiceElement, {
+        scale: 1.2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.7);
+
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // First page
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Additional pages if required
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Convert to Blob
+      const pdfBlob = pdf.output("blob");
+
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append("file", pdfBlob);
+      formData.append("upload_preset", "panvik_pdf");
+      formData.append("cloud_name", "dfolgsiiv");
+
+      const cloudinaryRes = await axios.post(
+        `https://api.cloudinary.com/v1_1/dfolgsiiv/auto/upload`,
+        formData
+      );
+
+      const pdfUrl = cloudinaryRes.data.secure_url;
+
+      alert("PDF Uploaded Successfully!");
+      navigator.clipboard.writeText(pdfUrl);
+      console.log("PDF URL:", pdfUrl);
+    } catch (error) {
+      console.error("PDF ERROR:", error);
+      alert("PDF generation failed!");
+    }
+  };
 
   useEffect(() => {
     const userDetailsCookie = Cookies.get("user_details");
@@ -33,9 +100,12 @@ export default function ViewQuotation({ params }) {
         setIsLoading(true);
         setError(null);
         // Fetch Quotation
-        const quotationResponse = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
-          withCredentials: true,
-        });
+        const quotationResponse = await axios.get(
+          `${QUOTATION_API_URL}/${quote}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (quotationResponse.data) {
           setQuotation(quotationResponse.data);
@@ -44,7 +114,9 @@ export default function ViewQuotation({ params }) {
             const clientResponse = await axios.get(CLIENT_API_URL, {
               withCredentials: true,
             });
-            const foundClient = clientResponse.data.find((c) => c.id === quotationResponse.data.client_id);
+            const foundClient = clientResponse.data.find(
+              (c) => c.id === quotationResponse.data.client_id
+            );
             setClient(foundClient);
             if (!foundClient) {
               setError("Client not found!");
@@ -76,7 +148,7 @@ export default function ViewQuotation({ params }) {
 
   if (!quotation) {
     return <p>No quotation found!</p>;
-  }  
+  }
 
   return (
     <div className="card tm_container my-4">
@@ -95,7 +167,10 @@ export default function ViewQuotation({ params }) {
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
-                  <b className="tm_primary_color"> PLQOT-{quotation.quotation_no}</b>
+                  <b className="tm_primary_color">
+                    {" "}
+                    PLQOT-{quotation.quotation_no}
+                  </b>
                 </p>
               </div>
             </div>
@@ -161,9 +236,10 @@ export default function ViewQuotation({ params }) {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                Contact no: <b> 94172-81252,98150-37755       </b> <br />
-                Email id: <b> panviklighting@gmail.com      </b> <br />
-                Salesperson: {quotation && <b>{quotation.salesperson } </b>} | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
+                Contact no: <b> 94172-81252,98150-37755 </b> <br />
+                Email id: <b> panviklighting@gmail.com </b> <br />
+                Salesperson: {quotation && <b>{quotation.salesperson} </b>} |
+                Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             Subject:{" "}
@@ -291,6 +367,15 @@ export default function ViewQuotation({ params }) {
       </div>
 
       <div className="tm_invoice_btns no-print">
+        <button
+          onClick={generateAndUploadPDF}
+          className="tm_invoice_btn tm_color1 no-print"
+        >
+          <span className="tm_btn_icon">
+            <i className="fa-solid fa-file-pdf"></i>
+          </span>
+          <span className="tm_btn_text">Generate PDF & Upload</span>
+        </button>
         {/* <button
             type="button"
             onClick={() => window.print()}
