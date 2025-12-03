@@ -14,21 +14,25 @@ export default function LoginPage() {
   const [users, setUsers] = useState([]);
   const [loadingUser, setLoadingUser] = useState(null);
 
+  // NEW STATES for password confirmation
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [inputPassword, setInputPassword] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
   const router = useRouter();
 
-  // Fetch users from API.panvic.in
-useEffect(() => {
-  axios
-    .get("https://api.panvic.in/users/")
-    .then((res) => {
-      setUsers(res.data);  // you need .root
-      console.log(res.data);
-    })
-    .catch(() => toast.error("Failed to load users"));
-}, []);
+  // Fetch users
+  useEffect(() => {
+    axios
+      .get("https://api.panvic.in/users/")
+      .then((res) => {
+        setUsers(res.data);
+        console.log(res.data);
+      })
+      .catch(() => toast.error("Failed to load users"));
+  }, []);
 
-
-  // Avatar initials generator
+  // Avatar initials
   const avatar = (name) => {
     return name
       .split(" ")
@@ -38,11 +42,13 @@ useEffect(() => {
       .slice(0, 2);
   };
 
-  // Auto-login when user clicks avatar
-  const handleUserLogin = async (user) => {
-    setLoadingUser(user.id);
+  // SECURE LOGIN WITH PASSWORD CONFIRM
+  const confirmLogin = async () => {
+    if (!selectedUser) return;
 
-    const values = { phone: user.phone, password: user.password };
+    setLoadingUser(selectedUser.id);
+
+    const values = { phone: selectedUser.phone, password: inputPassword };
 
     try {
       const res = await axios.post(
@@ -54,7 +60,7 @@ useEffect(() => {
         }
       );
 
-      toast.success(`Logged in as ${user.name}`);
+      toast.success(`Logged in as ${selectedUser.name}`);
 
       if (res.data.user_details) {
         Cookies.set("user_details", JSON.stringify(res.data.user_details), {
@@ -65,16 +71,15 @@ useEffect(() => {
 
       router.push("/dashboard");
     } catch (err) {
-      toast.error("Login failed");
+      toast.error("Incorrect Password");
     }
 
     setLoadingUser(null);
+    setShowPasswordModal(false);
+    setInputPassword("");
   };
 
-  // ---------------------------
-  // Manual Login Form (Your code)
-  // ---------------------------
-
+  // FORM FOR MANUAL LOGIN
   const formik = useFormik({
     initialValues: { phone: "", password: "" },
     validationSchema: Yup.object({
@@ -132,54 +137,50 @@ useEffect(() => {
             className="btn btn-outline-primary"
             onClick={() => setMode(mode === "select" ? "manual" : "select")}
           >
-            {mode === "select"
-              ? "Switch to Manual Login"
-              : "Select User Instead"}
+            {mode === "select" ? "Switch to Manual Login" : "Select User Instead"}
           </button>
         </div>
 
-        {/* ---------------------- */}
-        {/*       USER SELECT      */}
-        {/* ---------------------- */}
-
+        {/* -------- USER SELECT GRID -------- */}
         {mode === "select" && (
           <div className="row g-3 justify-content-center">
-            {users && users.map((user) => (
-              <div key={user.id} className="col-6 col-md-4 col-lg-2">
-                <div
-                  onClick={() => handleUserLogin(user)}
-                  className="text-center p-3 rounded shadow-sm bg-white border cursor-pointer"
-                  style={{ transition: "0.2s", cursor: "pointer" }}
-                >
+            {users &&
+              users.map((user) => (
+                <div key={user.id} className="col-6 col-md-4 col-lg-2">
                   <div
-                    className="rounded-circle d-flex justify-content-center align-items-center mx-auto"
-                    style={{
-                      width: 70,
-                      height: 70,
-                      background: "#050505ff",
-                      fontSize: 24,
-                      fontWeight: "bold",
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowPasswordModal(true); // SHOW PASSWORD ASK
                     }}
+                    className="text-center p-3 rounded shadow-sm bg-white border cursor-pointer"
+                    style={{ transition: "0.2s", cursor: "pointer" }}
                   >
-                    {avatar(user.name)}
+                    <div
+                      className="rounded-circle d-flex justify-content-center align-items-center mx-auto"
+                      style={{
+                        width: 70,
+                        height: 70,
+                        background: "#050505ff",
+                        fontSize: 24,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {avatar(user.name)}
+                    </div>
+
+                    <p className="mt-2 mb-0 dark">{user.name}</p>
+                    <small className="text-muted">{user.role}</small>
+
+                    {loadingUser === user.id && (
+                      <p className="text-primary small mt-2">Logging in...</p>
+                    )}
                   </div>
-
-                  <p className="mt-2 mb-0 dark">{user.name}</p>
-                  <small className="text-muted">{user.role}</small>
-
-                  {loadingUser === user.id && (
-                    <p className="text-primary small mt-2">Logging in...</p>
-                  )}
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
 
-        {/* ---------------------- */}
-        {/*     MANUAL LOGIN       */}
-        {/* ---------------------- */}
-
+        {/* -------- MANUAL LOGIN -------- */}
         {mode === "manual" && (
           <div className="row justify-content-center mt-4">
             <div className="col-xl-4 col-lg-5 col-md-8">
@@ -219,12 +220,11 @@ useEffect(() => {
                         placeholder="Password"
                         {...formik.getFieldProps("password")}
                       />
-                      {formik.touched.password &&
-                        formik.errors.password && (
-                          <div className="invalid-feedback">
-                            {formik.errors.password}
-                          </div>
-                        )}
+                      {formik.touched.password && formik.errors.password && (
+                        <div className="invalid-feedback">
+                          {formik.errors.password}
+                        </div>
+                      )}
                     </div>
 
                     <button
@@ -241,6 +241,49 @@ useEffect(() => {
           </div>
         )}
       </div>
+
+      {/* -------- PASSWORD MODAL -------- */}
+      {showPasswordModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center"
+          style={{ zIndex: 2000 }}
+        >
+          <div
+            className="bg-white p-4 rounded shadow"
+            style={{ width: "320px" }}
+          >
+            <h5 className="mb-3 text-center">
+              Login as {selectedUser?.name}
+            </h5>
+
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Enter Password"
+              value={inputPassword}
+              onChange={(e) => setInputPassword(e.target.value)}
+            />
+
+            <button
+              className="btn btn-primary w-50"
+              onClick={confirmLogin}
+              disabled={!inputPassword}
+            >
+              {loadingUser === selectedUser?.id ? "Checking..." : "Login"}
+            </button>
+
+            <button
+              className="btn btn-link w-50 mt"
+              onClick={() => {
+                setShowPasswordModal(false);
+                setInputPassword("");
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <ToastContainer />
     </div>
