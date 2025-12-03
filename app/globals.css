@@ -916,3 +916,7 @@ label, .form-label {
 .navbar .nav-link {
     font-size: 14px;
 }
+.dark {
+    color: #151515;
+    font-weight: bold;
+}

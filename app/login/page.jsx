@@ -1,99 +1,123 @@
 "use client";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation"; // For Next.js 13+ (App Router)
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Cookies from "js-cookie"; // Import js-cookie for cookie management
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-console.log("API_URL:", API_URL); // Log the API URL to ensure it's set correctly
-const LoginForm = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [alert, setAlert] = useState({ type: "", message: "" });
+
+export default function LoginPage() {
+  const [mode, setMode] = useState("select"); // select | manual
+  const [users, setUsers] = useState([]);
+  const [loadingUser, setLoadingUser] = useState(null);
+
   const router = useRouter();
+
+  // Fetch users from API.panvic.in
+useEffect(() => {
+  axios
+    .get("https://api.panvic.in/users/")
+    .then((res) => {
+      setUsers(res.data);  // you need .root
+      console.log(res.data);
+    })
+    .catch(() => toast.error("Failed to load users"));
+}, []);
+
+
+  // Avatar initials generator
+  const avatar = (name) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Auto-login when user clicks avatar
+  const handleUserLogin = async (user) => {
+    setLoadingUser(user.id);
+
+    const values = { phone: user.phone, password: user.password };
+
+    try {
+      const res = await axios.post(
+        "https://api.panvic.in/login/",
+        JSON.stringify(values),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      toast.success(`Logged in as ${user.name}`);
+
+      if (res.data.user_details) {
+        Cookies.set("user_details", JSON.stringify(res.data.user_details), {
+          expires: 1,
+        });
+        Cookies.set("session_id", res.data.session_id, { expires: 1 });
+      }
+
+      router.push("/dashboard");
+    } catch (err) {
+      toast.error("Login failed");
+    }
+
+    setLoadingUser(null);
+  };
+
+  // ---------------------------
+  // Manual Login Form (Your code)
+  // ---------------------------
+
   const formik = useFormik({
-    initialValues: {
-      phone: "",
-      password: "",
-    },
+    initialValues: { phone: "", password: "" },
     validationSchema: Yup.object({
       phone: Yup.string()
         .matches(/^\d{10}$/, "Phone number must be 10 digits")
-        .required("Phone number is required"),
-      password: Yup.string().required("Password is required"),
+        .required("Required"),
+      password: Yup.string().required("Required"),
     }),
     onSubmit: async (values, { setSubmitting }) => {
-      const loadingToastId = toast.loading("Logging in..."); // Show loading toast
+      const t = toast.loading("Logging in...");
 
       try {
-        // Ensure that values are being sent as JSON
-        const response = await axios.post(
-          `https://api.panvic.in/login/`,
-          JSON.stringify(values), // Explicitly stringify the data
+        const res = await axios.post(
+          "https://api.panvic.in/login/",
+          JSON.stringify(values),
           {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true, // Important if using cookies or authentication
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
           }
         );
 
-        console.log("Form submitted successfully:", JSON.stringify(values));
-
-        toast.update(loadingToastId, {
-          render: "Login successful!",
+        toast.update(t, {
+          render: "Login Successful",
           type: "success",
           isLoading: false,
-          autoClose: 3000,
+          autoClose: 2000,
         });
 
-        console.log("Form submitted successfully:", response);
-
-        // Set user details in cookies after successful login
-        if (response.data.user_details) {
-          // Stringify the user details object and store it in a cookie
-          Cookies.set(
-            "user_details",
-            JSON.stringify(response.data.user_details),
-            { expires: 1 }
-          ); // expires in 1 day
-          console.log("User details stored in cookies:", response.data.user_details);
-          Cookies.set("session_id", response.data.session_id, { expires: 1 });
+        if (res.data.user_details) {
+          Cookies.set("user_details", JSON.stringify(res.data.user_details), {
+            expires: 1,
+          });
+          Cookies.set("session_id", res.data.session_id, { expires: 1 });
         }
 
-        // Redirect to the homepage or another page after successful login
         router.push("/dashboard");
       } catch (error) {
-        toast.update(loadingToastId, {
-          render: "Error logging in.",
+        toast.update(t, {
+          render: "Login Error",
           type: "error",
           isLoading: false,
-          autoClose: 3000,
+          autoClose: 2000,
         });
-
-        if (error.response) {
-          // Check if the message is available in the response
-          console.error("Error submitting form:", error.response.data);
-          if (error.response.data && error.response.data.message) {
-            setAlert({ type: "error", message: error.response.data.message });
-          } else {
-            setAlert({
-              type: "error",
-              message: "An error occurred, no specific message received",
-            });
-          }
-        } else if (error.request) {
-          console.error("No response received:", error.request);
-          setAlert({
-            type: "error",
-            message: "No response received from the server",
-          });
-        } else {
-          console.error("Error setting up the request:", error.message);
-          setAlert({ type: "error", message: error.message });
-        }
       }
 
       setSubmitting(false);
@@ -103,77 +127,122 @@ const LoginForm = () => {
   return (
     <div className="page-header min-vh-100 d-flex align-items-center justify-content-center">
       <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-xl-4 col-lg-5 col-md-8">
-            <div className="card p-4">
-              <div className="card-header pb-2 text-center bg-transparent">
-                <h3 className="font-weight-bold text-info">Welcome Back</h3>
-              </div>
-              <div className="card-body">
-                <form onSubmit={formik.handleSubmit}>
-                  <div className="mb-3">
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        formik.touched.phone && formik.errors.phone
-                          ? "is-invalid"
-                          : ""
-                      }`}
-                      placeholder="Enter your phone number"
-                      {...formik.getFieldProps("phone")}
-                    />
-                    {formik.touched.phone && formik.errors.phone ? (
-                      <div className="invalid-feedback">
-                        {formik.errors.phone}
-                      </div>
-                    ) : null}
+        <div className="text-center mb-4">
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => setMode(mode === "select" ? "manual" : "select")}
+          >
+            {mode === "select"
+              ? "Switch to Manual Login"
+              : "Select User Instead"}
+          </button>
+        </div>
+
+        {/* ---------------------- */}
+        {/*       USER SELECT      */}
+        {/* ---------------------- */}
+
+        {mode === "select" && (
+          <div className="row g-3 justify-content-center">
+            {users && users.map((user) => (
+              <div key={user.id} className="col-6 col-md-4 col-lg-2">
+                <div
+                  onClick={() => handleUserLogin(user)}
+                  className="text-center p-3 rounded shadow-sm bg-white border cursor-pointer"
+                  style={{ transition: "0.2s", cursor: "pointer" }}
+                >
+                  <div
+                    className="rounded-circle d-flex justify-content-center align-items-center mx-auto"
+                    style={{
+                      width: 70,
+                      height: 70,
+                      background: "#007bff",
+                      fontSize: 24,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {avatar(user.name)}
                   </div>
-                  <div className="mb-3 position-relative">
-                    <div className="input-group">
+
+                  <p className="mt-2 mb-0 dark">{user.name}</p>
+                  <small className="text-muted">{user.role}</small>
+
+                  {loadingUser === user.id && (
+                    <p className="text-primary small mt-2">Logging in...</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ---------------------- */}
+        {/*     MANUAL LOGIN       */}
+        {/* ---------------------- */}
+
+        {mode === "manual" && (
+          <div className="row justify-content-center mt-4">
+            <div className="col-xl-4 col-lg-5 col-md-8">
+              <div className="card p-4 shadow">
+                <div className="card-header pb-2 text-center bg-transparent">
+                  <h3 className="font-weight-bold text-info">Welcome Back</h3>
+                </div>
+
+                <div className="card-body">
+                  <form onSubmit={formik.handleSubmit}>
+                    <div className="mb-3">
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type="text"
+                        className={`form-control ${
+                          formik.touched.phone && formik.errors.phone
+                            ? "is-invalid"
+                            : ""
+                        }`}
+                        placeholder="Phone number"
+                        {...formik.getFieldProps("phone")}
+                      />
+                      {formik.touched.phone && formik.errors.phone && (
+                        <div className="invalid-feedback">
+                          {formik.errors.phone}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-3">
+                      <input
+                        type="password"
                         className={`form-control ${
                           formik.touched.password && formik.errors.password
                             ? "is-invalid"
                             : ""
                         }`}
-                        placeholder="Enter your password"
+                        placeholder="Password"
                         {...formik.getFieldProps("password")}
                       />
+                      {formik.touched.password &&
+                        formik.errors.password && (
+                          <div className="invalid-feedback">
+                            {formik.errors.password}
+                          </div>
+                        )}
                     </div>
-                    {formik.touched.password && formik.errors.password ? (
-                      <div className="invalid-feedback d-block">
-                        {formik.errors.password}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="text-center">
+
                     <button
                       type="submit"
-                      className="btn btn-primary w-100 mt-4 mb-0"
-                      disabled={!formik.isValid || !formik.dirty}
+                      className="btn btn-primary w-100"
+                      disabled={!formik.isValid || formik.isSubmitting}
                     >
                       {formik.isSubmitting ? "Logging in..." : "Log In"}
                     </button>
-                  </div>
-                </form>
-              </div>
-              <div className="card-footer text-center pt-3">
-                <p className="mb-0">
-                  Don't have an account?
-                  <a href="/signup" className="text-info font-weight-bold">
-                    {" "}
-                    Sign up
-                  </a>
-                </p>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
       <ToastContainer />
     </div>
   );
-};
-
-export default LoginForm;
+}
