@@ -1,232 +1,370 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import Link from "next/link";
-import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/switches_quotation/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+const API_LIST = {
+  Wipro: {
+    Artisa: "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv",
+    Nowa: "https://api.panvic.in/csv/read-file/wipro_nowa_switches.csv",
+    Venia: "https://api.panvic.in/csv/read-file/wipro_venia_switches.csv",
 
-const GetSwitchQuotationTables = () => {
-  const [quotations, setQuotations] = useState([]);
+    ArtisaPlates: "https://api.panvic.in/csv/read-file/wipro_artisa_plates.csv",
+    ArtisaFancyPlates:
+      "https://api.panvic.in/csv/read-file/wipro_artisa_fancy_plates.csv",
+  },
+
+  // Future ready
+  Celestia: null,
+  "L&T": null,
+  Engalze: null,
+  Osum: null,
+};
+
+const BRANDS = ["Wipro", "L&T", "Celestia", "Engalze", "Osum"];
+const WIPRO_MODELS = [
+  "Artisa",
+  "Nowa",
+  "Venia",
+  "ArtisaPlates",
+  "ArtisaFancyPlates",
+];
+
+export default function GetSwitchQuotationTables() {
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilters, setStatusFilters] = useState({
-    active: false,
-    mature: false,
-    lost: false,
-  });
-  const [sortOrder, setSortOrder] = useState("latest");
 
-  const fetchAllClients = async () => {
+  // -------------------------------------------------------------
+  // FETCH DATA FROM CSV API
+  // -------------------------------------------------------------
+  const fetchSwitches = async () => {
+    if (!brand) return;
+    if (brand !== "Wipro") {
+      setData([]);
+      setFilteredData([]);
+      return;
+    }
+
+    if (!model) return;
+    const url = API_LIST.Wipro[model];
+
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
-      return response.data.reduce((acc, client) => {
-        acc[client.id] = client.businessname;
-        return acc;
-      }, {});
-    } catch (error) {
-      console.error("Failed to fetch clients:", error);
-      toast.error("Failed to load client data!");
-      return {};
+      const res = await axios.get(url);
+      const rows = res.data.data || [];
+
+      // Add qty per color + common discount
+      const processed = rows.map((row, index) => {
+        const newRow = { ...row, _id: index, discount: 0 };
+        const mrpCols = Object.keys(row).filter(
+          (k) => k.endsWith("_mrp") && !k.toLowerCase().includes("back")
+        );
+
+        if (mrpCols.length > 0) {
+          mrpCols.forEach((col) => {
+            const color = col.replace("_mrp", "");
+            newRow[`qty_${color}`] = 1;
+          });
+        } else {
+          // Fallback for non-color items
+          newRow.qty = 1;
+        }
+
+        return newRow;
+      });
+
+      setData(processed);
+      setFilteredData(processed);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => {
-    const fetchQuotations = async () => {
-      try {
-        const [quotationsResponse, clientsMap] = await Promise.all([
-          axios.get(API_URL, { withCredentials: true }),
-          fetchAllClients(),
-        ]);
-        const quotationsWithClientNames = quotationsResponse.data.map((q) => ({
-          ...q,
-          client_name: clientsMap[q.client_id] || null,
-          status: q.status || "Active", // Default to "Active" if status is missing
-        }));
-        const sortedQuotations = quotationsWithClientNames.sort(
-          (a, b) => b.quotation_id - a.quotation_id
-        );
-        setQuotations(sortedQuotations);
-      } catch (error) {
-        toast.error("Failed to load quotations!");
-        console.error("Fetch error:", error);
-      }
-    };
-    fetchQuotations();
-  }, []);
+    fetchSwitches();
+  }, [brand, model]);
 
-  const handleDelete = async (quotationId) => {
-    if (!confirm("Are you sure you want to delete this quotation?")) return;
-    try {
-      const response = await axios.delete(
-        `https://api.panvic.in/quotation/${quotationId}/`,
-        { withCredentials: true }
-      );
-      if (response.status === 204 || response.status === 200) {
-        setQuotations((prev) => prev.filter((q) => q.quotation_id !== quotationId));
-        toast.success("Quotation deleted successfully!");
-      }
-    } catch (error) {
-      toast.error(`Failed to delete quotation: ${error.message}`);
-      console.error("Delete error:", error);
+  // -------------------------------------------------------------
+  // SEARCH FILTER
+  // -------------------------------------------------------------
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredData(data);
+      return;
     }
+
+    const q = searchQuery.toLowerCase();
+
+    const result = data.filter((row) =>
+      Object.values(row).join(" ").toLowerCase().includes(q)
+    );
+
+    setFilteredData(result);
+  }, [searchQuery, data]);
+
+  // -------------------------------------------------------------
+  // HANDLE QTY OR DISCOUNT CHANGE
+  // -------------------------------------------------------------
+  const updateRow = (id, field, value) => {
+    const updated = data.map((row) =>
+      row._id === id ? { ...row, [field]: value } : row
+    );
+
+    setData(updated);
+    setFilteredData(updated);
   };
 
-  const handleStatusChange = async (quotationId, newStatus) => {
-    try {
-      const response = await axios.put(
-        `https://api.panvic.in/quotation/${quotationId}/`,
-        { status: newStatus },
-        { withCredentials: true }
+  // -------------------------------------------------------------
+  // CALCULATE TOTAL FOR ROW
+  // -------------------------------------------------------------
+  const calculateTotal = (row, mrpCols, hasColors) => {
+    let subtotal = 0;
+    const discount = parseFloat(row.discount) || 0;
+
+    if (hasColors) {
+      mrpCols.forEach((col) => {
+        const color = col.replace("_mrp", "");
+        const mrp = parseFloat(row[col]) || 0;
+        const qty = parseFloat(row[`qty_${color}`]) || 0;
+        subtotal += mrp * qty;
+      });
+    } else {
+      const priceKey = Object.keys(row).find(
+        (k) => k.toLowerCase().includes("mrp") && !k.includes("_mrp")
       );
-      if (response.status === 200 || response.status === 201) {
-        setQuotations((prev) =>
-          prev.map((q) =>
-            q.quotation_id === quotationId ? { ...q, status: newStatus } : q
-          )
-        );
-        toast.success(`Status updated to ${newStatus}`);
-      }
-    } catch (error) {
-      toast.error(`Failed to update status: ${error.message}`);
-      console.error("Status update error:", error);
+      const mrp = priceKey ? parseFloat(row[priceKey]) || 0 : 0;
+      const qty = parseFloat(row.qty) || 0;
+      subtotal = mrp * qty;
     }
+
+    const total = subtotal * (1 - discount / 100);
+    return total.toFixed(2);
   };
 
-  const handleCheckboxChange = (status) => {
-    setStatusFilters((prev) => ({ ...prev, [status]: !prev[status] }));
+  // -------------------------------------------------------------
+  // GENERATE DISPLAY HEADERS AND NICE NAMES
+  // -------------------------------------------------------------
+  const getDisplayHeaders = () => {
+    if (data.length === 0) return [];
+
+    const sampleRow = data[0];
+    const mrpCols = Object.keys(sampleRow).filter(
+      (h) => h.endsWith("_mrp") && !h.toLowerCase().includes("back")
+    );
+
+    const commonHeaders = Object.keys(sampleRow).filter(
+      (h) =>
+        !h.endsWith("_mrp") &&
+        !h.startsWith("qty_") &&
+        h !== "qty" &&
+        h !== "discount" &&
+        h !== "_id"
+    );
+
+    let displayHeaders;
+    if (mrpCols.length === 0) {
+      displayHeaders = [...commonHeaders, "qty", "discount", "total"];
+    } else {
+      const colorGroups = mrpCols.map((col) => {
+        const color = col.replace("_mrp", "");
+        return [col, `qty_${color}`];
+      });
+      displayHeaders = [...commonHeaders, ...colorGroups.flat(), "discount", "total"];
+    }
+
+    return displayHeaders;
   };
 
-  const statusCounts = quotations.reduce(
-    (acc, q) => {
-      const status = q.status?.toLowerCase() || "active"; // Default to "active" for counting
-      if (status === "active") acc.active += 1;
-      if (status === "mature") acc.mature += 1;
-      if (status === "lost") acc.lost += 1;
-      return acc;
-    },
-    { active: 0, mature: 0, lost: 0 }
-  );
+  const displayHeaders = getDisplayHeaders();
 
-  const filteredQuotations = quotations
-    .filter((q) => {
-      const matchesSearch =
-        (q.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (q.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (q.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
-      const status = q.status?.toLowerCase() || "active"; // Default to "active" for filtering
-      const selectedStatuses = Object.keys(statusFilters).filter(
-        (key) => statusFilters[key]
-      );
-      return matchesSearch && (selectedStatuses.length === 0 || selectedStatuses.includes(status));
-    })
-    .sort((a, b) => {
-      if (sortOrder === "latest") return b.quotation_id - a.quotation_id;
-      if (sortOrder === "oldest") return a.quotation_id - b.quotation_id;
-      if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
-      if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
-      return 0;
-    });
+  const getNiceHeaderName = (head) => {
+    let nice = head.replace(/_/g, " ");
+    if (head.endsWith("_mrp")) {
+      nice = nice.replace(/mrp$/i, "MRP");
+    } else if (head === "qty") {
+      nice = "Qty";
+    } else if (head === "discount") {
+      nice = "Discount (%)";
+    } else if (head === "total") {
+      nice = "Total Amount";
+    } else if (head.startsWith("qty_")) {
+      const color = head.slice(4).replace(/_/g, " ");
+      nice = `Qty ${color}`;
+    }
+    return nice;
+  };
 
-    const getBadgeClass = (status) => {
-      const statusStr = status?.toLowerCase() || "active"; // Default to "active"
-      switch (statusStr) {
-        case "active":
-          return "badge bg-success";
-        case "mature":
-          return "badge bg-primary";
-        case "lost":
-          return "badge bg-danger";
-        default:
-          return "badge bg-success";
-      }
-    };
+  const isEditableField = (head) => {
+    return head.startsWith("qty_") || head === "discount" || head === "qty";
+  };
+
+  const mrpCols = data.length > 0 ? Object.keys(data[0]).filter(
+    (h) => h.endsWith("_mrp") && !h.toLowerCase().includes("back")
+  ) : [];
+
+  const commonHeaders = data.length > 0 ? Object.keys(data[0]).filter(
+    (h) =>
+      !h.endsWith("_mrp") &&
+      !h.startsWith("qty_") &&
+      h !== "qty" &&
+      h !== "discount" &&
+      h !== "_id"
+  ) : [];
+
+  const hasColors = mrpCols.length > 0;
+
+  const getColorName = (color) => {
+    return color.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   return (
     <div className="card">
       <div className="card-header pb-0">
-        <h6>Manage Switch Quotations</h6>
+        <h6>Switch & Plate Quotation Table</h6>
       </div>
 
       <div className="card-body py-0 pt-0 pb-2">
-        <div className="filters-container d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
+
+        {/* FILTERS */}
+        <div className="d-flex flex-column flex-md-row gap-3 mb-4">
+
+          {/* BRAND DROPDOWN */}
+          <select
+            className="form-select"
+            value={brand}
+            onChange={(e) => {
+              setBrand(e.target.value);
+              setModel("");
+              setData([]);
+              setFilteredData([]);
+            }}
+          >
+            <option value="">Select Brand</option>
+            {BRANDS.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+
+          {/* MODEL DROPDOWN */}
+          {brand === "Wipro" && (
+            <select
+              className="form-select"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              <option value="">Select Model</option>
+              {WIPRO_MODELS.map((m) => (
+                <option key={m} value={m}>
+                  {m.replace("Plates", " Plates").replace("Fancy", " Fancy")}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* SEARCH */}
           <input
             type="text"
-            placeholder="Search by Salesperson, Subject, or Business Name"
-            className="form-control search-input"
+            placeholder="Search..."
+            className="form-control"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-
-          <div className="filter-actions d-flex flex-column flex-md-row align-items-start gap-2">
-            <a className="btn btn-primary add-btn" href="/addswitchquotation">
-              Add Switch  Quotation
-            </a>
-          </div>
         </div>
 
+        {/* TABLE */}
         <div className="table-responsive">
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
-              <tr>
-                <th>Quotation No</th>
-                <th className="d-none d-lg-table-cell">Itemcode</th>
-                <th>itemname</th>
-                <th className="d-none d-md-table-cell">White Price</th>
-                <th className="d-none d-lg-table-cell">Silver Price</th>
-                <th className="d-none d-lg-table-cell">Glaxyblack Price</th>
-                <th>Inner Outlet Caselot</th>
-                <th>Category</th>
-                <th>Brand</th>  
-              </tr>
-            </thead>
-            <tbody>
-              
-              {filteredQuotations.length > 0 ? (
-                filteredQuotations.map((q) => (
-                  <tr key={q.quotation_id}>
-                    <td className="d-none d-md-table-cell">{q.quotation_id}</td>
-                    <td>{q.client_name || "N/A"}</td>
-                    <td>{q.quotation_no}</td>
-                    <td className="d-none d-lg-table-cell">{q.salesperson}</td>
-                    <td>{q.subject}</td>
-                    <td className="d-none d-md-table-cell">{q.amount_including_gst}</td>
-                    <td className="d-none d-lg-table-cell">{q.without_gst}</td>
-                    <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
-                    <td>{q.amount_with_gst}</td>
-                    <td className="action-column">
-                      <Link href={`/editquotation/${q.quotation_id}`}>
-                        <i className="fas fa-pen text-primary me-2" title="Edit"></i>
-                      </Link>
-                      <Link href={`/viewquotation/${q.quotation_id}`}>
-                        <i className="fas fa-eye text-primary me-2" title="View"></i>
-                      </Link>
-                      <select
-                        className="form-select form-select-sm d-inline w-auto"
-                        value={q.status || "Active"} // Default to "Active" in dropdown
-                        onChange={(e) => handleStatusChange(q.quotation_id, e.target.value)}
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Mature">Mature</option>
-                        <option value="Lost">Lost</option>
-                      </select>
-                    </td>
+              {hasColors ? (
+                <>
+                  <tr>
+                    {commonHeaders.map((head) => (
+                      <th key={head} rowSpan={2}>
+                        {getNiceHeaderName(head)}
+                      </th>
+                    ))}
+                    {mrpCols.map((col) => {
+                      const color = col.replace("_mrp", "");
+                      const niceColor = getColorName(color);
+                      return (
+                        <th key={color} colSpan={2}>
+                          {niceColor}
+                        </th>
+                      );
+                    })}
+                    <th rowSpan={2}>Discount (%)</th>
+                    <th rowSpan={2}>Total Amount</th>
                   </tr>
-                ))
+                  <tr>
+                    {mrpCols.map((col) => (
+                      <>
+                        <th>MRP</th>
+                        <th>Qty</th>
+                      </>
+                    ))}
+                  </tr>
+                </>
               ) : (
                 <tr>
-                  <td colSpan="11" className="text-center">
-                    <img src="https://assets-v2.lottiefiles.com/a/0e30b444-117c-11ee-9b0d-0fd3804d46cd/A6t16MXhTI.gif" alt="No Data" className="img-fluid" />
+                  {displayHeaders.map((head) => (
+                    <th key={head}>{getNiceHeaderName(head)}</th>
+                  ))}
+                </tr>
+              )}
+            </thead>
+
+            <tbody>
+              {filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan={displayHeaders.length} className="text-center">
+                    No data available
                   </td>
                 </tr>
+              ) : (
+                filteredData.map((row) => (
+                  <tr key={row._id}>
+                    {displayHeaders.map((head) => {
+                      if (head === "total") {
+                        return (
+                          <td key={head}>
+                            {calculateTotal(row, mrpCols, hasColors)}
+                          </td>
+                        );
+                      } else if (isEditableField(head)) {
+                        const isQty = head === "qty" || head.startsWith("qty_");
+                        const fieldValue = row[head] ?? (isQty ? 1 : 0);
+                        return (
+                          <td key={head}>
+                            <input
+                              type="number"
+                              min={isQty ? 0 : 0}
+                              className="form-control form-control-sm"
+                              style={{ width: "40px" }}
+                              value={fieldValue}
+                              onChange={(e) =>
+                                updateRow(row._id, head, Number(e.target.value))
+                              }
+                            />
+                          </td>
+                        );
+                      } else {
+                        return <td key={head}>{row[head]}</td>;
+                      }
+                    })}
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );
-};
-
-export default GetSwitchQuotationTables;
+}
