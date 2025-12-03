@@ -18,6 +18,8 @@ export default function LoginPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [inputPassword, setInputPassword] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showMainPassword, setShowMainPassword] = useState(false);
+  const [showModalPassword, setShowModalPassword] = useState(false);
 
   const router = useRouter();
 
@@ -210,16 +212,35 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mb-3">
-                      <input
-                        type="password"
-                        className={`form-control ${
-                          formik.touched.password && formik.errors.password
-                            ? "is-invalid"
-                            : ""
-                        }`}
-                        placeholder="Password"
-                        {...formik.getFieldProps("password")}
-                      />
+<div className="mb-3 position-relative">
+  <input
+    type={showMainPassword ? "text" : "password"}
+    className={`form-control ${
+      formik.touched.password && formik.errors.password ? "is-invalid" : ""
+    }`}
+    placeholder="Password"
+    {...formik.getFieldProps("password")}
+  />
+
+  <span
+    onClick={() => setShowMainPassword(!showMainPassword)}
+    style={{
+      position: "absolute",
+      right: 12,
+      top: 10,
+      cursor: "pointer",
+      fontSize: "18px",
+      color: "#333",
+    }}
+  >
+    {showMainPassword ? "👁️" : "👁️‍🗨️"}
+  </span>
+
+  {formik.touched.password && formik.errors.password && (
+    <div className="invalid-feedback">{formik.errors.password}</div>
+  )}
+</div>
+
                       {formik.touched.password && formik.errors.password && (
                         <div className="invalid-feedback">
                           {formik.errors.password}
@@ -256,13 +277,30 @@ export default function LoginPage() {
               Login as {selectedUser?.name}
             </h5>
 
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Enter Password"
-              value={inputPassword}
-              onChange={(e) => setInputPassword(e.target.value)}
-            />
+<div className="position-relative mb-3">
+  <input
+    type={showModalPassword ? "text" : "password"}
+    className="form-control"
+    placeholder="Enter Password"
+    value={inputPassword}
+    onChange={(e) => setInputPassword(e.target.value)}
+  />
+
+  <span
+    onClick={() => setShowModalPassword(!showModalPassword)}
+    style={{
+      position: "absolute",
+      right: 12,
+      top: 10,
+      cursor: "pointer",
+      fontSize: "18px",
+      color: "#333",
+    }}
+  >
+    {showModalPassword ? "👁️" : "👁️‍🗨️"}
+  </span>
+</div>
+
 
             <button
               className="btn btn-primary w-50"
@@ -273,7 +311,7 @@ export default function LoginPage() {
             </button>
 
             <button
-              className="btn btn-link w-50 mt"
+              className="btn btn-link w-50 mt-2"
               onClick={() => {
                 setShowPasswordModal(false);
                 setInputPassword("");
