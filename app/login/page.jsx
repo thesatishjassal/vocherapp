@@ -156,7 +156,7 @@ useEffect(() => {
                     style={{
                       width: 70,
                       height: 70,
-                      background: "#007bff",
+                      background: "#050505ff",
                       fontSize: 24,
                       fontWeight: "bold",
                     }}
