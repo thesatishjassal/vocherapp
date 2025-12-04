@@ -298,7 +298,7 @@ export default function GetSwitchQuotationTables() {
                         </th>
                       );
                     })}
-                    <th rowSpan={2}>Discount (%)</th>
+                    <th rowSpan={2}>Dis (%)</th>
                     <th rowSpan={2}>Total Amount</th>
                   </tr>
                   <tr>

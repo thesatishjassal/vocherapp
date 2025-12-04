@@ -242,7 +242,7 @@ const RowForm = ({ rowData, setRowData, onSave, isEdit }) => {
               onChange={(e) => handleChange(f, e.target.value)}
               className="form-control"
               placeholder={f.replace(/_/g," ").toUpperCase()}
-              disabled={["unit","rackcode"].includes(f)}
+              // disabled={["unit","rackcode"].includes(f)}
             />
           </div>
         ))}
