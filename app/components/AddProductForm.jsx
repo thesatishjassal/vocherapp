@@ -10,7 +10,6 @@ import Cookies from "js-cookie";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const productSchema = yup.object().shape({
-  // hsncode: yup.string().required("HSN Code is required"),
   itemcode: yup.string().required("Item Code is required"),
   itemname: yup.string().required("Item Name is required"),
   description: yup.string().required("Description is required"),
@@ -24,12 +23,12 @@ const productSchema = yup.object().shape({
   model: yup.string().required("Model is required"),
   brand: yup.string().required("Brand is required"),
   unit: yup.string().required("Unit is required"),
-  cct: yup.string().nullable(),        // ✅ existing
-  beamangle: yup.string().nullable(),  // ✅ existing
-  cutoutdia: yup.string().nullable(),  // ✅ existing
-  cri: yup.string().nullable(),        // ✅ new
-  lumens: yup.string().nullable(),     // ✅ new
-  watt: yup.string().nullable(),     // ✅ new
+  cct: yup.string().nullable(),
+  beamangle: yup.string().nullable(),
+  cutoutdia: yup.string().nullable(),
+  cri: yup.string().nullable(),
+  lumens: yup.string().nullable(),
+  watt: yup.string().nullable(),
   inDisplay: yup
     .string()
     .oneOf(["yes", "no"], "Select a valid display option")
@@ -50,18 +49,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   const [subCategories, setSubCategories] = useState([]);
   const [reorderEnabled, setReorderEnabled] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
-
-  // const generateHSNCode = () => {
-  //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  //   let randomLetters = "";
-  //   for (let i = 0; i < 4; i++) {
-  //     randomLetters += letters.charAt(
-  //       Math.floor(Math.random() * letters.length)
-  //     );
-  //   }
-  //   const randomNumbers = Math.floor(100 + Math.random() * 900);
-  //   return randomLetters + randomNumbers;
-  // };
+  const [loading, setLoading] = useState(false); // ⏳ Loader State
 
   const {
     register,
@@ -76,20 +64,18 @@ const AddProductForm = ({ show, onClose, onSave }) => {
     defaultValues: {
       reorderEnabled: false,
       inDisplay: "yes",
-      // hsncode: generateHSNCode(),
     },
   });
 
   const selectedCategory = watch("category");
+
   useEffect(() => {
-    // Try to get the user_details cookie
     const userDetailsCookie = Cookies.get("user_details");
-    console.log("User Details Cookie:", userDetailsCookie);
     if (userDetailsCookie) {
-      // Parse and set the user details if the cookie exists
       setUserDetails(JSON.parse(userDetailsCookie));
     }
   }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,7 +90,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
         setSubCategories(subCategoriesData || []);
       } catch (error) {
         toast.error("Error fetching categories!", { position: "top-right" });
-        console.error("Error fetching categories:", error);
       }
     };
     fetchData();
@@ -119,6 +104,7 @@ const AddProductForm = ({ show, onClose, onSave }) => {
   );
 
   const onSubmit = async (data) => {
+    setLoading(true); // ⏳ Start loader
     try {
       const payload = {
         ...data,
@@ -134,18 +120,19 @@ const AddProductForm = ({ show, onClose, onSave }) => {
       });
 
       const responseData = await response.json();
+
       toast.success("Product added successfully!", {
         position: "top-right",
       });
-      console.log("Added Product:", responseData);
-      // window.location.reload();
+
       onSave(responseData);
       reset();
     } catch (error) {
-      console.error("Error:", error);
       toast.error(error.message || "Error adding product", {
         position: "top-right",
       });
+    } finally {
+      setLoading(false); // ⛔ Stop loader
     }
   };
 
@@ -166,11 +153,10 @@ const AddProductForm = ({ show, onClose, onSave }) => {
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
+
           <div className="modal-body py-3">
             <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              {/* Common Inputs */}
               {[
-                // "hsncode",
                 "itemcode",
                 "itemname",
                 "description",
@@ -182,12 +168,12 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                 "model",
                 "brand",
                 "unit",
-                "cct",        // ✅ existing
-                "beamangle",  // ✅ existing
-                "cutout size",  // ✅ existing
-                "cri",        // ✅ new
-                "lumens",     // ✅ new
-                "watt",     // ✅ new
+                "cct",
+                "beamangle",
+                "cutoutdia",
+                "cri",
+                "lumens",
+                "watt",
               ].map((field) => (
                 <div className="col-6 form-floating mb-1" key={field}>
                   <input
@@ -230,11 +216,6 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   ))}
                 </select>
                 <label htmlFor="category">Category</label>
-                {errors.category && (
-                  <small className="text-danger">
-                    {errors.category.message}
-                  </small>
-                )}
               </div>
 
               {/* Subcategory */}
@@ -257,33 +238,21 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   ))}
                 </select>
                 <label htmlFor="subcategory">Subcategory</label>
-                {errors.subcategory && (
-                  <small className="text-danger">
-                    {errors.subcategory.message}
-                  </small>
-                )}
               </div>
 
-              {/* In Display */}
+              {/* Display */}
               <div className="col-6 form-floating mb-1">
                 <select
                   {...register("inDisplay")}
                   className={`form-select ${
                     errors.inDisplay ? "border-danger" : ""
                   }`}
-                  id="inDisplay"
-                  defaultValue="yes"
                 >
                   <option value="">Show in Display?</option>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
-                <label htmlFor="inDisplay">Show in Display?</label>
-                {errors.inDisplay && (
-                  <small className="text-danger">
-                    {errors.inDisplay.message}
-                  </small>
-                )}
+                <label>Show in Display?</label>
               </div>
 
               {/* Reorder Switch */}
@@ -295,15 +264,12 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    role="switch"
-                    id="reorderSwitch"
                     checked={reorderEnabled}
                     onChange={() => setReorderEnabled(!reorderEnabled)}
                   />
                 </div>
               </div>
 
-              {/* Reorder Qty Input */}
               {reorderEnabled && (
                 <div className="col-6 form-floating mb-1">
                   <input
@@ -312,26 +278,30 @@ const AddProductForm = ({ show, onClose, onSave }) => {
                     className={`form-control ${
                       errors.reorderqty ? "border-danger" : ""
                     }`}
-                    id="reorderqty"
                     placeholder=" "
                   />
-                  <label htmlFor="reorderqty">Reorder Quantity</label>
-                  {errors.reorderqty && (
-                    <small className="text-danger">
-                      {errors.reorderqty.message}
-                    </small>
-                  )}
+                  <label>Reorder Quantity</label>
                 </div>
               )}
 
-              {/* Submit */}
+              {/* SUBMIT WITH LOADER */}
               <div className="col-12">
                 <button
                   type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={!isValid}
+                  className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                  disabled={!isValid || loading}
                 >
-                  Add Product
+                  {loading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                      ></span>
+                      Adding...
+                    </>
+                  ) : (
+                    "Add Product"
+                  )}
                 </button>
               </div>
             </form>

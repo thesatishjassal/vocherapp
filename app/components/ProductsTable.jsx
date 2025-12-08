@@ -557,7 +557,7 @@ const ProductsTable = () => {
         </p>
       </div>
 
-      <button
+      {/* <button
         className="btn btn-primary btn-md"
         onClick={() => setShowSimpleCSVUploader(true)}
       >
@@ -569,7 +569,7 @@ const ProductsTable = () => {
           onClose={() => setShowSimpleCSVUploader(false)}
           fetchProducts={fetchProducts}
         />
-      )}
+      )} */}
 
       {/* Modals */}
       {showAddModal && (
