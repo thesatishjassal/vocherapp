@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -10,10 +11,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "asc",
-  });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
@@ -24,6 +22,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     unit: true,
     brand: true,
     qty: true,
+    // price: true,
     discount: false,
     mrp: false,
     netPrice: true,
@@ -31,31 +30,24 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     image: true,
   });
 
-  // -------------------------------------------
-  // FETCH PRODUCTS (ONCE)
-  // -------------------------------------------
+  // ✅ Fetch products once and build lookup map
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get("https://api.panvic.in/products/");
         const productMap = {};
-
         res.data.forEach((prod) => {
           productMap[prod.itemcode] = prod;
         });
-
         setProducts(productMap);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
     };
-
     fetchProducts();
   }, []);
 
-  // -------------------------------------------
-  // CLEANUP BLOB URLs
-  // -------------------------------------------
+  // ✅ Cleanup blob URLs
   useEffect(() => {
     return () => {
       items.forEach((item) => {
@@ -66,30 +58,25 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     };
   }, [items]);
 
-  // -------------------------------------------
-  // FETCH QUOTATION ITEMS
-  // -------------------------------------------
+  // ✅ Fetch quotation items
   useEffect(() => {
     if (!quotation_id) return;
 
     const fetchItems = async () => {
       try {
         let response;
-
         if (selectedRevision) {
           response = await axios.get(
             `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
             { withCredentials: true }
           );
-
-          const filtered = response.data.filter(
-            (i) => i.edited_at === selectedRevision.edited_at
+          const filteredItems = response.data.filter(
+            (item) => item.edited_at === selectedRevision.edited_at
           );
-
           setItems(
-            filtered.map((it) => ({
-              ...it,
-              preview: it.image ? `https://api.panvic.in${it.image}` : null,
+            filteredItems.map((item) => ({
+              ...item,
+              preview: item.image ? `https://api.panvic.in${item.image}` : null,
             }))
           );
         } else {
@@ -97,11 +84,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             `https://api.panvic.in/quotation/${quotation_id}/items/`,
             { withCredentials: true }
           );
-
           setItems(
-            response.data.map((it) => ({
-              ...it,
-              preview: it.image ? `https://api.panvic.in${it.image}` : null,
+            response.data.map((item) => ({
+              ...item,
+              preview: item.image ? `https://api.panvic.in${item.image}` : null,
             }))
           );
         }
@@ -116,16 +102,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     fetchItems();
   }, [quotation_id, selectedRevision]);
 
-  // -------------------------------------------
-  // COLUMN TOGGLE
-  // -------------------------------------------
   const handleCheckboxChange = (column) => {
     setVisibleColumns((prev) => ({ ...prev, [column]: !prev[column] }));
   };
 
-  // -------------------------------------------
-  // IMAGE UPLOAD
-  // -------------------------------------------
   const handleImageChange = async (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -135,16 +115,16 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     }
 
     const previewUrl = URL.createObjectURL(file);
-    const updated = [...items];
-    updated[index] = { ...updated[index], preview: previewUrl };
-    setItems(updated);
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], preview: previewUrl };
+    setItems(updatedItems);
 
     try {
       const formData = new FormData();
       formData.append("file", file);
 
       const response = await axios.put(
-        `https://api.panvic.in/quotation/${quotation_id}/items/${updated[index].id}/image`,
+        `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
         formData,
         {
           withCredentials: true,
@@ -152,12 +132,12 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         }
       );
 
-      updated[index] = {
-        ...updated[index],
+      updatedItems[index] = {
+        ...updatedItems[index],
         preview: `https://api.panvic.in${response.data.image_url}`,
       };
+      setItems(updatedItems);
 
-      setItems(updated);
       toast.success("Image uploaded successfully!");
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -165,18 +145,14 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     }
   };
 
-  // -------------------------------------------
-  // SORTING
-  // -------------------------------------------
   const requestSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
     }
-
     setSortConfig({ key, direction });
 
-    const sorted = [...items].sort((a, b) => {
+    const sortedItems = [...items].sort((a, b) => {
       const aVal = a[key] ?? "";
       const bVal = b[key] ?? "";
 
@@ -189,18 +165,19 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         : bVal.toString().localeCompare(aVal.toString());
     });
 
-    setItems(sorted);
+    setItems(sortedItems);
   };
 
   const getSortIndicator = (key) => {
-    if (sortConfig.key !== key) return "";
-    return sortConfig.direction === "asc" ? " ▲" : " ▼";
+    if (sortConfig.key === key) {
+      return sortConfig.direction === "asc" ? " ▲" : " ▼";
+    }
+    return "";
   };
 
-  // -------------------------------------------
-  // PRINT + PDF
-  // -------------------------------------------
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    window.print();
+  };
 
   const handleSaveAsPDF = async () => {
     const element = document.getElementById("quotation-table");
@@ -217,12 +194,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     pdf.save("quotation-items.pdf");
   };
 
-  if (loading) return <p>Loading…</p>;
+  if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
 
-  // -------------------------------------------
-  // RENDER
-  // -------------------------------------------
   return (
     <div className="relative overflow-x-auto">
       <style jsx>{`
@@ -233,10 +207,13 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           .no-print {
             display: none !important;
           }
+          #quotation-table {
+            width: 100%;
+            font-size: 12px;
+          }
         }
       `}</style>
 
-      {/* PRINT BUTTON */}
       <div className="absolute top-0 right-0 flex flex-col gap-2 no-print">
         <button
           onClick={handlePrint}
@@ -244,104 +221,88 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         >
           🖨 Print
         </button>
-
-        <button
-          onClick={handleSaveAsPDF}
-          className="px-3 py-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600"
-        >
-          📄 Save as PDF
-        </button>
       </div>
 
-      {/* TOGGLE COLUMNS */}
-      <div className="mb-4 flex flex-wrap gap-4 no-print">
+      <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
         {Object.entries(visibleColumns).map(([key, value]) => (
-          <label key={key} className="text-sm">
+          <label key={key}>
             <input
               type="checkbox"
               checked={value}
               onChange={() => handleCheckboxChange(key)}
             />
-            &nbsp;{key.toUpperCase()}
+            {key.toUpperCase()}
           </label>
         ))}
       </div>
 
-      {/* TABLE */}
       <table
         id="quotation-table"
-        className="table-auto border-collapse w-full mb-10"
+        className="tm_round_border table align-items-center justify-content-center mb-0"
       >
-        <thead className="bg-gray-100">
+        <thead>
           <tr>
             {visibleColumns.srNo && (
               <th onClick={() => requestSort("srNo")}>
                 SR NO {getSortIndicator("srNo")}
               </th>
             )}
-
             {visibleColumns.image && <th>Image</th>}
-
             {visibleColumns.customerCode && (
               <th onClick={() => requestSort("customercode")}>
                 Customer Code {getSortIndicator("customercode")}
               </th>
             )}
-
             {visibleColumns.customerDescription && (
               <th onClick={() => requestSort("customerdescription")}>
                 Customer Description {getSortIndicator("customerdescription")}
               </th>
             )}
-
             {visibleColumns.itemCode && (
               <th onClick={() => requestSort("itemcode")}>
                 Item Code {getSortIndicator("itemcode")}
               </th>
             )}
-
             {visibleColumns.itemName && (
               <th onClick={() => requestSort("item_name")}>
                 Item Name {getSortIndicator("item_name")}
               </th>
             )}
-
             {visibleColumns.brand && (
               <th onClick={() => requestSort("brand")}>
                 Brand {getSortIndicator("brand")}
               </th>
             )}
-
             {visibleColumns.qty && (
               <th onClick={() => requestSort("quantity")}>
                 Qty {getSortIndicator("quantity")}
               </th>
             )}
-
             {visibleColumns.unit && (
               <th onClick={() => requestSort("unit")}>
                 Unit {getSortIndicator("unit")}
               </th>
             )}
-
             {visibleColumns.mrp && (
               <th onClick={() => requestSort("mrp")}>
                 MRP {getSortIndicator("mrp")}
               </th>
             )}
-
             {visibleColumns.discount && (
               <th onClick={() => requestSort("discount")}>
                 Discount {getSortIndicator("discount")}
               </th>
             )}
-
+            {visibleColumns.price && (
+              <th onClick={() => requestSort("price")}>
+                Rate {getSortIndicator("price")}
+              </th>
+            )}
             {visibleColumns.netPrice && (
               <th onClick={() => requestSort("netPrice")}>
                 Net Price {getSortIndicator("netPrice")}
               </th>
             )}
-
             {visibleColumns.amount && (
               <th onClick={() => requestSort("amount")}>
                 Amount {getSortIndicator("amount")}
@@ -349,26 +310,25 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             )}
           </tr>
         </thead>
-
         <tbody>
           {items.map((item, index) => {
             const product = products[item.itemcode] || {};
-
             return (
-              <tr key={item.id || index} className="border-b">
+              <tr key={index}>
                 {visibleColumns.srNo && <td>{index + 1}</td>}
-
                 {visibleColumns.image && (
                   <td>
                     <div
                       className="relative group"
                       style={{
-                        width: 60,
-                        height: 60,
+                        width: "60px",
+                        height: "60px",
                         cursor: "pointer",
-                        borderRadius: 8,
+                        borderRadius: "8px",
                         overflow: "hidden",
+                        position: "relative",
                       }}
+                      title="Click to upload image"
                       onClick={() =>
                         document.getElementById(`fileInput-${index}`).click()
                       }
@@ -378,61 +338,119 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                           item.preview ||
                           "https://via.placeholder.com/60x60?text=+"
                         }
-                        className="w-full h-full object-contain"
+                        alt="Preview"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                        }}
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition">
-                        <FiPlusCircle size={22} color="white" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <FiPlusCircle
+                          color="white"
+                          size={24}
+                          title="Upload Image"
+                        />
                       </div>
-
                       <input
-                        id={`fileInput-${index}`}
                         type="file"
                         accept="image/*"
-                        className="hidden"
+                        id={`fileInput-${index}`}
+                        style={{ display: "none" }}
                         onChange={(e) => handleImageChange(e, index)}
                       />
                     </div>
                   </td>
                 )}
-
-                {visibleColumns.customerCode && (
-                  <td>{item.customercode}</td>
-                )}
-
+                {visibleColumns.customerCode && <td>{item.customercode}</td>}
                 {visibleColumns.customerDescription && (
                   <td>{item.customerdescription}</td>
                 )}
-
                 {visibleColumns.itemCode && <td>{item.itemcode}</td>}
-
                 {visibleColumns.itemName && (
                   <td>
                     <div>{item.item_name}</div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {/* CCT */}
+                      {(product?.cct &&
+                        product.cct !== "NULL" &&
+                        product.cct !== "0") ||
+                      (item?.cct && item.cct !== "0")
+                        ? `CCT: ${product?.cct ?? item?.cct} | `
+                        : null}
 
-                    <div className="text-xs text-gray-500 mt-1">
-                      {product?.watt ? `Watt: ${product.watt} | ` : ""}
-                      {product?.cct ? `CCT: ${product.cct} | ` : ""}
-                      {product?.color ? `Body: ${product.color} | ` : ""}
-                      {product?.beamangle
-                        ? `Beam: ${product.beamangle}° | `
-                        : ""}
-                      {product?.lumens ? `Lumens: ${product.lumens}` : ""}
-                    </div>
+                      {/* Watt */}
+                      {(product?.watt &&
+                        product.watt !== "NULL" &&
+                        product.watt !== "0") ||
+                      (item?.watt && item.watt !== "0")
+                        ? `Watt: ${product?.watt ?? item?.watt} | `
+                        : null}
+
+                      {/* Cutout Size */}
+                      {(product?.cutoutsize && product.cutoutsize !== "0") ||
+                      (product?.cutoutdia && product.cutoutdia !== "0")
+                        ? `Cutout Size: ${
+                            product.cutoutsize ?? product.cutoutdia
+                          } | `
+                        : null}
+
+                      {/* Beam Angle */}
+                      {(product?.beamangle &&
+                        product.beamangle !== "NULL" &&
+                        product.beamangle !== "0") ||
+                      (item?.beamangle && item.beamangle !== "0")
+                        ? `Beam Angle: ${
+                            product?.beamangle ?? item?.beamangle
+                          }° | `
+                        : null}
+
+                      {/* CRI */}
+                      {(product?.cri &&
+                        product.cri !== "NONE" &&
+                        product.cri !== "0") ||
+                      (item?.Cri && item.Cri !== "0")
+                        ? `CRI: ${product?.cri ?? item?.Cri} | `
+                        : null}
+
+                      {/* Body Color */}
+                      {(product?.color && product.color !== "0") ||
+                      (item?.bodycolor && item.bodycolor !== "0")
+                        ? `Body Color: ${product?.color ?? item?.bodycolor} | `
+                        : null}
+
+                      {/* Light Color */}
+                      {(product?.lightcolor &&
+                        product.lightcolor !== "NULL" &&
+                        product.lightcolor !== "0") ||
+                      (item?.lightcolor && item.lightcolor !== "0")
+                        ? `Light Color: ${
+                            product?.lightcolor ?? item?.lightcolor
+                          } | `
+                        : null}
+
+                      {/* Lumens */}
+                      {(product?.lumens &&
+                        product.lumens !== "NONE" &&
+                        product.lumens !== "0") ||
+                      (item?.lumens && item.lumens !== "0")
+                        ? `Lumens: ${product?.lumens ?? item?.lumens}`
+                        : null}
+                    </span>
                   </td>
                 )}
-
                 {visibleColumns.brand && <td>{item.brand}</td>}
-
                 {visibleColumns.qty && <td>{item.quantity}</td>}
-
                 {visibleColumns.unit && <td>{item.unit}</td>}
-
                 {visibleColumns.mrp && <td>{item.mrp}</td>}
-
-                {visibleColumns.discount && (
-                  <td>{item.discount}%</td>
-                )}
-
+                {visibleColumns.discount && <td>{item.discount}%</td>}
+                {visibleColumns.price && <td>{item.price}</td>}
                 {visibleColumns.netPrice && (
                   <td>
                     {(
@@ -441,7 +459,6 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                     ).toFixed(2)}
                   </td>
                 )}
-
                 {visibleColumns.amount && (
                   <td>
                     {(
