@@ -323,7 +323,7 @@ useEffect(() => {
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              <p>GST: <b>Including in above prices as per applicable.</b></p>
+              {/* <p>GST: <b>Including in above prices as per applicable.</b></p> */}
               <p>Payment Terms: <b>100% in advance with order.</b></p>
               <p>Validity: <b>15 days from the date of quotation.</b></p>
               <p className="m-0">

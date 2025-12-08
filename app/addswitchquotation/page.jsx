@@ -390,9 +390,9 @@ const SwitchQuotation = () => {
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              <p>
+              {/* <p>
                 GST: <b>Including in above prices as per applicable.</b>
-              </p>
+              </p> */}
               <p>
                 Payment Terms: <b>100% in advance with order.</b>
               </p>
