@@ -10,7 +10,7 @@ const QUOTATION_API_URL = "https://api.panvic.in/quotation";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
 import Cookies from "js-cookie";
 
-export default function ViewQuotation({ params }) {
+export default async function ViewQuotation({ params }) {
   const { quote } = params;
   const [userDetails, setUserDetails] = useState(null);
   const [quotation, setQuotation] = useState(null);
