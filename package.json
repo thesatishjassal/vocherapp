@@ -23,7 +23,7 @@
     "jspdf": "^3.0.3",
     "lucide-react": "^0.479.0",
     "multer": "^2.0.2",
-    "next": "15.1.5",
+    "next": "15.1.9",
     "next-connect": "^1.0.0",
     "pdfmake": "^0.2.20",
     "react": "^19.0.0",
@@ -44,7 +44,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.1.5",
+    "eslint-config-next": "15.1.9",
     "typescript": "^5"
   }
 }
