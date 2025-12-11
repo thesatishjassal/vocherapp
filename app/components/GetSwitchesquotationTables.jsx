@@ -38,7 +38,8 @@ const getMrpCols = (row, modelName) => {
     }
     if (modelName === "ArtisaPlates") {
       const champKey = "champagne_gold";
-      if (row.hasOwnProperty(champKey) && !mrpCols.includes(champKey)) {
+      const champColor = getColorName(champKey);
+      if (row.hasOwnProperty(champKey) && !mrpCols.some(c => getColorName(c) === champColor)) {
         mrpCols.push(champKey);
       }
     }
@@ -448,10 +449,10 @@ export default function GetSwitchQuotationTables() {
 
   // Sections for summary
   const sections = [
-    { title: "Selected Switches", data: switchesSelected },
-    { title: "Selected Plates", data: platesSelected },
-    { title: "Selected Fancy Plates", data: fancyPlatesSelected },
-    { title: "Selected Accessories", data: accessoriesSelected },
+    { title: "Switches", data: switchesSelected },
+    { title: "Plates", data: platesSelected },
+    { title: "Fancy Plates", data: fancyPlatesSelected },
+    { title: "Accessories", data: accessoriesSelected },
   ];
 
   const allItems = [
@@ -613,7 +614,6 @@ export default function GetSwitchQuotationTables() {
                   </tr>
                 )}
               </thead>
-
               <tbody>
                 {filteredData.length === 0 ? (
                   <tr>
@@ -627,7 +627,7 @@ export default function GetSwitchQuotationTables() {
                       {displayHeaders.map((head) => {
                         if (head === "total") {
                           return (
-                            <td key={head} className="text-end fw-bold">
+                            <td key={head} className="text-center fw-bold">
                               ₹{calculateTotal(row, mrpCols, hasColors)}
                             </td>
                           );
@@ -640,7 +640,7 @@ export default function GetSwitchQuotationTables() {
                                 type="number"
                                 min="0"
                                 className="form-control form-control-sm"
-                                style={{ width: head === "discount" ? "80px" : "60px" }}
+                                style={{ width: head === "discount" ? "40px" : "50px" }}
                                 value={row[head]}
                                 onChange={(e) =>
                                   updateRow(
@@ -657,7 +657,7 @@ export default function GetSwitchQuotationTables() {
                         // Handle MRP columns
                         const color = getColorName(head);
                         if (mrpCols.includes(head) || (head === "champagne_gold" && hasColors)) {
-                          return <td key={head} className="text-end">₹{row[head]}</td>;
+                          return <td key={head} className="text-center">₹{row[head]}</td>;
                         }
 
                         return <td key={head} className="text-nowrap">{row[head]}</td>;
@@ -674,7 +674,7 @@ export default function GetSwitchQuotationTables() {
         {step < 4 && data.length > 0 && (
           <div className="mt-3 p-3 rounded">
             <div className="d-flex justify-content-end">
-              <div className="text-end">
+              <div className="text-center">
                 <strong>
                   Grand Total: ₹
                   {getSelectedRows()
@@ -700,7 +700,7 @@ export default function GetSwitchQuotationTables() {
               Add manual items such as cable ties, tape rolls, hooks, etc.
             </p>
             {accessories.map((acc, idx) => (
-              <div key={acc.id} className="row g-2 mb-3 p-2 border rounded">
+              <div key={acc.id} className="row g-2 mb-3 p-1 border rounded">
                 <div className="col-md-3">
                   <label className="form-label small">Item Name</label>
                   <input
@@ -737,7 +737,7 @@ export default function GetSwitchQuotationTables() {
                   />
                 </div>
                 <div className="col-md-2 d-flex align-items-end">
-                  <div className="w-100 text-end">
+                  <div className="w-100 text-center">
                     <label className="form-label small mb-0 d-block">Total (₹)</label>
                     <div className="fw-bold">₹{(acc.qty * acc.mrp).toFixed(2)}</div>
                   </div>
@@ -751,7 +751,7 @@ export default function GetSwitchQuotationTables() {
                   </button>
                 </div>
               </div>
-            ))}
+            ))}  
             {accessories.length === 0 && (
               <div className="text-center py-4 text-muted">
                 <i className="fas fa-plus-circle fa-2x mb-2"></i>
@@ -768,7 +768,7 @@ export default function GetSwitchQuotationTables() {
             )}
             {/* Grand Total for Accessories */}
             {accessories.some((a) => a.qty > 0) && (
-              <div className="mt-3 p-2 bg-light rounded">
+              <div className="mt-3 p-1 bg-light rounded">
                 <div className="d-flex justify-content-between">
                   <span>Accessories Subtotal:</span>
                   <strong>
@@ -808,11 +808,11 @@ export default function GetSwitchQuotationTables() {
                         <th>Category</th>
                         <th>Description</th>
                         <th>Color/Variant</th>
-                        <th className="text-end">Quantity</th>
-                        <th className="text-end">MRP (₹)</th>
-                        <th className="text-end">Line Total (₹)</th>
+                        <th className="text-center">Quantity</th>
+                        <th className="text-center">MRP (₹)</th>
+                        <th className="text-center">Line Total (₹)</th>
                         <th className="text-center">Discount %</th>
-                        <th className="text-end">Item Total (₹)</th>
+                        <th className="text-center">Item Total (₹)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -820,11 +820,11 @@ export default function GetSwitchQuotationTables() {
                         if (data.length === 0) return null;
                         return (
                           <React.Fragment key={title}>
-                            <tr className="table-primary">
-                              <td colSpan={8} className="p-2">
+                            {/* <tr className="table-primary">
+                              <td colSpan={8} className="p-1">
                                 <h6 className="mb-0 text-uppercase">{title}</h6>
                               </td>
-                            </tr>
+                            </tr> */}
                             {data.flatMap((item, itemIdx) => {
                               if (!("_id" in item)) {
                                 // Accessory row
@@ -833,11 +833,11 @@ export default function GetSwitchQuotationTables() {
                                     <td>{title}</td>
                                     <td>{item.name}</td>
                                     <td>-</td>
-                                    <td className="text-end">{item.qty}</td>
-                                    <td className="text-end">₹{item.mrp.toFixed(2)}</td>
-                                    <td className="text-end">₹{item.total.toFixed(2)}</td>
+                                    <td className="text-center">{item.qty}</td>
+                                    <td className="text-center">₹{item.mrp.toFixed(2)}</td>
+                                    <td className="text-center">₹{item.total.toFixed(2)}</td>
                                     <td className="text-center">-</td>
-                                    <td className="text-end">₹{item.total.toFixed(2)}</td>
+                                    <td className="text-center">₹{item.total.toFixed(2)}</td>
                                   </tr>
                                 );
                               } else {
@@ -852,29 +852,29 @@ export default function GetSwitchQuotationTables() {
                                     <td>{title}</td>
                                     <td>{details.description}</td>
                                     <td>{d.color}</td>
-                                    <td className="text-end">{d.qty}</td>
-                                    <td className="text-end">₹{d.mrp.toFixed(2)}</td>
-                                    <td className="text-end">₹{d.sub.toFixed(2)}</td>
+                                    <td className="text-center">{d.qty}</td>
+                                    <td className="text-center">₹{d.mrp.toFixed(2)}</td>
+                                    <td className="text-center">₹{d.sub.toFixed(2)}</td>
+                                    <td className="text-center">0</td>
                                     <td className="text-center">-</td>
-                                    <td className="text-end">-</td>
                                   </tr>
                                 ));
                                 const discountAmount = (
                                   parseFloat(details.subtotal) * (details.discount / 100)
                                 ).toFixed(2);
                                 const itemTotalRow = (
-                                  <tr key={`${title}-${itemIdx}-total`} className="table-secondary">
-                                    <td>{title}</td>
-                                    <td colSpan={6} className="text-end p-2">
-                                      <div className="fw-bold mb-1">{details.description} Total</div>
-                                      <div className="small">Subtotal: ₹{details.subtotal}</div>
-                                      {details.discount > 0 && (
+                                  <tr key={`${title}-${itemIdx}-total`}>
+                                    {/* <td>{title}</td> */}
+                                    <td>
+                                      {/* <div className="fw-bold mb-1">{details.description} Total</div>
+                                      <div className="small">Subtotal: ₹{details.subtotal}</div> */}
+                                      {/* {details.discount > 0 && (
                                         <div className="small text-danger">
                                           Discount {details.discount}%: -₹{discountAmount}
                                         </div>
-                                      )}
+                                      )} */}
                                     </td>
-                                    <td className="text-end fw-bold">₹{details.total}</td>
+                                    {/* <td className="text-center fw-bold">₹{details.total}</td> */}
                                   </tr>
                                 );
                                 return [...colorRows, itemTotalRow];
@@ -884,10 +884,10 @@ export default function GetSwitchQuotationTables() {
                         );
                       })}
                       <tr className="table-dark fw-bold">
-                        <td colSpan={7} className="text-end">
+                        <td colSpan={7} className="text-center">
                           <h5>Grand Total</h5>
                         </td>
-                        <td className="text-end">₹{grandTotal}</td>
+                        <td className="text-center">₹{grandTotal}</td>
                       </tr>
                     </tbody>
                   </table>

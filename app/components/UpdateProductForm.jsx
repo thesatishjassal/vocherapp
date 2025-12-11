@@ -60,37 +60,52 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedCategory = watch("category");
 
   // Fetch product details by ID
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!productId) return;
+      setIsFetching(true);
       try {
         const res = await fetch(`${API_URL}/products/${productId}`);
         const data = await res.json();
         if (res.ok) {
+          // Handle special fields first
+          if (data.in_display !== undefined) {
+            setValue("inDisplay", data.in_display ? "yes" : "no");
+          }
+          if (data.reorderEnabled !== undefined) {
+            setValue("reorderEnabled", !!data.reorderEnabled);
+          }
+          if (data.reorderqty !== undefined) {
+            setValue("reorderqty", data.reorderqty || 0);
+          }
+
+          // Set other fields (strings, default to '' if null)
           Object.keys(data).forEach((key) => {
-            if (data[key] !== null && data[key] !== undefined) {
-              // Map in_display (boolean) to inDisplay (string: "yes" or "no")
-              if (key === "in_display") {
-                setValue("inDisplay", data[key] ? "yes" : "no");
-              } else {
-                setValue(key, String(data[key]));
-              }
+            if (key !== "in_display" && key !== "reorderEnabled" && key !== "reorderqty") {
+              const value = data[key];
+              setValue(key, value != null ? String(value) : "");
             }
           });
+
           setTimeout(() => {
             trigger(); // Trigger form validation after setting values
           }, 100);
         } else {
-          throw new Error(data.message || "Failed to fetch product");
+          throw new Error(data.message || "Failed to fetch product details");
         }
       } catch (error) {
-        toast.error(error.message, { position: "top-right" });
+        toast.error(error.message || "Failed to fetch product details", { position: "top-right" });
+      } finally {
+        setIsFetching(false);
       }
     };
 
-    if (productId) fetchProduct();
+    fetchProduct();
   }, [productId, setValue, trigger]);
 
   // Fetch categories and subcategories
@@ -105,7 +120,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {
-        toast.error("Error fetching categories!", { position: "top-right" });
+        toast.error("Error fetching categories and subcategories!", { position: "top-right" });
       }
     };
     fetchData();
@@ -118,6 +133,7 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
 
   // Handle form submission
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
       const response = await fetch(`${API_URL}/products/${productId}`, {
         method: "PUT",
@@ -141,12 +157,16 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
       reset();
       onClose();
     } catch (error) {
-      toast.error(error.message || "Error updating product", {
+      toast.error(error.message || "Error updating product. Please try again.", {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (!show) return null;
 
   return (
     <>
@@ -168,150 +188,182 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
               </button>
             </div>
             <div className="modal-body py-3">
-              <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-                {/* Common Inputs with floating labels */}
-                {[
-                  "itemcode",
-                  "itemname",
-                  "description",
-                  "price",
-                  "quantity",
-                  "rackcode",
-                  "size",
-                  "color",
-                  "model",
-                  "brand",
-                  "unit",
-                  "cct",
-                  "beamangle",
-                  "cutoutdia",
-                  "cri",
-                  "lumens",
-                  "watt",
-                ].map((field) => (
-                  <div className="col-md-6 form-floating mb-1" key={field}>
-                    <input
-                      type="text"
-                      {...register(field)}
-                      className={`form-control ${errors[field] ? "border-danger" : ""}`}
-                      id={field}
-                      placeholder=" "
-                    />
-                    <label htmlFor={field}>
-                      {field.replace(/([A-Z])/g, " $1").trim()}
-                    </label>
-                    {errors[field] && (
-                      <small className="text-danger">{errors[field].message}</small>
+              {isFetching ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading product details...</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit(onSubmit)} className="row g-3">
+                  {/* Common Inputs with floating labels */}
+                  {[
+                    "itemcode",
+                    "itemname",
+                    "description",
+                    "price",
+                    "quantity",
+                    "rackcode",
+                    "size",
+                    "color",
+                    "model",
+                    "brand",
+                    "unit",
+                    "cct",
+                    "beamangle",
+                    "cutoutdia",
+                    "cri",
+                    "lumens",
+                    "watt",
+                  ].map((field) => (
+                    <div className="col-md-6 form-floating mb-1" key={field}>
+                      <input
+                        type="text"
+                        {...register(field)}
+                        className={`form-control ${errors[field] ? "border-danger" : ""}`}
+                        id={field}
+                        placeholder=" "
+                        disabled={isSubmitting}
+                      />
+                      <label htmlFor={field}>
+                        {field.replace(/([A-Z])/g, " $1").trim()}
+                      </label>
+                      {errors[field] && (
+                        <small className="text-danger">{errors[field].message}</small>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Category Dropdown */}
+                  <div className="col-md-6 form-floating mb-1">
+                    <select
+                      {...register("category")}
+                      className={`form-select ${errors.category ? "border-danger" : ""}`}
+                      id="category"
+                      defaultValue=""
+                      disabled={isSubmitting}
+                    >
+                      <option value="" disabled>
+                        Select Product Category
+                      </option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.catname}>
+                          {cat.catname}
+                        </option>
+                      ))}
+                    </select>
+                    <label htmlFor="category">Category</label>
+                    {errors.category && (
+                      <small className="text-danger">{errors.category.message}</small>
                     )}
                   </div>
-                ))}
 
-                {/* Category Dropdown */}
-                <div className="col-md-6 form-floating mb-1">
-                  <select
-                    {...register("category")}
-                    className={`form-select ${errors.category ? "border-danger" : ""}`}
-                    id="category"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select Product Category
-                    </option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.catname}>
-                        {cat.catname}
+                  {/* Subcategory Dropdown */}
+                  <div className="col-md-6 form-floating mb-1">
+                    <select
+                      {...register("subcategory")}
+                      className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
+                      id="subcategory"
+                      defaultValue=""
+                      disabled={isSubmitting}
+                    >
+                      <option value="" disabled>
+                        Select Product Subcategory
                       </option>
-                    ))}
-                  </select>
-                  <label htmlFor="category">Category</label>
-                  {errors.category && (
-                    <small className="text-danger">{errors.category.message}</small>
-                  )}
-                </div>
+                      {filteredSubCategories.map((sub) => (
+                        <option key={sub.id} value={sub.subcatname}>
+                          {sub.subcatname}
+                        </option>
+                      ))}
+                    </select>
+                    <label htmlFor="subcategory">Subcategory</label>
+                    {errors.subcategory && (
+                      <small className="text-danger">{errors.subcategory.message}</small>
+                    )}
+                  </div>
 
-                {/* Subcategory Dropdown */}
-                <div className="col-md-6 form-floating mb-1">
-                  <select
-                    {...register("subcategory")}
-                    className={`form-select ${errors.subcategory ? "border-danger" : ""}`}
-                    id="subcategory"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select Product Subcategory
-                    </option>
-                    {filteredSubCategories.map((sub) => (
-                      <option key={sub.id} value={sub.subcatname}>
-                        {sub.subcatname}
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="subcategory">Subcategory</label>
-                  {errors.subcategory && (
-                    <small className="text-danger">{errors.subcategory.message}</small>
-                  )}
-                </div>
-
-                {/* inDisplay Radio Buttons */}
-                <div className="col-md-6 mb-1">
-                  <label className="form-label">Show in Display?</label>
-                  <div className="d-flex gap-3">
-                    <div className="form-check">
-                      <input
-                        type="radio"
-                        {...register("inDisplay")}
-                        className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
-                        id="inDisplayYes"
-                        value="yes"
-                      />
-                      <label className="form-check-label" htmlFor="inDisplayYes">
-                        Yes
-                      </label>
+                  {/* inDisplay Radio Buttons */}
+                  <div className="col-md-6 mb-1">
+                    <label className="form-label">Show in Display?</label>
+                    <div className="d-flex gap-3">
+                      <div className="form-check">
+                        <input
+                          type="radio"
+                          {...register("inDisplay")}
+                          className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
+                          id="inDisplayYes"
+                          value="yes"
+                          disabled={isSubmitting}
+                        />
+                        <label className="form-check-label" htmlFor="inDisplayYes">
+                          Yes
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          type="radio"
+                          {...register("inDisplay")}
+                          className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
+                          id="inDisplayNo"
+                          value="no"
+                          disabled={isSubmitting}
+                        />
+                        <label className="form-check-label" htmlFor="inDisplayNo">
+                          No
+                        </label>
+                      </div>
                     </div>
+                    {errors.inDisplay && (
+                      <small className="text-danger">{errors.inDisplay.message}</small>
+                    )}
+                  </div>
+
+                  {/* Reorder Enabled Checkbox */}
+                  <div className="col-md-6 mb-1">
                     <div className="form-check">
                       <input
-                        type="radio"
-                        {...register("inDisplay")}
-                        className={`form-check-input ${errors.inDisplay ? "is-invalid" : ""}`}
-                        id="inDisplayNo"
-                        value="no"
+                        type="checkbox"
+                        {...register("reorderEnabled")}
+                        className="form-check-input"
+                        id="reorderEnabled"
+                        disabled={isSubmitting}
                       />
-                      <label className="form-check-label" htmlFor="inDisplayNo">
-                        No
+                      <label className="form-check-label" htmlFor="reorderEnabled">
+                        Enable Reorder
                       </label>
                     </div>
                   </div>
-                  {errors.inDisplay && (
-                    <small className="text-danger">{errors.inDisplay.message}</small>
-                  )}
-                </div>
 
-                {/* Reorder Quantity */}
-                <div className="col-md-6 form-floating mb-1">
-                  <input
-                    type="number"
-                    {...register("reorderqty")}
-                    className={`form-control ${errors.reorderqty ? "border-danger" : ""}`}
-                    id="reorderqty"
-                    placeholder=" "
-                  />
-                  <label htmlFor="reorderqty">Reorder Quantity</label>
-                  {errors.reorderqty && (
-                    <small className="text-danger">{errors.reorderqty.message}</small>
-                  )}
-                </div>
+                  {/* Reorder Quantity */}
+                  <div className="col-md-6 form-floating mb-1">
+                    <input
+                      type="number"
+                      {...register("reorderqty")}
+                      className={`form-control ${errors.reorderqty ? "border-danger" : ""}`}
+                      id="reorderqty"
+                      placeholder=" "
+                      disabled={isSubmitting}
+                    />
+                    <label htmlFor="reorderqty">Reorder Quantity</label>
+                    {errors.reorderqty && (
+                      <small className="text-danger">{errors.reorderqty.message}</small>
+                    )}
+                  </div>
 
-                {/* Submit Button */}
-                <div className="col-12">
-                  <button
-                    type="submit"
-                    className="btn btn-success w-100 py-3"
-                    disabled={!isValid}
-                  >
-                    Update Product
-                  </button>
-                </div>
-              </form>
+                  {/* Submit Button */}
+                  <div className="col-12">
+                    <button
+                      type="submit"
+                      className="btn btn-success w-100 py-3"
+                      disabled={!isValid || isSubmitting}
+                    >
+                      {isSubmitting && <span className="spinner-border spinner-border-sm me-2"></span>}
+                      {isSubmitting ? "Updating Product..." : "Update Product"}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
