@@ -94,6 +94,19 @@ export default function ClientViewQuotation({ quote }) {
     }
   }, []);
 
+// ===== GST CALCULATION (DO NOT TOUCH UI) =====
+const gstPercentage = useMemo(() => {
+  if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
+  return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
+}, [quotation]);
+
+const isGstExcluded = useMemo(() => {
+  if (!quotation) return false;
+  return quotation.amount_including_gst === quotation.without_gst;
+}, [quotation]);
+// ===========================================
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -149,6 +162,8 @@ export default function ClientViewQuotation({ quote }) {
   if (!quotation) {
     return <p>No quotation found!</p>;
   }
+
+
 
   return (
     <div className="card tm_container my-4">
@@ -268,39 +283,46 @@ export default function ClientViewQuotation({ quote }) {
               <div className="tm_right_footer">
                 <table>
                   <tbody>
-                    {quotation && quotation.without_gst !== 0 ? (
+                    {quotation && quotation.gst_amount === 0 && (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">Included GST:</p>
+                          <p className="m-0"> GST Included :
+                          </p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {(quotation.without_gst || 0).toFixed(2)}
+                          {quotation.amount_with_gst.toFixed(2)}
                         </td>
                       </tr>
-                    ) : null}
-                    {quotation && quotation.gst_amount !== 0 ? (
+                    )}
+                    {quotation && quotation.gst_amount > 0 && (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">GST Amount:</p>
+                          <p className="m-0">
+                            {isGstExcluded
+                              ? `Excluded GST (${gstPercentage}%)`
+                              : `Included GST (${gstPercentage}%)`}
+                          </p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {(quotation.gst_amount || 0).toFixed(2)}
+                          {quotation.gst_amount.toFixed(2)}
                         </td>
                       </tr>
-                    ) : null}
-                    {quotation && quotation.amount_with_gst !== 0 ? (
+                    )}
+
+                    {quotation && quotation.amount_with_gst > 0 && (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
                           <p className="m-0">Total Amount:</p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {(quotation.amount_with_gst || 0).toFixed(2)}
+                          {quotation.amount_with_gst.toFixed(2)}
                         </td>
                       </tr>
-                    ) : null}
+                    )}
                   </tbody>
                 </table>
               </div>
+
             </div>
             <p>
               <b>
