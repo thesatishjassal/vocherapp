@@ -295,18 +295,26 @@ const isGstExcluded = useMemo(() => {
                       </tr>
                     )}
                     {quotation && quotation.gst_amount > 0 && (
-                      <tr>
+                     <><tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">
-                            {isGstExcluded
-                              ? `Excluded GST (${gstPercentage}%)`
-                              : `Included GST (${gstPercentage}%)`}
+                          <p className="m-0">Amount :
                           </p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {quotation.gst_amount.toFixed(2)}
+                          {quotation.without_gst.toFixed(2)}
                         </td>
-                      </tr>
+                      </tr><tr>
+                          <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                            <p className="m-0">
+                              {isGstExcluded
+                                ? `Excluded GST (${gstPercentage}%)`
+                                : `Included GST (${gstPercentage}%)`}
+                            </p>
+                          </td>
+                          <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                            {quotation.gst_amount.toFixed(2)}
+                          </td>
+                        </tr></>
                     )}
 
                     {quotation && quotation.amount_with_gst > 0 && (
