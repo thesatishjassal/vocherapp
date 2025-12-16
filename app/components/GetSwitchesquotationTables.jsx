@@ -56,7 +56,6 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
 
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Step-specific data storage to preserve edits
   const [step1Data, setStep1Data] = useState([]);
@@ -309,7 +308,6 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
   // ================================
   useEffect(() => {
     if (step === 1) {
-      setSearchQuery("");
       setData(step1Data);
       setFilteredData(step1Data);
       setCurrentModel(model);
@@ -329,21 +327,6 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
       // Nothing for summary
     }
   }, [step]);
-
-  // ================================
-  // SEARCH FILTER
-  // ================================
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredData(data);
-      return;
-    }
-    const q = searchQuery.toLowerCase();
-    const result = data.filter((row) =>
-      Object.values(row).join(" ").toLowerCase().includes(q)
-    );
-    setFilteredData(result);
-  }, [searchQuery, data]);
 
   // ================================
   // UPDATE ROW
@@ -517,6 +500,17 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
     }
   };
 
+  const skipStep = async () => {
+    if (step === 2) {
+      setPlatesSelected([]);
+      await fetchSwitches("ArtisaFancyPlates");
+      setStep(3);
+    } else if (step === 3) {
+      setFancyPlatesSelected([]);
+      setStep(4);
+    }
+  };
+
   const prevStep = () => setStep(step - 1);
 
   // HEADER CALCULATION
@@ -597,25 +591,35 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
           <div className="text-muted small">
             Progress: {step}/5
           </div>
-          {step < 5 && (
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={nextStep}
-              disabled={
-                step < 4
-                  ? getSelectedRows().length === 0
-                  : false
-              }
-            >
-              Next <i className="fas fa-arrow-right ms-1"></i>
-            </button>
-          )}
+          <div className="d-flex">
+            {(step === 2 || step === 3) && (
+              <button
+                className="btn btn-outline-primary btn-sm me-2"
+                onClick={skipStep}
+              >
+                Skip
+              </button>
+            )}
+            {step < 5 && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={nextStep}
+                disabled={
+                  step < 4
+                    ? getSelectedRows().length === 0
+                    : false
+                }
+              >
+                Next <i className="fas fa-arrow-right ms-1"></i>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* BRAND + MODEL ONLY FOR STEP 1 */}
         {step === 1 && (
           <div className="row g-3 mb-4">
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label className="form-label">Brand</label>
               <select
                 className="form-select"
@@ -633,7 +637,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
             </div>
 
             {brand === "Wipro" && (
-              <div className="col-md-4">
+              <div className="col-md-6">
                 <label className="form-label">Switch Series</label>
                 <select
                   className="form-select"
@@ -647,20 +651,6 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
                 </select>
               </div>
             )}
-
-            <div className="col-md-4">
-              <label className="form-label">Search Items</label>
-              <div className="input-group">
-                <span className="input-group-text"><i className="fas fa-search"></i></span>
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="form-control"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
           </div>
         )}
 
@@ -722,7 +712,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
                 {filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={displayHeaders.length} className="text-center text-muted py-4">
-                      No items found matching your search.
+                      No items found.
                     </td>
                   </tr>
                 ) : (
