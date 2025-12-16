@@ -1,20 +1,20 @@
 "use client";
-
 import QuotationInfo from "../components/QuotaionInfo";
 import CustomerModal from "../components/customerModal";
-import SwitchQuotationTable from "../components/SwitchQuotationTable";
+import GetSwitchQuotationTables from "../components/GetSwitchesquotationTables";
 import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
-const SwitchQuotation = () => {
+const Quotation = () => {
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quotationInfo, setQuotationInfo] = useState(null);
-  const [quotationId, setQuotationId] = useState(1); // Define quotationId state
+  const [quotationId, setQuotationId] = useState(1);
   const [quotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
   const [gstDetails, setGstDetails] = useState({
@@ -28,6 +28,18 @@ const SwitchQuotation = () => {
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
+
+useEffect(() => {
+  const userDetailsCookie = Cookies.get("user_details");
+  if (userDetailsCookie) {
+    try {
+      setUserDetails(JSON.parse(userDetailsCookie));
+    } catch (err) {
+      console.error("Invalid cookie JSON:", err);
+    }
+  }
+}, []);
 
   const generateItemData = useCallback(
     ({ quotationId, item, warranty }) => ({
@@ -35,20 +47,26 @@ const SwitchQuotation = () => {
       product_id: item.itemCode,
       customercode: item.customerCode || "N/A",
       customerdescription: item.customerDescription || "N/A",
-      image: item.image || "https://example.com/default-image.jpg",
+      image: item.image,
       itemcode: item.itemCode,
       brand: item.brand || "N/A",
       mrp: parseFloat(item.mrp) || 0,
+      netPrice: parseFloat(item.netPrice) || 0,  // Added netPrice
       price: Math.round(parseFloat(item.amount)) || 0,
       quantity: parseInt(item.qty, 10) || 0,
       discount: parseFloat(item.discount) || 0,
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
+      amount: parseFloat(item.amount) || 0,  // Added amount
       warranty_guarantee: warranty || "As per company norms",
+      comments: item.comments || "N/A",
+      status: "active",
+
     }),
     []
   );
 
+  
   // Memoized callbacks
   const handleQuotationConfirm = useCallback((data) => {
     setQuotationInfo(data);
@@ -82,11 +100,11 @@ const SwitchQuotation = () => {
     return `PLQOT-${sequenceStr}`;
   }, [quotationSequence]);
 
+  // Fetch last quotation data
   useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
         setIsLoading(true);
-        console.log("setQuotationId available:", !!setQuotationId); // Debug log
         const response = await fetch("https://api.panvic.in/quotation/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -111,7 +129,7 @@ const SwitchQuotation = () => {
 
           const nextSequence = lastSequence + 1;
           setQuotationSequence(nextSequence);
-          setQuotationId(quotations.length + 1); // Use setQuotationId here
+          setQuotationId(quotations.length + 1);
         } else {
           setQuotationId(1);
           setQuotationSequence(1);
@@ -126,12 +144,13 @@ const SwitchQuotation = () => {
       }
     };
 
-    // Ensure client-side execution
-    if (typeof window !== "undefined") {
-      fetchLastQuotationData();
-    }
+    fetchLastQuotationData();
   }, []);
 
+  /**
+   * Saves the quotation and its items to the API.
+   * @async
+   */
   const handleSaveQuotation = useCallback(async () => {
     if (quotationSequence === null || isLoading || isSaving) {
       toast.warning("Please wait while the quotation is being processed.");
@@ -160,6 +179,10 @@ const SwitchQuotation = () => {
         remarks: remarks || "N/A",
         status: "active",
         client_id: selectedCustomer?.id || 3,
+
+          // ✅ Just add these two
+        created_by: userDetails?.name || "System",
+        created_at: new Date().toISOString(),
       };
 
       console.log("Sending quotationData:", quotationData);
@@ -300,7 +323,7 @@ const SwitchQuotation = () => {
                 className="tm_invoice_right tm_text_right"
                 style={{ flex: 1, textAlign: "right" }}
               >
-                <p className="tm_mb2">
+                <div className="tm_mb2">
                   <b className="tm_primary_color">PANVIK LIGHTING</b>
                   {infoModal && (
                     <QuotationInfo
@@ -315,7 +338,7 @@ const SwitchQuotation = () => {
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
-                </p>
+                </div>
                 Address:{" "}
                 <b>
                   Nakodar Road Beside Silver OAK Appartments Jalandhar City,
@@ -323,8 +346,9 @@ const SwitchQuotation = () => {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                Salesperson: <b>{quotationInfo?.Salesperson || "N/A"}</b>
-                <br />
+                    Contact no: <b> 94172-81252,98150-37755       </b> <br />
+                Email id: <b> panviklighting@gmail.com      </b> <br />
+              Salesperson: {quotationInfo && <b>{quotationInfo.salesperson } </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             <div
@@ -345,10 +369,7 @@ const SwitchQuotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <SwitchQuotationTable
-                    onRowsChange={handleRowsChange}
-                    totalAmount={totalAmount}
-                    onTotalAmountChange={handleTotalAmountChange}
+                  <GetSwitchQuotationTables onTotalUpdate={handleTotalAmountChange}
                   />
                   {showModalClientDetails && (
                     <CustomerModal
@@ -370,13 +391,12 @@ const SwitchQuotation = () => {
                     onChange={(e) => setRemarks(e.target.value)}
                   ></textarea>
                 </div>
-                {/* Uncomment if GSTCalculator is needed */}
-                {/* <div className="tm_right_footer">
+                <div className="tm_right_footer">
                   <GSTCalculator
                     totalAmount={totalAmount}
                     onGSTChange={handleGSTChange}
                   />
-                </div> */}
+                </div>
               </div>
             </div>
             <hr />
@@ -384,15 +404,15 @@ const SwitchQuotation = () => {
               <b>
                 <i>
                   Thank You for considering us for your needs. Here is the
-                  proposal as you requested.
+                  purposal as you requested.
                 </i>
               </b>
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              {/* <p>
+              <p>
                 GST: <b>Including in above prices as per applicable.</b>
-              </p> */}
+              </p>
               <p>
                 Payment Terms: <b>100% in advance with order.</b>
               </p>
@@ -479,7 +499,7 @@ const SwitchQuotation = () => {
                   strokeWidth="32"
                 ></rect>
                 <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 0 00-40 40v24"
+                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
                   fill="none"
                   stroke="currentColor"
                   strokeLinejoin="round"
@@ -509,4 +529,4 @@ const SwitchQuotation = () => {
   );
 };
 
-export default SwitchQuotation;
+export default Quotation;

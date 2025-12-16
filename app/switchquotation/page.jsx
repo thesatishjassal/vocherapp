@@ -1,4 +1,4 @@
-import GetSwitchQuotationTables from "../components/GetSwitchesquotationTables";
+import GetAllSwitchesquotations from "../components/GetAllSwitchesquotations";
 
 const GetOutVouchers = () => {
   return (
@@ -13,7 +13,7 @@ const GetOutVouchers = () => {
           </li>
         </ol>
       </nav>
-      <GetSwitchQuotationTables />
+      <GetAllSwitchesquotations />
     </>
   );
 };

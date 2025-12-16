@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import React from "react";
 
@@ -47,7 +47,7 @@ const getMrpCols = (row, modelName) => {
   return mrpCols;
 };
 
-export default function GetSwitchQuotationTables() {
+export default function GetSwitchQuotationTables({ onTotalUpdate }) {
   const [step, setStep] = useState(1);
 
   const [brand, setBrand] = useState("");
@@ -69,10 +69,16 @@ export default function GetSwitchQuotationTables() {
   const [platesSelected, setPlatesSelected] = useState([]);
   const [fancyPlatesSelected, setFancyPlatesSelected] = useState([]);
   const [accessoriesSelected, setAccessoriesSelected] = useState([]);
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   // Accessories for step 4
   const [accessories, setAccessories] = useState([]);
-
+  // Sections for summary
+  const sections = [
+    { title: "Switches", data: switchesSelected },
+    { title: "Plates", data: platesSelected },
+    { title: "Fancy Plates", data: fancyPlatesSelected },
+    { title: "Accessories", data: accessoriesSelected },
+  ];
   // ================================
   // FETCH DATA FROM CSV
   // ================================
@@ -136,7 +142,168 @@ export default function GetSwitchQuotationTables() {
       fetchSwitches(model);
     }
   }, [brand, model, step]);
+ 
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) return '';
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+  // ================================
+  // GET COLOR DETAILS FOR SUMMARY
+  // ================================
+  const getColorDetails = (item) => {
+    const potentialMrpCols = Object.keys(item).filter((k) => /mrp$/i.test(k));
+    let mrpCols = [...potentialMrpCols];
+    let gridMrp = 0;
+    let gridKey = null;
+    const hasGrid = "grid_mrp" in item && item.grid_mrp > 0;
+    if (hasGrid) {
+      gridMrp = item.grid_mrp;
+      gridKey = Object.keys(item).find((k) =>
+        /grid/i.test(k.toLowerCase())
+      );
+      if (gridKey) {
+        mrpCols = mrpCols.filter((k) => k !== gridKey);
+      }
+    }
+    const champKey = "champagne_gold";
+    if (item[champKey] !== undefined && !mrpCols.includes(champKey)) {
+      mrpCols.push(champKey);
+    }
+
+    const qtyFields = Object.keys(item).filter((k) => k.startsWith("qty_"));
+    let colorDetails = [];
+    let subtotal = 0;
+    let totalQty = 0;
+
+    if (mrpCols.length > 0 && qtyFields.length > 0) {
+      // Has colors
+      mrpCols.forEach((col) => {
+        const color = getColorName(col);
+        const qtyKey = `qty_${color}`;
+        const qty = parseFloat(item[qtyKey]) || 0;
+        if (qty > 0) {
+          const mrp = parseFloat(item[col]) || 0;
+          const sub = mrp * qty;
+          colorDetails.push({ color, qty, mrp, sub });
+          totalQty += qty;
+          subtotal += sub;
+        }
+      });
+    } else {
+      // Single qty
+      const priceKey = Object.keys(item).find(
+        (k) => k.toLowerCase().includes("mrp") && !/_mrp/i.test(k)
+      );
+      const mrp = priceKey ? parseFloat(item[priceKey]) || 0 : 0;
+      const qty = parseFloat(item.qty) || 0;
+      if (qty > 0) {
+        const sub = mrp * qty;
+        colorDetails.push({ color: "Default", qty, mrp, sub });
+        totalQty = qty;
+        subtotal = sub;
+      }
+    }
+
+    // Add grid
+    if (hasGrid && totalQty > 0) {
+      const gridSub = gridMrp * totalQty;
+      colorDetails.push({
+        color: "Back Grid",
+        qty: totalQty,
+        mrp: gridMrp,
+        sub: gridSub,
+        isGrid: true,
+      });
+      subtotal += gridSub;
+    }
+
+    const discount = parseFloat(item.discount) || 0;
+    const total = subtotal * (1 - discount / 100);
+
+    const descriptionKey = Object.keys(item).find(
+      (k) =>
+        k.toLowerCase().includes("description") ||
+        k.toLowerCase().includes("name")
+    );
+    const description = item[descriptionKey] || "Item";
+
+    return {
+      colorDetails,
+      subtotal: subtotal.toFixed(2),
+      total: total.toFixed(2),
+      discount,
+      totalQty,
+      description,
+    };
+  };
+
+  const getFlattenedRows = useMemo(() => {
+    const rows = [];
+    sections.forEach(({ title, data }) => {
+      data.forEach((item, itemIdx) => {
+        if (!("_id" in item)) {
+          // Accessory
+          rows.push({
+            category: title,
+            itemCode: '-',
+            description: item.name,
+            color: '-',
+            qty: item.qty,
+            mrp: item.mrp,
+            lineTotal: item.total,
+            discount: 0,
+            itemTotal: item.total,
+            isGrid: false
+          });
+        } else {
+          const details = getColorDetails(item);
+          details.colorDetails.forEach((d) => {
+            rows.push({
+              category: title,
+              itemCode: item.item_code || "N/A",
+              description: details.description,
+              color: d.color,
+              qty: d.qty,
+              mrp: d.mrp,
+              lineTotal: d.sub,
+              discount: details.discount,
+              itemTotal: d.sub * (1 - details.discount / 100),
+              isGrid: d.isGrid || false
+            });
+          });
+        }
+      });
+    });
+    return rows;
+  }, [sections]);
+
+  const sortedRows = useMemo(() => {
+    let sortableRows = [...getFlattenedRows];
+    if (sortConfig.key) {
+      sortableRows.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+        } else {
+          aVal = aVal.toString().toLowerCase();
+          bVal = bVal.toString().toLowerCase();
+          if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+          if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+          return 0;
+        }
+      });
+    }
+    return sortableRows;
+  }, [getFlattenedRows, sortConfig]);
   // ================================
   // Restore data on step change
   // ================================
@@ -260,95 +427,7 @@ export default function GetSwitchQuotationTables() {
     return total.toFixed(2);
   };
 
-  // ================================
-  // GET COLOR DETAILS FOR SUMMARY
-  // ================================
-  const getColorDetails = (item) => {
-    const potentialMrpCols = Object.keys(item).filter((k) => /mrp$/i.test(k));
-    let mrpCols = [...potentialMrpCols];
-    let gridMrp = 0;
-    let gridKey = null;
-    const hasGrid = "grid_mrp" in item && item.grid_mrp > 0;
-    if (hasGrid) {
-      gridMrp = item.grid_mrp;
-      gridKey = Object.keys(item).find((k) =>
-        /grid/i.test(k.toLowerCase())
-      );
-      if (gridKey) {
-        mrpCols = mrpCols.filter((k) => k !== gridKey);
-      }
-    }
-    const champKey = "champagne_gold";
-    if (item[champKey] !== undefined && !mrpCols.includes(champKey)) {
-      mrpCols.push(champKey);
-    }
 
-    const qtyFields = Object.keys(item).filter((k) => k.startsWith("qty_"));
-    let colorDetails = [];
-    let subtotal = 0;
-    let totalQty = 0;
-
-    if (mrpCols.length > 0 && qtyFields.length > 0) {
-      // Has colors
-      mrpCols.forEach((col) => {
-        const color = getColorName(col);
-        const qtyKey = `qty_${color}`;
-        const qty = parseFloat(item[qtyKey]) || 0;
-        if (qty > 0) {
-          const mrp = parseFloat(item[col]) || 0;
-          const sub = mrp * qty;
-          colorDetails.push({ color, qty, mrp, sub });
-          totalQty += qty;
-          subtotal += sub;
-        }
-      });
-    } else {
-      // Single qty
-      const priceKey = Object.keys(item).find(
-        (k) => k.toLowerCase().includes("mrp") && !/_mrp/i.test(k)
-      );
-      const mrp = priceKey ? parseFloat(item[priceKey]) || 0 : 0;
-      const qty = parseFloat(item.qty) || 0;
-      if (qty > 0) {
-        const sub = mrp * qty;
-        colorDetails.push({ color: "Default", qty, mrp, sub });
-        totalQty = qty;
-        subtotal = sub;
-      }
-    }
-
-    // Add grid
-    if (hasGrid && totalQty > 0) {
-      const gridSub = gridMrp * totalQty;
-      colorDetails.push({
-        color: "Back Grid",
-        qty: totalQty,
-        mrp: gridMrp,
-        sub: gridSub,
-        isGrid: true,
-      });
-      subtotal += gridSub;
-    }
-
-    const discount = parseFloat(item.discount) || 0;
-    const total = subtotal * (1 - discount / 100);
-
-    const descriptionKey = Object.keys(item).find(
-      (k) =>
-        k.toLowerCase().includes("description") ||
-        k.toLowerCase().includes("name")
-    );
-    const description = item[descriptionKey] || "Item";
-
-    return {
-      colorDetails,
-      subtotal: subtotal.toFixed(2),
-      total: total.toFixed(2),
-      discount,
-      totalQty,
-      description,
-    };
-  };
 
   // ================================
   // FILTER ITEMS WHERE QTY > 0
@@ -372,6 +451,43 @@ export default function GetSwitchQuotationTables() {
       return parseFloat(details.total);
     }
   };
+
+  // ================================
+  // CURRENT GRAND TOTAL MEMO
+  // ================================
+  const allItems = [
+    ...switchesSelected,
+    ...platesSelected,
+    ...fancyPlatesSelected,
+    ...accessoriesSelected,
+  ];
+
+  const currentGrandTotal = useMemo(() => {
+    if (step < 4) {
+      return getSelectedRows()
+        .reduce((sum, row) => {
+          const localMrpCols = getMrpCols(row, currentModel);
+          const localHasColors = localMrpCols.length > 0;
+          return (
+            sum + parseFloat(calculateTotal(row, localMrpCols, localHasColors))
+          );
+        }, 0);
+    } else if (step === 4) {
+      const prevItems = [...switchesSelected, ...platesSelected, ...fancyPlatesSelected];
+      const prevTotal = prevItems.reduce((sum, item) => sum + getItemTotal(item), 0);
+      const accTotal = accessories.reduce((sum, a) => sum + (a.qty * a.mrp), 0);
+      return prevTotal + accTotal;
+    } else if (step === 5) {
+      return allItems.reduce((sum, item) => sum + getItemTotal(item), 0);
+    }
+    return 0;
+  }, [step, data, currentModel, switchesSelected, platesSelected, fancyPlatesSelected, accessories, accessoriesSelected, allItems]);
+
+  useEffect(() => {
+    if (onTotalUpdate) {
+      onTotalUpdate(currentGrandTotal);
+    }
+  }, [currentGrandTotal, onTotalUpdate]);
 
   // ================================
   // NEXT BUTTON HANDLER
@@ -447,20 +563,8 @@ export default function GetSwitchQuotationTables() {
     return name;
   };
 
-  // Sections for summary
-  const sections = [
-    { title: "Switches", data: switchesSelected },
-    { title: "Plates", data: platesSelected },
-    { title: "Fancy Plates", data: fancyPlatesSelected },
-    { title: "Accessories", data: accessoriesSelected },
-  ];
 
-  const allItems = [
-    ...switchesSelected,
-    ...platesSelected,
-    ...fancyPlatesSelected,
-    ...accessoriesSelected,
-  ];
+
   const totalItems = allItems.length;
   const grandTotal =
     allItems.reduce((sum, item) => sum + getItemTotal(item), 0).toFixed(2);
@@ -470,7 +574,7 @@ export default function GetSwitchQuotationTables() {
   // ================================
   return (
     <div className="card shadow-sm border-0">
-      <div className="card-header bg-primary text-white">
+      <div className="card-header px-4 py-2 bg-primary text-white">
         <h6 className="text-white mb-0">
           <i className="fas fa-list me-2"></i>
           Step {step} / 5 —{" "}
@@ -482,12 +586,12 @@ export default function GetSwitchQuotationTables() {
         </h6>
       </div>
 
-      <div className="card-body p-4">
+      <div className="card-body p-0">
         {/* BUTTONS ON TOP FOR BETTER UX */}
-        <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div className="d-flex justify-content-between align-items-center mb-4 p-2 border-bottom">
           {step > 1 && (
             <button className="btn btn-outline-secondary btn-sm" onClick={prevStep}>
-              <i className="fas fa-arrow-left me-1"></i>Previous
+              <i className="fas fa-arrow-left me-1"></i>Back
             </button>
           )}
           <div className="text-muted small">
@@ -595,14 +699,14 @@ export default function GetSwitchQuotationTables() {
                       <th rowSpan={2} className="text-nowrap">Total</th>
                     </tr>
 
-                    <tr>
-                      {mrpCols.map(() => (
-                        <>
-                          <th className="text-nowrap">MRP</th>
-                          <th className="text-nowrap">Qty</th>
-                        </>
-                      ))}
-                    </tr>
+        <tr>
+          {mrpCols.map((_, index) => (
+            <React.Fragment key={`color-group-${index}`}>
+              <th key={`mrp-${index}`} className="text-nowrap">MRP</th>
+              <th key={`qty-${index}`} className="text-nowrap">Qty</th>
+            </React.Fragment>
+          ))}
+        </tr>
                   </>
                 ) : (
                   <tr>
@@ -676,16 +780,7 @@ export default function GetSwitchQuotationTables() {
             <div className="d-flex justify-content-end">
               <div className="text-center">
                 <strong>
-                  Grand Total: ₹
-                  {getSelectedRows()
-                    .reduce((sum, row) => {
-                      const localMrpCols = getMrpCols(row, currentModel);
-                      const localHasColors = localMrpCols.length > 0;
-                      return (
-                        sum + parseFloat(calculateTotal(row, localMrpCols, localHasColors))
-                      );
-                    }, 0)
-                    .toFixed(2)}
+                  Grand Total: ₹{currentGrandTotal.toFixed(2)}
                 </strong>
               </div>
             </div>
@@ -798,97 +893,41 @@ export default function GetSwitchQuotationTables() {
               }
 
               return (
-                <div
-                  className="table-responsive"
-                  style={{ maxHeight: "70vh", overflowY: "auto" }}
-                >
+                <div className="table-responsive">
                   <table className="tm_round_border table align-items-center justify-content-center mb-0">
                     <thead className="table-light sticky-top">
                       <tr>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Color/Variant</th>
-                        <th className="text-center">Quantity</th>
-                        <th className="text-center">MRP (₹)</th>
-                        <th className="text-center">Line Total (₹)</th>
-                        <th className="text-center">Discount %</th>
-                        <th className="text-center">Item Total (₹)</th>
+                        <th onClick={() => handleSort('itemCode')}>Item Code {getSortIndicator('itemCode')}</th>
+                        <th onClick={() => handleSort('description')}>Description {getSortIndicator('description')}</th>
+                        <th onClick={() => handleSort('color')}>Color/Variant {getSortIndicator('color')}</th>
+                        <th onClick={() => handleSort('category')}>Category {getSortIndicator('category')}</th>
+                        <th className="text-center" onClick={() => handleSort('qty')}>Quantity {getSortIndicator('qty')}</th>
+                        <th className="text-center" onClick={() => handleSort('mrp')}>MRP (₹) {getSortIndicator('mrp')}</th>
+                        <th className="text-center" onClick={() => handleSort('lineTotal')}>Line Total (₹) {getSortIndicator('lineTotal')}</th>
+                        <th className="text-center" onClick={() => handleSort('discount')}>Discount % {getSortIndicator('discount')}</th>
+                        <th className="text-center" onClick={() => handleSort('itemTotal')}>Item Total (₹) {getSortIndicator('itemTotal')}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {sections.map(({ title, data }) => {
-                        if (data.length === 0) return null;
-                        return (
-                          <React.Fragment key={title}>
-                            {/* <tr className="table-primary">
-                              <td colSpan={8} className="p-1">
-                                <h6 className="mb-0 text-uppercase">{title}</h6>
-                              </td>
-                            </tr> */}
-                            {data.flatMap((item, itemIdx) => {
-                              if (!("_id" in item)) {
-                                // Accessory row
-                                return (
-                                  <tr key={`acc-${title}-${itemIdx}`}>
-                                    <td>{title}</td>
-                                    <td>{item.name}</td>
-                                    <td>-</td>
-                                    <td className="text-center">{item.qty}</td>
-                                    <td className="text-center">₹{item.mrp.toFixed(2)}</td>
-                                    <td className="text-center">₹{item.total.toFixed(2)}</td>
-                                    <td className="text-center">-</td>
-                                    <td className="text-center">₹{item.total.toFixed(2)}</td>
-                                  </tr>
-                                );
-                              } else {
-                                // Normal item with colors
-                                const details = getColorDetails(item);
-                                if (details.colorDetails.length === 0) return null;
-                                const colorRows = details.colorDetails.map((d, i) => (
-                                  <tr
-                                    key={`${title}-${itemIdx}-color-${i}`}
-                                    className={d.isGrid ? "table-info" : ""}
-                                  >
-                                    <td>{title}</td>
-                                    <td>{details.description}</td>
-                                    <td>{d.color}</td>
-                                    <td className="text-center">{d.qty}</td>
-                                    <td className="text-center">₹{d.mrp.toFixed(2)}</td>
-                                    <td className="text-center">₹{d.sub.toFixed(2)}</td>
-                                    <td className="text-center">0</td>
-                                    <td className="text-center">-</td>
-                                  </tr>
-                                ));
-                                const discountAmount = (
-                                  parseFloat(details.subtotal) * (details.discount / 100)
-                                ).toFixed(2);
-                                const itemTotalRow = (
-                                  <tr key={`${title}-${itemIdx}-total`}>
-                                    {/* <td>{title}</td> */}
-                                    <td>
-                                      {/* <div className="fw-bold mb-1">{details.description} Total</div>
-                                      <div className="small">Subtotal: ₹{details.subtotal}</div> */}
-                                      {/* {details.discount > 0 && (
-                                        <div className="small text-danger">
-                                          Discount {details.discount}%: -₹{discountAmount}
-                                        </div>
-                                      )} */}
-                                    </td>
-                                    {/* <td className="text-center fw-bold">₹{details.total}</td> */}
-                                  </tr>
-                                );
-                                return [...colorRows, itemTotalRow];
-                              }
-                            })}
-                          </React.Fragment>
-                        );
-                      })}
-                      <tr className="table-dark fw-bold">
-                        <td colSpan={7} className="text-center">
+                      {sortedRows.map((row, idx) => (
+                        <tr key={`${row.category}-${row.itemCode}-${idx}`} className={row.isGrid ? "table-info" : ""}>
+                          <td>{row.itemCode}</td>
+                          <td>{row.description}</td>
+                          <td>{row.color}</td>
+                          <td>{row.category}</td>
+                          <td className="text-center">{row.qty}</td>
+                          <td className="text-center">₹{row.mrp.toFixed(2)}</td>
+                          <td className="text-center">₹{row.lineTotal.toFixed(2)}</td>
+                          <td className="text-center">{row.discount}</td>
+                          <td className="text-center">₹{row.itemTotal.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      {/* <tr className="table-dark fw-bold">
+                        <td colSpan={9} className="text-center">
                           <h5>Grand Total</h5>
                         </td>
                         <td className="text-center">₹{grandTotal}</td>
-                      </tr>
+                      </tr> */}
                     </tbody>
                   </table>
                 </div>

@@ -26,7 +26,7 @@ export default function RootLayout({
           referrerPolicy="no-referrer"
         />
       </head>
-      <body className="g-sidenav-show bg-gray-100">
+<body className="g-sidenav-show bg-gray-100" suppressHydrationWarning={true}>
         {/* Render Header only if not on login or register page */}
         {!hideHeaderRoutes.includes(pathname) && <Header />}
 
