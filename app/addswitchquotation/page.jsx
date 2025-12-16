@@ -258,6 +258,8 @@ useEffect(() => {
 
   return (
     <div className="card tm_container my-4">
+
+
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
@@ -510,7 +512,7 @@ useEffect(() => {
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
-          <button
+          {/* <button
             id="tm_download_btn"
             className="tm_invoice_btn tm_color2"
             onClick={handleSaveQuotation}
@@ -522,7 +524,7 @@ useEffect(() => {
             <span className="tm_btn_text">
               {isSaving ? "Publishing..." : "Publish"}
             </span>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

@@ -174,7 +174,30 @@ const formatDateTime = (isoString) => {
 
 
   return (
-    <div className="card">
+    <div className="relative overflow-x-auto card">
+                    <style jsx>{`
+        @media print {
+          @page {
+            size: A4 Landscape;
+          }
+          .no-print {
+            display: none !important;
+          }
+          #quotation-table {
+            width: 100%;
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="absolute top-0 right-0 flex flex-col gap-2 no-print">
+        <button
+          onClick={handlePrint}
+          className="px-3 py-2 bg-gray-200 rounded-md shadow hover:bg-gray-300"
+        >
+          🖨 Print
+        </button>
+      </div>
       <div className="card-header d-flex justify-content-between align-items-center pb-0">
         <h6>Manage Sales Orders</h6>
         <Link href="/addswitchquotation" className="btn btn-primary btn-sm">

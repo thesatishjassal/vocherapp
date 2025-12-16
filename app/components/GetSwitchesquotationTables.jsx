@@ -574,7 +574,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
   // ================================
   return (
     <div className="card shadow-sm border-0">
-      <div className="card-header px-4 py-2 bg-primary text-white">
+      <div className="card-header px-4 py-2 bg-primary text-white no-print">
         <h6 className="text-white mb-0">
           <i className="fas fa-list me-2"></i>
           Step {step} / 5 —{" "}
@@ -588,7 +588,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
 
       <div className="card-body p-0">
         {/* BUTTONS ON TOP FOR BETTER UX */}
-        <div className="d-flex justify-content-between align-items-center mb-4 p-2 border-bottom">
+        <div className="d-flex justify-content-between align-items-center mb-4 p-2 border-bottom  no-print">
           {step > 1 && (
             <button className="btn btn-outline-secondary btn-sm" onClick={prevStep}>
               <i className="fas fa-arrow-left me-1"></i>Back
@@ -881,7 +881,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
         {/* FINAL SUMMARY - DETAILED VIEW IN ONE TABLE */}
         {step === 5 && (
           <div className="col-12">
-            <h5 className="mb-3">Final Summary - Detailed View</h5>
+            <h5 className="mb-3 no-print">Final Summary - Detailed View</h5>
             {(() => {
               if (totalItems === 0) {
                 return (
