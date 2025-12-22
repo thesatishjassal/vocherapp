@@ -18,6 +18,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     customerCode: false,
     customerDescription: false,
     itemCode: true,
+    Description: true,
     itemName: true,
     unit: true,
     brand: true,
@@ -268,6 +269,11 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 Item Name {getSortIndicator("item_name")}
               </th>
             )}
+            {visibleColumns.Description && (
+              <th onClick={() => requestSort("description")}>
+                Description {getSortIndicator("description")}
+              </th>
+            )}
             {visibleColumns.brand && (
               <th onClick={() => requestSort("brand")}>
                 Brand {getSortIndicator("brand")}
@@ -366,7 +372,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 {visibleColumns.customerDescription && (
                   <td>{item.customerdescription}</td>
                 )}
-                {visibleColumns.itemCode && <td>{item.itemcode}</td>}
+                 {visibleColumns.itemCode && (
+                  <td>{item.itemcode}</td>
+                )}
                 {visibleColumns.itemName && (
                   <td>
                     <div>{item.item_name}</div>
@@ -399,37 +407,37 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         ? `Cutout Size: ${
                             product.cutoutsize ?? product.cutoutdia
                           } | `
-                        : null}
+                          : null}
 
                       {/* Beam Angle */}
                       {(product?.beamangle &&
                         product.beamangle !== "NULL" &&
                         product.beamangle !== "0") ||
-                      (item?.beamangle && item.beamangle !== "0")
+                        (item?.beamangle && item.beamangle !== "0")
                         ? `Beam Angle: ${
-                            product?.beamangle ?? item?.beamangle
-                          }° | `
+                          product?.beamangle ?? item?.beamangle
+                        }° | `
                         : null}
 
                       {/* CRI */}
                       {(product?.cri &&
                         product.cri !== "NONE" &&
                         product.cri !== "0") ||
-                      (item?.Cri && item.Cri !== "0")
+                        (item?.Cri && item.Cri !== "0")
                         ? `CRI: ${product?.cri ?? item?.Cri} | `
                         : null}
 
                       {/* Body Color */}
                       {(product?.color && product.color !== "0") ||
                       (item?.bodycolor && item.bodycolor !== "0")
-                        ? `Body Color: ${product?.color ?? item?.bodycolor} | `
-                        : null}
+                      ? `Body Color: ${product?.color ?? item?.bodycolor} | `
+                      : null}
 
                       {/* Light Color */}
                       {(product?.lightcolor &&
                         product.lightcolor !== "NULL" &&
                         product.lightcolor !== "0") ||
-                      (item?.lightcolor && item.lightcolor !== "0")
+                        (item?.lightcolor && item.lightcolor !== "0")
                         ? `Light Color: ${
                             product?.lightcolor ?? item?.lightcolor
                           } | `
@@ -439,12 +447,14 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                       {(product?.lumens &&
                         product.lumens !== "NONE" &&
                         product.lumens !== "0") ||
-                      (item?.lumens && item.lumens !== "0")
+                        (item?.lumens && item.lumens !== "0")
                         ? `Lumens: ${product?.lumens ?? item?.lumens}`
                         : null}
                     </span>
                   </td>
                 )}
+                {/* {visibleColumns.itemCode && <td>{item.itemcode}</td>} */}
+                {visibleColumns.Description && <td>{item.description}</td>}
                 {visibleColumns.brand && <td>{item.brand}</td>}
                 {visibleColumns.qty && <td>{item.quantity}</td>}
                 {visibleColumns.unit && <td>{item.unit}</td>}

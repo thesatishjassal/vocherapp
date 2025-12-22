@@ -127,12 +127,12 @@ const CustomAddModal = ({
 
   // Handle field changes
  const handleLocalFieldChange = (field, value) => {
-  const sanitizedValue = field === "cus_itemname" ? value.slice(0, 100) : value || "";
-  handleFieldChange(field, sanitizedValue);
+  // const sanitizedValue = field === "cus_itemname" ? value.slice(0, 100) : value || "";
+  handleFieldChange(field, value);
 
-  if (field === "cus_itemname" && value.length > 100) {
-    alert("Item name truncated to 100 characters.");
-  }
+  // if (field === "cus_itemname" && value.length > 100) {
+  //   alert("Item name truncated to 100 characters.");
+  // }
 
   lastEditedField.current = field;
 
