@@ -144,7 +144,7 @@ const QuotationTable = ({
         const updatedData = data.map((item) => ({
           ...item,
           unit: item.unit || "Piece",
-          itemname: item.itemname?.substring(0, 100) || "",
+          itemname: item.itemname,
           itemcode: item.itemcode || "",
           brand: item.brand || "",
           price: item.price || "",
