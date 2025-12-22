@@ -141,12 +141,12 @@ const AddProductModal = ({
 
   // Handle field changes
   const handleLocalFieldChange = (field, value) => {
-    const sanitizedValue = field === "itemName" ? value.slice(0, 100) : value || "";
-    handleFieldChange(field, sanitizedValue);
+    // const sanitizedValue = field === "itemName" ? value.slice(0, 100) : value || "";
+    handleFieldChange(field, value);
 
-    if (field === "itemName" && value.length > 100) {
-      alert("Item name truncated to 100 characters.");
-    }
+    // if (field === "itemName" && value.length > 100) {
+    //   alert("Item name truncated to 100 characters.");
+    // }
 
     if (field === "netPrice") {
       setIsNetPriceManual(true);
@@ -188,17 +188,17 @@ const AddProductModal = ({
   // Handle product selection
   const handleLocalProductSelect = (product) => {
     if (product) {
-      const truncatedItemName = product.itemname?.substring(0, 100) || "";
-      if (product.itemname?.length > 100) {
-        alert("Selected product name truncated to 100 characters.");
-      }
+      // const truncatedItemName = product.itemname?.substring(0, 100) || "";
+      // if (product.itemname?.length > 100) {
+      //   alert("Selected product name truncated to 100 characters.");
+      // }
       const netPrice = product.price || "";
       const qty = newRow.qty || "";
       const amount = calculateAmount(qty, netPrice);
       setNewRow((prev) => ({
         ...prev,
         itemCode: product.itemcode || "",
-        itemName: truncatedItemName,
+        itemName:  product.itemname,
         unit: product.unit || "Piece",
         mrp: product.price || "",
         brand: product.brand || "",
