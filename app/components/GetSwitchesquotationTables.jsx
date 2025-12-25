@@ -26,6 +26,17 @@ const getColorName = (col) => {
     .replace(/_+$/, "");
 };
 
+const formatColorName = (color) => {
+  if (color === "Default" || color === "Back Grid" || color === '-') {
+    return color;
+  }
+  return color
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const getMrpCols = (row, modelName) => {
   const potential = Object.keys(row).filter((h) => /mrp$/i.test(h));
   let mrpCols = [...potential];
@@ -269,7 +280,7 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
               category: title,
               itemCode: item.item_code || "N/A",
               description: details.description,
-              color: d.color,
+              color: formatColorName(d.color),
               qty: d.qty,
               mrp: d.mrp,
               lineTotal: d.sub,
@@ -887,20 +898,22 @@ export default function GetSwitchQuotationTables({ onTotalUpdate }) {
                   <table className="tm_round_border table align-items-center justify-content-center mb-0">
                     <thead className="table-light sticky-top">
                       <tr>
+                        <th className="text-center">SR No</th>
                         <th onClick={() => handleSort('itemCode')}>Item Code {getSortIndicator('itemCode')}</th>
                         <th onClick={() => handleSort('description')}>Description {getSortIndicator('description')}</th>
                         <th onClick={() => handleSort('color')}>Color/Variant {getSortIndicator('color')}</th>
                         <th onClick={() => handleSort('category')}>Category {getSortIndicator('category')}</th>
                         <th className="text-center" onClick={() => handleSort('qty')}>Quantity {getSortIndicator('qty')}</th>
                         <th className="text-center" onClick={() => handleSort('mrp')}>MRP (₹) {getSortIndicator('mrp')}</th>
-                        <th className="text-center" onClick={() => handleSort('lineTotal')}>Line Total (₹) {getSortIndicator('lineTotal')}</th>
+                        <th className="text-center" onClick={() => handleSort('lineTotal')}>Amount (₹) {getSortIndicator('lineTotal')}</th>
                         <th className="text-center" onClick={() => handleSort('discount')}>Discount % {getSortIndicator('discount')}</th>
-                        <th className="text-center" onClick={() => handleSort('itemTotal')}>Item Total (₹) {getSortIndicator('itemTotal')}</th>
+                        <th className="text-center" onClick={() => handleSort('itemTotal')}>Net Amount (₹) {getSortIndicator('itemTotal')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {sortedRows.map((row, idx) => (
                         <tr key={`${row.category}-${row.itemCode}-${idx}`} className={row.isGrid ? "table-info" : ""}>
+                          <td className="text-center">{idx + 1}</td>
                           <td>{row.itemCode}</td>
                           <td>{row.description}</td>
                           <td>{row.color}</td>

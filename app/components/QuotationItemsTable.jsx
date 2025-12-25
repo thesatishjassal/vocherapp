@@ -66,6 +66,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     const fetchItems = async () => {
       try {
         let response;
+        let mappedItems;
         if (selectedRevision) {
           response = await axios.get(
             `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
@@ -74,24 +75,23 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           const filteredItems = response.data.filter(
             (item) => item.edited_at === selectedRevision.edited_at
           );
-          setItems(
-            filteredItems.map((item) => ({
-              ...item,
-              preview: item.image ? `https://api.panvic.in${item.image}` : null,
-            }))
-          );
+          mappedItems = filteredItems.map((item) => ({
+            ...item,
+            preview: item.image ? `https://api.panvic.in${item.image}` : null,
+          }));
         } else {
           response = await axios.get(
             `https://api.panvic.in/quotation/${quotation_id}/items/`,
             { withCredentials: true }
           );
-          setItems(
-            response.data.map((item) => ({
-              ...item,
-              preview: item.image ? `https://api.panvic.in${item.image}` : null,
-            }))
-          );
+          mappedItems = response.data.map((item) => ({
+            ...item,
+            preview: item.image ? `https://api.panvic.in${item.image}` : null,
+          }));
         }
+        // Sort by position if available
+        const sortedItems = mappedItems.sort((a, b) => (a.position || 0) - (b.position || 0));
+        setItems(sortedItems);
       } catch (error) {
         console.error("Error fetching quotation items:", error);
         toast.error("Failed to fetch quotation items!");
@@ -195,6 +195,73 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
     pdf.save("quotation-items.pdf");
   };
 
+  const handleDragStart = (e, index) => {
+    if (selectedRevision) return;
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e) => {
+    if (selectedRevision) return;
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    if (selectedRevision) return;
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
+    if (dragIndex === dropIndex) return;
+
+    const newItems = [...items];
+    const draggedItem = newItems[dragIndex];
+    newItems.splice(dragIndex, 1);
+    newItems.splice(dropIndex, 0, draggedItem);
+    setItems(newItems);
+
+    // Save the new order to the backend
+const saveOrder = async () => {
+  try {
+    await Promise.all(
+      newItems.map((item, i) =>
+        axios.patch(
+          `https://api.panvic.in/quotation/${quotation_id}/items/${item.id}`,
+          {
+            product_id: item.product_id,
+            customercode: item.customercode,
+            customerdescription: item.customerdescription,
+            image: item.image,
+            itemcode: item.itemcode,
+            brand: item.brand,
+            mrp: item.mrp,
+            netPrice: item.netPrice,
+            price: item.price,
+            quantity: item.quantity,
+            discount: item.discount,
+            item_name: item.item_name,
+            unit: item.unit,
+            amount: item.amount,
+            amount_including_gst: item.amount_including_gst,
+            without_gst: item.without_gst,
+            gst_amount: item.gst_amount,
+            amount_with_gst: item.amount_with_gst,
+            remarks: item.remarks,
+            position: i, // ✅ updated order
+          },
+          { withCredentials: true }
+        )
+      )
+    );
+
+    toast.success("Row reordered and saved successfully!");
+  } catch (error) {
+    console.error("Error saving order:", error);
+    toast.error("Failed to save order!");
+  }
+};
+
+
+    saveOrder();
+  };
+
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
 
@@ -243,11 +310,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       >
         <thead>
           <tr>
-            {visibleColumns.srNo && (
-              <th onClick={() => requestSort("srNo")}>
-                SR NO {getSortIndicator("srNo")}
-              </th>
-            )}
+            {visibleColumns.srNo && <th>SR NO</th>}
             {visibleColumns.image && <th>Image</th>}
             {visibleColumns.customerCode && (
               <th onClick={() => requestSort("customercode")}>
@@ -319,8 +382,16 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         <tbody>
           {items.map((item, index) => {
             const product = products[item.itemcode] || {};
+            const isDraggable = !selectedRevision;
             return (
-              <tr key={index}>
+              <tr
+                key={item.id || index}
+                draggable={isDraggable}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                style={{ cursor: isDraggable ? "grab" : "default" }}
+              >
                 {visibleColumns.srNo && <td>{index + 1}</td>}
                 {visibleColumns.image && (
                   <td>
@@ -335,9 +406,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                         position: "relative",
                       }}
                       title="Click to upload image"
-                      onClick={() =>
-                        document.getElementById(`fileInput-${index}`).click()
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent drag on image click
+                        document.getElementById(`fileInput-${index}`).click();
+                      }}
                     >
                       <img
                         src={
