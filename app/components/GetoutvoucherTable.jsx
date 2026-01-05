@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/outvouchers/";
+const API_URL = "https://api.panvic.in/outvouchers";
 
 const GetOutvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
@@ -26,16 +26,16 @@ const GetOutvoucherTable = () => {
     fetchInvouchers();
   }, []);
 
-  const handleDelete = async (voucherId) => {
+  const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this voucher?")) return;
 
     try {
-      const response = await axios.delete(`${API_URL}/${voucherId}`, {
+      const response = await axios.delete(`${API_URL}/${id}`, {
         withCredentials: true,
       });
-
+      console.log("Delete response:", id);
       if (response.status === 204 || response.status === 200) {
-        setInvouchers((prev) => prev.filter((voucher) => voucher.voucher_id !== voucherId));
+        setInvouchers((prev) => prev.filter((voucher) => voucher.voucher_id !== id));
         toast.success("Voucher deleted successfully!");
       } else {
         throw new Error("Unexpected response status");

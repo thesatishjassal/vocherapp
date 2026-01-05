@@ -448,7 +448,7 @@ useEffect(() => {
                 </b>
               </p>
               <p>
-                Freight Charges: <b>Extra as per actual.</b>
+                Freight Charges: <b>  Extra as per actual.</b>
               </p>
               <p>
                 Bank Details:{" "}

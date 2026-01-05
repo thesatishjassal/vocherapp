@@ -920,3 +920,28 @@ label, .form-label {
     color: #151515;
     font-weight: bold;
 }
+.tm_round_border input[type="number"] {
+    color: #3d3d3d;
+    background: #e6e6e6;
+    border: none;
+    padding: 2px 10px;
+    font-weight: 500;
+    width: max-content;
+    display: block;
+    max-width: 45px;
+}
+/* Make table auto size */
+.tm_round_border {
+  table-layout: auto !important;
+  width: 100%;
+}
+
+/* Item / Description column */
+.tm_round_border td.item-name,
+.tm_round_border th.item-name {
+  min-width: 280px;
+  max-width: 420px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
