@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/outvouchers";
+const API_URL = "https://api.panvic.in/outvouchers/";
 
 const GetOutvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
