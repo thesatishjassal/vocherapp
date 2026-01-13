@@ -936,8 +936,8 @@ label, .form-label {
   line-height: 1.4;
 }.table-responsive.switch_table input[type="number"] {
     width: 100%;
-    max-width: 50px;
-    background: #e3e3e3;
+    max-width: 50px !important;
+    background: #e3e3e3 !important;
     border: none;
     color: #383737;
 }
