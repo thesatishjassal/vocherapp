@@ -2,6 +2,7 @@ function CommonSummaryTable({ rows }) {
   let sr = 1;
 
   return (
+    <div className="table-responsive switch_table">
     <table className="tm_round_border table">
       <thead>
         <tr>
@@ -31,6 +32,6 @@ function CommonSummaryTable({ rows }) {
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
   );
 }

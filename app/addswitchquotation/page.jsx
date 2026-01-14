@@ -95,7 +95,7 @@ useEffect(() => {
   }, []);
 
   const generateQuotationNumber = useMemo(() => {
-    if (quotationSequence === null) return "PLQOT-Loading...";
+    if (quotationSequence === null) return "PLSQT-Loading...";
     const sequenceStr = quotationSequence.toString().padStart(3, "0");
     return `PLQOT-${sequenceStr}`;
   }, [quotationSequence]);
@@ -188,7 +188,7 @@ useEffect(() => {
       console.log("Sending quotationData:", quotationData);
 
       const response = await axios.post(
-        "https://api.panvic.in/quotation/",
+        "https://api.panvic.in/switch-quotations/",
         quotationData,
         {
           headers: { "Content-Type": "application/json" },
@@ -196,34 +196,11 @@ useEffect(() => {
       );
 
       const savedQuotationId = response.data.quotation_id;
-
-      if (rowsData.length > 0) {
-        const itemPromises = rowsData.map(async (item) => {
-          const itemData = generateItemData({
-            quotationId: savedQuotationId,
-            item,
-            warranty: warrantyGuarantee,
-          });
-
-          console.log("Sending itemData:", itemData);
-
-          return axios.post(
-            `https://api.panvic.in/quotation/${savedQuotationId}/items/`,
-            itemData,
-            { headers: { "Content-Type": "application/json" } }
-          );
-        });
-
-        await Promise.all(itemPromises);
-        console.log("Items saved successfully");
-      } else {
-        console.log("No items to save.");
-      }
-
+      console.log("Saved Quotation ID:", savedQuotationId);
       setQuotationSequence((prev) => prev + 1);
       setQuotationId((prev) => prev + 1);
       toast.success("Quotation saved successfully!");
-      window.location.href = "/getquotation";
+      window.location.href = "/switch-quotation";
     } catch (error) {
       console.error("Error saving quotation:", error);
       if (error.response?.status === 500) {
