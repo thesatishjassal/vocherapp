@@ -332,11 +332,11 @@ const saveOrder = async () => {
                 Item Name {getSortIndicator("item_name")}
               </th>
             )}
-            {visibleColumns.Description && (
+            {/* {visibleColumns.Description && (
               <th onClick={() => requestSort("description")}>
                 Description {getSortIndicator("description")}
               </th>
-            )}
+            )} */}
             {visibleColumns.brand && (
               <th onClick={() => requestSort("brand")}>
                 Brand {getSortIndicator("brand")}
@@ -526,7 +526,7 @@ const saveOrder = async () => {
                   </td>
                 )}
                 {/* {visibleColumns.itemCode && <td>{item.itemcode}</td>} */}
-                {visibleColumns.Description && <td>{item.description}</td>}
+                {/* {visibleColumns.Description && <td>{item.description}</td>} */}
                 {visibleColumns.brand && <td>{item.brand}</td>}
                 {visibleColumns.qty && <td>{item.quantity}</td>}
                 {visibleColumns.unit && <td>{item.unit}</td>}
