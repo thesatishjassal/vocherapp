@@ -1,396 +1,341 @@
-  "use client";
-  import React, { useEffect, useState } from "react";
-  import ArtisaPlatesStepWizard from "./Switch/ArtisaPlatesStepWizard";
-  import ArtisaFancyPlatesStepWizard from "./Switch/ArtisaFancyPlatesStepWizard";
-  import CustomItemsStep from "./Switch/CustomItems";
+"use client";
+import React, { useEffect, useState } from "react";
 
-  const API_URL =
-    "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
+import ArtisaPlatesStepWizard from "./Switch/ArtisaPlatesStepWizard";
+import ArtisaFancyPlatesStepWizard from "./Switch/ArtisaFancyPlatesStepWizard";
+import CustomItemsStep from "./Switch/CustomItems";
 
-  export default function SwitchStepWizard() {
-    const [step, setStep] = useState(1);
+const API_URL =
+  "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
 
-    /* STEP 1 – SWITCHES */
-    const [switches, setSwitches] = useState([]);
-    const [qty, setQty] = useState({});
-    const [discount, setDiscount] = useState({});
-    const [switchJson, setSwitchJson] = useState([]);
-    const [rowsData, setRowsData] = useState([]);
+export default function GetSwitchesquotationTables({
+  onTotalChange,
+  onRowsChange,
+}) {
+  const [step, setStep] = useState(1);
 
-    /* STEP 2 – PLATES */
-    const [platesJson, setPlatesJson] = useState([]);
+  /* ================= SWITCHES ================= */
+  const [switches, setSwitches] = useState([]);
+  const [qty, setQty] = useState({});
+  const [discount, setDiscount] = useState({});
+  const [switchJson, setSwitchJson] = useState([]);
+  const [subTotal, setSubTotal] = useState(0);
 
-    /* STEP 3 – FANCY PLATES */
-    const [fancyPlatesJson, setFancyPlatesJson] = useState([]);
+  /* ================= PLATES ================= */
+  const [platesJson, setPlatesJson] = useState([]);
 
-    /* STEP 4 – CUSTOM ITEMS */
-    const [customItemsJson, setCustomItemsJson] = useState([]);
+  /* ================= FANCY PLATES ================= */
+  const [fancyPlatesJson, setFancyPlatesJson] = useState([]);
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+  /* ================= CUSTOM ================= */
+  const [customItemsJson, setCustomItemsJson] = useState([]);
 
-    /* LOAD SWITCH DATA */
-    useEffect(() => {
-      fetch(API_URL)
-        .then((res) => res.json())
-        .then((json) => {
-          setSwitches(json.data || []);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to load switch data");
-          setLoading(false);
-        });
-    }, []);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    /* UPDATE SWITCHJSON ON CHANGES */
-    useEffect(() => {
-      const data = switches
-        .map((sw) => {
-          const q = qty[sw.item_code] || {};
-          if (!Object.values(q).some((v) => v > 0)) return null;
+  /* ================= LOAD SWITCHES ================= */
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((json) => {
+        setSwitches(json.data || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load switch data");
+        setLoading(false);
+      });
+  }, []);
 
-          const totals = calculateTotals(sw);
+  /* ================= CALCULATIONS ================= */
+  const calculateTotals = (sw) => {
+    const q = qty[sw.item_code] || {};
+    const d = discount[sw.item_code] || 0;
 
-          return {
-            item_code: sw.item_code,
-            description: sw.material_description,
-            module_size: sw.module_size,
-            prices: {
-              white: sw.white_mrp,
-              galaxy_black: sw.galaxy_black_mrp,
-              silver_grey: sw.silver_grey_mrp,
-            },
-            qty: {
-              white: q.white || 0,
-              galaxy_black: q.galaxy || 0,
-              silver_grey: q.silver || 0,
-            },
-            discount_percent: discount[sw.item_code] || 0,
-            final_amount: totals.finalAmt,
-          };
-        })
-        .filter(Boolean);
+    const total =
+      (q.white || 0) * (sw.white_mrp || 0) +
+      (q.galaxy || 0) * (sw.galaxy_black_mrp || 0) +
+      (q.silver || 0) * (sw.silver_grey_mrp || 0);
 
-      setSwitchJson(data);
-    }, [qty, discount, switches]);
+    const discountAmt = (total * d) / 100;
+    const finalAmt = total - discountAmt;
 
-    /* HANDLERS */
-    const handleQtyChange = (code, type, value) => {
-      setQty((prev) => ({
-        ...prev,
-        [code]: {
-          ...prev[code],
-          [type]: Number(value),
-        },
-      }));
-    };
+    return { total, finalAmt };
+  };
 
-    const handleDiscountChange = (code, value) => {
-      setDiscount((prev) => ({
-        ...prev,
-        [code]: Number(value),
-      }));
-    };
+  /* ================= SWITCH JSON ================= */
+  useEffect(() => {
+    const data = switches
+      .map((sw) => {
+        const q = qty[sw.item_code] || {};
+        if (!Object.values(q).some((v) => v > 0)) return null;
 
-    /* CALCULATIONS */
-    const calculateTotals = (sw) => {
-      const q = qty[sw.item_code] || {};
-      const d = discount[sw.item_code] || 0;
+        const totals = calculateTotals(sw);
 
-      const whiteTotal = (q.white || 0) * (sw.white_mrp || 0);
-      const galaxyTotal = (q.galaxy || 0) * (sw.galaxy_black_mrp || 0);
-      const silverTotal = (q.silver || 0) * (sw.silver_grey_mrp || 0);
+        return {
+          item_code: sw.item_code,
+          description: sw.material_description,
+          prices: {
+            white: sw.white_mrp,
+            galaxy: sw.galaxy_black_mrp,
+            silver: sw.silver_grey_mrp,
+          },
+          qty: {
+            white: q.white || 0,
+            galaxy: q.galaxy || 0,
+            silver: q.silver || 0,
+          },
+          discount_percent: discount[sw.item_code] || 0,
+          final_amount: totals.finalAmt,
+        };
+      })
+      .filter(Boolean);
 
-      const total = whiteTotal + galaxyTotal + silverTotal;
-      const discountAmt = (total * d) / 100;
-      const finalAmt = total - discountAmt;
+    setSwitchJson(data);
+  }, [qty, discount, switches]);
 
-      return { total, discountAmt, finalAmt };
-    };
+  /* ================= HANDLERS ================= */
+  const handleQtyChange = (code, type, value) => {
+    setQty((prev) => ({
+      ...prev,
+      [code]: {
+        ...prev[code],
+        [type]: Number(value),
+      },
+    }));
+  };
 
-    /* NEXT STEP */
-    const handleNext = () => {
-      setStep((p) => p + 1);
-    };
+  const handleDiscountChange = (code, value) => {
+    setDiscount((prev) => ({
+      ...prev,
+      [code]: Number(value),
+    }));
+  };
 
-    const formatVariant = (v) => {
-      if (v === "-") return "-";
-      return v
-        .replace(/_/g, " ")
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    };
-
-    /* 🔥 BUILD COMMON SUMMARY ROWS */
-    const buildSummaryRows = () => {
-      const rows = [];
-
-      // SWITCHES
-      switchJson.forEach((it) => {
+  /* ================= SUMMARY BUILDER ================= */
+  const buildSummaryRows = () => {
+    const rows = [];
+    const safeLoop = (arr, category) => {
+      arr.forEach((it) => {
+        if (!it?.qty) return;
         Object.entries(it.qty).forEach(([variant, q]) => {
           if (q > 0) {
-            const mrp = it.prices[variant];
+            const mrp = it.prices?.[variant] || 0;
             const amount = q * mrp;
-            const net = amount * (1 - it.discount_percent / 100);
+            const net = amount * (1 - (it.discount_percent || 0) / 100);
 
             rows.push({
-              code: it.item_code || "-",
-              desc: it.description,
-              variant,
-              category: "Switch",
+              itemCode: it.item_code || "-",
+              itemName: it.description,
+              customerDescription: it.description,
+              color: variant,
+              category,
+              brand: "Wipro",
+              image: null,
               qty: q,
               mrp,
               amount,
-              discount: it.discount_percent,
-              net,
+              discount: it.discount_percent || 0,
+              netPrice: net,
+              unit: "pcs",
+              comments: "N/A",
             });
           }
         });
       });
-
-      // PLATES
-      platesJson.forEach((it) => {
-        Object.entries(it.qty).forEach(([variant, q]) => {
-          if (q > 0) {
-            const mrp = it.prices[variant];
-            const amount = q * mrp;
-            const net = amount * (1 - it.discount_percent / 100);
-
-            rows.push({
-              code: it.item_code || "-",
-              desc: it.description,
-              variant,
-              category: "Plate",
-              qty: q,
-              mrp,
-              amount,
-              discount: it.discount_percent,
-              net,
-            });
-          }
-        });
-      });
-
-      // FANCY PLATES
-      fancyPlatesJson.forEach((it) => {
-        Object.entries(it.qty).forEach(([variant, q]) => {
-          if (q > 0) {
-            const mrp = it.prices[variant];
-            const amount = q * mrp;
-            const net = amount * (1 - it.discount_percent / 100);
-
-            rows.push({
-              code: it.item_code || "-",
-              desc: it.description,
-              variant,
-              category: "Fancy Plate",
-              qty: q,
-              mrp,
-              amount,
-              discount: it.discount_percent,
-              net,
-            });
-          }
-        });
-      });
-
-      // CUSTOM ITEMS
-      customItemsJson.forEach((it) => {
-        if (it.qty > 0) {
-          rows.push({
-            code: "-",
-            desc: it.item_name,
-            variant: "-",
-            category: "Custom",
-            qty: it.qty,
-            mrp: it.mrp,
-            amount: it.total_amount,
-            discount: 0,
-            net: it.total_amount,
-          });
-        }
-      });
-
-      return rows;
     };
 
-    /* ================= UI ================= */
+    safeLoop(switchJson, "Switch");
+    safeLoop(platesJson, "Plate");
+    safeLoop(fancyPlatesJson, "Fancy Plate");
 
-    return (
-      <div>
-        {/* STEP INDICATOR */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
-          {[1, 2, 3, 4, 5].map((s) => (
-            <div
-              key={s}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 6,
-                fontWeight: 600,
-                background: step === s ? "#ddd" : "#f2f2f2",
-              }}
-            >
-              Step {s}
-            </div>
-          ))}
-        </div>
+    customItemsJson.forEach((it) => {
+      if (it.qty > 0) {
+        rows.push({
+          itemCode: "-",
+          itemName: it.item_name,
+          customerDescription: it.item_name,
+          color: null,
+          category: "Custom",
+          brand: null,
+          image: null,
+          qty: it.qty,
+          mrp: it.mrp,
+          amount: it.total_amount,
+          discount: 0,
+          netPrice: it.total_amount,
+          unit: "pcs",
+          comments: "N/A",
+        });
+      }
+    });
 
-        {/* STEP 1 – SWITCHES */}
-        {step === 1 && (
-          <div className="table-responsive switch_table">
-            <table className="tm_round_border table align-items-center justify-content-center mb-0 mb-0">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Description</th>
-                  <th>Module</th>
-                  <th colSpan="2">White</th>
-                  <th colSpan="2">Galaxy</th>
-                  <th colSpan="2">Silver</th>
-                  <th>Total</th>
-                  <th>Disc %</th>
-                  <th>Final</th>
-                </tr>
-                <tr>
-                  <th colSpan="3" />
-                  {Array(3).fill(0).map((_, i) => (
-                    <React.Fragment key={i}>
-                      <th>Price</th>
-                      <th>Qty</th>
-                    </React.Fragment>
-                  ))}
-                  <th colSpan="3" />
-                </tr>
-              </thead>
+    return rows;
+  };
 
-              <tbody>
-                {loading && (
-                  <tr><td colSpan="12" align="center">Loading...</td></tr>
-                )}
+  /* ================= DATA SYNC ================= */
+  useEffect(() => {
+    const rows = buildSummaryRows();
+    const grandTotal = rows.reduce((s, r) => s + (r.netPrice || 0), 0);
+    onRowsChange?.(rows);
+    onTotalChange?.(grandTotal);
+  }, [switchJson, platesJson, fancyPlatesJson, customItemsJson, onRowsChange, onTotalChange]);
 
-                {!loading &&
-                  switches.map((sw) => {
-                    const totals = calculateTotals(sw);
-                    return (
-                      <tr key={sw.item_code}>
-                        <td>{sw.item_code}</td>
-                        <td>{sw.material_description}</td>
-                        <td>{sw.module_size}</td>
-
-                        <td>{sw.white_mrp}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            onChange={(e) =>
-                              handleQtyChange(sw.item_code, "white", e.target.value)
-                            }
-                          />
-                        </td>
-
-                        <td>{sw.galaxy_black_mrp}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            onChange={(e) =>
-                              handleQtyChange(sw.item_code, "galaxy", e.target.value)
-                            }
-                          />
-                        </td>
-
-                        <td>{sw.silver_grey_mrp}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            onChange={(e) =>
-                              handleQtyChange(sw.item_code, "silver", e.target.value)
-                            }
-                          />
-                        </td>
-
-                        <td>{totals.total}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            onChange={(e) =>
-                              handleDiscountChange(sw.item_code, e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>{totals.finalAmt}</td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
+  /* ================= UI ================= */
+  return (
+    <div>
+      {/* STEP INDICATOR */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
+        {[1, 2, 3, 4, 5].map((s) => (
+          <div
+            key={s}
+            style={{
+              padding: "6px 12px",
+              borderRadius: 6,
+              fontWeight: 600,
+              background: step === s ? "#ddd" : "#f2f2f2",
+            }}
+          >
+            Step {s}
           </div>
-        )}
-
-        {step === 2 && <ArtisaPlatesStepWizard onRowsChange={setRowsData} />}
-        {step === 3 && <ArtisaFancyPlatesStepWizard onDataChange={setFancyPlatesJson} />}
-        {step === 4 && <CustomItemsStep onDataChange={setCustomItemsJson} />}
-
-        {/* STEP 5 – SUMMARY */}
-        {step === 5 && (() => {
-          const rows = buildSummaryRows();
-          const grandTotal = rows.reduce((s, r) => s + r.net, 0);
-
-          return (
-            <>
-              <h4>Final Summary</h4>
-              <table className="tm_round_border table align-items-center justify-content-center mb-0">
-                <thead>
-                  <tr>
-                    <th>SR</th>
-                    <th>Item</th>
-                    <th>Description</th>
-                    <th>Variant</th>
-                    <th>Category</th>
-                    <th>Qty</th>
-                    <th>MRP</th>
-                    <th>Amount</th>
-                    <th>Disc %</th>
-                    <th>Net</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r, i) => (
-                    <tr key={i}>
-                      <td>{i + 1}</td>
-                      <td>{r.code}</td>
-                      <td>{r.desc}</td>
-                      <td>{formatVariant(r.variant)}</td>
-                      <td>{r.category}</td>
-                      <td>{r.qty}</td>
-                      <td>{r.mrp}</td>
-                      <td>{r.amount}</td>
-                      <td>{r.discount}</td>
-                      <td>{r.net}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <h5 style={{ marginTop: 15 }}>Grand Total ₹ {grandTotal}</h5>
-            </>
-          );
-        })()}
-
-        {/* NAV */}
-        <div style={{ marginTop: 20 }}>
-          <button disabled={step === 1} onClick={() => setStep(step - 1)}>
-            Back
-          </button>
-          <button disabled={step === 5} onClick={handleNext}>
-            Next
-          </button>
-        </div>
+        ))}
       </div>
-    );
-  }
+
+      {/* STEP 1 */}
+      {step === 1 && (
+        <div className="table-responsive switch_table">
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Description</th>
+                <th>White</th>
+                <th>Qty</th>
+                <th>Galaxy</th>
+                <th>Qty</th>
+                <th>Silver</th>
+                <th>Qty</th>
+                <th>Disc %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!loading &&
+                switches.map((sw) => (
+                  <tr key={sw.item_code}>
+                    <td>{sw.item_code}</td>
+                    <td>{sw.material_description}</td>
+                    <td>{sw.white_mrp}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        onChange={(e) =>
+                          handleQtyChange(sw.item_code, "white", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td>{sw.galaxy_black_mrp}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        onChange={(e) =>
+                          handleQtyChange(
+                            sw.item_code,
+                            "galaxy",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+                    <td>{sw.silver_grey_mrp}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        onChange={(e) =>
+                          handleQtyChange(
+                            sw.item_code,
+                            "silver",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        onChange={(e) =>
+                          handleDiscountChange(sw.item_code, e.target.value)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {step === 2 && <ArtisaPlatesStepWizard onRowsChange={setPlatesJson} />}
+      {step === 3 && (
+        <ArtisaFancyPlatesStepWizard onDataChange={setFancyPlatesJson} />
+      )}
+      {step === 4 && <CustomItemsStep onDataChange={setCustomItemsJson} />}
+
+      {/* STEP 5 – ORDER SUMMARY */}
+      {step === 5 && (
+        <>
+          <h4>Order Summary</h4>
+
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
+            <thead>
+              <tr>
+                <th>Sr</th>
+                <th>Item</th>
+                <th>Description</th>
+                <th>Variant</th>
+                <th>Category</th>
+                <th>Qty</th>
+                <th>MRP</th>
+                <th>Amount</th>
+                <th>Disc %</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody>
+              {buildSummaryRows().map((r, i) => (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>{r.itemCode}</td>
+                  <td>{r.customerDescription}</td>
+                  <td>{r.color}</td>
+                  <td>{r.category}</td>
+                  <td>{r.qty}</td>
+                  <td>{r.mrp}</td>
+                  <td>{r.amount}</td>
+                  <td>{r.discount}</td>
+                  <td>{(r.netPrice || 0).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {/* NAV */}
+      <div style={{ marginTop: 20 }}>
+        <button disabled={step === 1} onClick={() => setStep(step - 1)}>
+          Back
+        </button>
+        <button disabled={step === 5} onClick={() => setStep(step + 1)}>
+          Next
+        </button>
+      </div>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </div>
+  );
+}

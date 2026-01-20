@@ -264,6 +264,11 @@ const saveOrder = async () => {
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
+const roundToRupee = (val) => {
+  const n = Number(val);
+  if (isNaN(n)) return val;
+  return Math.round(n); // .50+ up, else floor
+};
 
   return (
     <div className="relative overflow-x-auto">
@@ -530,26 +535,30 @@ const saveOrder = async () => {
                 {visibleColumns.brand && <td>{item.brand}</td>}
                 {visibleColumns.qty && <td>{item.quantity}</td>}
                 {visibleColumns.unit && <td>{item.unit}</td>}
-                {visibleColumns.mrp && <td>{item.mrp}</td>}
+                {visibleColumns.mrp && <td>{roundToRupee(item.mrp)}</td>}
+
                 {visibleColumns.discount && <td>{item.discount}%</td>}
-                {visibleColumns.price && <td>{item.price}</td>}
-                {visibleColumns.netPrice && (
-                  <td>
-                    {(
-                      Number(item.mrp) *
-                      (1 - (Number(item.discount) || 0) / 100)
-                    ).toFixed(2)}
-                  </td>
-                )}
-                {visibleColumns.amount && (
-                  <td>
-                    {(
-                      Number(item.quantity) *
-                      Number(item.mrp) *
-                      (1 - (Number(item.discount) || 0) / 100)
-                    ).toFixed(2)}
-                  </td>
-                )}
+    {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
+
+{visibleColumns.netPrice && (
+  <td>
+    {roundToRupee(
+      Number(item.mrp) *
+      (1 - (Number(item.discount) || 0) / 100)
+    )}
+  </td>
+)}
+
+{visibleColumns.amount && (
+  <td>
+    {roundToRupee(
+      Number(item.quantity) *
+      Number(item.mrp) *
+      (1 - (Number(item.discount) || 0) / 100)
+    )}
+  </td>
+)}
+
               </tr>
             );
           })}

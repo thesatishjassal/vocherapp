@@ -7,7 +7,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-
 const Quotation = () => {
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
@@ -29,94 +28,89 @@ const Quotation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
-
-useEffect(() => {
-  const userDetailsCookie = Cookies.get("user_details");
-  if (userDetailsCookie) {
-    try {
-      setUserDetails(JSON.parse(userDetailsCookie));
-    } catch (err) {
-      console.error("Invalid cookie JSON:", err);
+  const [subTotal, setSubTotal] = useState(0);
+  const [rows, setRows] = useState([]);
+  const [gstSummary, setGstSummary] = useState({});
+  useEffect(() => {
+    const userDetailsCookie = Cookies.get("user_details");
+    if (userDetailsCookie) {
+      try {
+        setUserDetails(JSON.parse(userDetailsCookie));
+      } catch (err) {
+        console.error("Invalid cookie JSON:", err);
+      }
     }
-  }
-}, []);
-
+  }, []);
   const generateItemData = useCallback(
-    ({ quotationId, item, warranty }) => ({
-      quotation_id: quotationId,
-      product_id: item.itemCode,
-      customercode: item.customerCode || "N/A",
-      customerdescription: item.customerDescription || "N/A",
-      image: item.image,
-      itemcode: item.itemCode,
-      brand: item.brand || "N/A",
-      mrp: parseFloat(item.mrp) || 0,
-      netPrice: parseFloat(item.netPrice) || 0,  // Added netPrice
-      price: Math.round(parseFloat(item.amount)) || 0,
-      quantity: parseInt(item.qty, 10) || 0,
-      discount: parseFloat(item.discount) || 0,
+    (item, index) => ({
+      sr_no: index + 1,
       item_name: item.itemName || "N/A",
+      description: item.customerDescription || "N/A",
+      color: item.color || null,
+      category: item.category || null,
+      brand: item.brand || "N/A",
+      itemcode: item.itemCode || "N/A",
+      image: item.image || null,
+      quantity: parseInt(item.qty, 10) || 0,
+      mrp: parseFloat(item.mrp) || null,
+      amount: parseFloat(item.amount) || null,
+      discount_percent: parseFloat(item.discount) || 0,
+      net_price: parseFloat(item.netPrice) || null,
       unit: item.unit || "pcs",
-      amount: parseFloat(item.amount) || 0,  // Added amount
-      warranty_guarantee: warranty || "As per company norms",
-      comments: item.comments || "N/A",
-      status: "active",
-
+      remarks: item.comments || "N/A",
     }),
     []
   );
-
-  
   // Memoized callbacks
   const handleQuotationConfirm = useCallback((data) => {
     setQuotationInfo(data);
     console.log("Quotation Info Received:", data);
   }, []);
-
   const closeModal = useCallback(() => {
     setShowModalClientDetails(false);
   }, []);
-
   const handleTotalAmountChange = useCallback((newTotalAmount) => {
     setTotalAmount(newTotalAmount);
   }, []);
-
   const handleRowsChange = useCallback((rows) => {
     setRowsData(rows);
   }, []);
-
   const handleClientConfirm = useCallback((selectedClient) => {
     console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
   }, []);
-
   const handleGSTChange = useCallback((details) => {
     setGstDetails(details);
   }, []);
-
   const generateQuotationNumber = useMemo(() => {
     if (quotationSequence === null) return "PLSQT-Loading...";
     const sequenceStr = quotationSequence.toString().padStart(3, "0");
     return `PLQOT-${sequenceStr}`;
   }, [quotationSequence]);
-
+  const isFormValid = useMemo(() => {
+    if (rowsData.length === 0) return false;
+    return rowsData.every(
+      (item) =>
+        item.itemCode &&
+        item.itemName &&
+        item.amount &&
+        !isNaN(item.amount)
+    );
+  }, [rowsData]);
   // Fetch last quotation data
   useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("https://api.panvic.in/quotation/", {
+        const response = await fetch("https://api.panvic.in/switch-quotations/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const quotations = await response.json();
         console.log("Fetched quotations:", quotations);
-
         if (quotations?.length > 0) {
           const lastSequence = quotations
             .map((voucher) => {
@@ -124,9 +118,7 @@ useEffect(() => {
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
-
           console.log("Last sequence number:", lastSequence);
-
           const nextSequence = lastSequence + 1;
           setQuotationSequence(nextSequence);
           setQuotationId(quotations.length + 1);
@@ -143,10 +135,8 @@ useEffect(() => {
         setIsLoading(false);
       }
     };
-
     fetchLastQuotationData();
   }, []);
-
   /**
    * Saves the quotation and its items to the API.
    * @async
@@ -156,17 +146,29 @@ useEffect(() => {
       toast.warning("Please wait while the quotation is being processed.");
       return;
     }
-
-    setIsSaving(true);
-
-    try {
-      // Validate rowsData
-      for (const item of rowsData) {
-        if (!item.itemCode || !item.itemName || !item.amount || isNaN(item.amount)) {
-          throw new Error(`Invalid item data: ${item.itemName || "Unknown item"}`);
-        }
+    if (rowsData.length === 0) {
+      toast.warning("No items added to the quotation.");
+      return;
+    }
+    let valid = true;
+    for (const item of rowsData) {
+      if (
+        !item.itemCode ||
+        !item.itemName ||
+        !item.amount ||
+        isNaN(item.amount)
+      ) {
+        valid = false;
+        break;
       }
-
+    }
+    if (!valid) {
+      toast.error("Please check the item details. Some items are missing required fields (Item Code, Item Name, Amount).");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const items = rowsData.map((item, index) => generateItemData(item, index));
       const quotationData = {
         quotation_no: generateQuotationNumber,
         salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
@@ -179,14 +181,9 @@ useEffect(() => {
         remarks: remarks || "N/A",
         status: "active",
         client_id: selectedCustomer?.id || 3,
-
-          // ✅ Just add these two
-        created_by: userDetails?.name || "System",
-        created_at: new Date().toISOString(),
+        items: items,
       };
-
       console.log("Sending quotationData:", quotationData);
-
       const response = await axios.post(
         "https://api.panvic.in/switch-quotations/",
         quotationData,
@@ -194,13 +191,11 @@ useEffect(() => {
           headers: { "Content-Type": "application/json" },
         }
       );
-
-      const savedQuotationId = response.data.quotation_id;
-      console.log("Saved Quotation ID:", savedQuotationId);
+      console.log("Saved Quotation:", response.data);
       setQuotationSequence((prev) => prev + 1);
       setQuotationId((prev) => prev + 1);
       toast.success("Quotation saved successfully!");
-      window.location.href = "/switch-quotation";
+      window.location.href = "/switchquotation";
     } catch (error) {
       console.error("Error saving quotation:", error);
       if (error.response?.status === 500) {
@@ -210,11 +205,15 @@ useEffect(() => {
         toast.error(`Failed to save quotation: ${errorMessage}`);
       } else if (error.response?.status === 422) {
         const details = error.response.data.detail;
-        const errorMessage =
-          details?.[0]?.msg || "Invalid data provided. Please check item details.";
+        let errorMessage = "Invalid data provided. Please check item details.";
+        if (details && details.length > 0) {
+          errorMessage = details.map(d => `${d.loc.join('.')}: ${d.msg}`).join('; ');
+        }
         toast.error(`Failed to save quotation: ${errorMessage}`);
       } else {
-        toast.error(`Failed to save quotation: ${error.message || "Unknown error"}`);
+        toast.error(
+          `Failed to save quotation: ${error.message || "Unknown error"}`
+        );
       }
     } finally {
       setIsSaving(false);
@@ -232,11 +231,8 @@ useEffect(() => {
     rowsData,
     generateItemData,
   ]);
-
   return (
     <div className="card tm_container my-4">
-
-
       <div className="tm_invoice_wrap">
         <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
@@ -325,9 +321,12 @@ useEffect(() => {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                    Contact no: <b> 94172-81252,98150-37755       </b> <br />
-                Email id: <b> panviklighting@gmail.com      </b> <br />
-              Salesperson: {quotationInfo && <b>{quotationInfo.salesperson } </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
+                Contact no: <b> 94172-81252,98150-37755 </b> <br />
+                Email id: <b> panviklighting@gmail.com </b> <br />
+                Salesperson:{" "}
+                {quotationInfo && <b>{quotationInfo.salesperson} </b>}{" "}
+                <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number :{" "}
+                <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             <div
@@ -348,7 +347,10 @@ useEffect(() => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  <GetSwitchQuotationTables onTotalUpdate={handleTotalAmountChange}
+                  <GetSwitchQuotationTables
+                    onTotalChange={setSubTotal}
+                    onRowsChange={handleRowsChange}
+                    onTotalUpdate={handleTotalAmountChange}
                   />
                   {showModalClientDetails && (
                     <CustomerModal
@@ -372,7 +374,7 @@ useEffect(() => {
                 </div>
                 <div className="tm_right_footer">
                   <GSTCalculator
-                    totalAmount={totalAmount}
+                    totalAmount={subTotal}
                     onGSTChange={handleGSTChange}
                   />
                 </div>
@@ -425,23 +427,23 @@ useEffect(() => {
                 </b>
               </p>
               <p>
-                Freight Charges: <b>  Extra as per actual.</b>
+                Freight Charges: <b> Extra as per actual.</b>
               </p>
               <p>
                 Bank Details:{" "}
                 <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code:
-                  ICIC0001510, Jalandhar.
+                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
+                  Code: ICIC0001510, Jalandhar.
                   <br />
-                  We hope you will find our offer in quotation and look forward to
-                  your positive response. Please feel free to contact us for any
-                  queries.
+                  We hope you will find our offer in quotation and look forward
+                  to your positive response. Please feel free to contact us for
+                  any queries.
                 </b>
               </p>
               <hr />
               <p>
-                For:- Panvik Lighting This is a computer generated document, hence
-                signature is not required.
+                For:- Panvik Lighting This is a computer generated document,
+                hence signature is not required.
               </p>
             </div>
           </div>
@@ -489,23 +491,22 @@ useEffect(() => {
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
-          {/* <button
-            id="tm_download_btn"
+          <button
+            id="tm_submit_btn"
             className="tm_invoice_btn tm_color2"
             onClick={handleSaveQuotation}
-            disabled={isSaving}
+            disabled={isSaving || isLoading || !isFormValid}
           >
             <span className="tm_btn_icon">
               <i className="fa-solid fa-upload"></i>
             </span>
             <span className="tm_btn_text">
-              {isSaving ? "Publishing..." : "Publish"}
+              {isSaving ? "Submitting..." : "Submit"}
             </span>
-          </button> */}
+          </button>
         </div>
       </div>
     </div>
   );
 };
-
 export default Quotation;

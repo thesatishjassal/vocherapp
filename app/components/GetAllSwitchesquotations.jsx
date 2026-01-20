@@ -5,11 +5,11 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/switchesquotations/";
+const API_URL = "https://api.panvic.in/switch-quotations/";
 const CLIENTS_API_URL = "https://api.panvic.in/clients/";
 
 const GetAllSwitchesquotations = () => {
-  const [salesOrders, setSalesOrders] = useState([]);
+  const [quotations, setQuotations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilters, setStatusFilters] = useState({
     active: false,
@@ -18,10 +18,10 @@ const GetAllSwitchesquotations = () => {
   });
   const [sortOrder, setSortOrder] = useState("oldest");
 
-  const formatSalesOrderNo = (soNo) => {
-    if (!soNo) return "N/A";
-    const isNumeric = /^\d+$/.test(soNo);
-    return isNumeric ? `PLSO-${soNo}` : soNo;
+  const formatQuotationNo = (qtNo) => {
+    if (!qtNo) return "N/A";
+    const isNumeric = /^\d+$/.test(qtNo);
+    return isNumeric ? `PLQT-${qtNo}` : qtNo;
   };
 
   const fetchAllClients = async () => {
@@ -39,57 +39,39 @@ const GetAllSwitchesquotations = () => {
   };
 
   useEffect(() => {
-    const fetchSalesOrders = async () => {
+    const fetchQuotations = async () => {
       try {
-        const [soResponse, clientsMap] = await Promise.all([
+        const [qtResponse, clientsMap] = await Promise.all([
           axios.get(API_URL, { withCredentials: true }),
           fetchAllClients(),
         ]);
-        const salesOrdersWithClientNames = soResponse.data.map((so) => ({
-          ...so,
-          client_name: clientsMap[so.client_id] || null,
-          status: so.status || "Active",
+        const quotationsWithClientNames = qtResponse.data.map((qt) => ({
+          ...qt,
+          client_name: clientsMap[qt.client_id] || null,
+          status: qt.status || "Active",
         }));
-        const sortedSalesOrders = salesOrdersWithClientNames.sort(
-          (a, b) => a.salesorder_id - b.salesorder_id
+        const sortedQuotations = quotationsWithClientNames.sort(
+          (a, b) => a.quotation_id - b.quotation_id
         );
-        setSalesOrders(sortedSalesOrders);
+        setQuotations(sortedQuotations);
       } catch (error) {
-        toast.error("Failed to load sales orders!");
+        toast.error("Failed to load quotations!");
         console.error("Fetch error:", error);
       }
     };
-    fetchSalesOrders();
+    fetchQuotations();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this sales order?")) return;
+    if (!confirm("Are you sure you want to delete this quotation?")) return;
     try {
       const response = await axios.delete(`${API_URL}${id}/`, { withCredentials: true });
       if (response.status === 204 || response.status === 200) {
-        setSalesOrders((prev) => prev.filter((so) => so.salesorder_id !== id));
-        toast.success("Sales order deleted successfully!");
+        setQuotations((prev) => prev.filter((qt) => qt.quotation_id !== id));
+        toast.success("Quotation deleted successfully!");
       }
     } catch (error) {
       toast.error(`Failed to delete: ${error.message}`);
-    }
-  };
-
-  const handleClone = async (id) => {
-    if (!confirm("Are you sure you want to clone this sales order?")) return;
-    try {
-      const response = await axios.post(`${API_URL}${id}/clone`, {}, { withCredentials: true });
-      if (response.status === 200 || response.status === 201) {
-        const newSO = {
-          ...response.data,
-          client_name: salesOrders.find((so) => so.salesorder_id === id)?.client_name || null,
-          status: response.data.status || "Active",
-        };
-        setSalesOrders((prev) => [newSO, ...prev].sort((a, b) => a.salesorder_id - b.salesorder_id));
-        toast.success("Sales order cloned successfully!");
-      }
-    } catch (error) {
-      toast.error(`Failed to clone: ${error.message}`);
     }
   };
 
@@ -97,8 +79,8 @@ const GetAllSwitchesquotations = () => {
     try {
       const response = await axios.put(`${API_URL}${id}/`, { status: newStatus }, { withCredentials: true });
       if (response.status === 200 || response.status === 201) {
-        setSalesOrders((prev) =>
-          prev.map((so) => (so.salesorder_id === id ? { ...so, status: newStatus } : so))
+        setQuotations((prev) =>
+          prev.map((qt) => (qt.quotation_id === id ? { ...qt, status: newStatus } : qt))
         );
         toast.success(`Status updated to ${newStatus}`);
       }
@@ -111,9 +93,9 @@ const GetAllSwitchesquotations = () => {
     setStatusFilters((prev) => ({ ...prev, [status]: !prev[status] }));
   };
 
-  const statusCounts = salesOrders.reduce(
-    (acc, so) => {
-      const status = so.status?.toLowerCase() || "active";
+  const statusCounts = quotations.reduce(
+    (acc, qt) => {
+      const status = qt.status?.toLowerCase() || "active";
       if (status === "active") acc.active += 1;
       if (status === "mature") acc.mature += 1;
       if (status === "lost") acc.lost += 1;
@@ -122,19 +104,19 @@ const GetAllSwitchesquotations = () => {
     { active: 0, mature: 0, lost: 0 }
   );
 
-  const filteredSalesOrders = salesOrders
-    .filter((so) => {
+  const filteredQuotations = quotations
+    .filter((qt) => {
       const matchesSearch =
-        (so.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (so.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (so.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
-      const status = so.status?.toLowerCase() || "active";
+        (qt.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (qt.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (qt.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+      const status = qt.status?.toLowerCase() || "active";
       const selectedStatuses = Object.keys(statusFilters).filter((key) => statusFilters[key]);
       return matchesSearch && (selectedStatuses.length === 0 || selectedStatuses.includes(status));
     })
     .sort((a, b) => {
-      if (sortOrder === "latest") return b.salesorder_id - a.salesorder_id;
-      if (sortOrder === "oldest") return a.salesorder_id - b.salesorder_id;
+      if (sortOrder === "latest") return b.quotation_id - a.quotation_id;
+      if (sortOrder === "oldest") return a.quotation_id - b.quotation_id;
       if (sortOrder === "amount_high") return b.amount_with_gst - a.amount_with_gst;
       if (sortOrder === "amount_low") return a.amount_with_gst - b.amount_with_gst;
       return 0;
@@ -176,7 +158,7 @@ const formatDateTime = (isoString) => {
   return (
     <div className="card">
       <div className="card-header d-flex justify-content-between align-items-center pb-0">
-        <h6>Manage Sales Orders</h6>
+        <h6>Manage Switch Quotations</h6>
         <Link href="/addswitchquotation" className="btn btn-primary btn-sm">
           + Add Switch Quotation
         </Link>
@@ -191,45 +173,42 @@ const formatDateTime = (isoString) => {
                 <th>Date</th>
                 <th className="d-none d-md-table-cell">ID</th>
                 <th>Client Name</th>
-                <th>Switch Quotation No</th>
+                <th>Quotation No</th>
                 <th className="d-none d-lg-table-cell">Salesperson</th>
-                {/* <th>Subject</th> */}
-                {/* <th className="d-none d-lg-table-cell">Without GST</th> */}
-                <th>Freight</th>
-                <th>Payment Mode</th>
+                <th>Subject</th>
+                <th className="d-none d-lg-table-cell">Without GST</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th className="d-none d-lg-table-cell">Created By</th>
                 <th>Total Amount</th>
-                {/* <th>Status</th> */}
                 <th>Actions</th> 
               </tr>
             </thead>
             <tbody>
-              {filteredSalesOrders.reverse().length > 0 ? (
-                filteredSalesOrders.map((so, index) => (
-                  <tr key={so.salesorder_id}>
+              {filteredQuotations.reverse().length > 0 ? (
+                filteredQuotations.map((qt, index) => (
+                  <tr key={qt.quotation_id}>
                     <td>{index + 1}</td>
-                    <td>{formatDateTime(so.date)}</td>
-                    <td className="d-none d-md-table-cell">{so.salesorder_id}</td>
-                    <td>{so.client_name || "N/A"}</td>
-                    <td>{formatSalesOrderNo(so.salesorder_no)}</td>
-                    <td className="d-none d-lg-table-cell">{so.salesperson}</td>
-                    <td>{so.freight || "N/A"}</td>
-                    <td>{so.payment_method || "N/A"}</td>
-                    <td className="d-none d-lg-table-cell">{so.gst_amount}</td>
-                    <td className="d-none d-lg-table-cell">{so.created_by}</td>
-                    <td>{so.amount_with_gst}</td>
+                    <td>{formatDateTime(qt.created_at)}</td>
+                    <td className="d-none d-md-table-cell">{qt.quotation_id}</td>
+                    <td>{qt.client_name || "N/A"}</td>
+                    <td>{formatQuotationNo(qt.quotation_no)}</td>
+                    <td className="d-none d-lg-table-cell">{qt.salesperson}</td>
+                    <td>{qt.subject || "N/A"}</td>
+                    <td className="d-none d-lg-table-cell">{qt.without_gst}</td>
+                    <td className="d-none d-lg-table-cell">{qt.gst_amount}</td>
+                    <td className="d-none d-lg-table-cell">{qt.created_by}</td>
+                    <td>{qt.amount_with_gst}</td>
                     <td className="action-column">
-                      <Link href={`/editsalesorder/${so.salesorder_id}`}>
+                      <Link href={`/editswitchquotation/${qt.quotation_id}`}>
                         <i className="fas fa-pen text-primary me-2" title="Edit"></i>
                       </Link>
-                      <Link href={`/viewsalesorder/${so.salesorder_id}`}>
+                      <Link href={`/viewswitchquotation/${qt.quotation_id}`}>
                         <i className="fas fa-eye text-primary me-2" title="View"></i>
                       </Link>
                       <i
                         className="fas fa-trash text-danger me-2"
                         title="Delete"
-                        onClick={() => handleDelete(so.salesorder_id)}
+                        onClick={() => handleDelete(qt.quotation_id)}
                         style={{ cursor: "pointer" }}
                       ></i>
                     </td>

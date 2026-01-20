@@ -10,6 +10,9 @@ export default function ArtisaPlatesStepWizard({ onRowsChange }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // JSON STATES (important)
+  const [platesJson, setPlatesJson] = useState([]);
+
   /* LOAD PLATES DATA */
   useEffect(() => {
     fetch(API_URL)
@@ -23,60 +26,35 @@ export default function ArtisaPlatesStepWizard({ onRowsChange }) {
         setLoading(false);
       });
   }, []);
-/* 🔥 SEND SUMMARY ROWS TO PARENT */
-useEffect(() => {
-  const rows = buildSummaryRows();
 
-  const formattedRows = rows.map((r, index) => ({
-    sr_no: index + 1,
-    itemCode: r.code,
-    itemName: r.desc,
-    description: r.desc,
-    color: r.variant,
-    category: r.category,
-    quantity: r.qty,
-    mrp: r.mrp,
-    amount: r.amount,
-    discount_percent: r.discount,
-    net_price: r.net,
-    unit: "pcs",
-  }));
+  /* CALCULATIONS */
+  const calculateTotals = (pl) => {
+    const q = qty[pl.item_code] || {};
+    const d = discount[pl.item_code] || 0;
 
-  onRowsChange && onRowsChange(formattedRows);
-}, [switchJson, platesJson, fancyPlatesJson, customItemsJson]);
-  /* UPDATE SWITCHJSON ON CHANGES */
-  useEffect(() => {
-    const data = switches
-      .map((sw) => {
-        const q = qty[sw.item_code] || {};
-        if (!Object.values(q).some((v) => v > 0)) return null;
+    const backGridTotal = (q.back_grid || 0) * (pl.back_Grid_Mrp || 0);
+    const whiteTotal = (q.white || 0) * (pl.white_mrp || 0);
+    const galaxyTotal =
+      (q.galaxy_black || 0) * (pl.galaxy_black_mrp || 0);
+    const silverTotal =
+      (q.silver_grey || 0) * (pl.silver_grey_mrp || 0);
+    const champagneTotal =
+      (q.champagne_gold || 0) * (pl.champagne_gold || 0);
 
-        const totals = calculateTotals(sw);
+    const total =
+      backGridTotal +
+      whiteTotal +
+      galaxyTotal +
+      silverTotal +
+      champagneTotal;
 
-        return {
-          item_code: sw.item_code,
-          description: sw.material_description,
-          module_size: sw.module_size,
-          prices: {
-            white: sw.white_mrp,
-            galaxy_black: sw.galaxy_black_mrp,
-            silver_grey: sw.silver_grey_mrp,
-          },
-          qty: {
-            white: q.white || 0,
-            galaxy_black: q.galaxy || 0,
-            silver_grey: q.silver || 0,
-          },
-          discount_percent: discount[sw.item_code] || 0,
-          final_amount: totals.finalAmt,
-        };
-      })
-      .filter(Boolean);
+    const discountAmt = (total * d) / 100;
+    const finalAmt = total - discountAmt;
 
-    setSwitchJson(data);
-  }, [qty, discount, switches]);
+    return { total, discountAmt, finalAmt };
+  };
 
-  /* UPDATE ON CHANGES */
+  /* BUILD PLATES JSON */
   useEffect(() => {
     const data = plates
       .map((pl) => {
@@ -89,28 +67,34 @@ useEffect(() => {
           item_code: pl.item_code,
           description: pl.description,
           module_size: pl.module_size,
-          prices: {
-            back_grid: pl.back_Grid_Mrp,
-            white: pl.white_mrp,
-            galaxy_black: pl.galaxy_black_mrp,
-            silver_grey: pl.silver_grey_mrp,
-            champagne_gold: pl.champagne_gold,
-          },
-          qty: {
-            back_grid: q.back_grid || 0,
-            white: q.white || 0,
-            galaxy_black: q.galaxy_black || 0,
-            silver_grey: q.silver_grey || 0,
-            champagne_gold: q.champagne_gold || 0,
-          },
+          qty: q,
           discount_percent: discount[pl.item_code] || 0,
+          total: totals.total,
           final_amount: totals.finalAmt,
         };
       })
       .filter(Boolean);
 
-    onDataChange(data);
-  }, [qty, discount, plates, onDataChange]);
+    setPlatesJson(data);
+  }, [plates, qty, discount]);
+
+  /* SEND SUMMARY TO PARENT */
+  useEffect(() => {
+    const formattedRows = platesJson.map((r, index) => ({
+      sr_no: index + 1,
+      itemCode: r.item_code,
+      itemName: r.description,
+      description: r.description,
+      category: "Plates",
+      quantity: Object.values(r.qty).reduce((a, b) => a + b, 0),
+      amount: r.total,
+      discount_percent: r.discount_percent,
+      net_price: r.final_amount,
+      unit: "pcs",
+    }));
+
+    onRowsChange && onRowsChange(formattedRows);
+  }, [platesJson, onRowsChange]);
 
   /* HANDLERS */
   const handleQtyChange = (code, type, value) => {
@@ -128,24 +112,6 @@ useEffect(() => {
       ...prev,
       [code]: Number(value),
     }));
-  };
-
-  /* CALCULATIONS */
-  const calculateTotals = (pl) => {
-    const q = qty[pl.item_code] || {};
-    const d = discount[pl.item_code] || 0;
-
-    const backGridTotal = (q.back_grid || 0) * (pl.back_Grid_Mrp || 0);
-    const whiteTotal = (q.white || 0) * (pl.white_mrp || 0);
-    const galaxyTotal = (q.galaxy_black || 0) * (pl.galaxy_black_mrp || 0);
-    const silverTotal = (q.silver_grey || 0) * (pl.silver_grey_mrp || 0);
-    const champagneTotal = (q.champagne_gold || 0) * (pl.champagne_gold || 0);
-
-    const total = backGridTotal + whiteTotal + galaxyTotal + silverTotal + champagneTotal;
-    const discountAmt = (total * d) / 100;
-    const finalAmt = total - discountAmt;
-
-    return { total, discountAmt, finalAmt };
   };
 
   return (
@@ -167,19 +133,25 @@ useEffect(() => {
           </tr>
           <tr>
             <th colSpan="3" />
-            {Array(5).fill(0).map((_, i) => (
-              <React.Fragment key={i}>
-                <th>Price</th>
-                <th>Qty</th>
-              </React.Fragment>
-            ))}
+            {Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <React.Fragment key={i}>
+                  <th>Price</th>
+                  <th>Qty</th>
+                </React.Fragment>
+              ))}
             <th colSpan="3" />
           </tr>
         </thead>
 
         <tbody>
           {loading && (
-            <tr><td colSpan="16" align="center">Loading...</td></tr>
+            <tr>
+              <td colSpan="16" align="center">
+                Loading...
+              </td>
+            </tr>
           )}
 
           {!loading &&
@@ -197,7 +169,11 @@ useEffect(() => {
                       type="number"
                       min="0"
                       onChange={(e) =>
-                        handleQtyChange(pl.item_code, "back_grid", e.target.value)
+                        handleQtyChange(
+                          pl.item_code,
+                          "back_grid",
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -208,7 +184,11 @@ useEffect(() => {
                       type="number"
                       min="0"
                       onChange={(e) =>
-                        handleQtyChange(pl.item_code, "white", e.target.value)
+                        handleQtyChange(
+                          pl.item_code,
+                          "white",
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -219,7 +199,11 @@ useEffect(() => {
                       type="number"
                       min="0"
                       onChange={(e) =>
-                        handleQtyChange(pl.item_code, "galaxy_black", e.target.value)
+                        handleQtyChange(
+                          pl.item_code,
+                          "galaxy_black",
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -230,7 +214,11 @@ useEffect(() => {
                       type="number"
                       min="0"
                       onChange={(e) =>
-                        handleQtyChange(pl.item_code, "silver_grey", e.target.value)
+                        handleQtyChange(
+                          pl.item_code,
+                          "silver_grey",
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -241,7 +229,11 @@ useEffect(() => {
                       type="number"
                       min="0"
                       onChange={(e) =>
-                        handleQtyChange(pl.item_code, "champagne_gold", e.target.value)
+                        handleQtyChange(
+                          pl.item_code,
+                          "champagne_gold",
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -253,7 +245,10 @@ useEffect(() => {
                       min="0"
                       max="100"
                       onChange={(e) =>
-                        handleDiscountChange(pl.item_code, e.target.value)
+                        handleDiscountChange(
+                          pl.item_code,
+                          e.target.value
+                        )
                       }
                     />
                   </td>
@@ -263,6 +258,8 @@ useEffect(() => {
             })}
         </tbody>
       </table>
+
+      {error && <p className="text-danger">{error}</p>}
     </div>
   );
 }
