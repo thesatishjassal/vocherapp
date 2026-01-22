@@ -163,14 +163,12 @@ const GetQuotationTables = () => {
 
   const filteredQuotations = quotations
     .filter((q) => {
-      const matchesSearch =
-        (q.client_name?.toLowerCase() || "").includes(
-          searchQuery.toLowerCase()
-        ) ||
-        (q.salesperson?.toLowerCase() || "").includes(
-          searchQuery.toLowerCase()
-        ) ||
-        (q.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+const matchesSearch =
+  (q.quotation_no?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+  (q.quotation_id?.toString().toLowerCase() || "").includes(searchQuery.toLowerCase()) ||  // Note: Added toString() for safety since ID is numeric
+  (q.client_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+  (q.salesperson?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+  (q.subject?.toLowerCase() || "").includes(searchQuery.toLowerCase());
       const status = q.status?.toLowerCase() || "active";
       const selectedStatuses = Object.keys(statusFilters).filter(
         (key) => statusFilters[key]
@@ -227,13 +225,13 @@ const GetQuotationTables = () => {
 
       <div className="px-3 pt-2 pb-0">
         <div className="d-flex flex-wrap gap-3 align-items-center mb-2">
-          <input
-            type="text"
-            className="form-control w-auto"
-            placeholder="Search by client, salesperson or subject"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+<input
+  type="text"
+  className="form-control w-auto"
+  placeholder="Search by ID, quotation no, client, salesperson or subject"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
           <div className="form-check">
             <input
               type="checkbox"
