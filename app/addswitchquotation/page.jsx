@@ -7,7 +7,9 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+
 const Quotation = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
