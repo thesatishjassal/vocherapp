@@ -115,7 +115,7 @@ const isGstExcluded = useMemo(() => {
         setError(null);
         // Fetch Quotation
         const quotationResponse = await axios.get(
-          `${API_URL}/quotations/${quote}`,
+          `${API_URL}/quotation/${quote}`,
           {
             withCredentials: true,
           }
