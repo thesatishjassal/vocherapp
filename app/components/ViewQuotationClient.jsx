@@ -10,9 +10,9 @@ import { jsPDF } from "jspdf";
 // const QUOTATION_API_URL = "https://api.panvic.in/quotation";
 // const CLIENT_API_URL = "https://api.panvic.in/clients/";
 import Cookies from "js-cookie";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClientViewQuotation({ quote }) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [userDetails, setUserDetails] = useState(null);
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
