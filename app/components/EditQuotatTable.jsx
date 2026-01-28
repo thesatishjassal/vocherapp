@@ -17,6 +17,8 @@ const QuotatTable = React.memo(({
   const [isLoading, setIsLoading] = useState(!items.length && qouteId);
   const [filterColModal, setFilterColModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
     const emptyRow = {
     customerCode: "",
     customerDescription: "",
@@ -90,7 +92,7 @@ const QuotatTable = React.memo(({
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.panvic.in/quotation/${qouteId}/items/`);
+        const response = await fetch(`${API_URL}/quotation/${qouteId}/items/`);
         if (!response.ok) throw new Error("Failed to fetch quotation items");
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
@@ -198,7 +200,7 @@ const QuotatTable = React.memo(({
       if (editRowIndex !== null) {
         const itemId = rows[editRowIndex].id;
         response = await axios.put(
-          `https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`,
+          `${API_URL}/quotation/${qouteId}/items/${itemId}/`,
           newItem,
           { withCredentials: true }
         );
@@ -224,7 +226,7 @@ const QuotatTable = React.memo(({
         );
       } else {
         response = await axios.post(
-          `https://api.panvic.in/quotation/${qouteId}/items/`,
+          `${API_URL}/quotation/${qouteId}/items/`,
           newItem,
           { withCredentials: true }
         );
@@ -291,7 +293,7 @@ const QuotatTable = React.memo(({
       const itemId = row.id;
       const amountToSubtract = row.amount;
       try {
-        await axios.delete(`https://api.panvic.in/quotation/${qouteId}/items/${itemId}/`, {
+        await axios.delete(`${API_URL}/quotation/${qouteId}/items/${itemId}/`, {
           withCredentials: true,
         });
         setRows((prevRows) => prevRows.filter((_, i) => i !== index));

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const OutvoucherReport = ({ handleExport }) => {
   const [outvouchers, setOutvouchers] = useState([]);
@@ -16,7 +17,7 @@ const OutvoucherReport = ({ handleExport }) => {
   // ✅ Fetch Outvouchers API
   const fetchOutvouchers = async () => {
     try {
-      const response = await fetch("https://api.panvic.in/outvouchers/"); // Replace with your API endpoint
+      const response = await fetch(`${API_URL}/outvouchers/`); // Replace with your API endpoint
       if (response.ok) {
         const data = await response.json();
         setOutvouchers(data);

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Select, Button } from "rsuite";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function QuotationItemSelector({ onItemsSelect }) {
   const [quotations, setQuotations] = useState([]);
@@ -11,7 +12,7 @@ export default function QuotationItemSelector({ onItemsSelect }) {
 
   // Fetch all quotations on mount
   useEffect(() => {
-    fetch("https://api.panvic.in/quotation/")
+    fetch(`${API_URL}/quotation/`)
       .then((res) => res.json())
       .then((data) => {
         setQuotations(data || []);
@@ -24,7 +25,7 @@ export default function QuotationItemSelector({ onItemsSelect }) {
     if (!selectedQuotation) return;
 
     setLoading(true);
-    fetch(`https://api.panvic.in/quotation/${selectedQuotation}/items/`)
+    fetch(`${API_URL}/quotation/${selectedQuotation}/items/`)
       .then((res) => res.json())
       .then((data) => {
         setItems(data || []);

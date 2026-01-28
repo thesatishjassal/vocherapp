@@ -25,6 +25,7 @@ const SalesOrder = () => {
   });
   const [remarks, setRemarks] = useState("");
   const [userDetails, setUserDetails] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // ✅ FIX: useMemo ensures recalculation happens on change
   const totalAmount = useMemo(() => {
@@ -72,7 +73,7 @@ const SalesOrder = () => {
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/salesorder/", {
+        const response = await fetch(`${API_URL}/salesorder/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -134,7 +135,7 @@ const handleSaveSalesOrder = async () => {
     };
 
     const response = await axios.post(
-      "https://api.panvic.in/salesorder/",
+      `${API_URL}/salesorder/`,
       salesOrderData,
       { headers: { "Content-Type": "application/json" } }
     );
@@ -167,7 +168,7 @@ const handleSaveSalesOrder = async () => {
       };
 
       return axios.post(
-        `https://api.panvic.in/salesorder/${savedSalesOrderId}/items/`,
+        `${API_URL}/salesorder/${savedSalesOrderId}/items/`,
         itemData,
         { headers: { "Content-Type": "application/json" } }
       );

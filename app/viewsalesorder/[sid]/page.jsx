@@ -1,8 +1,9 @@
 import axios from "axios";
 import SalesOrderItemsTable from "../../components/SalesOrderItemsTable"; // Create this similar to QuotationItemsTable
 
-const SALESORDER_API_URL = "https://api.panvic.in/salesorder";
-const CLIENT_API_URL = "https://api.panvic.in/clients/";
+// const SALESORDER_API_URL = "https://api.panvic.in/salesorder";
+// const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default async function ViewSalesOrder({ params }) {
   const { sid } = await params; // dynamic parameter e.g., /salesorder/[id]
@@ -13,7 +14,7 @@ export default async function ViewSalesOrder({ params }) {
 
   try {
     // Fetch Sales Order Details
-    const salesOrderResponse = await axios.get(`${SALESORDER_API_URL}/${sid}`, {
+    const salesOrderResponse = await axios.get(`${API_URL}/salesorder/${sid}`, {
       withCredentials: true,
     });
     if (salesOrderResponse.data) {
@@ -22,7 +23,7 @@ export default async function ViewSalesOrder({ params }) {
       
       // Fetch Client Details
       if (salesOrder.client_id) {
-        const clientResponse = await axios.get(CLIENT_API_URL, {
+        const clientResponse = await axios.get(`${API_URL}/clients`, {
           withCredentials: true,
         });
         client = clientResponse.data.find((c) => c.id === salesOrder.client_id);

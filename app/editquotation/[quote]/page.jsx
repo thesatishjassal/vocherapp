@@ -34,11 +34,12 @@ const EditQuotation = () => {
   const { quote } = useParams();
   const [userDetails, setUserDetails] = useState(null);
 
-  const QUOTATION_API_URL = "https://api.panvic.in/quotation";
-  const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  // const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+  // const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 useEffect(() => {
@@ -56,7 +57,7 @@ useEffect(() => {
     if (!quote) return;
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`${QUOTATION_API_URL}/${quote}`, {
+        const response = await axios.get(`${API_URL}/quotation/${quote}`, {
           withCredentials: true,
         });
         if (response.data) {
@@ -88,7 +89,7 @@ useEffect(() => {
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/clients/`, { withCredentials: true });
       const filteredClient = response.data.find((c) => c.id === client_id);
       if (filteredClient) setClient(filteredClient);
       else toast.error("Client not found!");
@@ -132,7 +133,7 @@ useEffect(() => {
         created_at: new Date().toISOString(),
       };
 
-      await axios.put(`${QUOTATION_API_URL}/${quote}`, quotationData, {
+      await axios.put(`${API_URL}/quotation/${quote}`, quotationData, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
@@ -154,7 +155,7 @@ useEffect(() => {
           item_name: item.itemName || "N/A",
           unit: item.unit || "pcs",
         }));
-        await axios.put(`${QUOTATION_API_URL}/${quote}/items/`, itemsData, {
+        await axios.put(`${API_URL}/quotation/${quote}/items/`, itemsData, {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         });

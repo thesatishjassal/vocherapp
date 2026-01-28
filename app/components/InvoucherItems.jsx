@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const InvoucherTable = ({ invoucherId }) => {
   const [items, setItems] = useState([]);
@@ -11,7 +12,7 @@ const InvoucherTable = ({ invoucherId }) => {
 
     const fetchItems = async () => {
       try {
-        const response = await axios.get(`https://api.panvic.in/invouchers/${invoucherId}/items/`, {
+        const response = await axios.get(`${API_URL}/invouchers/${invoucherId}/items/`, {
           withCredentials: true,
         });
 

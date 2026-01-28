@@ -22,6 +22,7 @@ const AddInvoice = () => {
   const [gstPercentage, setGstPercentage] = useState(0);
   const [remarks, setRemarks] = useState("");
   const [userDetails, setUserDetails] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const closeModal = () => setShowModalClientDetails(false);
 
@@ -70,7 +71,7 @@ const AddInvoice = () => {
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/invouchers/", {
+        const response = await fetch(`${API_URL}/invouchers/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -164,7 +165,7 @@ const AddInvoice = () => {
 
     try {
       // Step 1: Create invoice
-      const invoiceResponse = await fetch("https://api.panvic.in/invouchers/", {
+      const invoiceResponse = await fetch(`${API_URL}/invouchers/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoiceData),
@@ -195,7 +196,7 @@ const AddInvoice = () => {
           comments: item.comments,
         };
 
-        const itemUrl = `https://api.panvic.in/invouchers/${newVoucherId}/items`;
+        const itemUrl = `${API_URL}/invouchers/${newVoucherId}/items`;
         const itemsResponse = await fetch(itemUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -212,7 +213,7 @@ const AddInvoice = () => {
       // ✅ Step 3: Update product stock once for all added items
       try {
         const productIds = new Set(invoiceItems.map((i) => i.itemcode));
-        const productResponse = await fetch("https://api.panvic.in/products/");
+        const productResponse = await fetch(`${API_URL}/invouchers/products/`);
         if (!productResponse.ok) throw new Error("Failed to fetch product list");
         const products = await productResponse.json();
 
@@ -226,7 +227,7 @@ const AddInvoice = () => {
           // Change +addedQty to -addedQty if it's a sales OUT operation
           const newQuantity = (product.quantity || 0) + addedQty;
 
-          const updateRes = await fetch(`https://api.panvic.in/products/${product.id}/`, {
+          const updateRes = await fetch(`${API_URL}/invouchers/products/${product.id}/`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...product, quantity: newQuantity }),

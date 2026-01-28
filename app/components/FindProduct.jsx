@@ -9,6 +9,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // Fetch products from API
   useEffect(() => {
@@ -16,7 +17,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("https://api.panvic.in/products/");
+        const response = await fetch(`${API_URL}/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         // Ensure 'unit' defaults to 'Piece' if not provided

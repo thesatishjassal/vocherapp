@@ -102,7 +102,7 @@ const Quotation = () => {
     const fetchLastQuotationData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("https://api.panvic.in/switch-quotations/", {
+        const response = await fetch(`${API_URL}/switch-quotations/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -185,7 +185,7 @@ const Quotation = () => {
       };
       console.log("Sending quotationData:", quotationData);
       const response = await axios.post(
-        "https://api.panvic.in/switch-quotations/",
+        `${API_URL}/switch-quotations/`,
         quotationData,
         {
           headers: { "Content-Type": "application/json" },

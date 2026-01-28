@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UploadCloud, FileCheck2 } from "lucide-react";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Optional: PropTypes for clarity and type safety
 // import PropTypes from 'prop-types';
@@ -39,7 +40,7 @@ const ExcelUploaderModal = ({ show, onClose }) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://api.panvic.in/import-products/",
+        `${API_URL}/import-products/`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

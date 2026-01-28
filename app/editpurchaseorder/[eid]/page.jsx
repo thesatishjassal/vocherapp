@@ -30,18 +30,19 @@ const EditQuotation = () => {
   );
   const { eid } = useParams();
 
-  const PURCHASEORDER_API_URL = "https://api.panvic.in/purchaseorder";
-  const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  // const PURCHASEORDER_API_URL = "https://api.panvic.in/purchaseorder";
+  // const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   /* -------------------- Load quotation + client -------------------- */
   useEffect(() => {
     if (!eid) return;
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`${PURCHASEORDER_API_URL}/${eid}`, {
+        const response = await axios.get(`${API_URL}/purchaseorder/${eid}`, {
           withCredentials: true,
         });
         if (response.data) {
@@ -73,7 +74,7 @@ const EditQuotation = () => {
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/clients/`, { withCredentials: true });
       const filteredClient = response.data.find((c) => c.id === client_id);
       if (filteredClient) setClient(filteredClient);
       else toast.error("Client not found!");
@@ -114,7 +115,7 @@ const EditQuotation = () => {
           selectedCustomer?.client_id || quotation?.client_id || 3,
       };
 
-      await axios.put(`${PURCHASEORDER_API_URL}/${eid}`, quotationData, {
+      await axios.put(`${API_URL}/purchaseorder/${eid}`, quotationData, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
@@ -136,7 +137,7 @@ const EditQuotation = () => {
           item_name: item.itemName || "N/A",
           unit: item.unit || "pcs",
         }));
-        await axios.put(`${PURCHASEORDER_API_URL}/${eid}/items/`, itemsData, {
+        await axios.put(`${API_URL}/purchaseorder/${eid}/items/`, itemsData, {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         });

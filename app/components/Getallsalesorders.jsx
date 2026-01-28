@@ -5,8 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/salesorder/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetSalesOrdersTable = () => {
   const [salesOrders, setSalesOrders] = useState([]);
@@ -26,7 +25,7 @@ const GetSalesOrdersTable = () => {
 
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/clients/`, { withCredentials: true });
       return response.data.reduce((acc, client) => {
         acc[client.id] = client.businessname;
         return acc;
@@ -42,7 +41,7 @@ const GetSalesOrdersTable = () => {
     const fetchSalesOrders = async () => {
       try {
         const [soResponse, clientsMap] = await Promise.all([
-          axios.get(API_URL, { withCredentials: true }),
+          axios.get(`${API_URL}/salesorder/`, { withCredentials: true }),
           fetchAllClients(),
         ]);
         const salesOrdersWithClientNames = soResponse.data.map((so) => ({
@@ -65,7 +64,7 @@ const GetSalesOrdersTable = () => {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this sales order?")) return;
     try {
-      const response = await axios.delete(`${API_URL}${id}/`, { withCredentials: true });
+      const response = await axios.delete(`${API_URL}/saleorder/${id}/`, { withCredentials: true });
       if (response.status === 204 || response.status === 200) {
         setSalesOrders((prev) => prev.filter((so) => so.salesorder_id !== id));
         toast.success("Sales order deleted successfully!");
@@ -78,7 +77,7 @@ const GetSalesOrdersTable = () => {
   const handleClone = async (id) => {
     if (!confirm("Are you sure you want to clone this sales order?")) return;
     try {
-      const response = await axios.post(`${API_URL}${id}/clone`, {}, { withCredentials: true });
+      const response = await axios.post(`${API_URL}/saleorder/${id}/clone`, {}, { withCredentials: true });
       if (response.status === 200 || response.status === 201) {
         const newSO = {
           ...response.data,
@@ -95,7 +94,7 @@ const GetSalesOrdersTable = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await axios.put(`${API_URL}${id}/`, { status: newStatus }, { withCredentials: true });
+      const response = await axios.put(`${API_URL}/salesorder/${id}/`, { status: newStatus }, { withCredentials: true });
       if (response.status === 200 || response.status === 201) {
         setSalesOrders((prev) =>
           prev.map((so) => (so.salesorder_id === id ? { ...so, status: newStatus } : so))

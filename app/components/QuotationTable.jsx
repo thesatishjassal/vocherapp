@@ -138,7 +138,7 @@ const QuotationTable = ({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/products/");
+        const response = await fetch(`${API_URL}/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         const updatedData = data.map((item) => ({
@@ -441,7 +441,7 @@ const QuotationTable = ({
               {columns.Image && (
                 <td>
                   <img
-                    src={row.image ? `https://api.panvic.in${row.image}` : ""}
+                    src={row.image ? `${API_URL}${row.image}` : ""}
                     alt=""
                     className="product_img thumbnail"
                     style={{ maxHeight: "50px" }}

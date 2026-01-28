@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const SimpleCSVUploader = ({ show, onClose }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -30,7 +31,7 @@ const SimpleCSVUploader = ({ show, onClose }) => {
       setLoading(true);
       toast.info('Uploading file...');
 
-      const response = await fetch('https://api.panvic.in/upload-csv/', {
+      const response = await fetch(`${API_URL}/upload-csv/`, {
         method: 'POST',
         body: formData,
       });

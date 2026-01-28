@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import NewPurchaseOrderItems from "./GetPurchaseOrdersTable";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const PurchaseOrderSourceSelector = ({ onRowsChange, onFinalSubmit }) => {
   const [source, setSource] = useState("sales");
@@ -17,8 +18,8 @@ const PurchaseOrderSourceSelector = ({ onRowsChange, onFinalSubmit }) => {
     const fetchData = async () => {
       try {
         const [salesRes, quoteRes] = await Promise.all([
-          fetch("https://api.panvic.in/salesorder/"),
-          fetch("https://api.panvic.in/quotation/"),
+          fetch(`${API_URL}/salesorder/`),
+          fetch(`${API_URL}/quotation/`),
         ]);
 
         const salesData = await salesRes.json();
@@ -60,8 +61,8 @@ const PurchaseOrderSourceSelector = ({ onRowsChange, onFinalSubmit }) => {
       try {
         const endpoint =
           source === "sales"
-            ? `https://api.panvic.in/salesorder/${selectedId}/items/`
-            : `https://api.panvic.in/quotation/${selectedId}/items/`;
+            ? `${API_URL}/salesorder/${selectedId}/items/`
+            : `${API_URL}/quotation/${selectedId}/items/`;
 
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error("Failed to load items");

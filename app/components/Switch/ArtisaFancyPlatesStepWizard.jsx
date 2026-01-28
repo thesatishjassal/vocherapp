@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-const API_URL =
-  "https://api.panvic.in/csv/read-file/wipro_artisa_fancy_plates.csv";
+// const API_URL =
+//   "https://api.panvic.in/csv/read-file/wipro_artisa_fancy_plates.csv";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ArtisaFancyPlatesStepWizard({ onDataChange }) {
   const [plates, setPlates] = useState([]);
@@ -13,7 +14,7 @@ export default function ArtisaFancyPlatesStepWizard({ onDataChange }) {
 
   /* LOAD FANCY PLATES DATA */
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/csv/read-file/wipro_artisa_fancy_plates.csv`)
       .then((res) => res.json())
       .then((json) => {
         setPlates(json.data || []);

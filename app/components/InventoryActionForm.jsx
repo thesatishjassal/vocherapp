@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const InventoryActionForm = () => {
   const [itemcode, setItemcode] = useState('');
@@ -19,7 +20,7 @@ const InventoryActionForm = () => {
         hold_reason: actionType === 'hold' ? holdReason : null
       };
 
-      const res = await axios.post('https://api.panvic.in/inventory-action/', payload);
+      const res = await axios.post(`${API_URL}/inventory-action/`, payload);
       setMessage(res.data.message);
     } catch (err) {
       setMessage(err.response?.data?.detail || 'Error occurred');

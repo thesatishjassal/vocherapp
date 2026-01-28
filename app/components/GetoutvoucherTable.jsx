@@ -5,7 +5,8 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/outvouchers/";
+// const API_URL = "https://api.panvic.in/outvouchers/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetOutvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
@@ -16,7 +17,7 @@ const GetOutvoucherTable = () => {
   useEffect(() => {
     const fetchInvouchers = async () => {
       try {
-        const response = await axios.get(API_URL, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/outvouchers/`, { withCredentials: true });
         setInvouchers(response.data);
       } catch (error) {
         toast.error("Failed to load vouchers!");
@@ -30,7 +31,7 @@ const GetOutvoucherTable = () => {
     if (!confirm("Are you sure you want to delete this voucher?")) return;
 
     try {
-      const response = await axios.delete(`${API_URL}/${id}`, {
+      const response = await axios.delete(`${API_URL}/outvouchers/${id}`, {
         withCredentials: true,
       });
       console.log("Delete response:", id);

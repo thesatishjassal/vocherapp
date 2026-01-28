@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const Quotation = () => {
   const [infoModal, setInfoModal] = useState(false);
@@ -105,7 +106,7 @@ useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("https://api.panvic.in/quotation/", {
+        const response = await fetch(`${API_URL}/quotation/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -188,7 +189,7 @@ useEffect(() => {
       console.log("Sending quotationData:", quotationData);
 
       const response = await axios.post(
-        "https://api.panvic.in/quotation/",
+        `${API_URL}/quotation/`,
         quotationData,
         {
           headers: { "Content-Type": "application/json" },
@@ -208,7 +209,7 @@ useEffect(() => {
           console.log("Sending itemData:", itemData);
 
           return axios.post(
-            `https://api.panvic.in/quotation/${savedQuotationId}/items/`,
+            `${API_URL}/quotation/${savedQuotationId}/items/`,
             itemData,
             { headers: { "Content-Type": "application/json" } }
           );

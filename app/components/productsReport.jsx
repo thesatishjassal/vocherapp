@@ -166,7 +166,7 @@ const ProductsReport = () => {
                 filteredProducts.map((product, index) => (
                   <tr key={index}>
                     <td>{product.id}</td>
-                    <td><img src={`https://api.panvic.in${product.thumbnail}`} alt="" className="thumnail" /></td>
+                    <td><img src={`${API_URL}${product.thumbnail}`} alt="" className="thumnail" /></td>
                     <td><b style={{'color': '#e75838'}}>{product.rackcode}</b></td>
                     <td>{product.itemcode}</td>
                     <td>{product.itemname}</td>

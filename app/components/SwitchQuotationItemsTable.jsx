@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
@@ -39,7 +40,7 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
         if (selectedRevision) {
           response = await axios.get(
-            `https://api.panvic.in/switch-quotations/?quotation_id=${quotation_id}`,
+            `${API_URL}/switch-quotations/?quotation_id=${quotation_id}`,
             { withCredentials: true }
           );
 
@@ -48,7 +49,7 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           );
         } else {
           response = await axios.get(
-            `https://api.panvic.in/switch-quotations/${quotation_id}`,
+            `${API_URL}/switch-quotations/${quotation_id}`,
             { withCredentials: true }
           );
 

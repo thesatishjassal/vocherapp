@@ -9,7 +9,7 @@ import CustomerModal from "../components/customerModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Cookies from "js-cookie";
-
+ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const Addoutinvoice = () => {
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
@@ -57,7 +57,7 @@ const Addoutinvoice = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://api.panvic.in/products/", {
+      const response = await fetch(`${API_URL}/products/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ const Addoutinvoice = () => {
   useEffect(() => {
     const fetchLastVoucherData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/outvouchers/", {
+        const response = await fetch(`${API_URL}/outvouchers/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -191,7 +191,7 @@ const handleSubmit = async () => {
   try {
     // 1️⃣ Create the Outvoucher
     const voucherResponse = await axios.post(
-      "https://api.panvic.in/outvouchers/",
+      `${API_URL}/outvouchers/`,
       voucherPayload,
       { headers: { "Content-Type": "application/json" } }
     );
@@ -223,7 +223,7 @@ const handleSubmit = async () => {
         comments: row.comments,
       };
       await axios.post(
-        `https://api.panvic.in/outvouchers/${createdVoucherId}/items/`,
+        `${API_URL}/outvouchers/${createdVoucherId}/items/`,
         itemData,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -235,7 +235,7 @@ const handleSubmit = async () => {
       const usedIds = new Set(voucherRows.map((r) => r.itemcode));
 
       // Fetch product list once
-      const productRes = await fetch("https://api.panvic.in/products/");
+      const productRes = await fetch(`${API_URL}/products/`);
       if (!productRes.ok) throw new Error("Failed to fetch product list");
       const products = await productRes.json();
 
@@ -255,7 +255,7 @@ const handleSubmit = async () => {
         );
 
         const updateRes = await fetch(
-          `https://api.panvic.in/products/${product.id}/`,
+          `${API_URL}/products/${product.id}/`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

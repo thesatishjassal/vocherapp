@@ -6,7 +6,8 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 
-const API_URL = "https://api.panvic.in/invouchers/";
+// const API_URL = "https://api.panvic.in/invouchers/";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const InvoucherReoprt = () => {
   const [invouchers, setInvouchers] = useState([]);
@@ -21,7 +22,7 @@ const InvoucherReoprt = () => {
   useEffect(() => {
     const fetchInvouchers = async () => {
       try {
-        const response = await axios.get(API_URL, { withCredentials: true });
+        const response = await axios.get(`${API_URL}/invouchers/`, { withCredentials: true });
         setInvouchers(response.data);
         setFilteredVouchers(response.data);
       } catch (error) {

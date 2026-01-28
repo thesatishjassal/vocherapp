@@ -66,7 +66,7 @@ const SalesOrderItemsTable = ({ salesorder_id, selectedRevision }) => {
       if (!salesorder_id) return;
       setLoading(true);
       try {
-        const response = await axios.get(`https://api.panvic.in/salesorder/${salesorder_id}/items/`);
+        const response = await axios.get(`${API_URL}/salesorder/${salesorder_id}/items/`);
         const enhancedItems = response.data.map(item => {
           const netPrice = item.mrp > 0 
             ? item.mrp * (1 - (item.discount || 0) / 100)

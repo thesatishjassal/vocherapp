@@ -4,8 +4,9 @@ import ArtisaPlatesStepWizard from "./Switch/ArtisaPlatesStepWizard";
 import ArtisaFancyPlatesStepWizard from "./Switch/ArtisaFancyPlatesStepWizard";
 import CustomItemsStep from "./Switch/CustomItems";
 
-const API_URL =
-  "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
+// const API_URL =
+//   "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SwitchStepWizard({ onRowsChange }) {
   const [step, setStep] = useState(1);
@@ -30,7 +31,7 @@ export default function SwitchStepWizard({ onRowsChange }) {
 
   /* LOAD SWITCH DATA */
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/csv/read-file/wipro_artisa_switches.csv`)
       .then((res) => res.json())
       .then((json) => {
         setSwitches(json.data || []);

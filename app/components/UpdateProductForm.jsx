@@ -112,11 +112,11 @@ const UpdateProductForm = ({ show, onClose, onSave, productId }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resCategories = await fetch("https://api.panvic.in/category/");
+        const resCategories = await fetch(`${API_URL}/category/`);
         const categoriesData = await resCategories.json();
         setCategories(categoriesData || []);
 
-        const resSubCategories = await fetch("https://api.panvic.in/subcategory/");
+        const resSubCategories = await fetch(`${API_URL}/subcategory/`);
         const subCategoriesData = await resSubCategories.json();
         setSubCategories(subCategoriesData || []);
       } catch (error) {

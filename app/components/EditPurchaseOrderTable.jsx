@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import ShowHideFilter from "../components/ShowHideFilter";
 import axios from "axios";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Custom debounce hook (unchanged)
 const useDebounce = (callback, delay) => {
@@ -97,7 +98,7 @@ const PurchaseOrderTable = React.memo(({
     const fetchQuotationItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.panvic.in/purchaseorder/${purchaseordereId}/items/`);
+        const response = await fetch(`${API_URL}/purchaseorder/${purchaseordereId}/items/`);
         if (!response.ok) throw new Error("Failed to fetch quotation items");
         const data = await response.json();
         const mappedRows = data.map((item, index) => {
@@ -270,7 +271,7 @@ const PurchaseOrderTable = React.memo(({
           lumens: null,
         };
         const response = await axios.post(
-          `https://api.panvic.in/purchaseorder/${purchaseordereId}/items/`,
+          `${API_URL}/purchaseorder/${purchaseordereId}/items/`,
           newItem,
           { withCredentials: true }
         );
@@ -357,7 +358,7 @@ const PurchaseOrderTable = React.memo(({
       try {
         const calculatedAmount = Number(editRow.qty || 0) * Number(editRow.netPrice || 0);
         const response = await axios.put(
-          `https://api.panvic.in/purchaseorder/${purchaseordereId}/items/${editRow.id}/`,
+          `${API_URL}/purchaseorder/${purchaseordereId}/items/${editRow.id}/`,
           {
             product_id: editRow.itemCode || "",
             customercode: editRow.customerCode || "",
@@ -418,7 +419,7 @@ const PurchaseOrderTable = React.memo(({
       const itemId = row.id;
       const amountToSubtract = row.amount;
       try {
-        await axios.delete(`https://api.panvic.in/quotation/${purchaseordereId}/items/${itemId}/`, {
+        await axios.delete(`${API_URL}/quotation/${purchaseordereId}/items/${itemId}/`, {
           withCredentials: true,
         });
         setRows((prevRows) => prevRows.filter((_, i) => i !== index));

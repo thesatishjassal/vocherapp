@@ -12,6 +12,7 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
   const [editingClient, setEditingClient] = useState(null);
   const [filteredClients, setFilteredClients] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // 🧠 Assuming userdetails are stored in localStorage (you can adapt if you use a context or cookies)
     useEffect(() => {
@@ -42,7 +43,7 @@ const GetClients = ({ clients, newClientId, refreshClients }) => {
   const handleDelete = async (clientId) => {
     if (!confirm("Are you sure you want to delete this client?")) return;
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/${clientId}/`, {
+      const response = await fetch(`${API_URL}/client/${clientId}/`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });

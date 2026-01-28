@@ -6,9 +6,10 @@ import { toast } from "react-toastify";
 // import QuotationItemsTable from "../../components/QuotationItemsTable";
 import SalesItemsTable from "../../components/SalesItemsTable";
 
-const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
-const QUOTATION_API_URL = "https://api.panvic.in/quotation";
-const CLIENT_API_URL = "https://api.panvic.in/clients/";
+// const HISTORY_API_URL = "https://api.panvic.in/quotation-history/";
+// const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+// const CLIENT_API_URL = "https://api.panvic.in/clients/";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ViewSales = () => {
   const { sales } = useParams();
@@ -23,7 +24,7 @@ const ViewSales = () => {
 
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`${QUOTATION_API_URL}/${sales}`, {
+        const response = await axios.get(`${API_URL}/quotation/${sales}`, {
           withCredentials: true,
         });
         if (response.data) {
@@ -46,7 +47,7 @@ const ViewSales = () => {
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
+      const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
       const filteredClient = response.data.find((c) => c.id === client_id);
@@ -63,7 +64,7 @@ const ViewSales = () => {
   const fetchRevisionHistory = async (quotationId) => {
     try {
       const response = await axios.get(
-        `${HISTORY_API_URL}?quotation_id=${quotationId}`,
+        `${API_URL}/quotation-history/?quotation_id=${quotationId}`,
         {
           withCredentials: true,
         }

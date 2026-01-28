@@ -16,6 +16,7 @@ const CatalogueUploadModal = ({ showModal, setShowModal, refreshCatalogues, edit
     created_by: "",
   });
   const [mode, setMode] = useState("add");  // "add" or "edit"
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     // Try to get the user_details cookie
@@ -81,12 +82,12 @@ const CatalogueUploadModal = ({ showModal, setShowModal, refreshCatalogues, edit
       setIsSubmitting(true);
       let response;
       if (mode === "edit" && editingItem?.id) {
-        response = await axios.put(`https://api.panvic.in/catalogues/${editingItem.id}`, submitData, {
+        response = await axios.put(`${API_URL}/catalogues/${editingItem.id}`, submitData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Catalogue updated successfully!");
       } else {
-        response = await axios.post("https://api.panvic.in/catalogues/upload", submitData, {
+        response = await axios.post(`${API_URL}/catalogues/upload`, submitData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Catalogue added successfully!");

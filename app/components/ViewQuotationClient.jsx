@@ -7,9 +7,10 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
-const QUOTATION_API_URL = "https://api.panvic.in/quotation";
-const CLIENT_API_URL = "https://api.panvic.in/clients/";
+// const QUOTATION_API_URL = "https://api.panvic.in/quotation";
+// const CLIENT_API_URL = "https://api.panvic.in/clients/";
 import Cookies from "js-cookie";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ClientViewQuotation({ quote }) {
   const [userDetails, setUserDetails] = useState(null);
@@ -114,7 +115,7 @@ const isGstExcluded = useMemo(() => {
         setError(null);
         // Fetch Quotation
         const quotationResponse = await axios.get(
-          `${QUOTATION_API_URL}/${quote}`,
+          `${API_URL}/quotations/${quote}`,
           {
             withCredentials: true,
           }
@@ -124,7 +125,7 @@ const isGstExcluded = useMemo(() => {
           setQuotation(quotationResponse.data);
           // Fetch Client
           if (quotationResponse.data.client_id) {
-            const clientResponse = await axios.get(CLIENT_API_URL, {
+            const clientResponse = await axios.get(`${API_URL}/clients`, {
               withCredentials: true,
             });
             const foundClient = clientResponse.data.find(

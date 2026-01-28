@@ -5,8 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/purchaseorder/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetPurchaseOrderTable = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -25,7 +24,7 @@ const GetPurchaseOrderTable = () => {
 
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/clients/`, { withCredentials: true });
       return response.data.reduce((acc, client) => {
         acc[client.id] = client.businessname;
         return acc;
@@ -41,7 +40,7 @@ const GetPurchaseOrderTable = () => {
     const fetchPurchaseOrders = async () => {
       try {
         const [poResponse, clientsMap] = await Promise.all([
-          axios.get(API_URL, { withCredentials: true }),
+          axios.get(`${API_URL}/purchaseorder/`, { withCredentials: true }),
           fetchAllClients(),
         ]);
 

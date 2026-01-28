@@ -10,6 +10,7 @@ import OutvoucherTable from "../../components/viewOutvocuherTable";
 
 const INVOCHER_API_URL = "https://api.panvic.in/outvouchers";
 const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const OutvoucherDetail = () => {
   const { otvd } = useParams();
@@ -24,7 +25,7 @@ const OutvoucherDetail = () => {
 
     const fetchVoucher = async () => {
       try {
-        const response = await axios.get(`${INVOCHER_API_URL}/${otvd}`, {
+        const response = await axios.get(`${API_URL}/outvouchers/${otvd}`, {
           withCredentials: true,
         });
         console.log(response.data);
@@ -49,7 +50,7 @@ const OutvoucherDetail = () => {
   // Fetch Client Details
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
+      const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
       const filteredClient = response.data.find((c) => c.id === client_id);

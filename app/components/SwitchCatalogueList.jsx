@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
   const [data, setData] = useState([]);
@@ -21,7 +22,7 @@ const CatalogueList = ({ refreshCatalogues, onEdit, onDelete }) => {
   const fetchCatalogues = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://api.panvic.in/catalogues/list");
+      const response = await axios.get(`${API_URL}/catalogues/list`);
       const formattedData = response.data.map((item) => ({
         id: item.id,
         name: item.name,

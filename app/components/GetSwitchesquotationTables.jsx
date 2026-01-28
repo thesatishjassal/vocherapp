@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import ArtisaPlatesStepWizard from "./Switch/ArtisaPlatesStepWizard";
 import ArtisaFancyPlatesStepWizard from "./Switch/ArtisaFancyPlatesStepWizard";
 import CustomItemsStep from "./Switch/CustomItems";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const API_URL =
-  "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
+// const API_URL =
+//   "https://api.panvic.in/csv/read-file/wipro_artisa_switches.csv";
 
 export default function GetSwitchesquotationTables({
   onTotalChange,
@@ -23,7 +24,7 @@ export default function GetSwitchesquotationTables({
 
   /* ================= PLATES ================= */
   const [platesJson, setPlatesJson] = useState([]);
-
+ 
   /* ================= FANCY PLATES ================= */
   const [fancyPlatesJson, setFancyPlatesJson] = useState([]);
 
@@ -35,7 +36,7 @@ export default function GetSwitchesquotationTables({
 
   /* ================= LOAD SWITCHES ================= */
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/csv/read-file/wipro_artisa_switches.csv`)
       .then((res) => res.json())
       .then((json) => {
         setSwitches(json.data || []);

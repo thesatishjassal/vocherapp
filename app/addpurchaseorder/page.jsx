@@ -8,6 +8,7 @@ import GSTCalculator from "../components/GSTCalculator";
 // import NewPurchaseOrderItems from "../components/GetPurchaseOrdersTable";
 import PurchaseOrderSourceSelector from "../components/PurchaseOrderSourceSelector";
 import Cookies from "js-cookie";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const AddPurchaseOrder = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -73,7 +74,7 @@ const AddPurchaseOrder = () => {
   useEffect(() => {
     const fetchLastSalesOrderData = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/purchaseorder/", {
+        const response = await fetch(`${API_URL}/purchaseorder/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -136,7 +137,7 @@ const AddPurchaseOrder = () => {
       };
 
       const response = await axios.post(
-        "https://api.panvic.in/purchaseorder/",
+        `${API_URL}/purchaseorder/`,
         salesOrderData,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -169,7 +170,7 @@ const AddPurchaseOrder = () => {
         };
 
         return axios.post(
-          `https://api.panvic.in/purchaseorder/${purchaseorder_id}/items/`,
+          `${API_URL}/purchaseorder/${purchaseorder_id}/items/`,
           itemData,
           { headers: { "Content-Type": "application/json" } }
         );

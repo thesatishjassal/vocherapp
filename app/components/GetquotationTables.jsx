@@ -5,8 +5,9 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
-const API_URL = "https://api.panvic.in/quotation/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+// const API_URL = "https://api.panvic.in/quotation/";
+// const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetQuotationTables = () => {
   const [quotations, setQuotations] = useState([]);
@@ -38,7 +39,7 @@ const GetQuotationTables = () => {
 
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, {
+      const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
       return response.data.reduce((acc, client) => {
@@ -56,7 +57,7 @@ const GetQuotationTables = () => {
     const fetchQuotations = async () => {
       try {
         const [quotationsResponse, clientsMap] = await Promise.all([
-          axios.get(API_URL, { withCredentials: true }),
+          axios.get(`${API_URL}/quotation/`, { withCredentials: true }),
           fetchAllClients(),
         ]);
         const quotationsWithClientNames = quotationsResponse.data.map((q) => ({
@@ -79,7 +80,7 @@ const GetQuotationTables = () => {
   const handleDelete = async (quotationId) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return;
     try {
-      const response = await axios.delete(`${API_URL}${quotationId}/`, {
+      const response = await axios.delete(`${API_URL}/quotation/${quotationId}/`, {
         withCredentials: true,
       });
       if (response.status === 204 || response.status === 200) {
@@ -98,7 +99,7 @@ const GetQuotationTables = () => {
     if (!confirm("Are you sure you want to clone this quotation?")) return;
     try {
       const response = await axios.post(
-        `${API_URL}${quotationId}/clone`,
+        `${API_URL}/quotation/${quotationId}/clone`,
         {},
         {
           withCredentials: true,
@@ -128,7 +129,7 @@ const GetQuotationTables = () => {
   const handleStatusChange = async (quotationId, newStatus) => {
     try {
       const response = await axios.put(
-        `${API_URL}${quotationId}/`,
+        `${API_URL}/quotation/${quotationId}/`,
         { status: newStatus },
         { withCredentials: true }
       );

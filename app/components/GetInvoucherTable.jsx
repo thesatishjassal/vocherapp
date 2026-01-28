@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/invouchers/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetInvoucherTable = () => {
   const [invouchers, setInvouchers] = useState([]);
@@ -14,7 +14,7 @@ const GetInvoucherTable = () => {
   useEffect(() => {
     const fetchInvouchers = async () => {
       try {
-        const response = await axios.get(API_URL, {
+        const response = await axios.get(`${API_URL}/invouchers/`, {
           withCredentials: true,
         });
         setInvouchers(response.data.reverse());
@@ -30,7 +30,7 @@ const GetInvoucherTable = () => {
     if (!confirm("Are you sure you want to delete this voucher?")) return;
 
     try {
-      const response = await axios.delete(`${API_URL}/${voucherId}`, {
+      const response = await axios.delete(`${API_URL}/invouchers/${voucherId}`, {
         withCredentials: true,
       });
 

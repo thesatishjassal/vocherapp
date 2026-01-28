@@ -32,8 +32,8 @@ const EditSaleOrder = () => {
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("1 year warranty against manufacturing defects"); // State for warranty/guarantee textarea
   const { sales } = useParams();
   console.log("Sales Order ID from URL:", sales); 
-  const SALESORDER_API_URL = "https://api.panvic.in/salesorders";
-  const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  // const SALESORDER_API_URL = "https://api.panvic.in/salesorders";
+  // const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ const EditSaleOrder = () => {
 
     const fetchQuotation = async () => {
       try {
-        const response = await axios.get(`${SALESORDER_API_URL}/${sales}/`, {
+        const response = await axios.get(`${API_URL}/salesorders/${sales}/`, {
           withCredentials: true,
         });
         console.log("Data", response.data);
@@ -76,7 +76,7 @@ const EditSaleOrder = () => {
 
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
+      const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
 
@@ -140,7 +140,7 @@ const EditSaleOrder = () => {
       console.log("Quotation data to be sent:", quotationData);
 
       const quotationResponse = await axios.put(
-        `${SALESORDER_API_URL}/${sales}`,
+        `${API_URL}/salesorders/${sales}`,
         quotationData,
         {
           headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ const EditSaleOrder = () => {
         console.log("Items data to be sent as a list:", itemsData);
 
         const itemsResponse = await axios.put(
-          `${SALESORDER_API_URL}/${sales}/items/`,
+          `${API_URL}/salesorders/${sales}/items/`,
           itemsData,
           {
             headers: { "Content-Type": "application/json" },

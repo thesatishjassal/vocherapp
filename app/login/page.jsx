@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState("select"); // select | manual
   const [users, setUsers] = useState([]);
   const [loadingUser, setLoadingUser] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // NEW STATES for password confirmation
   const [selectedUser, setSelectedUser] = useState(null);
@@ -26,7 +27,7 @@ export default function LoginPage() {
   // Fetch users
   useEffect(() => {
     axios
-      .get("https://api.panvic.in/users/")
+      .get(`${API_URL}/users/`)
       .then((res) => {
         setUsers(res.data);
         console.log(res.data);
@@ -54,7 +55,7 @@ export default function LoginPage() {
 
     try {
       const res = await axios.post(
-        "https://api.panvic.in/login/",
+        `${API_URL}/login/`,
         JSON.stringify(values),
         {
           headers: { "Content-Type": "application/json" },
@@ -95,7 +96,7 @@ export default function LoginPage() {
 
       try {
         const res = await axios.post(
-          "https://api.panvic.in/login/",
+          `${API_URL}/login/`,
           JSON.stringify(values),
           {
             headers: { "Content-Type": "application/json" },

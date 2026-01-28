@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 // import { FiPlusCircle } from "react-icons/fi";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const PurchaseOrderItemsTable = ({ purchaseorder_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
@@ -66,7 +67,7 @@ const PurchaseOrderItemsTable = ({ purchaseorder_id, selectedRevision }) => {
       if (!purchaseorder_id) return;
       setLoading(true);
       try {
-        const response = await axios.get(`https://api.panvic.in/purchaseorder/${purchaseorder_id}/items/`);
+        const response = await axios.get(`${API_URL}/purchaseorder/${purchaseorder_id}/items/`);
         const enhancedItems = response.data.map(item => {
           const netPrice = item.mrp > 0 
             ? item.mrp * (1 - (item.discount || 0) / 100)

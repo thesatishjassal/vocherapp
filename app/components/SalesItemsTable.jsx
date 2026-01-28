@@ -30,7 +30,7 @@ const SalesItemsTable = ({ quotation_id, selectedRevision }) => {
         if (selectedRevision) {
           // Fetch from history API and filter by edited_at
           response = await axios.get(
-            `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
+            `${API_URL}/quotation-history/?quotation_id=${quotation_id}`,
             { withCredentials: true }
           );
           const filteredItems = response.data.filter(
@@ -40,7 +40,7 @@ const SalesItemsTable = ({ quotation_id, selectedRevision }) => {
         } else {
           // Fetch current items if no revision is selected
           response = await axios.get(
-            `https://api.panvic.in/quotation/${quotation_id}/items/`,
+            `${API_URL}/quotation/${quotation_id}/items/`,
             { withCredentials: true }
           );
           setItems(response.data);

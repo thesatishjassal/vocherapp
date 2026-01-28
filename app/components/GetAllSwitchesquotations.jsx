@@ -5,8 +5,9 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const API_URL = "https://api.panvic.in/switch-quotations/";
-const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+// const API_URL = "https://api.panvic.in/switch-quotations/";
+// const CLIENTS_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetAllSwitchesquotations = () => {
   const [quotations, setQuotations] = useState([]);
@@ -26,7 +27,7 @@ const GetAllSwitchesquotations = () => {
 
   const fetchAllClients = async () => {
     try {
-      const response = await axios.get(CLIENTS_API_URL, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/clients/`, { withCredentials: true });
       return response.data.reduce((acc, client) => {
         acc[client.id] = client.businessname;
         return acc;
@@ -42,7 +43,7 @@ const GetAllSwitchesquotations = () => {
     const fetchQuotations = async () => {
       try {
         const [qtResponse, clientsMap] = await Promise.all([
-          axios.get(API_URL, { withCredentials: true }),
+          axios.get(`${API_URL}/switch-quotations/`, { withCredentials: true }),
           fetchAllClients(),
         ]);
         const quotationsWithClientNames = qtResponse.data.map((qt) => ({
@@ -65,7 +66,7 @@ const GetAllSwitchesquotations = () => {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return;
     try {
-      const response = await axios.delete(`${API_URL}${id}/`, { withCredentials: true });
+      const response = await axios.delete(`${API_URL}/switch-quotations/${id}/`, { withCredentials: true });
       if (response.status === 204 || response.status === 200) {
         setQuotations((prev) => prev.filter((qt) => qt.quotation_id !== id));
         toast.success("Quotation deleted successfully!");
@@ -77,7 +78,7 @@ const GetAllSwitchesquotations = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await axios.put(`${API_URL}${id}/`, { status: newStatus }, { withCredentials: true });
+      const response = await axios.put(`${API_URL}/switch-quotations/${id}/`, { status: newStatus }, { withCredentials: true });
       if (response.status === 200 || response.status === 201) {
         setQuotations((prev) =>
           prev.map((qt) => (qt.quotation_id === id ? { ...qt, status: newStatus } : qt))
@@ -171,9 +172,9 @@ const formatDateTime = (isoString) => {
               <tr>
                 <th>Sr.No</th>
                 <th>Date</th>
-                <th className="d-none d-md-table-cell">ID</th>
-                <th>Client Name</th>
+                {/* <th className="d-none d-md-table-cell">ID</th> */}
                 <th>Quotation No</th>
+                <th>Client Name</th>
                 <th className="d-none d-lg-table-cell">Salesperson</th>
                 <th>Subject</th>
                 <th className="d-none d-lg-table-cell">Without GST</th>
@@ -189,9 +190,9 @@ const formatDateTime = (isoString) => {
                   <tr key={qt.quotation_id}>
                     <td>{index + 1}</td>
                     <td>{formatDateTime(qt.created_at)}</td>
-                    <td className="d-none d-md-table-cell">{qt.quotation_id}</td>
-                    <td>{qt.client_name || "N/A"}</td>
+                    {/* <td className="d-none d-md-table-cell">{qt.quotation_id}</td> */}
                     <td>{formatQuotationNo(qt.quotation_no)}</td>
+                    <td>{qt.client_name || "N/A"}</td>
                     <td className="d-none d-lg-table-cell">{qt.salesperson}</td>
                     <td>{qt.subject || "N/A"}</td>
                     <td className="d-none d-lg-table-cell">{qt.without_gst}</td>

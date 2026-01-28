@@ -4,7 +4,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import AddProductModal from "./SalesAddProductModal";
 
-const QUOTATION_API_URL = "https://api.panvic.in/quotation/";
+// const QUOTATION_API_URL = "https://api.panvic.in/quotation/";
+ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GetSalesOrdersByQuotation = ({ onRowsChange }) => {
   const [salesOrders, setSalesOrders] = useState([]);
@@ -39,7 +40,7 @@ const GetSalesOrdersByQuotation = ({ onRowsChange }) => {
 
   useEffect(() => {
     axios
-      .get(QUOTATION_API_URL)
+      .get(`${API_URL}/quotation/`)
       .then((res) => setQuotations(res.data))
       .catch(() => toast.error("Failed to load quotations"));
   }, []);
@@ -48,7 +49,7 @@ const GetSalesOrdersByQuotation = ({ onRowsChange }) => {
     if (!selectedQuotation) return;
     setLoadingItems(true);
     axios
-      .get(`${QUOTATION_API_URL}${selectedQuotation}/items/`)
+      .get(`${API_URL}/quotation/${selectedQuotation}/items/`)
       .then((res) => setQuotationItems(res.data))
       .catch(() => toast.error("Failed to load quotation items"))
       .finally(() => setLoadingItems(false));

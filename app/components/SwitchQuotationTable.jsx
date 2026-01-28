@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import ArtisaSwitchColorSelector from "./ArtisaSwitchColorSelector";
 import NowaSwitchColorSelector from "./NowaSwitchColorSelector";
 import VeniaSwitchColorSelector from "./VeniaSwitchColorSelector";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
@@ -174,7 +175,7 @@ const SwitchQuotatTable = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://api.panvic.in/products/");
+        const response = await fetch(`${API_URL}/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
 
@@ -446,7 +447,7 @@ const SwitchQuotatTable = () => {
     setLoading(true);
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://api.panvic.in/products/");
+        const response = await fetch(`${API_URL}/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
 

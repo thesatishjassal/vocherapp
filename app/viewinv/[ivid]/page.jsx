@@ -8,8 +8,9 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import InvoucherTable from "../../components/InvoucherItems";
 
-const INVOCHER_API_URL = "https://api.panvic.in/invouchers";
-const CLIENT_API_URL = "https://api.panvic.in/clients/";
+// const INVOCHER_API_URL = "https://api.panvic.in/invouchers";
+// const CLIENT_API_URL = "https://api.panvic.in/clients/";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const InvoucherDetail = () => {
   const { ivid } = useParams();
@@ -24,7 +25,7 @@ const InvoucherDetail = () => {
 
     const fetchVoucher = async () => {
       try {
-        const response = await axios.get(`${INVOCHER_API_URL}/${ivid}`, {
+        const response = await axios.get(`${API_URL}/invouchers/${ivid}`, {
           withCredentials: true,
         });
         console.log(response.data);
@@ -49,7 +50,7 @@ const InvoucherDetail = () => {
   // Fetch Client Details
   const fetchClient = async (client_id) => {
     try {
-      const response = await axios.get(CLIENT_API_URL, {
+      const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
       const filteredClient = response.data.find((c) => c.id === client_id);
