@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { FiPlusCircle } from "react-icons/fi";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
@@ -36,7 +35,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_URL}/products/`);
+        const res = await axios.get("https://api.panvic.in/products/");
         const productMap = {};
         res.data.forEach((prod) => {
           productMap[prod.itemcode] = prod;
@@ -70,7 +69,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
         let mappedItems;
         if (selectedRevision) {
           response = await axios.get(
-            `${API_URL}/quotation-history/?quotation_id=${quotation_id}`,
+            `https://api.panvic.in/quotation-history/?quotation_id=${quotation_id}`,
             { withCredentials: true }
           );
           const filteredItems = response.data.filter(
@@ -78,16 +77,16 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           );
           mappedItems = filteredItems.map((item) => ({
             ...item,
-            preview: item.image ? `${API_URL}/quotation/${item.image}` : null,
+            preview: item.image ? `https://api.panvic.in${item.image}` : null,
           }));
         } else {
           response = await axios.get(
-            `${API_URL}/quotation/${quotation_id}/items/`,
+            `https://api.panvic.in/quotation/${quotation_id}/items/`,
             { withCredentials: true }
           );
           mappedItems = response.data.map((item) => ({
             ...item,
-            preview: item.image ? `${API_URL}/quotation/${item.image}` : null,
+            preview: item.image ? `https://api.panvic.in${item.image}` : null,
           }));
         }
         // Sort by position if available
@@ -126,7 +125,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       formData.append("file", file);
 
       const response = await axios.put(
-        `${API_URL}/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
+        `https://api.panvic.in/quotation/${quotation_id}/items/${updatedItems[index].id}/image`,
         formData,
         {
           withCredentials: true,
@@ -136,7 +135,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
       updatedItems[index] = {
         ...updatedItems[index],
-        preview: `${API_URL}${response.data.image_url}`,
+        preview: `https://api.panvic.in${response.data.image_url}`,
       };
       setItems(updatedItems);
 
@@ -224,7 +223,7 @@ const saveOrder = async () => {
     await Promise.all(
       newItems.map((item, i) =>
         axios.patch(
-          `${API_URL}/quotation/${quotation_id}/items/${item.id}`,
+          `https://api.panvic.in/quotation/${quotation_id}/items/${item.id}`,
           {
             product_id: item.product_id,
             customercode: item.customercode,
