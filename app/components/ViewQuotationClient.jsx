@@ -125,7 +125,7 @@ const isGstExcluded = useMemo(() => {
           setQuotation(quotationResponse.data);
           // Fetch Client
           if (quotationResponse.data.client_id) {
-            const clientResponse = await axios.get(`${API_URL}/clients`, {
+            const clientResponse = await axios.get(`${API_URL}/clients/`, {
               withCredentials: true,
             });
             const foundClient = clientResponse.data.find(
