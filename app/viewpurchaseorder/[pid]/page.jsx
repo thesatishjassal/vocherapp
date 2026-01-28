@@ -23,7 +23,7 @@ export default async function ViewSalesOrder({ params }) {
       
       // Fetch Client Details
       if (salesOrder.client_id) {
-        const clientResponse = await axios.get(`${API_URL}/clients`, {
+        const clientResponse = await axios.get(`${API_URL}/clients/`, {
           withCredentials: true,
         });
         client = clientResponse.data.find((c) => c.id === salesOrder.client_id);
