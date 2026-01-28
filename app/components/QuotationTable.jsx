@@ -29,7 +29,7 @@ const QuotationTable = ({
     Amount: true,
   });
   const [editRowIndex, setEditRowIndex] = useState(null);
-
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [newRow, setNewRow] = useState({
     customerCode: "",
     customerDescription: "",
