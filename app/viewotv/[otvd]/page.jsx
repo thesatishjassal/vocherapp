@@ -8,8 +8,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import OutvoucherTable from "../../components/viewOutvocuherTable";
 
-const INVOCHER_API_URL = "https://api.panvic.in/outvouchers";
-const CLIENT_API_URL = "https://api.panvic.in/clients/";
+// const INVOCHER_API_URL = "https://api.panvic.in/outvouchers";
+// const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const OutvoucherDetail = () => {

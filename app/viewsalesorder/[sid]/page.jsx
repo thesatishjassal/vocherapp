@@ -13,7 +13,7 @@ export default async function ViewSalesOrder({ params }) {
   let error = null;
 
   try {
-    // Fetch Sales Order Details
+    // Fetch Sales Order 
     const salesOrderResponse = await axios.get(`${API_URL}/salesorder/${sid}`, {
       withCredentials: true,
     });

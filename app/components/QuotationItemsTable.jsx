@@ -224,7 +224,7 @@ const saveOrder = async () => {
     await Promise.all(
       newItems.map((item, i) =>
         axios.patch(
-          `${API_URL}/quotation/${quotation_id}/items/${item.id}`,
+          `${API_URL}/quotation/quotation/${quotation_id}/items/${item.id}`,
           {
             product_id: item.product_id,
             customercode: item.customercode,
