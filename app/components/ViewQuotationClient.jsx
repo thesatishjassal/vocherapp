@@ -374,6 +374,13 @@ const isGstExcluded = useMemo(() => {
                   the date of order.
                 </b>
               </p>
+                 <p>
+                {/* Installation & Fixing: */}
+                <b>
+ Material will take 2 weeks  from date of order.
+                </b>
+              </p>
+             
               <p>
                 Freight Charges: <b>Extra as per actual.</b>
               </p>
