@@ -89,6 +89,7 @@ export default function ClientViewQuotation({ quote }) {
     if (userDetailsCookie) {
       try {
         setUserDetails(JSON.parse(userDetailsCookie));
+        console.log("User details loaded from cookie:", userDetails);
       } catch (err) {
         console.error("Invalid cookie JSON:", err);
       }
@@ -254,7 +255,7 @@ const isGstExcluded = useMemo(() => {
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Contact no: <b> 94172-81252,98150-37755 </b> <br />
                 Email id: <b> panviklighting@gmail.com </b> <br />
-                Salesperson: {quotation && <b>{quotation.salesperson} </b>} |
+                Salesperson: {userDetails && <b>{userDetails.name} </b>} |
                 Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
