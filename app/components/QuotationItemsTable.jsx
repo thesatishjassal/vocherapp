@@ -12,7 +12,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
@@ -91,7 +91,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
           }));
         }
         // Sort by position if available
-        const sortedItems = mappedItems.sort((a, b) => (a.position || 0) - (b.position || 0));
+        const sortedItems = mappedItems.sort(
+          (a, b) => (a.position || 0) - (b.position || 0)
+        );
         setItems(sortedItems);
       } catch (error) {
         console.error("Error fetching quotation items:", error);
@@ -219,58 +221,57 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
     setItems(newItems);
 
     // Save the new order to the backend
-const saveOrder = async () => {
-  try {
-    await Promise.all(
-      newItems.map((item, i) =>
-        axios.patch(
-          `${API_URL}/quotation/quotation/${quotation_id}/items/${item.id}`,
+    const saveOrder = async () => {
+      try {
+        await Promise.all(
+          newItems.map((item, i) =>
+            axios.patch(
+              `${API_URL}/quotation/quotation/${quotation_id}/items/${item.id}`,
 
-          {
-            product_id: item.product_id,
-            customercode: item.customercode,
-            customerdescription: item.customerdescription,
-            image: item.image,
-            itemcode: item.itemcode,
-            brand: item.brand,
-            mrp: item.mrp,
-            netPrice: item.netPrice,
-            price: item.price,
-            quantity: item.quantity,
-            discount: item.discount,
-            item_name: item.item_name,
-            unit: item.unit,
-            amount: item.amount,
-            amount_including_gst: item.amount_including_gst,
-            without_gst: item.without_gst,
-            gst_amount: item.gst_amount,
-            amount_with_gst: item.amount_with_gst,
-            remarks: item.remarks,
-            position: i, // ✅ updated order
-          },
-          { withCredentials: true }
-        )
-      )
-    );
+              {
+                product_id: item.product_id,
+                customercode: item.customercode,
+                customerdescription: item.customerdescription,
+                image: item.image,
+                itemcode: item.itemcode,
+                brand: item.brand,
+                mrp: item.mrp,
+                netPrice: item.netPrice,
+                price: item.price,
+                quantity: item.quantity,
+                discount: item.discount,
+                item_name: item.item_name,
+                unit: item.unit,
+                amount: item.amount,
+                amount_including_gst: item.amount_including_gst,
+                without_gst: item.without_gst,
+                gst_amount: item.gst_amount,
+                amount_with_gst: item.amount_with_gst,
+                remarks: item.remarks,
+                position: i, // ✅ updated order
+              },
+              { withCredentials: true }
+            )
+          )
+        );
 
-    toast.success("Row reordered and saved successfully!");
-  } catch (error) {
-    console.error("Error saving order:", error);
-    toast.error("Failed to save order!");
-  }
-};
-
+        toast.success("Row reordered and saved successfully!");
+      } catch (error) {
+        console.error("Error saving order:", error);
+        toast.error("Failed to save order!");
+      }
+    };
 
     saveOrder();
   };
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
-const roundToRupee = (val) => {
-  const n = Number(val);
-  if (isNaN(n)) return val;
-  return Math.round(n); // .50+ up, else floor
-};
+  const roundToRupee = (val) => {
+    const n = Number(val);
+    if (isNaN(n)) return val;
+    return Math.round(n); // .50+ up, else floor
+  };
 
   return (
     <div className="relative overflow-x-auto">
@@ -451,9 +452,7 @@ const roundToRupee = (val) => {
                 {visibleColumns.customerDescription && (
                   <td>{item.customerdescription}</td>
                 )}
-                 {visibleColumns.itemCode && (
-                  <td>{item.itemcode}</td>
-                )}
+                {visibleColumns.itemCode && <td>{item.itemcode}</td>}
                 {visibleColumns.itemName && (
                   <td>
                     <div>{item.item_name}</div>
@@ -486,37 +485,41 @@ const roundToRupee = (val) => {
                         ? `Cutout Size: ${
                             product.cutoutsize ?? product.cutoutdia
                           } | `
-                          : null}
-
+                        : null}
+                      {/*  Size */}
+                      {(product?.size && product.size !== "0") ||
+                      (product?.size && product.size !== "0")
+                        ? `Size: ${product.size ?? product.size} | `
+                        : null}
                       {/* Beam Angle */}
                       {(product?.beamangle &&
                         product.beamangle !== "NULL" &&
                         product.beamangle !== "0") ||
-                        (item?.beamangle && item.beamangle !== "0")
+                      (item?.beamangle && item.beamangle !== "0")
                         ? `Beam Angle: ${
-                          product?.beamangle ?? item?.beamangle
-                        }° | `
+                            product?.beamangle ?? item?.beamangle
+                          }° | `
                         : null}
 
                       {/* CRI */}
                       {(product?.cri &&
                         product.cri !== "NONE" &&
                         product.cri !== "0") ||
-                        (item?.Cri && item.Cri !== "0")
+                      (item?.Cri && item.Cri !== "0")
                         ? `CRI: ${product?.cri ?? item?.Cri} | `
                         : null}
 
                       {/* Body Color */}
                       {(product?.color && product.color !== "0") ||
                       (item?.bodycolor && item.bodycolor !== "0")
-                      ? `Body Color: ${product?.color ?? item?.bodycolor} | `
-                      : null}
+                        ? `Body Color: ${product?.color ?? item?.bodycolor} | `
+                        : null}
 
                       {/* Light Color */}
                       {(product?.lightcolor &&
                         product.lightcolor !== "NULL" &&
                         product.lightcolor !== "0") ||
-                        (item?.lightcolor && item.lightcolor !== "0")
+                      (item?.lightcolor && item.lightcolor !== "0")
                         ? `Light Color: ${
                             product?.lightcolor ?? item?.lightcolor
                           } | `
@@ -526,7 +529,7 @@ const roundToRupee = (val) => {
                       {(product?.lumens &&
                         product.lumens !== "NONE" &&
                         product.lumens !== "0") ||
-                        (item?.lumens && item.lumens !== "0")
+                      (item?.lumens && item.lumens !== "0")
                         ? `Lumens: ${product?.lumens ?? item?.lumens}`
                         : null}
                     </span>
@@ -540,27 +543,26 @@ const roundToRupee = (val) => {
                 {visibleColumns.mrp && <td>{roundToRupee(item.mrp)}</td>}
 
                 {visibleColumns.discount && <td>{item.discount}%</td>}
-    {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
+                {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
 
-{visibleColumns.netPrice && (
-  <td>
-    {roundToRupee(
-      Number(item.mrp) *
-      (1 - (Number(item.discount) || 0) / 100)
-    )}
-  </td>
-)}
+                {visibleColumns.netPrice && (
+                  <td>
+                    {roundToRupee(
+                      Number(item.mrp) *
+                        (1 - (Number(item.discount) || 0) / 100)
+                    )}
+                  </td>
+                )}
 
-{visibleColumns.amount && (
-  <td>
-    {roundToRupee(
-      Number(item.quantity) *
-      Number(item.mrp) *
-      (1 - (Number(item.discount) || 0) / 100)
-    )}
-  </td>
-)}
-
+                {visibleColumns.amount && (
+                  <td>
+                    {roundToRupee(
+                      Number(item.quantity) *
+                        Number(item.mrp) *
+                        (1 - (Number(item.discount) || 0) / 100)
+                    )}
+                  </td>
+                )}
               </tr>
             );
           })}
