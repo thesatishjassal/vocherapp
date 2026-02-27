@@ -109,69 +109,109 @@ useEffect(() => {
   };
 
   /* ---------- Existing: update quotation in-place ---------- */
-  const handleSaveQuotation = async () => {
-    try {
-      const quotationData = {
-        quotation_no: quote,
-        salesperson:
-          quotationInfo?.salesperson || quotation?.salesperson || "Salesperson",
-        subject:
-          quotationInfo?.Subject ||
-          quotation?.subject ||
-          "Quotation for Products/Services",
-        amount_including_gst: Math.round(gstDetails.withoutGST) || 0,
-        without_gst: Math.round(gstDetails.withoutGST) || 0,
-        gst_amount: Math.round(gstDetails.gstAmount) || 0,
-        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-        warranty_guarantee: warrantyGuarantee,
-        remarks,
-        status: quotationInfo?.status || "active",
-        client_id:
-          selectedCustomer?.client_id || quotation?.client_id || 3,
-            // ✅ Just add these two
-        created_by: userDetails?.name || "System",
-        created_at: new Date().toISOString(),
-      };
+const handleSaveQuotation = async () => {
+  try {
+    // ---------------- UPDATE QUOTATION ----------------
+    const quotationData = {
+      quotation_no: quote,
+      salesperson: quotationInfo?.salesperson || quotation?.salesperson,
+      subject:
+        quotationInfo?.Subject ||
+        quotation?.subject ||
+        "Quotation for Products/Services",
+      amount_including_gst: Math.round(gstDetails.withoutGST) || 0,
+      without_gst: Math.round(gstDetails.withoutGST) || 0,
+      gst_amount: Math.round(gstDetails.gstAmount) || 0,
+      amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+      warranty_guarantee: warrantyGuarantee,
+      remarks,
+      status: quotationInfo?.status || "active",
+      client_id: selectedCustomer?.client_id || quotation?.client_id,
+      created_by: userDetails?.name || "System",
+      created_at: new Date().toISOString(),
+    };
 
-      await axios.put(`${API_URL}/quotation/${quote}`, quotationData, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
+    await axios.put(`${API_URL}/quotation/${quote}`, quotationData, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
 
-      if (rowsData.length > 0) {
-        const itemsData = rowsData.map((item) => ({
-          quotation_id: quote,
-          product_id: item.itemCode,
-          customercode: item.customerCode || "N/A",
-          customerdescription: item.customerDescription || "N/A",
-          image: item.image || "https://example.com/default-image.jpg",
-          itemcode: item.itemCode,
-          brand: item.brand || "N/A",
-          mrp: parseFloat(item.mrp) || 0,
-          // ✅ ensure integer price for backend
-          price: Math.round(parseFloat(item.amount)) || 0,
-          quantity: parseInt(item.qty, 10) || 0,
-          discount: parseFloat(item.discount) || 0,
-          item_name: item.itemName || "N/A",
-          unit: item.unit || "pcs",
-        }));
-        await axios.put(`${API_URL}/quotation/${quote}/items/`, itemsData, {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        });
-      }
+    // ---------------- HANDLE ITEMS PROPERLY ----------------
 
-      setQuotationId((p) => p + 1);
-      toast.success("Quotation updated successfully!");
-      window.location.href = "/getquotation";
-    } catch (error) {
-      toast.error(
-        `Failed to save: ${
-          error.response?.data?.detail || error.message || "Unknown error"
-        }`
+    // 1️⃣ Get existing items from backend
+    const existingItemsRes = await axios.get(
+      `${API_URL}/quotation/${quote}/items/`,
+      { withCredentials: true }
+    );
+
+    const existingItems = existingItemsRes.data;
+
+    // Extract existing IDs
+    const existingIds = existingItems.map((item) => item.id);
+
+    // Extract frontend IDs
+    const frontendIds = rowsData
+      .filter((item) => item.id)
+      .map((item) => item.id);
+
+    // 2️⃣ DELETE removed items
+    const itemsToDelete = existingIds.filter(
+      (id) => !frontendIds.includes(id)
+    );
+
+    for (const id of itemsToDelete) {
+      await axios.delete(
+        `${API_URL}/quotation/${quote}/items/${id}`,
+        { withCredentials: true }
       );
     }
-  };
+
+    // 3️⃣ CREATE or UPDATE rows
+    for (const item of rowsData) {
+      const payload = {
+        quotation_id: quote,
+        product_id: item.itemCode,
+        customercode: item.customerCode || "N/A",
+        customerdescription: item.customerDescription || "N/A",
+        image: item.image || "https://example.com/default-image.jpg",
+        itemcode: item.itemCode,
+        brand: item.brand || "N/A",
+        mrp: parseFloat(item.mrp) || 0,
+        price: Math.round(parseFloat(item.amount)) || 0,
+        quantity: parseInt(item.qty, 10) || 0,
+        discount: parseFloat(item.discount) || 0,
+        item_name: item.itemName || "N/A",
+        unit: item.unit || "pcs",
+      };
+
+      if (item.id) {
+        // 🔵 UPDATE existing item
+        await axios.patch(
+          `${API_URL}/quotation/${quote}/items/${item.id}`,
+          payload,
+          { withCredentials: true }
+        );
+      } else {
+        // 🟢 CREATE new item
+        await axios.post(
+          `${API_URL}/quotation/${quote}/items/`,
+          payload,
+          { withCredentials: true }
+        );
+      }
+    }
+
+    toast.success("Quotation updated successfully!");
+    window.location.href = "/getquotation";
+
+  } catch (error) {
+    toast.error(
+      `Failed to save: ${
+        error.response?.data?.detail || error.message || "Unknown error"
+      }`
+    );
+  }
+};
 
   /* ---------- NEW: generate next revision number ---------- */
   const nextRevisionNo = useMemo(() => {
