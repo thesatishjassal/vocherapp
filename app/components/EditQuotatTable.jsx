@@ -156,107 +156,147 @@ const QuotatTable = React.memo(({
   }, [inputRefs]);
 
   // Handle add/edit row via modal
-  const handleAddRow = useCallback(async (updatedRow, passedEditRowIndex) => {
-    const editRowIndex = passedEditRowIndex;
-    if (!qouteId) {
-      alert("Invalid quotation ID");
-      return;
-    }
-    const { itemCode, itemName, qty, mrp, discount, netPrice, amount, customerCode, customerDescription, brand, unit, image, remarks } = updatedRow;
-    if (!itemCode || !itemName || !qty || !netPrice) {
-      alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
-      return;
-    }
-    try {
-      const newItem = {
-        product_id: itemCode,
-        customercode: customerCode,
-        customerdescription: customerDescription,
-        itemcode: itemCode,
-        item_name: itemName,
-        brand,
-        quantity: Number(qty),
-        unit: unit || "Piece",
-        mrp: Number(mrp) || 0,
-        discount: Number(discount) || 0,
-        netPrice: Number(netPrice),
-        price: Number(netPrice),
-        amount: Number(amount),
-        image: image || "",
-        remarks: remarks || null,
-        amount_including_gst: null,
-        without_gst: null,
-        gst_amount: null,
-        amount_with_gst: null,
-        cct: null,
-        beamangle: null,
-        cri: null,
-        cutoutdia: null,
-        lumens: null,
+const handleAddRow = useCallback(async (updatedRow, passedEditRowIndex) => {
+  const editRowIndex = passedEditRowIndex;
+
+  if (!qouteId) {
+    alert("Invalid quotation ID");
+    return;
+  }
+
+  const {
+    itemCode,
+    itemName,
+    qty,
+    mrp,
+    discount,
+    netPrice,
+    amount,
+    customerCode,
+    customerDescription,
+    brand,
+    unit,
+    image,
+    remarks
+  } = updatedRow;
+
+  if (!itemCode || !itemName || !qty || !netPrice) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  try {
+    const newItem = {
+      product_id: itemCode,
+      customercode: customerCode,
+      customerdescription: customerDescription,
+      itemcode: itemCode,
+      item_name: itemName,
+      brand,
+      quantity: Number(qty),
+      unit: unit || "Piece",
+      mrp: Number(mrp) || 0,
+      discount: Number(discount) || 0,
+      netPrice: Number(netPrice),
+      price: Number(netPrice),
+      amount: Number(amount),
+      image: image || "",
+      remarks: remarks || null,
+      amount_including_gst: null,
+      without_gst: null,
+      gst_amount: null,
+      amount_with_gst: null,
+      cct: null,
+      beamangle: null,
+      cri: null,
+      cutoutdia: null,
+      lumens: null,
+    };
+
+    let response;
+
+    // =============================
+    // 🔥 UPDATE ITEM
+    // =============================
+    if (editRowIndex !== null) {
+
+      const itemId = rows[editRowIndex].id;
+
+      response = await axios.put(
+        `${API_URL}/quotation/${qouteId}/items/${itemId}/`,
+        newItem,
+        { withCredentials: true }
+      );
+
+      const createdItem = response.data;
+
+      const mappedRow = {
+        id: createdItem.id, // ✅ FIXED
+        customerCode: createdItem.customercode || "",
+        customerDescription: createdItem.customerdescription || "",
+        itemCode: createdItem.itemcode || "",
+        itemName: createdItem.item_name || "",
+        brand: createdItem.brand || "",
+        qty: createdItem.quantity || "",
+        unit: createdItem.unit || "",
+        mrp: createdItem.mrp || "",
+        discount: createdItem.discount || "",
+        netPrice: createdItem.netPrice || 0,
+        price: createdItem.price || 0,
+        amount: createdItem.amount || 0,
+        image: createdItem.image || "",
       };
-      let response;
-      let createdItem;
-      let mappedRow;
-      if (editRowIndex !== null) {
-        const itemId = rows[editRowIndex].id;
-        response = await axios.put(
-          `${API_URL}/quotation/${qouteId}/items/${itemId}/`,
-          newItem,
-          { withCredentials: true }
-        );
-        createdItem = response.data;
-        mappedRow = {
-          id: createdItem.item_id || rows[editRowIndex].id,
-          customerCode: createdItem.customercode || customerCode,
-          customerDescription: createdItem.customerdescription || customerDescription,
-          itemCode: createdItem.itemcode || itemCode,
-          itemName: createdItem.item_name || itemName,
-          brand: createdItem.brand || brand,
-          qty: createdItem.quantity || qty,
-          unit: createdItem.unit || unit,
-          mrp: createdItem.mrp || mrp,
-          discount: createdItem.discount || discount,
-          netPrice: createdItem.netPrice || Number(netPrice),
-          price: createdItem.price || Number(netPrice),
-          amount: createdItem.amount || Number(amount),
-          image: createdItem.image || image,
-        };
-        setRows((prevRows) =>
-          prevRows.map((row, index) => (index === editRowIndex ? mappedRow : row))
-        );
-      } else {
-        response = await axios.post(
-          `${API_URL}/quotation/${qouteId}/items/`,
-          newItem,
-          { withCredentials: true }
-        );
-        createdItem = response.data;
-        mappedRow = {
-          id: createdItem.item_id || rows.length + 1,
-          customerCode: createdItem.customercode || customerCode,
-          customerDescription: createdItem.customerdescription || customerDescription,
-          itemCode: createdItem.itemcode || itemCode,
-          itemName: createdItem.item_name || itemName,
-          brand: createdItem.brand || brand,
-          qty: createdItem.quantity || qty,
-          unit: createdItem.unit || unit,
-          mrp: createdItem.mrp || mrp,
-          discount: createdItem.discount || discount,
-          netPrice: createdItem.netPrice || Number(netPrice),
-          price: createdItem.price || Number(netPrice),
-          amount: createdItem.amount || Number(amount),
-          image: createdItem.image || image,
-        };
-        setRows((prevRows) => [...prevRows, mappedRow]);
-      }
-      setShowAddModal(false);
-      setNewRow(emptyRow);
-      setEditRowIndex(null);
-    } catch (error) {
-      console.error("Error saving item:", error.response?.data || error.message);
-      alert(`Failed to ${editRowIndex !== null ? "update" : "add"} item: ${error.response?.data?.detail || "Please try again."}`);
+
+      setRows((prevRows) =>
+        prevRows.map((row) =>
+          row.id === itemId ? mappedRow : row
+        )
+      );
+
+    } 
+    // =============================
+    // 🔥 ADD NEW ITEM
+    // =============================
+    else {
+
+      response = await axios.post(
+        `${API_URL}/quotation/${qouteId}/items/`,
+        newItem,
+        { withCredentials: true }
+      );
+
+      const createdItem = response.data;
+
+      const mappedRow = {
+        id: createdItem.id, // ✅ FIXED
+        customerCode: createdItem.customercode || "",
+        customerDescription: createdItem.customerdescription || "",
+        itemCode: createdItem.itemcode || "",
+        itemName: createdItem.item_name || "",
+        brand: createdItem.brand || "",
+        qty: createdItem.quantity || "",
+        unit: createdItem.unit || "",
+        mrp: createdItem.mrp || "",
+        discount: createdItem.discount || "",
+        netPrice: createdItem.netPrice || 0,
+        price: createdItem.price || 0,
+        amount: createdItem.amount || 0,
+        image: createdItem.image || "",
+      };
+
+      setRows((prevRows) => [...prevRows, mappedRow]);
     }
-  }, [qouteId, rows, emptyRow]);
+
+    setShowAddModal(false);
+    setNewRow(emptyRow);
+    setEditRowIndex(null);
+
+  } catch (error) {
+    console.error("Error saving item:", error.response?.data || error.message);
+    alert("Failed to save item.");
+  }
+
+}, [qouteId, rows, emptyRow]);
 
   // Handle edit row
   const handleEditRow = useCallback(
