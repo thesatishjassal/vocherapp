@@ -274,7 +274,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
     const rupees = Math.floor(n);
     const paise = n - rupees;
-
+    console.log(`Rupees: ${rupees}, Paise: ${paise}`);
     return paise >= 0.5 ? rupees + 1 : rupees;
   };
 
@@ -550,17 +550,29 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 {visibleColumns.discount && <td>{item.discount}%</td>}
                 {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
 
-                {/* {visibleColumns.netPrice && (
-                  <td>{roundToRupee(item.netPrice)}</td>
-                )}
-                {visibleColumns.amount && <td>{roundToRupee(item.amount)}</td>} */}
-                {visibleColumns.netPrice && (
-                  <td>{roundToRupee(item.netPrice ?? item.net_price)}</td>
-                )}
+{visibleColumns.netPrice && (
+  <td>
+    {(() => {
+      const mrp = Number(item.mrp) || 0;
+      const discount = Number(item.discount) || 0;
+      const netPrice = mrp * (1 - discount / 100);
+      return roundToRupee(netPrice);
+    })()}
+  </td>
+)}
 
-                {visibleColumns.amount && (
-                  <td>{roundToRupee(item.amount ?? item.line_total ?? item.total_amount)}</td>
-                )}
+{visibleColumns.amount && (
+  <td>
+    {(() => {
+      const mrp = Number(item.mrp) || 0;
+      const discount = Number(item.discount) || 0;
+      const qty = Number(item.quantity) || 0;
+      const netPrice = mrp * (1 - discount / 100);
+      const amount = qty * netPrice;
+      return roundToRupee(amount);
+    })()}
+  </td>
+)}
               </tr>
             );
           })}
