@@ -42,8 +42,19 @@ useEffect(() => {
   }
 }, []);
 
-  const generateItemData = useCallback(
-    ({ quotationId, item, warranty }) => ({
+const roundRupee = (value) => {
+  const rupees = Math.floor(value);
+  const paise = value - rupees;
+  return paise >= 0.5 ? rupees + 1 : rupees;
+};
+
+const generateItemData = useCallback(
+  ({ quotationId, item, warranty }) => {
+    const net = roundRupee(parseFloat(item.netPrice) || 0);
+    const qty = parseInt(item.qty, 10) || 0;
+    const amount = net * qty;
+
+    return {
       quotation_id: quotationId,
       product_id: item.itemCode,
       customercode: item.customerCode || "N/A",
@@ -52,20 +63,20 @@ useEffect(() => {
       itemcode: item.itemCode,
       brand: item.brand || "N/A",
       mrp: parseFloat(item.mrp) || 0,
-      netPrice: parseFloat(item.netPrice) || 0,  // Added netPrice
-      price: Math.round(parseFloat(item.amount)) || 0,
-      quantity: parseInt(item.qty, 10) || 0,
+      netPrice: net,
+      price: net,
+      quantity: qty,
       discount: parseFloat(item.discount) || 0,
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
-      amount: parseFloat(item.amount) || 0,  // Added amount
+      amount: amount,
       warranty_guarantee: warranty || "As per company norms",
       comments: item.comments || "N/A",
       status: "active",
-
-    }),
-    []
-  );
+    };
+  },
+  []
+);
 
   
   // Memoized callbacks
