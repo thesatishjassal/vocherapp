@@ -550,10 +550,17 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 {visibleColumns.discount && <td>{item.discount}%</td>}
                 {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
 
-                {visibleColumns.netPrice && (
+                {/* {visibleColumns.netPrice && (
                   <td>{roundToRupee(item.netPrice)}</td>
                 )}
-                {visibleColumns.amount && <td>{roundToRupee(item.amount)}</td>}
+                {visibleColumns.amount && <td>{roundToRupee(item.amount)}</td>} */}
+                {visibleColumns.netPrice && (
+                  <td>{roundToRupee(item.netPrice ?? item.net_price)}</td>
+                )}
+
+                {visibleColumns.amount && (
+                  <td>{roundToRupee(item.amount ?? item.line_total ?? item.total_amount)}</td>
+                )}
               </tr>
             );
           })}
