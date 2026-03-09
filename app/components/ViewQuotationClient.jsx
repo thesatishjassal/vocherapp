@@ -186,7 +186,7 @@ const isGstExcluded = useMemo(() => {
                   Quotation No:{" "}
                   <b className="tm_primary_color">
                     {" "}
-                    PLQOT-{quotation.quotation_no}
+                   {quotation.quotation_no}
                   </b>
                 </p>
               </div>
