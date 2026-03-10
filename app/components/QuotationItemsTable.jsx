@@ -547,7 +547,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
                 {visibleColumns.netPrice && (
                   <td>
-                    {roundToRupee(
+                    {(
                       Number(item.mrp) *
                         (1 - (Number(item.discount) || 0) / 100)
                     )}
@@ -556,7 +556,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
                 {visibleColumns.amount && (
                   <td>
-                    {roundToRupee(
+                    {(
                       Number(item.quantity) *
                         Number(item.mrp) *
                         (1 - (Number(item.discount) || 0) / 100)
