@@ -267,11 +267,13 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
+ 
   const roundToRupee = (val) => {
-    const n = Number(val);
-    if (isNaN(n)) return val;
-    return Math.round(n); // .50+ up, else floor
-  };
+    if (!val) return "0.00";
+
+    const rupee = Math.round(val); // round to nearest rupee
+    return rupee.toFixed(2); // always 2 decimals
+};
 
   return (
     <div className="relative overflow-x-auto">
@@ -547,7 +549,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
                 {visibleColumns.netPrice && (
                   <td>
-                    {(
+                    {roundToRupee(
                       Number(item.mrp) *
                         (1 - (Number(item.discount) || 0) / 100)
                     )}
@@ -556,7 +558,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
                 {visibleColumns.amount && (
                   <td>
-                    {(
+                    {roundToRupee(
                       Number(item.quantity) *
                         Number(item.mrp) *
                         (1 - (Number(item.discount) || 0) / 100)
