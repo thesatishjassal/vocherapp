@@ -269,11 +269,8 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   if (!items.length) return <p>No items found for this quotation.</p>;
  
   const roundToRupee = (val) => {
-    if (!val) return "0.00";
-
-    const rupee = Math.round(val); // round to nearest rupee
-    return rupee.toFixed(2); // always 2 decimals
-};
+    return Number(val).toFixed(2);
+  };
 
   return (
     <div className="relative overflow-x-auto">
