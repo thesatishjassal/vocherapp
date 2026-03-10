@@ -45,7 +45,10 @@ useEffect(() => {
 const roundRupee = (value) => {
   const rupees = Math.floor(value);
   const paise = value - rupees;
-  return paise >= 0.5 ? rupees + 1 : rupees;
+
+  const rounded = paise >= 0.5 ? rupees + 1 : rupees;
+
+  return Number(rounded.toFixed(2)); // always .00
 };
 
 const generateItemData = useCallback(
