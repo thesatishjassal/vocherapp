@@ -267,15 +267,10 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
-
-  const roundToRupee = (value) => {
-    const n = Number(value);
-    if (isNaN(n)) return 0;
-
-    const rupees = Math.floor(n);
-    const paise = n - rupees;
-    console.log(`Rupees: ${rupees}, Paise: ${paise}`);
-    return paise >= 0.5 ? rupees + 1 : rupees;
+  const roundToRupee = (val) => {
+    const n = Number(val);
+    if (isNaN(n)) return val;
+    return Math.round(n); // .50+ up, else floor
   };
 
   return (
@@ -550,29 +545,24 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                 {visibleColumns.discount && <td>{item.discount}%</td>}
                 {visibleColumns.price && <td>{roundToRupee(item.price)}</td>}
 
-{visibleColumns.netPrice && (
-  <td>
-    {(() => {
-      const mrp = Number(item.mrp) || 0;
-      const discount = Number(item.discount) || 0;
-      const netPrice = mrp * (1 - discount / 100);
-      return roundToRupee(netPrice);
-    })()}
-  </td>
-)}
+                {visibleColumns.netPrice && (
+                  <td>
+                    {roundToRupee(
+                      Number(item.mrp) *
+                        (1 - (Number(item.discount) || 0) / 100)
+                    )}
+                  </td>
+                )}
 
-{visibleColumns.amount && (
-  <td>
-    {(() => {
-      const mrp = Number(item.mrp) || 0;
-      const discount = Number(item.discount) || 0;
-      const qty = Number(item.quantity) || 0;
-      const netPrice = mrp * (1 - discount / 100);
-      const amount = qty * netPrice;
-      return roundToRupee(amount);
-    })()}
-  </td>
-)}
+                {visibleColumns.amount && (
+                  <td>
+                    {roundToRupee(
+                      Number(item.quantity) *
+                        Number(item.mrp) *
+                        (1 - (Number(item.discount) || 0) / 100)
+                    )}
+                  </td>
+                )}
               </tr>
             );
           })}
