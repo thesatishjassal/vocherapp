@@ -45,10 +45,7 @@ useEffect(() => {
 const roundRupee = (value) => {
   const rupees = Math.floor(value);
   const paise = value - rupees;
-
-  const rounded = paise >= 0.5 ? rupees + 1 : rupees;
-
-  return Number(rounded.toFixed(2)); // always .00
+  return paise >= 0.5 ? rupees + 1 : rupees;
 };
 
 const generateItemData = useCallback(
@@ -274,7 +271,7 @@ const generateItemData = useCallback(
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
-        <div className="tm_invoice tm_style1" id="tm_download_section">
+        <div clas sName="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">

@@ -83,7 +83,11 @@ const QuotationTable = ({
     cus_image: useRef(null),
     cus_remarks: useRef(null),
   };
-
+const roundRupee = (value) => {
+  const rupees = Math.floor(value);
+  const paise = value - rupees;
+  return paise >= 0.5 ? rupees + 1 : rupees;
+};
   /* ---------- Helpers ---------- */
   const calculateDiscount = (mrp, netPrice) => {
     const mrpValue = Number(mrp) || 0;
@@ -92,17 +96,18 @@ const QuotationTable = ({
     return +(((mrpValue - netValue) / mrpValue) * 100).toFixed(2);
   };
 
-  const calculateNetPrice = (mrp, discount) => {
-    const mrpValue = Number(mrp) || 0;
-    const discValue = Number(discount) || 0;
-    return +(mrpValue * (1 - discValue / 100)).toFixed(2);
-  };
+const calculateNetPrice = (mrp, discount) => {
+  const mrpValue = Number(mrp) || 0;
+  const discValue = Number(discount) || 0;
+  const value = mrpValue * (1 - discValue / 100);
+  return roundRupee(value);
+};
 
-  const calculateAmount = (qty, netPrice) => {
-    const qtyValue = Number(qty) || 0;
-    const netValue = Number(netPrice) || 0;
-    return +(qtyValue * netValue).toFixed(2);
-  };
+const calculateAmount = (qty, netPrice) => {
+  const qtyValue = Number(qty) || 0;
+  const netValue = Number(netPrice) || 0;
+  return roundRupee(qtyValue * netValue);
+};
 
   /* ---------- Effects ---------- */
   useEffect(() => {
@@ -472,8 +477,8 @@ const QuotationTable = ({
               {columns.MRP && <td>{row.mrp}</td>}
               {columns.Qty && <td>{row.qty}</td>}
               {columns.Dist && <td>{row.discount}</td>}
-              {columns.NetPrice && <td>{row.netPrice}</td>}
-              {columns.Amount && <td>{row.amount}</td>}
+              {columns.NetPrice && <td>{Number(row.netPrice).toFixed(2)}</td>}
+              {columns.Amount && <td>{Number(row.amount).toFixed(2)}</td>}
               <td className="no-print">
                 <button
                   className="btn action_btn btn-warning me-2"

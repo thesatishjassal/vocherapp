@@ -13,11 +13,11 @@ const QuotatTable = React.memo(
     onRowsChange,
     qouteId,
   }) => {
-    // States
     const [rows, setRows] = useState(items);
     const [isLoading, setIsLoading] = useState(!items.length && qouteId);
     const [filterColModal, setFilterColModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     const emptyRow = {
@@ -50,6 +50,7 @@ const QuotatTable = React.memo(
 
     const [newRow, setNewRow] = useState(emptyRow);
     const [totalAmount, setTotalAmount] = useState(0);
+
     const [columns, setColumns] = useState({
       customerCode: false,
       customerDescription: false,
@@ -62,9 +63,9 @@ const QuotatTable = React.memo(
       NetPrice: true,
       Amount: true,
     });
+
     const [editRowIndex, setEditRowIndex] = useState(null);
 
-    // Input refs
     const inputRefs = useRef({
       customerCode: useRef(null),
       customerDescription: useRef(null),
@@ -81,7 +82,6 @@ const QuotatTable = React.memo(
       remarks: useRef(null),
     }).current;
 
-    // Debug re-renders
     useEffect(() => {
       console.log("QuotatTable re-rendered", {
         qouteId,
@@ -89,22 +89,31 @@ const QuotatTable = React.memo(
       });
     }, [qouteId, items.length]);
 
-    // Fetch quotation items
+    /* ---------------- FETCH ITEMS ---------------- */
+
     useEffect(() => {
       if (!qouteId || items.length) return;
+
       const fetchQuotationItems = async () => {
         try {
           setIsLoading(true);
+
           const response = await fetch(
             `${API_URL}/quotation/${qouteId}/items/`
           );
+
           if (!response.ok) throw new Error("Failed to fetch quotation items");
+
           const data = await response.json();
+
+          /* ✅ FIXED MAPPING */
+
           const mappedRows = data.map((item, index) => {
             const netPrice =
               item.netPrice ||
               Number(item.mrp) * (1 - Number(item.discount || 0) / 100) ||
               0;
+
             return {
               id: item.id || index + 1,
               customerCode: item.customercode || "",
@@ -116,12 +125,20 @@ const QuotatTable = React.memo(
               unit: item.unit || "",
               mrp: item.mrp || "",
               discount: item.discount || "",
-              netPrice,
-              price: netPrice,
-              amount: item.price || Number(item.quantity) * netPrice || 0,
+              netPrice: netPrice,
+              price: item.price || netPrice,
+
+              /* ⭐ FIXED HERE */
+
+              amount:
+                item.amount ||
+                Number(item.quantity || 0) * Number(netPrice || 0) ||
+                0,
+
               image: item.image || "",
             };
           });
+
           setRows(mappedRows);
         } catch (err) {
           console.error("Error fetching quotation items:", err);
@@ -129,32 +146,37 @@ const QuotatTable = React.memo(
           setIsLoading(false);
         }
       };
+
       fetchQuotationItems();
     }, [qouteId, items.length]);
 
-    // Utility functions
+    /* ---------------- CALCULATIONS ---------------- */
+
     const calculateNetPrice = useCallback((mrp, discount) => {
       const mrpNum = Number(mrp) || 0;
       const discountNum = Number(discount) || 0;
+
       return mrpNum * (1 - discountNum / 100);
     }, []);
 
     const calculateAmount = useCallback((qty, netPrice) => {
       const qtyNum = Number(qty) || 0;
       const netPriceNum = Number(netPrice) || 0;
+
       return qtyNum * netPriceNum;
     }, []);
 
-    // Handle field changes (simplified, calculations handled in modal)
+    /* ---------------- FIELD CHANGE ---------------- */
+
     const handleFieldChange = useCallback((field, value) => {
       setNewRow((prev) => ({ ...prev, [field]: value }));
     }, []);
 
-    // Handle key down for navigation
     const handleKeyDown = useCallback(
       (e, nextField = null) => {
         if (e.key === "Enter") {
           e.preventDefault();
+
           if (nextField && inputRefs[nextField]?.current) {
             inputRefs[nextField].current.focus();
           }
@@ -163,13 +185,15 @@ const QuotatTable = React.memo(
       [inputRefs]
     );
 
-    // Handle add/edit row via modal
+    /* ---------------- ADD / EDIT ITEM ---------------- */
+
     const handleAddRow = useCallback(
       async (updatedRow, passedEditRowIndex) => {
         const editRowIndex = passedEditRowIndex;
 
         if (!qouteId) {
           alert("Invalid quotation ID");
+
           return;
         }
 
@@ -191,6 +215,7 @@ const QuotatTable = React.memo(
 
         if (!itemCode || !itemName || !qty || !netPrice) {
           alert("Please fill all required fields.");
+
           return;
         }
 
@@ -211,22 +236,12 @@ const QuotatTable = React.memo(
             amount: Number(amount),
             image: image || "",
             remarks: remarks || null,
-            amount_including_gst: null,
-            without_gst: null,
-            gst_amount: null,
-            amount_with_gst: null,
-            cct: null,
-            beamangle: null,
-            cri: null,
-            cutoutdia: null,
-            lumens: null,
           };
 
           let response;
 
-          // =============================
-          // 🔥 UPDATE ITEM
-          // =============================
+          /* ---------- UPDATE ---------- */
+
           if (editRowIndex !== null) {
             const itemId = rows[editRowIndex].id;
 
@@ -239,7 +254,7 @@ const QuotatTable = React.memo(
             const createdItem = response.data;
 
             const mappedRow = {
-              id: createdItem.id, // ✅ FIXED
+              id: createdItem.id,
               customerCode: createdItem.customercode || "",
               customerDescription: createdItem.customerdescription || "",
               itemCode: createdItem.itemcode || "",
@@ -258,11 +273,8 @@ const QuotatTable = React.memo(
             setRows((prevRows) =>
               prevRows.map((row) => (row.id === itemId ? mappedRow : row))
             );
-          }
-          // =============================
-          // 🔥 ADD NEW ITEM
-          // =============================
-          else {
+          } else {
+            /* ---------- ADD ---------- */
             response = await axios.post(
               `${API_URL}/quotation/${qouteId}/items/`,
               newItem,
@@ -272,7 +284,7 @@ const QuotatTable = React.memo(
             const createdItem = response.data;
 
             const mappedRow = {
-              id: createdItem.id, // ✅ FIXED
+              id: createdItem.id,
               customerCode: createdItem.customercode || "",
               customerDescription: createdItem.customerdescription || "",
               itemCode: createdItem.itemcode || "",
@@ -299,101 +311,99 @@ const QuotatTable = React.memo(
             "Error saving item:",
             error.response?.data || error.message
           );
+
           alert("Failed to save item.");
         }
       },
+
       [qouteId, rows, emptyRow]
     );
 
-    // Handle edit row
+    /* ---------------- DELETE ---------------- */
+
+    const handleDeleteRow = useCallback(
+      async (index) => {
+        const row = rows[index];
+
+        const confirmDelete = window.confirm(
+          `Are you sure you want to delete "${row.itemName}"?`
+        );
+
+        if (!confirmDelete) return;
+
+        const itemId = row.id;
+
+        try {
+          await axios.delete(
+            `${API_URL}/quotation/${qouteId}/items/${itemId}/`,
+            { withCredentials: true }
+          );
+
+          setRows((prevRows) => prevRows.filter((_, i) => i !== index));
+        } catch (error) {
+          console.error("Error deleting item:", error);
+
+          alert("Failed to delete item.");
+        }
+      },
+      [rows, qouteId]
+    );
+
+    /* ---------------- TOTAL ---------------- */
+
+    useEffect(() => {
+      const updatedTotal = rows.reduce(
+        (sum, row) => sum + (Number(row.amount) || 0),
+        0
+      );
+
+      setTotalAmount(updatedTotal);
+
+      onTotalAmountChange?.(updatedTotal);
+    }, [rows, onTotalAmountChange]);
+
+    /* ---------------- SYNC WITH PARENT ---------------- */
     const handleEditRow = useCallback(
       (index) => {
-        const rowData = rows[index];
-        const cusFields = {
-          cus_itemcode: "",
-          cus_itemname: "",
-          cus_customercode: "",
-          cus_customerdescription: "",
-          cus_qty: "",
-          cus_brand: "",
-          cus_unit: "",
-          cus_mrp: "",
-          cus_discount: "",
-          cus_netprice: "",
-          cus_image: "",
-          cus_remarks: "",
-        };
-        setNewRow({ ...rowData, ...cusFields });
+        const rowToEdit = rows[index];
+
+        if (!rowToEdit) return;
+
+        setNewRow({
+          customerCode: rowToEdit.customerCode || "",
+          customerDescription: rowToEdit.customerDescription || "",
+          itemCode: rowToEdit.itemCode || "",
+          itemName: rowToEdit.itemName || "",
+          brand: rowToEdit.brand || "",
+          qty: rowToEdit.qty || "",
+          unit: rowToEdit.unit || "",
+          mrp: rowToEdit.mrp || "",
+          discount: rowToEdit.discount || "",
+          netPrice: rowToEdit.netPrice || "",
+          amount: rowToEdit.amount || "",
+          image: rowToEdit.image || "",
+          remarks: rowToEdit.remarks || "",
+        });
+
         setEditRowIndex(index);
         setShowAddModal(true);
       },
       [rows]
     );
-
-    // Handle delete row
-    const handleDeleteRow = useCallback(
-      async (index) => {
-        const row = rows[index];
-        const confirmDelete = window.confirm(
-          `Are you sure you want to delete "${row.itemName}"? This action cannot be undone.`
-        );
-        if (!confirmDelete) return;
-
-        const itemId = row.id;
-        const amountToSubtract = row.amount;
-        try {
-          await axios.delete(
-            `${API_URL}/quotation/${qouteId}/items/${itemId}/`,
-            {
-              withCredentials: true,
-            }
-          );
-          setRows((prevRows) => prevRows.filter((_, i) => i !== index));
-          setTotalAmount((prevTotal) => {
-            const updatedTotal = prevTotal - amountToSubtract;
-            onTotalAmountChange?.(updatedTotal);
-            return updatedTotal;
-          });
-          alert("Item deleted successfully!");
-        } catch (error) {
-          console.error("Error deleting item:", error);
-          alert("Failed to delete item. Please try again.");
-        }
-      },
-      [rows, qouteId, onTotalAmountChange]
-    );
-
-    // Handle column visibility change
-    const handleColumnVisibilityChange = useCallback((updatedColumns) => {
-      setColumns(updatedColumns);
-    }, []);
-
-    // Update total amount
-    useEffect(() => {
-      const updatedTotal = rows.reduce(
-        (sum, row) => sum + Number(row.amount),
-        0
-      );
-      setTotalAmount(updatedTotal);
-      onTotalAmountChange?.(updatedTotal);
-    }, [rows, onTotalAmountChange]);
-
-    // Sync rows with parent
     useEffect(() => {
       onRowsChange?.(rows);
     }, [rows, onRowsChange]);
 
-    if (isLoading) {
-      return <div>Loading...</div>;
-    }
+    if (isLoading) return <div>Loading...</div>;
 
     return (
       <div>
         <ShowHideFilter
           className="no-print"
           columns={columns}
-          onChange={handleColumnVisibilityChange}
+          onChange={(c) => setColumns(c)}
         />
+
         <div className="no-print mb-3">
           <button
             className="btn btn-primary"
@@ -406,6 +416,7 @@ const QuotatTable = React.memo(
             <i className="fas fa-plus me-2"></i>Add New Item
           </button>
         </div>
+
         <div className="table-responsive">
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
@@ -414,22 +425,25 @@ const QuotatTable = React.memo(
 
                 {columns.customerCode && <th>Customer Code</th>}
                 {columns.customerDescription && <th>Customer Description</th>}
-
                 {columns.ItemCode && <th>Item Code</th>}
+
                 <th>Item Name</th>
 
                 {columns.Brand && <th>Brand</th>}
+
                 <th>Unit</th>
 
                 {columns.MRP && <th>MRP</th>}
                 {columns.Qty && <th>Qty</th>}
                 {columns.Dist && <th>Dist (%)</th>}
+
                 {columns.NetPrice && <th>Net Price</th>}
                 {columns.Amount && <th>Amount</th>}
 
                 <th className="no-print">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {rows.map((row, index) => (
                 <tr key={row.id}>
@@ -444,13 +458,18 @@ const QuotatTable = React.memo(
                   <td>{row.itemName}</td>
 
                   {columns.Brand && <td>{row.brand}</td>}
+
                   <td>{row.unit}</td>
 
                   {columns.MRP && <td>{row.mrp}</td>}
                   {columns.Qty && <td>{row.qty}</td>}
                   {columns.Dist && <td>{row.discount}</td>}
-                  {columns.NetPrice && <td>{row.netPrice?.toFixed(2)}</td>}
-                  {columns.Amount && <td>{row.amount?.toFixed(2)}</td>}
+
+                  {columns.NetPrice && (
+                    <td>{Number(row.netPrice).toFixed(2)}</td>
+                  )}
+                  {columns.Amount && <td>{Number(row.amount).toFixed(2)}</td>}
+
                   <td className="no-print">
                     <button
                       className="btn action_btn btn-warning me-1"
@@ -458,6 +477,7 @@ const QuotatTable = React.memo(
                     >
                       <i className="fas fa-edit"></i>
                     </button>
+
                     <button
                       className="btn action_btn btn-danger"
                       onClick={() => handleDeleteRow(index)}
@@ -470,6 +490,7 @@ const QuotatTable = React.memo(
             </tbody>
           </table>
         </div>
+
         <AddQuotProductModal
           showAddModal={showAddModal}
           setShowAddModal={setShowAddModal}
