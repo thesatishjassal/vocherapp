@@ -268,9 +268,9 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   if (loading) return <p>Loading...</p>;
   if (!items.length) return <p>No items found for this quotation.</p>;
  
-  const roundToRupee = (val) => {
-    return Number(val).toFixed(2);
-  };
+const roundToRupee = (val) => {
+  return Math.round(Number(val));
+};
 
   return (
     <div className="relative overflow-x-auto">
@@ -557,8 +557,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                   <td>
                     {roundToRupee(
                       Number(item.quantity) *
-                        Number(item.mrp) *
-                        (1 - (Number(item.discount) || 0) / 100)
+                        Number(item.netPrice) 
                     )}
                   </td>
                 )}
