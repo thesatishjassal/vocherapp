@@ -271,7 +271,17 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 const roundToRupee = (val) => {
   return Math.round(Number(val));
 };
+const getFinalPrice = (item) => {
+  // agar netPrice valid hai (0 nahi hai)
+  if (Number(item.netPrice) > 0) {
+    return Number(item.netPrice);
+  }
 
+  // warna MRP - discount calculate kar
+  return Math.round(
+    Number(item.mrp) * (1 - (Number(item.discount) || 0) / 100)
+  );
+};
   return (
     <div className="relative overflow-x-auto">
       <style jsx>{`
@@ -555,10 +565,17 @@ const roundToRupee = (val) => {
 
                 {visibleColumns.amount && (
                   <td>
-                    {roundToRupee(
+                    {/* {roundToRupee(
                       Number(item.quantity) *
                         Number(item.netPrice) 
-                    )}
+                    )} */}
+                          {/* {roundToRupee(
+                      Number(item.quantity) *
+                        Number(item.mrp) *
+                        (1 - (Number(item.discount) || 0) / 100)
+                    )} */}
+                      {roundToRupee(Number(item.quantity) * getFinalPrice(item))}
+
                   </td>
                 )}
               </tr>
