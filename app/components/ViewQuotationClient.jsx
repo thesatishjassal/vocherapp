@@ -309,8 +309,8 @@ const isGstExcluded = useMemo(() => {
                           <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                             <p className="m-0">
                               {isGstExcluded
-                                ? `Excluded GST (${gstPercentage}%)`
-                                : `Included GST (${gstPercentage}%)`}
+                                ? `Included GST (${gstPercentage}%)`
+                                : `Excluded GST (${gstPercentage}%)`}
                             </p>
                           </td>
                           <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
