@@ -173,7 +173,7 @@ const Quotation = () => {
       const items = rowsData.map((item, index) => generateItemData(item, index));
       const quotationData = {
         quotation_no: generateQuotationNumber,
-        salesperson: quotationInfo?.Salesperson || "Unknown Salesperson",
+        salesperson: quotationInfo?.Salesperson ,
         subject: quotationInfo?.Subject || "Quotation for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
         without_gst: Math.round(gstDetails.withoutGST) || 0,
