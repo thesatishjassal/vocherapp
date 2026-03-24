@@ -160,10 +160,10 @@ const formatDateTime = (isoString) => {
     <div className="card">
       <div className="card-header d-flex justify-content-between align-items-center pb-0">
         <h6>Manage Switch Quotations</h6>
-        {/* <Link href="/addswitchquotation" className="btn btn-primary btn-sm">
+        <Link href="/addswitchquotation" className="btn btn-primary btn-sm">
           + Add Switch Quotation
         </Link>
-        <Link href="/addveniaswitchquotation" className="btn btn-primary btn-sm">
+        {/* <Link href="/addveniaswitchquotation" className="btn btn-primary btn-sm">
           + Add Venia Switch Quotation
         </Link> */}
          <Link href="/addnowaswitchquotation" className="btn btn-primary btn-sm">
