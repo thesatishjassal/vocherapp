@@ -1,11 +1,8 @@
 // components/ClientViewQuotation.js (or appropriate location) - Client Component
 "use client";
 import axios from "axios";
-import QuotationItemsTable from "./QuotationItemsTable"; // Adjust path as needed
-// import PrintButton from "../../components/PrintButton";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 
 // const QUOTATION_API_URL = "https://api.panvic.in/switch-quotations";
 // const CLIENT_API_URL = "https://api.panvic.in/clients/";
@@ -19,71 +16,6 @@ export default function ClientViewQuotation({ quote }) {
   const [client, setClient] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-//   const generateAndUploadPDF = async () => {
-//     try {
-//       const invoiceElement = document.querySelector(".tm_invoice_wrap");
-
-//       if (!invoiceElement) {
-//         alert("Invoice not found!");
-//         return;
-//       }
-
-//       // Capture screenshot (compressed)
-//       const canvas = await html2canvas(invoiceElement, {
-//         scale: 1.2,
-//         useCORS: true,
-//         scrollX: 0,
-//         scrollY: -window.scrollY,
-//       });
-
-//       const imgData = canvas.toDataURL("image/jpeg", 0.7);
-
-//       const pdf = new jsPDF("p", "pt", "a4");
-//       const pageWidth = pdf.internal.pageSize.getWidth();
-//       const pageHeight = pdf.internal.pageSize.getHeight();
-
-//       const imgWidth = pageWidth;
-//       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-//       let heightLeft = imgHeight;
-//       let position = 0;
-
-//       // First page
-//       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-//       heightLeft -= pageHeight;
-
-//       // Additional pages if required
-//       while (heightLeft > 0) {
-//         position = heightLeft - imgHeight;
-//         pdf.addPage();
-//         pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-//         heightLeft -= pageHeight;
-//       }
-
-//       // Convert to Blob
-//       const pdfBlob = pdf.output("blob");
-
-//       // Upload to Cloudinary
-//       const formData = new FormData();
-//       formData.append("file", pdfBlob);
-//       formData.append("upload_preset", "panvik_pdf");
-//       formData.append("cloud_name", "dfolgsiiv");
-
-//       const cloudinaryRes = await axios.post(
-//         `https://api.cloudinary.com/v1_1/dfolgsiiv/auto/upload`,
-//         formData
-//       );
-
-//       const pdfUrl = cloudinaryRes.data.secure_url;
-
-//       alert("PDF Uploaded Successfully!");
-//       navigator.clipboard.writeText(pdfUrl);
-//       console.log("PDF URL:", pdfUrl);
-//     } catch (error) {
-//       console.error("PDF ERROR:", error);
-//       alert("PDF generation failed!");
-//     }
-//   };
 
   useEffect(() => {
     const userDetailsCookie = Cookies.get("user_details");
@@ -166,7 +98,6 @@ const isGstExcluded = useMemo(() => {
   }
 
 
-
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -180,13 +111,13 @@ const isGstExcluded = useMemo(() => {
               </div>
               <div className="tm_invoice_right tm_text_right">
                 <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  QUOTATION
+                 SWITCH QUOTATION
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
                   <b className="tm_primary_color">
                     {" "}
-                    {quotation.quotation_no}
+                   {quotation.quotation_no}
                   </b>
                 </p>
               </div>
@@ -309,8 +240,8 @@ const isGstExcluded = useMemo(() => {
                           <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                             <p className="m-0">
                               {isGstExcluded
-                                ? `Excluded GST (${gstPercentage}%)`
-                                : `Included GST (${gstPercentage}%)`}
+                                ? `Included GST (${gstPercentage}%)`
+                                : `Excluded GST (${gstPercentage}%)`}
                             </p>
                           </td>
                           <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">

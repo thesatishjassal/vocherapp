@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
@@ -14,18 +15,18 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
   const [visibleColumns, setVisibleColumns] = useState({
     srNo: true,
+    itemcode: true,
     itemName: true,
     description: false,
     color: true,
     category: false,
     brand: true,
-    itemcode: true,
-    quantity: true,
-    // mrp: true,
-    // amount: false,
-    discount_percent: true,
-    net_price: true,
     unit: true,
+    quantity: true,
+    mrp: true, // ← Added (default visible)
+    amount: true, // ← Added (Gross Amount)
+    discount_percent: true,
+    net_price: true, // Will be shown as "Total Amount"
     remarks: false,
   });
 
@@ -35,20 +36,19 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
     const fetchItems = async () => {
       try {
-        let response;
-        let mappedItems;
+        setLoading(true);
+        let mappedItems = [];
 
         if (selectedRevision) {
-          response = await axios.get(
+          const response = await axios.get(
             `${API_URL}/switch-quotations/?quotation_id=${quotation_id}`,
             { withCredentials: true }
           );
-
           mappedItems = response.data.filter(
             (item) => item.edited_at === selectedRevision.edited_at
           );
         } else {
-          response = await axios.get(
+          const response = await axios.get(
             `${API_URL}/switch-quotations/${quotation_id}`,
             { withCredentials: true }
           );
@@ -95,7 +95,6 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
       if (!isNaN(aVal) && !isNaN(bVal)) {
         return direction === "asc" ? aVal - bVal : bVal - aVal;
       }
-
       return direction === "asc"
         ? aVal.toString().localeCompare(bVal.toString())
         : bVal.toString().localeCompare(aVal.toString());
@@ -105,12 +104,15 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   };
 
   const getSortIndicator = (key) =>
-    sortConfig.key === key ? (sortConfig.direction === "asc" ? " ▲" : " ▼") : "";
+    sortConfig.key === key
+      ? sortConfig.direction === "asc"
+        ? " ▲"
+        : " ▼"
+      : "";
 
-  /* PRINT */
+  /* PRINT & PDF */
   const handlePrint = () => window.print();
 
-  /* PDF */
   const handleSaveAsPDF = async () => {
     const element = document.getElementById("quotation-table");
     if (!element) return;
@@ -139,32 +141,47 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           .no-print {
             display: none !important;
           }
+          td,
+          th {
+            padding: 6px 8px !important;
+            font-size: 13px;
+          }
         }
       `}</style>
 
-      <div className="absolute top-0 right-0 no-print">
-        <button
-          onClick={handlePrint}
-          className="px-3 py-2 bg-gray-200 rounded-md"
-        >
-          🖨 Print
-        </button>
+      {/* Controls */}
+      <div className="flex justify-between items-center mb-3 no-print">
+        <div className="flex flex-wrap gap-4">
+          {Object.entries(visibleColumns).map(([key, value]) => (
+            <label key={key} className="text-sm">
+              <input
+                type="checkbox"
+                checked={value}
+                onChange={() => handleCheckboxChange(key)}
+              />{" "}
+              {key.replace("_", " ").toUpperCase()}
+            </label>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrint}
+            className="px-3 py-1.5 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            🖨 Print
+          </button>
+          {/* <button onClick={handleSaveAsPDF} className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Save as PDF
+          </button> */}
+        </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-4 no-print">
-        {Object.entries(visibleColumns).map(([key, value]) => (
-          <label key={key}>
-            <input
-              type="checkbox"
-              checked={value}
-              onChange={() => handleCheckboxChange(key)}
-            />
-            {key.toUpperCase()}
-          </label>
-        ))}
-      </div>
-
-      <table id="quotation-table" className="tm_round_border table align-items-center justify-content-center mb-0">
+      {/* Table */}
+      <table
+        id="quotation-table"
+        className="tm_round_border table align-items-center justify-content-center mb-0 "
+      >
         <thead>
           <tr>
             {visibleColumns.srNo && <th>SR NO</th>}
@@ -179,11 +196,22 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.category && <th>Category</th>}
             {visibleColumns.brand && <th>Brand</th>}
             {visibleColumns.unit && <th>Unit</th>}
+
+            {/* New Columns */}
+            {visibleColumns.mrp && <th className="text-end">MRP</th>}
+            {/* {visibleColumns.amount && <th className="text-end">Gross Amount</th>} */}
+
             {visibleColumns.quantity && <th>Qty</th>}
-            {/* {visibleColumns.mrp && <th>MRP</th>} */}
-            {visibleColumns.discount_percent && <th>Dis%</th>}
-            {visibleColumns.net_price && <th>Net Price</th>}
-            {/* {visibleColumns.amount && <th>Amount</th>} */}
+            {visibleColumns.discount_percent && (
+              <th className="text-end">Disc %</th>
+            )}
+               {visibleColumns.net_price && (
+                 <th className="text-end">Net Price</th>
+                )}
+            {visibleColumns.amount && (
+              <th className="text-end">Total Amount</th>
+            )}
+
             {visibleColumns.remarks && <th>Remarks</th>}
           </tr>
         </thead>
@@ -195,18 +223,47 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.itemcode && <td>{item.itemcode}</td>}
               {visibleColumns.itemName && <td>{item.item_name}</td>}
               {visibleColumns.description && <td>{item.description}</td>}
-              {visibleColumns.color && <td>{item.color}</td>}
+              {visibleColumns.color && (
+                <td>
+                  {" "}
+                  {item.color
+                    ?.replace(/_/g, " ")
+                    ?.replace(/\b\w/g, (c) => c.toUpperCase())}
+                </td>
+              )}
               {visibleColumns.category && <td>{item.category}</td>}
               {visibleColumns.brand && <td>{item.brand}</td>}
-              {visibleColumns.quantity && <td>{item.quantity}</td>}
               {visibleColumns.unit && <td>{item.unit}</td>}
-              {/* {visibleColumns.mrp && <td>{item.mrp}</td>} */}
+
+              {/* MRP */}
+              {visibleColumns.mrp && (
+                <td className="text-end">{Number(item.mrp || 0).toFixed(2)}</td>
+              )}
+
+              {/* Gross Amount */}
+              {/* {visibleColumns.amount && (
+                <td className="text-end">{Number(item.amount || 0).toFixed(2)}</td>
+                )} */}
+
+              {/* Discount % */}
+              {visibleColumns.quantity && <td>{item.quantity}</td>}
               {visibleColumns.discount_percent && (
-                  <td>{item.discount_percent}%</td>
-                )}
-                {visibleColumns.net_price && <td>{item.net_price}</td>}
-              {/* {visibleColumns.amount && <td>{item.amount}</td>} */}
-              {visibleColumns.remarks && <td>{item.remarks}</td>}
+                <td className="text-end">{item.discount_percent || 0}%</td>
+              )}
+
+              {/* Total Amount (Net Price) */}
+              {visibleColumns.net_price && (
+                <td className="text-end fw-bold">
+                  {Number(item.net_price || 0).toFixed(2)}
+                </td>
+              )}
+{/* Total Amount (Correct: amount) */}
+{visibleColumns.net_price && (
+  <td className="text-end fw-bold">
+    {Number(item.amount || 0).toFixed(2)}
+  </td>
+)}
+              {visibleColumns.remarks && <td>{item.remarks || "N/A"}</td>}
             </tr>
           ))}
         </tbody>

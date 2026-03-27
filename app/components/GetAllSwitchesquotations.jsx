@@ -163,15 +163,15 @@ const formatDateTime = (isoString) => {
         <Link href="/addswitchquotation" className="btn btn-primary btn-sm">
           + Add Switch Quotation
         </Link>
-        {/* <Link href="/addveniaswitchquotation" className="btn btn-primary btn-sm">
+        <Link href="/addveniaswitchquotation" className="btn btn-primary btn-sm">
           + Add Venia Switch Quotation
-        </Link> */}
+        </Link>
          <Link href="/addnowaswitchquotation" className="btn btn-primary btn-sm">
           + Add Nowa Switch Quotation
         </Link>
-         {/* <Link href="/addelglazeswitchquotation" className="btn btn-primary btn-sm">
+         <Link href="/addelglazeswitchquotation" className="btn btn-primary btn-sm">
           + Add Englze Switch Quotation
-        </Link> */}
+        </Link>
       </div>
 
       <div className="card-body py-0 pt-0 pb-2">
