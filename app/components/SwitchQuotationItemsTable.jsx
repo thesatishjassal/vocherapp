@@ -257,12 +257,12 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
                   {Number(item.net_price || 0).toFixed(2)}
                 </td>
               )}
-{/* Total Amount (Correct: amount) */}
-{visibleColumns.net_price && (
-  <td className="text-end fw-bold">
-    {Number(item.amount || 0).toFixed(2)}
-  </td>
-)}
+              {/* Total Amount (Correct: amount) */}
+              {visibleColumns.amount && (
+                <td className="text-end fw-bold">
+                  {Number(item.amount || 0).toFixed(2)}
+                </td>
+              )}
               {visibleColumns.remarks && <td>{item.remarks || "N/A"}</td>}
             </tr>
           ))}
