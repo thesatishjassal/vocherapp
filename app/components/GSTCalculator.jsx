@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 
 const GSTCalculator = ({ totalAmount, onGSTChange }) => {
   const [gstPercentage, setGstPercentage] = useState(0);
-  const [gstType, setGstType] = useState("include"); // 'include' or 'exclude'
+  const [gstType, setGstType] = useState("include");
 
   const formatNumber = (num) => {
-    if (isNaN(num) || num === undefined || num === null) return "0.00";
-    return parseFloat(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (!num) return "0.00";
+    return parseFloat(num).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   let withoutGST = 0;
@@ -22,8 +25,10 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
     gstAmount = totalAmount - withoutGST;
     totalWithGST = totalAmount;
   }
-
-  // Pass calculated values to parent whenever they change
+if (gstType === "exclude" && gstPercentage === 0) {
+  setGstPercentage(18); // default GST
+}
+  // ✅ SEND DATA TO PARENT
   useEffect(() => {
     if (onGSTChange) {
       onGSTChange({
@@ -32,13 +37,18 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
         withoutGST: withoutGST || 0,
         gstPercentage,
         gstType,
+
+        // ✅ IMPORTANT FIELD
+        gst_exclude_percentage:
+          gstType === "exclude" ? gstPercentage : 0,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gstAmount, totalWithGST, withoutGST, gstPercentage, gstType]);
 
   return (
     <div className="row p-4">
+      
+      {/* GST % INPUT */}
       <div className="col-md-6">
         <input
           type="number"
@@ -51,49 +61,36 @@ const GSTCalculator = ({ totalAmount, onGSTChange }) => {
         />
       </div>
 
+      {/* GST TYPE */}
       <div className="col-md-6 no-print">
         <select
           value={gstType}
           onChange={(e) => setGstType(e.target.value)}
           className="form-select m-0"
         >
-          <option value="" disabled>
-            Select GST type?
-          </option>
           <option value="include">Include GST</option>
           <option value="exclude">Exclude GST</option>
         </select>
       </div>
 
+      {/* RESULT */}
       <table>
         <tbody>
           <tr>
-            <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-              <p className="m-0">Amount :</p>
-            </td> 
-            <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-              {formatNumber(withoutGST)}
-            </td>
+            <td><b>Amount :</b></td>
+            <td className="text-end">{formatNumber(withoutGST)}</td>
           </tr>
+
           <tr>
-            <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-              <p className="m-0">
-                GST Amt (<b>{gstPercentage}%</b>):
-              </p>
+            <td>
+              <b>GST ({gstPercentage}%) :</b>
             </td>
-            <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-              {formatNumber(gstAmount)}
-            </td>
+            <td className="text-end">{formatNumber(gstAmount)}</td>
           </tr>
+
           <tr>
-            <td className="tm_width_2 tm_primary_color tm_border_none tm_bold">
-              <p className="m-0">
-                Total Amount:
-              </p>
-            </td>
-            <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-              {formatNumber(totalWithGST)}
-            </td>
+            <td><b>Total :</b></td>
+            <td className="text-end">{formatNumber(totalWithGST)}</td>
           </tr>
         </tbody>
       </table>
