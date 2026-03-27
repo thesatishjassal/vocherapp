@@ -250,19 +250,19 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.discount_percent && (
                 <td className="text-end">{item.discount_percent || 0}%</td>
               )}
-
+     {/* Total Amount (Correct: amount) */}
+              {visibleColumns.amount && (
+                <td className="text-end fw-bold">
+                  {Number(item.amount || 0).toFixed(2)}
+                </td>
+              )}
               {/* Total Amount (Net Price) */}
               {visibleColumns.net_price && (
                 <td className="text-end fw-bold">
                   {Number(item.net_price || 0).toFixed(2)}
                 </td>
               )}
-              {/* Total Amount (Correct: amount) */}
-              {visibleColumns.amount && (
-                <td className="text-end fw-bold">
-                  {Number(item.amount || 0).toFixed(2)}
-                </td>
-              )}
+         
               {visibleColumns.remarks && <td>{item.remarks || "N/A"}</td>}
             </tr>
           ))}
