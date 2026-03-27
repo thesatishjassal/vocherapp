@@ -272,6 +272,7 @@ const payload = {
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
                 <div className="tm_logo">
+                  
                   <img src="/assets/img/panviclogo.jpg" alt="Logo" />
                 </div>
               </div>
