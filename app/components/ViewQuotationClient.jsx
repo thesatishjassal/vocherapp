@@ -96,18 +96,17 @@ export default function ClientViewQuotation({ quote }) {
     }
   }, []);
 
-// ===== GST CALCULATION (DO NOT TOUCH UI) =====
-const gstPercentage = useMemo(() => {
-  if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
-  return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
-}, [quotation]);
+  // ===== GST CALCULATION (DO NOT TOUCH UI) =====
+  const gstPercentage = useMemo(() => {
+    if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
+    return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
+  }, [quotation]);
 
-const isGstExcluded = useMemo(() => {
-  if (!quotation) return false;
-  return quotation.amount_including_gst === quotation.without_gst;
-}, [quotation]);
-// ===========================================
-
+  const isGstExcluded = useMemo(() => {
+    if (!quotation) return false;
+    return quotation.amount_including_gst === quotation.without_gst;
+  }, [quotation]);
+  // ===========================================
 
   useEffect(() => {
     const fetchData = async () => {
@@ -165,8 +164,6 @@ const isGstExcluded = useMemo(() => {
     return <p>No quotation found!</p>;
   }
 
-
-
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
@@ -184,10 +181,7 @@ const isGstExcluded = useMemo(() => {
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
-                  <b className="tm_primary_color">
-                    {" "}
-                   {quotation.quotation_no}
-                  </b>
+                  <b className="tm_primary_color"> {quotation.quotation_no}</b>
                 </p>
               </div>
             </div>
@@ -285,54 +279,53 @@ const isGstExcluded = useMemo(() => {
               <div className="tm_right_footer">
                 <table>
                   <tbody>
-                    {quotation && quotation.gst_amount === 0 && (
+                    {/* Amount (Base) */}
+                    <tr>
+                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
+                        <p className="m-0">Amount:</p>
+                      </td>
+                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {Number(
+                          quotation?.without_gst ?? quotation?.withoutGST ?? 0
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
+
+                    {/* GST Row (only if > 0) */}
+                    {(quotation?.gst_amount ?? quotation?.gstAmount ?? 0) >
+                      0 && (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0"> GST Included :
+                          <p className="m-0">
+                            {quotation?.gstType === "include"
+                              ? "Included GST:"
+                              : "Excluded GST:"} 
                           </p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {quotation.amount_with_gst.toFixed(2)}
+                          {Number(
+                            quotation?.gst_amount ?? quotation?.gstAmount ?? 0
+                          ).toFixed(2)}
                         </td>
                       </tr>
-                    )}
-                    {quotation && quotation.gst_amount > 0 && (
-                     <><tr>
-                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">Amount :
-                          </p>
-                        </td>
-                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {quotation.without_gst.toFixed(2)}
-                        </td>
-                      </tr><tr>
-                          <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                            <p className="m-0">
-                              {isGstExcluded
-                                ? `Included GST (${gstPercentage}%)`
-                                : `Excluded GST (${gstPercentage}%)`}
-                            </p>
-                          </td>
-                          <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                            {quotation.gst_amount.toFixed(2)}
-                          </td>
-                        </tr></>
                     )}
 
-                    {quotation && quotation.amount_with_gst > 0 && (
-                      <tr>
-                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
-                          <p className="m-0">Total Amount:</p>
-                        </td>
-                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {quotation.amount_with_gst.toFixed(2)}
-                        </td>
-                      </tr>
-                    )}
+                    {/* TOTAL */}
+                    <tr>
+                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
+                        <p className="m-0">Total Amount:</p>
+                      </td>
+                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
+                        {Number(
+                          quotation?.amount_with_gst + quotation?.gst_amount ?? quotation?.gstAmount  ??
+                            quotation?.amount_with_gst + quotation?.gst_amount ?? quotation?.gstAmount  ??
+                            0
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
-
             </div>
             <p>
               <b>
@@ -375,13 +368,11 @@ const isGstExcluded = useMemo(() => {
                   the date of order.
                 </b>
               </p>
-                 <p>
+              <p>
                 {/* Installation & Fixing: */}
-                <b>
- Material will take 2 weeks  from date of order.
-                </b>
+                <b>Material will take 2 weeks from date of order.</b>
               </p>
-             
+
               <p>
                 Freight Charges: <b>Extra as per actual.</b>
               </p>

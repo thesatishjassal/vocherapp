@@ -205,9 +205,9 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
             {visibleColumns.discount_percent && (
               <th className="text-end">Disc %</th>
             )}
-               {visibleColumns.net_price && (
-                 <th className="text-end">Net Price</th>
-                )}
+            {visibleColumns.net_price && (
+              <th className="text-end">Net Price</th>
+            )}
             {visibleColumns.amount && (
               <th className="text-end">Total Amount</th>
             )}
@@ -250,19 +250,20 @@ const SwithcQuotationItemsTable = ({ quotation_id, selectedRevision }) => {
               {visibleColumns.discount_percent && (
                 <td className="text-end">{item.discount_percent || 0}%</td>
               )}
-     {/* Total Amount (Correct: amount) */}
-              {visibleColumns.amount && (
-                <td className="text-end fw-bold">
-                  {Number(item.amount || 0).toFixed(2)}
-                </td>
-              )}
               {/* Total Amount (Net Price) */}
               {visibleColumns.net_price && (
                 <td className="text-end fw-bold">
                   {Number(item.net_price || 0).toFixed(2)}
                 </td>
               )}
-         
+
+              {/* Total Amount (Correct: amount) */}
+              {visibleColumns.amount && (
+                <td className="text-end fw-bold">
+                  {Number(item.amount || 0).toFixed(2)}
+                </td>
+              )}
+
               {visibleColumns.remarks && <td>{item.remarks || "N/A"}</td>}
             </tr>
           ))}

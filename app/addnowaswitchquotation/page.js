@@ -6,7 +6,7 @@ import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-
+import { toast } from "react-toastify";
 const VeniaQuotation = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [infoModal, setInfoModal] = useState(false);
@@ -351,7 +351,7 @@ const VeniaQuotation = () => {
                   <GetNowaSwitchesquotationTables
                     onTotalChange={setSubTotal}
                     onRowsChange={handleRowsChange}
-                    onTotalUpdate={handleTotalAmountChange}
+                    // onTotalUpdate={handleTotalAmountChange}
                   />
                   {showModalClientDetails && (
                     <CustomerModal

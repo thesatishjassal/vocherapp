@@ -114,6 +114,7 @@ export default function GetNowaSwitchesquotationTables({
   /* ================= SUMMARY BUILDER ================= */
   const buildSummaryRows = () => {
     const rows = [];
+    
     const variants = ["white", "galaxy_black", "silver_grey"];
     const colorNames = {
       white: "White",
@@ -121,36 +122,46 @@ export default function GetNowaSwitchesquotationTables({
       silver_grey: "Silver Grey",
     };
 
-    const safeLoop = (arr, category) => {
-      arr.forEach((it) => {
-        if (!it?.qty) return;
-        variants.forEach((variant) => {
-          const q = it.qty[variant];
-          if (q > 0) {
-            const mrp = it.prices?.[variant] || 0;
-            const amount = q * mrp;
-            const net = amount * (1 - (it.discount_percent || 0) / 100);
+const safeLoop = (arr, category) => {
+  arr.forEach((it) => {
+    if (!it?.qty) return;
 
-            rows.push({
-              itemCode: it.item_code || "-",
-              itemName: it.description,
-              customerDescription: it.description,
-              brand: it.brand || "Wipro",
-              model: it.model || "Nowa",
-              color: colorNames[variant],
-              category,
-              qty: q,
-              mrp,
-              amount,
-              discount: it.discount_percent || 0,
-              netPrice: net,
-              unit: "pcs",
-              comments: "N/A",
-            });
-          }
+    variants.forEach((variant) => {
+      const q = it.qty[variant];
+
+      if (q > 0) {
+        const mrp = it.prices?.[variant] || 0;
+        const discountPercent = it.discount_percent || 0;
+
+        // ✅ Net price PER UNIT
+        const netPricePerUnit = mrp - (mrp * discountPercent) / 100;
+
+        // ✅ Total amount
+        const totalAmount = netPricePerUnit * q;
+
+        rows.push({
+          itemCode: it.item_code || "-",
+          itemName: it.description,
+          customerDescription: it.description,
+          brand: it.brand || "Wipro",
+          model: it.model || "Nowa",
+          color: colorNames[variant],
+          category,
+          qty: q,
+          mrp,
+
+          // ✅ correct values
+          netPrice: netPricePerUnit,
+          amount: totalAmount,
+
+          discount: discountPercent,
+          unit: "pcs",
+          comments: "N/A",
         });
-      });
-    };
+      }
+    });
+  });
+};
 
     safeLoop(switchJson, "Switch");
     safeLoop(platesJson, "Plate");
@@ -162,14 +173,14 @@ export default function GetNowaSwitchesquotationTables({
           itemCode: "-",
           itemName: it.item_name,
           customerDescription: it.item_name,
-          brand: null,
-          model: null,
-          color: null,
+          brand: "-",
+          model: "-",
+          color: "-",
           category: "Custom",
           qty: it.qty,
           mrp: it.mrp,
           amount: it.total_amount,
-          discount: 0,
+          discount: it.discount,
           netPrice: it.total_amount,
           unit: "pcs",
           comments: "N/A",
@@ -183,7 +194,8 @@ export default function GetNowaSwitchesquotationTables({
   /* ================= DATA SYNC ================= */
   useEffect(() => {
     const rows = buildSummaryRows();
-    const grandTotal = rows.reduce((s, r) => s + (r.netPrice || 0), 0);
+    // const grandTotal = rows.reduce((s, r) => s + (r.netPrice || 0), 0);
+    const grandTotal = rows.reduce((s, r) => s + (r.amount || 0), 0);
     onRowsChange?.(rows);
     onTotalChange?.(grandTotal);
   }, [switchJson, platesJson, fancyPlatesJson, customItemsJson, onRowsChange, onTotalChange]);
@@ -302,9 +314,10 @@ export default function GetNowaSwitchesquotationTables({
                 <th>Category</th>
                 <th>Qty</th>
                 <th>MRP</th>
-                <th>Gross Amount</th>
+                <th>Net  Price</th>
                 <th>Disc %</th>
                 <th>Total Amount</th>
+                
               </tr>
             </thead>
             <tbody>
@@ -319,9 +332,9 @@ export default function GetNowaSwitchesquotationTables({
                   <td>{r.category}</td>
                   <td>{r.qty}</td>
                   <td>{r.mrp}</td>
-                  <td>{r.amount}</td>
-                  <td>{r.discount}</td>
                   <td>{(r.netPrice || 0).toFixed(2)}</td>
+                  <td>{r.discount}</td>
+                  <td>{r.amount}</td>
                 </tr>
               ))}
             </tbody>
