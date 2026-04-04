@@ -10,7 +10,6 @@ export default function GetNowaSwitchesquotationTables({
   onRowsChange,
 }) {
   const [step, setStep] = useState(1);
-
   const [switches, setSwitches] = useState([]);
   const [qty, setQty] = useState({});
   const [discount, setDiscount] = useState({});
@@ -19,9 +18,28 @@ export default function GetNowaSwitchesquotationTables({
   const [platesJson, setPlatesJson] = useState([]);
   const [fancyPlatesJson, setFancyPlatesJson] = useState([]);
   const [customItemsJson, setCustomItemsJson] = useState([]);
-
+  const [mrp, setMrp] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // const initialMrp = {};
+  // switchData.forEach((item) => {
+  //   initialMrp[item.item_code] = {
+  //     white: Number(item.white_mrp) || 0,
+  //     galaxy_black: Number(item.galaxy_black_mrp) || 0,
+  //     silver_grey: Number(item.silver_grey_mrp) || 0,
+  //   };
+  // });
+  // setMrp(initialMrp);
+
+  const handleMrpChange = (code, type, value) => {
+    setMrp((prev) => ({
+      ...prev,
+      [code]: {
+        ...prev[code],
+        [type]: Number(value) || 0,
+      },
+    }));
+  };
 
   /* ================= FETCH DATA ================= */
   useEffect(() => {
@@ -50,9 +68,11 @@ export default function GetNowaSwitchesquotationTables({
     const d = discount[sw.item_code] || 0;
 
     const total =
-      (q.white || 0) * (Number(sw.white_mrp) || 0) +
-      (q.galaxy_black || 0) * (Number(sw.galaxy_black_mrp) || 0) +
-      (q.silver_grey || 0) * (Number(sw.silver_grey_mrp) || 0);
+      (q.white || 0) * (mrp[sw.item_code]?.white ?? Number(sw.white_mrp) ?? 0) +
+      (q.galaxy_black || 0) *
+        (mrp[sw.item_code]?.galaxy_black ?? Number(sw.galaxy_black_mrp) ?? 0) +
+      (q.silver_grey || 0) *
+        (mrp[sw.item_code]?.silver_grey ?? Number(sw.silver_grey_mrp) ?? 0);
 
     const discountAmt = (total * d) / 100;
     const finalAmt = total - discountAmt;
@@ -75,9 +95,13 @@ export default function GetNowaSwitchesquotationTables({
           brand: sw.brand || "Wipro",
           model: sw.model || "Nowa",
           prices: {
-            white: Number(sw.white_mrp) || 0,
-            galaxy_black: Number(sw.galaxy_black_mrp) || 0,
-            silver_grey: Number(sw.silver_grey_mrp) || 0,
+            white: mrp[sw.item_code]?.white ?? Number(sw.white_mrp) ?? 0,
+            galaxy_black:
+              mrp[sw.item_code]?.galaxy_black ??
+              Number(sw.galaxy_black_mrp) ??
+              0,
+            silver_grey:
+              mrp[sw.item_code]?.silver_grey ?? Number(sw.silver_grey_mrp) ?? 0,
           },
           qty: {
             white: q.white || 0,
@@ -114,7 +138,7 @@ export default function GetNowaSwitchesquotationTables({
   /* ================= SUMMARY BUILDER ================= */
   const buildSummaryRows = () => {
     const rows = [];
-    
+
     const variants = ["white", "galaxy_black", "silver_grey"];
     const colorNames = {
       white: "White",
@@ -122,46 +146,46 @@ export default function GetNowaSwitchesquotationTables({
       silver_grey: "Silver Grey",
     };
 
-const safeLoop = (arr, category) => {
-  arr.forEach((it) => {
-    if (!it?.qty) return;
+    const safeLoop = (arr, category) => {
+      arr.forEach((it) => {
+        if (!it?.qty) return;
 
-    variants.forEach((variant) => {
-      const q = it.qty[variant];
+        variants.forEach((variant) => {
+          const q = it.qty[variant];
 
-      if (q > 0) {
-        const mrp = it.prices?.[variant] || 0;
-        const discountPercent = it.discount_percent || 0;
+          if (q > 0) {
+            const mrp = it.prices?.[variant] || 0;
+            const discountPercent = it.discount_percent || 0;
 
-        // ✅ Net price PER UNIT
-        const netPricePerUnit = mrp - (mrp * discountPercent) / 100;
+            // ✅ Net price PER UNIT
+            const netPricePerUnit = mrp - (mrp * discountPercent) / 100;
 
-        // ✅ Total amount
-        const totalAmount = netPricePerUnit * q;
+            // ✅ Total amount
+            const totalAmount = netPricePerUnit * q;
 
-        rows.push({
-          itemCode: it.item_code || "-",
-          itemName: it.description,
-          customerDescription: it.description,
-          brand: it.brand || "Wipro",
-          model: it.model || "Nowa",
-          color: colorNames[variant],
-          category,
-          qty: q,
-          mrp,
+            rows.push({
+              itemCode: it.item_code || "-",
+              itemName: it.description,
+              customerDescription: it.description,
+              brand: it.brand || "Wipro",
+              model: it.model || "Nowa",
+              color: colorNames[variant],
+              category,
+              qty: q,
+              mrp,
 
-          // ✅ correct values
-          netPrice: netPricePerUnit,
-          amount: totalAmount,
+              // ✅ correct values
+              netPrice: netPricePerUnit,
+              amount: totalAmount,
 
-          discount: discountPercent,
-          unit: "pcs",
-          comments: "N/A",
+              discount: discountPercent,
+              unit: "pcs",
+              comments: "N/A",
+            });
+          }
         });
-      }
-    });
-  });
-};
+      });
+    };
 
     safeLoop(switchJson, "Switch");
     safeLoop(platesJson, "Plate");
@@ -198,8 +222,29 @@ const safeLoop = (arr, category) => {
     const grandTotal = rows.reduce((s, r) => s + (r.amount || 0), 0);
     onRowsChange?.(rows);
     onTotalChange?.(grandTotal);
-  }, [switchJson, platesJson, fancyPlatesJson, customItemsJson, onRowsChange, onTotalChange]);
+  }, [
+    switchJson,
+    platesJson,
+    fancyPlatesJson,
+    customItemsJson,
+    onRowsChange,
+    onTotalChange,
+  ]);
+  const getRowTotal = (sw) => {
+    const q = qty[sw.item_code] || {};
+    const d = discount[sw.item_code] || 0;
 
+    const total =
+      (q.white || 0) * (mrp[sw.item_code]?.white ?? Number(sw.white_mrp) ?? 0) +
+      (q.galaxy_black || 0) *
+        (mrp[sw.item_code]?.galaxy_black ?? Number(sw.galaxy_black_mrp) ?? 0) +
+      (q.silver_grey || 0) *
+        (mrp[sw.item_code]?.silver_grey ?? Number(sw.silver_grey_mrp) ?? 0);
+
+    const final = total - (total * d) / 100;
+
+    return final.toFixed(2);
+  };
   /* ================= UI ================= */
   return (
     <div>
@@ -229,15 +274,16 @@ const safeLoop = (arr, category) => {
                 <th>Item</th>
                 <th>Description</th>
                 <th>Model</th>
-                <th>Module Size</th>
+                <th>Size</th>
                 <th>Category</th>
-                <th>White MRP</th>
+                <th>White ₹</th>
                 <th>White Qty</th>
-                <th>Galaxy Black MRP</th>
-                <th>Galaxy Black Qty</th>
-                <th>Silver Grey MRP</th>
+                <th>Gxy Black ₹</th>
+                <th>Gxy Black Qty</th>
+                <th>Silver Grey ₹</th>
                 <th>Silver Grey Qty</th>
                 <th>Disc %</th>
+                <th>Total Amt</th>
               </tr>
             </thead>
             <tbody>
@@ -245,11 +291,23 @@ const safeLoop = (arr, category) => {
                 switchItems.map((sw) => (
                   <tr key={sw.item_code}>
                     <td>{sw.item_code}</td>
-                    <td>{sw.material_description}</td>
+                    <td className="no-wrap" title={sw.material_description}>
+                      {sw.material_description}
+                    </td>
                     <td>{sw.model || "Nowa"}</td>
                     <td>{sw.module_size || "-"}</td>
                     <td>{sw.category || "Switch"}</td>
-                    <td>{sw.white_mrp || 0}</td>
+                    {/* <td>{sw.white_mrp || 0}</td> */}
+                    <td>
+                      <input
+                        type="number"
+                        value={mrp[sw.item_code]?.white ?? sw.white_mrp ?? ""}
+                        onChange={(e) =>
+                          handleMrpChange(sw.item_code, "white", e.target.value)
+                        }
+                        style={{ width: 70 }}
+                      />
+                    </td>
                     <td>
                       <input
                         type="number"
@@ -259,23 +317,67 @@ const safeLoop = (arr, category) => {
                         }
                       />
                     </td>
-                    <td>{sw.galaxy_black_mrp || 0}</td>
+                    {/* <td>{sw.galaxy_black_mrp || 0}</td> */}
+                    <td>
+                      <input
+                        type="number"
+                        value={
+                          mrp[sw.item_code]?.galaxy_black ??
+                          sw.galaxy_black_mrp ??
+                          ""
+                        }
+                        onChange={(e) =>
+                          handleMrpChange(
+                            sw.item_code,
+                            "galaxy_black",
+                            e.target.value
+                          )
+                        }
+                        style={{ width: 70 }}
+                      />
+                    </td>
                     <td>
                       <input
                         type="number"
                         min="0"
                         onChange={(e) =>
-                          handleQtyChange(sw.item_code, "galaxy_black", e.target.value)
+                          handleQtyChange(
+                            sw.item_code,
+                            "galaxy_black",
+                            e.target.value
+                          )
                         }
                       />
                     </td>
-                    <td>{sw.silver_grey_mrp || 0}</td>
+                    {/* <td>{sw.silver_grey_mrp || 0}</td> */}
+                    <td>
+                      <input
+                        type="number"
+                        value={
+                          mrp[sw.item_code]?.silver_grey ??
+                          sw.silver_grey_mrp ??
+                          ""
+                        }
+                        onChange={(e) =>
+                          handleMrpChange(
+                            sw.item_code,
+                            "silver_grey",
+                            e.target.value
+                          )
+                        }
+                        style={{ width: 70 }}
+                      />
+                    </td>
                     <td>
                       <input
                         type="number"
                         min="0"
                         onChange={(e) =>
-                          handleQtyChange(sw.item_code, "silver_grey", e.target.value)
+                          handleQtyChange(
+                            sw.item_code,
+                            "silver_grey",
+                            e.target.value
+                          )
                         }
                       />
                     </td>
@@ -289,6 +391,7 @@ const safeLoop = (arr, category) => {
                         }
                       />
                     </td>
+                    <td style={{ fontWeight: 600 }}>₹ {getRowTotal(sw)}</td>
                   </tr>
                 ))}
             </tbody>
@@ -314,10 +417,9 @@ const safeLoop = (arr, category) => {
                 <th>Category</th>
                 <th>Qty</th>
                 <th>MRP</th>
-                <th>Net  Price</th>
+                <th>Net Price</th>
                 <th>Disc %</th>
                 <th>Total Amount</th>
-                
               </tr>
             </thead>
             <tbody>
@@ -334,6 +436,7 @@ const safeLoop = (arr, category) => {
                   <td>{r.mrp}</td>
                   <td>{(r.netPrice || 0).toFixed(2)}</td>
                   <td>{r.discount}</td>
+
                   <td>{r.amount}</td>
                 </tr>
               ))}

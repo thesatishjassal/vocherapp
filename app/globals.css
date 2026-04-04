@@ -395,6 +395,31 @@ p.bottom_lablel {
 .navbar .navbar-brand {
   padding: 0;
 }
+.tm_round_border input[type="number"] {
+    background: rgb(242, 242, 242);
+    border: none;
+    width: 50px;
+    box-shadow: rgb(234, 234, 234) 1px 1px 1px;
+    color: #191919;
+    font-weight: 600;
+}
+/* .tm_table_responsive .table > tbody {
+    vertical-align: inherit;
+    width: 100%;
+    display: inline-table;
+}
+.tm_table_responsive .table > thead {
+    vertical-align: bottom;
+    display: inline-table;
+    width: 100%;
+} */
+/* .tm_table_responsive .tm_round_border {
+    width: 100%;
+    table-layout: auto !important;
+    overflow-y: auto;
+    height: 300px;
+    display: block;
+} */
 .menu {
   position: absolute;
   top: 70px;
@@ -940,4 +965,9 @@ label, .form-label {
     background: #e3e3e3 !important;
     border: none;
     color: #383737;
+}td.no-wrap {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 200px !important; /* adjust as needed */
 }
