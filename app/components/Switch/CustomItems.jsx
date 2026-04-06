@@ -65,7 +65,7 @@ export default function CustomItemsStep({ onDataChange }) {
     <div>
       <h4>Step 2 – Custom Items</h4>
 
-      <table className="table">
+      <table className="tm_round_border table align-items-center justify-content-center mb-0">
         <thead>
           <tr>
             <th>Item</th>
@@ -82,14 +82,14 @@ export default function CustomItemsStep({ onDataChange }) {
           {items.map((row, i) => (
             <tr key={i}>
               <td>
-                <input
+                <input type="text" className="form-control"
                   value={row.item_name}
                   onChange={(e) => handleChange(i, "item_name", e.target.value)}
                 />
               </td>
 
               <td>
-                <input
+                <input className="form-control"
                   type="number"
                   value={row.qty}
                   onChange={(e) => handleChange(i, "qty", e.target.value)}
@@ -97,7 +97,7 @@ export default function CustomItemsStep({ onDataChange }) {
               </td>
 
               <td>
-                <input
+                <input className="form-control"
                   type="number"
                   value={row.mrp}
                   onChange={(e) => handleChange(i, "mrp", e.target.value)}
@@ -107,7 +107,7 @@ export default function CustomItemsStep({ onDataChange }) {
               <td>{row.net_price.toFixed(2)}</td>
 
               <td>
-                <input
+                <input className="form-control"
                   type="number"
                   value={row.discount}
                   onChange={(e) => handleChange(i, "discount", e.target.value)}
@@ -117,14 +117,14 @@ export default function CustomItemsStep({ onDataChange }) {
               <td>{row.total_amount.toFixed(2)}</td>
 
               <td>
-                <button onClick={() => removeRow(i)}>✖</button>
+                <button className="btn btn-danger" onClick={() => removeRow(i)}>✖</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <button onClick={addRow}>➕ Add</button>
+      <button className="btn btn-outline-secondary no-shadow w-100"  onClick={addRow}>➕ Add</button>
     </div>
   );
 }

@@ -446,11 +446,11 @@ export default function GetNowaSwitchesquotationTables({
       )}
 
       {/* Navigation */}
-      <div style={{ marginTop: 20 }}>
-        <button disabled={step === 1} onClick={() => setStep(step - 1)}>
+      <div className="d-flex justify-content-between align-item-center" style={{ marginTop: 20 }}>
+        <button className="btn btn-secondary" disabled={step === 1} onClick={() => setStep(step - 1)}>
           Back
         </button>
-        <button disabled={step === 3} onClick={() => setStep(step + 1)}>
+        <button className="btn btn-dark" disabled={step === 3} onClick={() => setStep(step + 1)}>
           Next
         </button>
       </div>
