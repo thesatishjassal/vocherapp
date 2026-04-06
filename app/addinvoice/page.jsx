@@ -196,7 +196,7 @@ const AddInvoice = () => {
           comments: item.comments,
         };
 
-        const itemUrl = `${API_URL}/invouchers/${newVoucherId}/items`;
+        const itemUrl = `${API_URL}/invouchers/${newVoucherId}/items/`;
         const itemsResponse = await fetch(itemUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
