@@ -1,16 +1,13 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-
 import CustomItemsStep from "./Switch/CustomItems";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function GetSwitchesquotationTables({
   onTotalChange,
   onRowsChange,
 }) {
   const [step, setStep] = useState(1);
-  const [netPrice, setNetPrice] = useState({});
+
   const [switches, setSwitches] = useState([]);
   const [qty, setQty] = useState({});
   const [discount, setDiscount] = useState({});
@@ -25,7 +22,7 @@ export default function GetSwitchesquotationTables({
 
   /* ================= FETCH DATA ================= */
   useEffect(() => {
-    fetch(`${API_URL}/csv/read-file/venia_switches_plates.csv`)
+    fetch(`https://api.panvic.in/csv/read-file/englaze_swithces.csv`)
       .then((res) => res.json())
       .then((json) => {
         setSwitches(json.data || []);
@@ -42,39 +39,21 @@ export default function GetSwitchesquotationTables({
   }, [switches]);
 
   /* ================= CALCULATIONS ================= */
-  const calculateTotals = (sw, variant) => {
-    const q = qty[sw.item_code]?.[variant] || 0;
-    const mrp = variant === "white" ? sw.white_mrp : sw.dark_grey;
+  const calculateTotals = (sw) => {
+    const q = qty[sw.item_code] || {};
+    const d = discount[sw.item_code] || 0;
 
-    const userNet = netPrice[sw.item_code]?.[variant];
+    const total =
+      (q.snow_white || 0) * (sw.snow_white_mrp || 0) +
+      (q.mountain_grey || 0) * (sw.mountain_grey_mrp || 0) +
+      (q.sparkle_black || 0) * (sw.sparkle_black_mrp || 0);
 
-    let finalNet = mrp;
-    let disc = discount[sw.item_code] || 0;
+    const discountAmt = (total * d) / 100;
+    const finalAmt = total - discountAmt;
 
-    if (userNet !== undefined && userNet !== "") {
-      finalNet = Number(userNet);
-      disc = mrp ? ((mrp - finalNet) / mrp) * 100 : 0;
-    } else {
-      finalNet = mrp - (mrp * disc) / 100;
-    }
-
-    return {
-      mrp,
-      qty: q,
-      netPrice: finalNet,
-      discount: disc,
-      amount: finalNet * q,
-    };
+    return { total, finalAmt };
   };
-  const handleNetPriceChange = (code, variant, value) => {
-    setNetPrice((prev) => ({
-      ...prev,
-      [code]: {
-        ...prev[code],
-        [variant]: value === "" ? "" : Number(value),
-      },
-    }));
-  };
+
   /* ================= SWITCH JSON ================= */
   useEffect(() => {
     const data = switchItems
@@ -87,30 +66,19 @@ export default function GetSwitchesquotationTables({
         return {
           item_code: sw.item_code,
           description: sw.description,
-          brand: sw.brand || "Wipro",
-          model: sw.model || "Veina",
+          brand: sw.brand || "L&T",
+          model: sw.model || "Englaze",
+          category: sw.category || "Switches",
           prices: {
-            white: sw.white_mrp,
-            dark_grey: sw.dark_grey,
+            snow_white: sw.snow_white_mrp,
+            mountain_grey: sw.mountain_grey_mrp,
+            sparkle_black: sw.sparkle_black_mrp,
           },
           qty: {
-            white: q.white || 0,
-            dark_grey: q.dark_grey || 0,
+            snow_white: q.snow_white || 0,
+            mountain_grey: q.mountain_grey || 0,
+            sparkle_black: q.sparkle_black || 0,
           },
-          // ✅ ADD THIS BLOCK
-netPrice: {
-  white:
-    netPrice[sw.item_code]?.white !== undefined &&
-    netPrice[sw.item_code]?.white !== ""
-      ? netPrice[sw.item_code].white
-      : sw.white_mrp,
-
-  dark_grey:
-    netPrice[sw.item_code]?.dark_grey !== undefined &&
-    netPrice[sw.item_code]?.dark_grey !== ""
-      ? netPrice[sw.item_code].dark_grey
-      : sw.dark_grey,
-},
           discount_percent: discount[sw.item_code] || 0,
           final_amount: totals.finalAmt,
         };
@@ -118,32 +86,26 @@ netPrice: {
       .filter(Boolean);
 
     setSwitchJson(data);
-  }, [qty, discount, netPrice, switchItems]); // ✅ ADD netPrice
+  }, [qty, discount, switchItems]);
+
   /* ================= HANDLERS ================= */
   const handleQtyChange = (code, type, value) => {
     setQty((prev) => ({
       ...prev,
       [code]: {
         ...prev[code],
-        [type]: value === "" ? "" : Number(value),
+        [type]: Number(value) || 0,
       },
     }));
   };
 
   const handleDiscountChange = (code, value) => {
-    const disc = Number(value) || 0;
-
     setDiscount((prev) => ({
       ...prev,
-      [code]: disc,
-    }));
-
-    // ❗ Reset manual net price so disc ount takes control
-    setNetPrice((prev) => ({
-      ...prev,
-      [code]: {},
+      [code]: Number(value) || 0,
     }));
   };
+
   /* ================= SUMMARY BUILDER ================= */
   const buildSummaryRows = () => {
     const rows = [];
@@ -154,41 +116,30 @@ netPrice: {
 
         Object.entries(it.qty).forEach(([variant, q]) => {
           if (q > 0) {
-            const whiteMrp = it.prices?.white || 0;
-            const darkGreyMrp = it.prices?.dark_grey || 0;
-
-            const mrp = variant === "white" ? whiteMrp : darkGreyMrp;
-            const discountPercent = it.discount_percent || 0;
-
-            // ✅ Net price PER UNIT
-            // const userNet = netPrice[it.item_code]?.[variant];
-
-            const netPricePerUnit = Number(it.netPrice?.[variant] ?? mrp);
-
-            const discountCalculated = mrp
-              ? ((mrp - netPricePerUnit) / mrp) * 100
-              : 0;
-            // ✅ Total amount
-            const totalAmount = netPricePerUnit * q;
+            const mrp = it.prices?.[variant] || 0;
+            const amount = q * mrp;
+            const net = amount * (1 - (it.discount_percent || 0) / 100);
 
             rows.push({
               itemCode: it.item_code || "-",
               itemName: it.description,
               customerDescription: it.description,
-              brand: it.brand || "Wipro",
-              model: it.model || "Veina",
-              color: variant === "dark_grey" ? "Dark Grey" : "White",
+              brand: it.brand,
+              model: it.model,
+              color:
+                variant === "snow_white"
+                  ? "Snow White"
+                  : variant === "mountain_grey"
+                  ? "Mountain Grey"
+                  : variant === "sparkle_black"
+                  ? "Sparkle Black"
+                  : variant,
               category,
               qty: q,
-
-              // ✅ BOTH MRPs
-              white_mrp: whiteMrp,
-              dark_grey_mrp: darkGreyMrp,
-
               mrp,
-              netPrice: netPricePerUnit,
-              amount: totalAmount,
-              discount: discountCalculated,
+              amount,
+              discount: it.discount_percent || 0,
+              netPrice: net,
               unit: "pcs",
               comments: "N/A",
             });
@@ -207,40 +158,32 @@ netPrice: {
           itemCode: "-",
           itemName: it.item_name,
           customerDescription: it.item_name,
-          brand: "-",
-          model: "-",
-          color: "-",
+          brand: null,
+          model: null,
+          color: null,
           category: "Custom",
           qty: it.qty,
           mrp: it.mrp,
-
-          // ✅ FIXED
-          netPrice: it.net_price, // per unit
-          amount: it.total_amount, // total
-          discount: it.discount || 0,
-
+          amount: it.total_amount,
+          discount: 0,
+          netPrice: it.total_amount,
           unit: "pcs",
           comments: "N/A",
         });
       }
     });
+
     return rows;
   };
 
   /* ================= DATA SYNC ================= */
   useEffect(() => {
     const rows = buildSummaryRows();
-    const grandTotal = rows.reduce((s, r) => s + (r.amount || 0), 0);
+    const grandTotal = rows.reduce((s, r) => s + (r.netPrice || 0), 0);
+
     onRowsChange?.(rows);
     onTotalChange?.(grandTotal);
-  }, [
-    switchJson,
-    platesJson,
-    fancyPlatesJson,
-    customItemsJson,
-    onRowsChange,
-    onTotalChange,
-  ]);
+  }, [switchJson, platesJson, fancyPlatesJson, customItemsJson]);
 
   /* ================= UI ================= */
   return (
@@ -262,7 +205,7 @@ netPrice: {
         ))}
       </div>
 
-      {/* Step 1 - Switches */}
+      {/* Step 1 */}
       {step === 1 && (
         <div className="table-responsive switch_table">
           <table className="tm_round_border table align-items-center justify-content-center mb-0">
@@ -272,17 +215,13 @@ netPrice: {
                 <th>Description</th>
                 <th>Model</th>
                 <th>Category</th>
-
-                <th>White MRP</th>
-                <th>Net (White)</th>
+                <th>Snow White</th>
                 <th>Qty</th>
-
-                <th>Dark Grey MRP</th>
-                <th>Net (Grey)</th>
+                <th>Mountain Grey</th>
                 <th>Qty</th>
-
+                <th>Sparkle Black</th>
+                <th>Qty</th>
                 <th>Disc %</th>
-                <th>Total Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -291,57 +230,10 @@ netPrice: {
                   <tr key={sw.item_code}>
                     <td>{sw.item_code}</td>
                     <td>{sw.description}</td>
-                    <td>{sw.model || "Venia"}</td>
-                    <td>{sw.category || "Switch"}</td>
+                    <td>{sw.model}</td>
+                    <td>{sw.category}</td>
 
-                    {/* WHITE */}
-                    <td>{sw.white_mrp || 0}</td>
-                    <td>
-                      <input
-                        type="number"
-                        value={
-                          netPrice[sw.item_code]?.white !== undefined
-                            ? netPrice[sw.item_code]?.white
-                            : sw.white_mrp
-                        }
-                        onChange={(e) =>
-                          handleNetPriceChange(
-                            sw.item_code,
-                            "white",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        onChange={(e) =>
-                          handleQtyChange(sw.item_code, "white", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    {/* DARK GREY */}
-                    <td>{sw.dark_grey || 0}</td>
-                    <td>
-                      <input
-                        type="number"
-                        value={
-                          netPrice[sw.item_code]?.dark_grey !== undefined
-                            ? netPrice[sw.item_code]?.dark_grey
-                            : sw.dark_grey
-                        }
-                        onChange={(e) =>
-                          handleNetPriceChange(
-                            sw.item_code,
-                            "dark_grey",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
+                    <td>{sw.snow_white_mrp || 0}</td>
                     <td>
                       <input
                         type="number"
@@ -349,14 +241,43 @@ netPrice: {
                         onChange={(e) =>
                           handleQtyChange(
                             sw.item_code,
-                            "dark_grey",
+                            "snow_white",
                             e.target.value
                           )
                         }
                       />
                     </td>
 
-                    {/* DISCOUNT */}
+                    <td>{sw.mountain_grey_mrp || 0}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        onChange={(e) =>
+                          handleQtyChange(
+                            sw.item_code,
+                            "mountain_grey",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td>{sw.sparkle_black_mrp || 0}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        onChange={(e) =>
+                          handleQtyChange(
+                            sw.item_code,
+                            "sparkle_black",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+
                     <td>
                       <input
                         type="number"
@@ -367,14 +288,6 @@ netPrice: {
                         }
                       />
                     </td>
-
-                    {/* ✅ TOTAL */}
-                    <td>
-                      {(
-                        calculateTotals(sw, "white").amount +
-                        calculateTotals(sw, "dark_grey").amount
-                      ).toFixed(2)}
-                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -382,9 +295,12 @@ netPrice: {
         </div>
       )}
 
-      {step === 2 && <CustomItemsStep onDataChange={setCustomItemsJson} />}
+      {/* Step 2 */}
+      {step === 2 && (
+        <CustomItemsStep onDataChange={setCustomItemsJson} />
+      )}
 
-      {/* Step 5 - Order Summary */}
+      {/* Step 3 - Summary */}
       {step === 3 && (
         <>
           <h4>Order Summary</h4>
@@ -400,9 +316,9 @@ netPrice: {
                 <th>Category</th>
                 <th>Qty</th>
                 <th>MRP</th>
-                <th>Net Price</th>
+                <th>Gross</th>
                 <th>Disc %</th>
-                <th>Total Amount</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -416,12 +332,10 @@ netPrice: {
                   <td>{r.color}</td>
                   <td>{r.category}</td>
                   <td>{r.qty}</td>
-
-                  <td>₹ {(r.mrp || 0).toFixed(2)}</td>
-                  <td>₹ {(r.netPrice || 0).toFixed(2)}</td>
+                  <td>{r.mrp}</td>
+                  <td>{r.amount}</td>
                   <td>{r.discount}</td>
-
-                  <td>₹ {(r.amount || 0).toFixed(2)}</td>
+                  <td>{(r.netPrice || 0).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -430,27 +344,16 @@ netPrice: {
       )}
 
       {/* Navigation */}
-      <div
-        style={{ marginTop: 20 }}
-        className="d-flex align-items-center justify-content-between"
-      >
-        <button
-          className="btn btn-secondary"
-          disabled={step === 1}
-          onClick={() => setStep(step - 1)}
-        >
+      <div style={{ marginTop: 20 }}>
+        <button disabled={step === 1} onClick={() => setStep(step - 1)}>
           Back
         </button>
-        <button
-          className="btn btn-primary"
-          disabled={step === 5}
-          onClick={() => setStep(step + 1)}
-        >
+        <button disabled={step === 3} onClick={() => setStep(step + 1)}>
           Next
         </button>
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
-  );
+  ); 
 }

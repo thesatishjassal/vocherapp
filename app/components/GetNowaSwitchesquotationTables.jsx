@@ -398,8 +398,17 @@ customItemsJson.forEach((it) => {
       )}
 
       {/* NAV */}
-      <button onClick={() => setStep(step - 1)}>Back</button>
-      <button onClick={() => setStep(step + 1)}>Next</button>
+      {/* <button onClick={() => setStep(step - 1)}>Back</button>
+      <button onClick={() => setStep(step + 1)}>Next</button> */}
+
+            <div style={{ marginTop: 20 }} className="d-flex justify-content-between gap-2">
+        <button className="btn btn-secondary" disabled={step === 1} onClick={() => setStep(step - 1)}>
+          Back
+        </button>
+        <button className="btn btn-primary" disabled={step === 5} onClick={() => setStep(step + 1)}>
+          Next
+        </button>
+      </div>
     </div>
   );
 }

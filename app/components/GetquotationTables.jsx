@@ -74,7 +74,7 @@ const GetQuotationTables = () => {
         console.error("Fetch error:", error);
       }
     };
-    fetchQuotations();
+    fetchQuotations(  );
   }, []);
 
   const handleDelete = async (quotationId) => {
@@ -211,7 +211,7 @@ const matchesSearch =
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
+      hour12: true,          
     });
   };
 
@@ -286,7 +286,7 @@ const matchesSearch =
                 <th className="d-none d-lg-table-cell">Without GST</th>
                 <th className="d-none d-lg-table-cell">GST Amount</th>
                 <th>Total with GST</th>
-                <th>Created By</th> {/* 👈 Added column */}
+                <th>Created By</th> 
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -303,7 +303,7 @@ const matchesSearch =
                     <td>{q.subject}</td>
                     <td className="d-none d-lg-table-cell">{q.without_gst}</td>
                     <td className="d-none d-lg-table-cell">{q.gst_amount}</td>
-                    <td>{q.amount_with_gst}</td>
+                    <td>{q.amount_including_gst}</td>
                     <td>{q.created_by || "N/A"}</td>
 
                     <td>

@@ -23,7 +23,7 @@ const OutvocuherTable = ({ items = [], onRowsUpdate }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [productList, setProductList] = useState([]);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = u.seState(false);
 
   const inputRefs = {
     itemcode: useRef(null),

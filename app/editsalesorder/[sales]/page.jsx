@@ -125,7 +125,7 @@ const EditSaleOrder = () => {
     try {
       const quotationData = {
         quotation_no: sales,
-        salesperson: quotationInfo?.salesperson || quotation?.salesperson || "Salesperson",
+        salesperson: quotationInfo?.salesperson || quotation?.salesperson ,
         subject: quotationInfo?.Subject || quotation?.subject || "Quotation for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
         without_gst: Math.round(gstDetails.withoutGST) || 0,

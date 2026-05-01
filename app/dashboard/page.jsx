@@ -10,6 +10,7 @@ export default function Home() {
   const [productsLength, setProductsLength] = useState(0);
   const [quotationLength, setQuotationLength] = useState(0);
   const [salesorders, setSalesorder] = useState(0);
+  const [switchquotations, setSwitchquotations] = useState(0);
   const [clientsLength, setClientsLength] = useState(0);
   const [userDetails, setUserDetails] = useState(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -41,6 +42,10 @@ export default function Home() {
     axios
       .get(`${API_URL}/quotation/`)
       .then((response) => setQuotationLength(response.data.length))
+      .catch((error) => console.error("Error fetching quotations:", error));
+   axios
+      .get(`${API_URL}/switch-quotations/`)
+      .then((response) => setSwitchquotations(response.data.length))
       .catch((error) => console.error("Error fetching quotations:", error));
     axios
       .get(`${API_URL}/salesorder/`)
@@ -228,7 +233,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Switch Quotation</h5>
-                  <span className="count text-sm">{salesorders}</span>
+                  <span className="count text-sm">{switchquotations}</span>
                 </div>
               </div>
             </a>

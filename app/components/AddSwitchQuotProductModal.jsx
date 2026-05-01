@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import FindProduct from "./FindProduct";
 
 const AddSwitchQuotProductModal = ({
   showAddModal,
@@ -25,14 +24,14 @@ const AddSwitchQuotProductModal = ({
     return (qtyValue * netPriceValue).toFixed(2);
   };
 
-  // Calculate net price
+  // Calculate net price from MRP + discount
   const calculateNetPrice = (mrp, discount) => {
     const mrpValue = parseFloat(mrp) || 0;
     const discountValue = parseFloat(discount) || 0;
     return (mrpValue * (1 - discountValue / 100)).toFixed(2);
   };
 
-  // Calculate discount
+  // Calculate discount from MRP + net price
   const calculateDiscount = (mrp, netPrice) => {
     const mrpValue = parseFloat(mrp) || 0;
     const netPriceValue = parseFloat(netPrice) || 0;
@@ -64,13 +63,23 @@ const AddSwitchQuotProductModal = ({
     });
   };
 
-  // Handle form submission
+  // ✅ FIX: Do NOT call handleClose after handleAddRow.
+  //         handleAddRow in SwitchQuotatTable already resets showAddModal,
+  //         newRow, and editRowIndex. Calling handleClose here too caused
+  //         double state updates and contributed to the infinite loop.
   const handleSubmit = () => {
-    if (!newRow.itemcode || !newRow.item_name || !newRow.quantity || !newRow.net_price) {
-      alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
+    if (
+      !newRow.itemcode ||
+      !newRow.item_name ||
+      !newRow.quantity ||
+      !newRow.net_price
+    ) {
+      alert(
+        "Please fill all required fields (Item Code, Item Name, Quantity, Net Price)."
+      );
       return;
     }
-    console.log(newRow)
+
     const netPrice = isNetPriceManual
       ? parseFloat(newRow.net_price).toFixed(2)
       : calculateNetPrice(newRow.mrp, newRow.discount_percent);
@@ -89,8 +98,12 @@ const AddSwitchQuotProductModal = ({
       discount_percent: newRow.discount_percent || 0,
     };
 
+    // ✅ handleAddRow handles all resets (showModal, newRow, editRowIndex)
     handleAddRow(updatedRow, editRowIndex);
-    handleClose();
+
+    // ✅ Only reset local modal state (isNetPriceManual, previewImage)
+    setIsNetPriceManual(false);
+    setPreviewImage(null);
   };
 
   // Handle field changes with smart auto-calculation
@@ -124,34 +137,6 @@ const AddSwitchQuotProductModal = ({
     }
   };
 
-  // Handle product selection (still available as "Search" button)
-  const handleLocalProductSelect = (product) => {
-    if (product) {
-      const netPrice = product.price || "";
-      const qty = newRow.quantity || "";
-      const amount = calculateAmount(qty, netPrice);
-
-      setNewRow((prev) => ({
-        ...prev,
-        itemcode: product.itemcode || "",
-        item_name: product.itemname || "",
-        unit: product.unit || "pcs",
-        mrp: product.price || "",
-        brand: product.brand || "",
-        image: product.thumbnail || null,
-        net_price: netPrice,
-        amount,
-        discount_percent: "",
-        category: product.category || "",
-        color: product.color || "",
-        description: product.description || "N/A",
-      }));
-      setIsNetPriceManual(false);
-      setShowFindProductModal(false);
-      setTimeout(() => inputRefs.quantity?.current?.focus(), 100);
-    }
-  };
-
   return (
     showAddModal && (
       <div
@@ -167,7 +152,7 @@ const AddSwitchQuotProductModal = ({
       >
         <div className="modal-dialog modal-dialog-centered modal">
           <div className="modal-content rounded-5 shadow-xl border-0 overflow-hidden">
-            {/* Header - Clean & modern like Airbnb */}
+            {/* Header */}
             <div className="modal-header border-0 px-4 pt-4 pb-3">
               <h1 className="modal-title fs-4 fw-semibold text-dark">
                 {editRowIndex !== null ? "Edit Item" : "Add New Item"}
@@ -182,136 +167,160 @@ const AddSwitchQuotProductModal = ({
 
             <div className="modal-body px-4 pb-3">
               <div className="row g-4">
-                {/* Search Product Button - Prominent like Airbnb search */}
-                {/* <div className="col-12">
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary w-100 py-2 rounded-4 d-flex align-items-center justify-content-center gap-3 shadow-sm"
-                    onClick={() => setShowFindProductModal(true)}
-                  >
-                    <i className="fa-solid fa-magnifying-glass fs-5"></i>
-                    <span className="fw-medium fs-6">Search Product from Catalog</span>
-                  </button>
-                </div> */}
-
                 {/* Item Code & Name */}
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold text-muted small">Item Code</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Item Code
+                  </label>
                   <input
                     type="text"
                     name="itemcode"
                     value={newRow.itemcode || ""}
-                    onChange={(e) => handleLocalFieldChange("itemcode", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("itemcode", e.target.value)
+                    }
                     onKeyDown={(e) => handleKeyDown(e, "item_name")}
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.itemcode}
                     required
                   />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold text-muted small">Item Name</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Item Name
+                  </label>
                   <input
                     type="text"
                     name="item_name"
                     value={newRow.item_name || ""}
-                    onChange={(e) => handleLocalFieldChange("item_name", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("item_name", e.target.value)
+                    }
                     onKeyDown={(e) => handleKeyDown(e, "quantity")}
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.item_name}
                     required
                   />
                 </div>
 
-                {/* Brand, Category, Color - 3 columns */}
+                {/* Brand, Category, Color */}
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold text-muted small">Brand</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Brand
+                  </label>
                   <input
                     type="text"
                     name="brand"
                     value={newRow.brand || ""}
-                    onChange={(e) => handleLocalFieldChange("brand", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("brand", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.brand}
                   />
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold text-muted small">Category</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Category
+                  </label>
                   <input
                     type="text"
                     name="category"
                     value={newRow.category || ""}
-                    onChange={(e) => handleLocalFieldChange("category", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("category", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                   />
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label fw-semibold text-muted small">Color</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Color
+                  </label>
                   <input
                     type="text"
                     name="color"
                     value={newRow.color || ""}
-                    onChange={(e) => handleLocalFieldChange("color", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("color", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                   />
                 </div>
 
                 {/* Pricing Row */}
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold text-muted small">Unit</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Unit
+                  </label>
                   <input
                     type="text"
                     name="unit"
                     value={newRow.unit || ""}
-                    onChange={(e) => handleLocalFieldChange("unit", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("unit", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.unit}
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold text-muted small">MRP (₹)</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    MRP (₹)
+                  </label>
                   <input
                     type="number"
                     name="mrp"
                     value={newRow.mrp || ""}
-                    onChange={(e) => handleLocalFieldChange("mrp", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("mrp", e.target.value)
+                    }
                     onKeyDown={(e) => handleKeyDown(e, "discount_percent")}
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.mrp}
                     min="0"
                     step="0.01"
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold text-muted small">Quantity</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Quantity
+                  </label>
                   <input
                     type="number"
                     name="quantity"
                     value={newRow.quantity || ""}
-                    onChange={(e) => handleLocalFieldChange("quantity", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("quantity", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.quantity}
                     min="1"
                     required
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label fw-semibold text-muted small">Discount (%)</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Discount (%)
+                  </label>
                   <input
                     type="number"
                     name="discount_percent"
                     value={newRow.discount_percent || ""}
-                    onChange={(e) => handleLocalFieldChange("discount_percent", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("discount_percent", e.target.value)
+                    }
                     onKeyDown={(e) => handleKeyDown(e, "net_price")}
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.discount_percent}
                     min="0"
                     max="100"
@@ -319,16 +328,20 @@ const AddSwitchQuotProductModal = ({
                   />
                 </div>
 
-                {/* Net Price & Amount - Highlighted */}
+                {/* Net Price & Amount */}
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold text-muted small">Net Price (₹)</label>
+                  <label className="form-label fw-semibold text-muted small">
+                    Net Price (₹)
+                  </label>
                   <input
                     type="number"
                     name="net_price"
                     value={newRow.net_price || ""}
-                    onChange={(e) => handleLocalFieldChange("net_price", e.target.value)}
+                    onChange={(e) =>
+                      handleLocalFieldChange("net_price", e.target.value)
+                    }
                     placeholder=""
-                    className="form-control form-control border-0 shadow-sm bg-light rounded-4 py-2"
+                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
                     ref={inputRefs.net_price}
                     min="0"
                     step="0.01"
@@ -336,7 +349,9 @@ const AddSwitchQuotProductModal = ({
                   />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold text-success small">Total Amount (₹)</label>
+                  <label className="form-label fw-semibold text-success small">
+                    Total Amount (₹)
+                  </label>
                   <input
                     type="text"
                     name="amount"
@@ -346,33 +361,6 @@ const AddSwitchQuotProductModal = ({
                     ref={inputRefs.amount}
                   />
                 </div>
-
-                {/* Description & Remarks - Full width */}
-                {/* <div className="col-12">
-                  <label className="form-label fw-semibold text-muted small">Description</label>
-                  <textarea
-                    name="description"
-                    value={newRow.description || ""}
-                    onChange={(e) => handleLocalFieldChange("description", e.target.value)}
-                    placeholder="Short description (optional)"
-                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
-                    rows="2"
-                  />
-                </div> */}
-
-                {/* <div className="col-12">
-                  <label className="form-label fw-semibold text-muted small">Remarks</label>
-                  <textarea
-                    name="remarks"
-                    value={newRow.remarks || ""}
-                    onChange={(e) => handleLocalFieldChange("remarks", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, null)}
-                    placeholder="Any special notes..."
-                    className="form-control border-0 shadow-sm bg-light rounded-4 py-2"
-                    ref={inputRefs.remarks}
-                    rows="2"
-                  />
-                </div> */}
               </div>
             </div>
 
@@ -394,16 +382,7 @@ const AddSwitchQuotProductModal = ({
               </button>
             </div>
           </div>
-
-
         </div>
-
-        {/* Keep FindProduct for quick catalog search */}
-        {/* <FindProduct
-          showModal={showFindProductModal}
-          setShowModal={setShowFindProductModal}
-          handleProductSelect={handleLocalProductSelect}
-        /> */}
       </div>
     )
   );
@@ -431,7 +410,8 @@ AddSwitchQuotProductModal.propTypes = {
   setNewRow: PropTypes.func.isRequired,
   handleFieldChange: PropTypes.func.isRequired,
   handleKeyDown: PropTypes.func.isRequired,
-  inputRefs: PropTypes.objectOf(PropTypes.shape({ current: PropTypes.any })).isRequired,
+  inputRefs: PropTypes.objectOf(PropTypes.shape({ current: PropTypes.any }))
+    .isRequired,
   editRowIndex: PropTypes.number,
   handleAddRow: PropTypes.func.isRequired,
 };

@@ -119,7 +119,7 @@ const AddPurchaseOrder = () => {
     try {
       const salesOrderData = {
         purchaseorder_no: generatePurchaseOrderNumber(),
-        purchaseperson: salesOrderInfo?.purchaseperson || "Unknown Salesperson",
+        purchaseperson: salesOrderInfo?.purchaseperson ,
         subject:
           salesOrderInfo?.Subject || "Purchase Order for Products/Services",
         amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,

@@ -97,15 +97,15 @@ export default function ClientViewQuotation({ quote }) {
   }, []);
 
   // ===== GST CALCULATION (DO NOT TOUCH UI) =====
-  const gstPercentage = useMemo(() => {
-    if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
-    return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
-  }, [quotation]);
+  // const gstPercentage = useMemo(() => {
+  //   if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
+  //   return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
+  // }, [quotation]);
 
-  const isGstExcluded = useMemo(() => {
-    if (!quotation) return false;
-    return quotation.amount_including_gst === quotation.without_gst;
-  }, [quotation]);
+  // const isGstExcluded = useMemo(() => {
+  //   if (!quotation) return false;
+  //   return quotation.amount_including_gst === quotation.without_gst;
+  // }, [quotation]);
   // ===========================================
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function ClientViewQuotation({ quote }) {
         console.error(err);
       } finally {
         setIsLoading(false);
-      }
+      } 
     };
 
     if (quote) {
@@ -181,7 +181,7 @@ export default function ClientViewQuotation({ quote }) {
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
-                  <b className="tm_primary_color"> {quotation.quotation_no}</b>
+                  <b className="tm_primary_color"> PLQOT-{quotation.quotation_no}</b>
                 </p>
               </div>
             </div>
@@ -292,14 +292,14 @@ export default function ClientViewQuotation({ quote }) {
                     </tr>
 
                     {/* GST Row (only if > 0) */}
-                    {(quotation?.gst_amount ?? quotation?.gstAmount ?? 0) >
-                      0 && (
+{(quotation?.gst_type === "exclude") &&
+  (quotation?.gst_amount ?? quotation?.gstAmount ?? 0) > 0 && (
                       <tr>
                         <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                           <p className="m-0">
-                            {quotation?.gstType === "include"
-                              ? "Included GST:"
-                              : "Excluded GST:"} 
+                            {quotation?.gst_type === "exclude"
+                              ? "Exclude GST: (18%):"
+                              : "Include GST (18%):"}
                           </p>
                         </td>
                         <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
@@ -309,7 +309,39 @@ export default function ClientViewQuotation({ quote }) {
                         </td>
                       </tr>
                     )}
+                    {/* ✅ ADDITIONAL DISCOUNT ROW */}
+                    
+                    {(quotation?.additional_discount_percentage ?? 0) > 0 && (
+                      <>
+                        <tr>
+                          <td className="tm_width_3 tm_border_none tm_bold pb-0 pt-1">
+                            <p className="m-0">
+                              Additional Discount (
+                              {quotation.additional_discount_percentage}%):
+                            </p>
+                          </td>
+                          <td className="tm_width_2 tm_text_right tm_border_none tm_bold">
+                            -{" "}
+                            {Number(
+                              quotation?.additional_discount_amount ?? 0
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
 
+                        {/* <tr>
+                          <td className="tm_width_3 tm_border_none tm_bold pb-0 pt-1">
+                            <p className="m-0">Amount After Discount:</p>
+                          </td>
+                          <td className="tm_width_2 tm_text_right tm_border_none tm_bold">
+                            {Number(
+                              quotation?.amount_after_discount ??
+                                quotation?.without_gst ??
+                                0
+                            ).toFixed(2)}
+                          </td>
+                        </tr> */}
+                      </>
+                    )}
                     {/* TOTAL */}
                     <tr>
                       <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
@@ -317,8 +349,8 @@ export default function ClientViewQuotation({ quote }) {
                       </td>
                       <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
                         {Number(
-                          quotation?.amount_with_gst + quotation?.gst_amount ?? quotation?.gstAmount  ??
-                            quotation?.amount_with_gst + quotation?.gst_amount ?? quotation?.gstAmount  ??
+                          quotation?.amount_with_gst ??
+                            quotation?.amount_after_discount ??
                             0
                         ).toFixed(2)}
                       </td>

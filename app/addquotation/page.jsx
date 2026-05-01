@@ -18,13 +18,19 @@ const Quotation = () => {
   const [quotationId, setQuotationId] = useState(1);
   const [quotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
-  const [gstDetails, setGstDetails] = useState({
-    gstAmount: 0,
-    totalWithGST: 0,
-    withoutGST: 0,
-    gstPercentage: 0,
-    gstType: "include",
-  });
+const [gstDetails, setGstDetails] = useState({
+  gstAmount: 0,
+  totalWithGST: 0,
+  withoutGST: 0,
+
+  // ✅ MATCH CHILD + API
+  gst_percentage: 18,
+  gst_type: "include",
+
+  additional_discount_percentage: 0,
+  additional_discount_amount: 0,
+  amount_after_discount: 0,
+});
   const [remarks, setRemarks] = useState("");
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -102,10 +108,14 @@ const generateItemData = useCallback(
     setSelectedCustomer(selectedClient);
   }, []);
 
-  const handleGSTChange = useCallback((details) => {
-    setGstDetails(details);
-  }, []);
+const handleGSTChange = useCallback((details) => {
+  setGstDetails((prev) => ({
+    ...prev,
+    ...details, // 🔥 merge correctly
+  }));
 
+  console.log("GST Details Updated:", details);
+}, []);
   const generateQuotationNumber = useMemo(() => {
     if (quotationSequence === null) return "PLQOT-Loading...";
     const sequenceStr = quotationSequence.toString().padStart(3, "0");
@@ -179,23 +189,33 @@ const generateItemData = useCallback(
         }
       }
 
-      const quotationData = {
-        quotation_no: generateQuotationNumber,
-        salesperson: quotationInfo?.Salesperson ,
-        subject: quotationInfo?.Subject || "Quotation for Products/Services",
-        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-        without_gst: Math.round(gstDetails.withoutGST) || 0,
-        gst_amount: Math.round(gstDetails.gstAmount) || 0,
-        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-        warranty_guarantee: warrantyGuarantee || "As per company norms",
-        remarks: remarks || "N/A",
-        status: "active",
-        client_id: selectedCustomer?.id || 3,
+const quotationData = {
+  quotation_no: generateQuotationNumber,
+  // salesperson: quotationInfo?.Salesperson ,
+  salesperson: quotationInfo?.Salesperson || userDetails?.name || "System",
+  subject: quotationInfo?.Subject || "Quotation for Products/Services",
+  amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+  without_gst: Math.round(gstDetails.withoutGST) || 0,
+  gst_amount: Math.round(gstDetails.gstAmount) || 0,
+  amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
 
-          // ✅ Just add these two
-        created_by: userDetails?.name || "System",
-        created_at: new Date().toISOString(),
-      };
+  // ✅ ADD THIS BLOCK
+  gst_type: gstDetails.gst_type || "include",
+  gst_percentage: gstDetails.gst_percentage || 18,
+  final_amount: Math.round(gstDetails.totalWithGST) || 0,
+
+  warranty_guarantee: warrantyGuarantee || "As per company norms",
+  remarks: remarks || "N/A",
+  status: "active",
+  client_id: selectedCustomer?.id || 3,
+
+  created_by: userDetails?.name || "System",
+  created_at: new Date().toISOString(),
+
+  additional_discount_percentage: gstDetails.additional_discount_percentage || 0,
+  additional_discount_amount: gstDetails.additional_discount_amount || 0,
+  amount_after_discount: gstDetails.amount_after_discount || 0,
+};
 
       console.log("Sending quotationData:", quotationData);
 
@@ -309,11 +329,12 @@ const generateItemData = useCallback(
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
               }}
             >
               <div
                 className="tm_invoice_left mt-0"
+        
+        
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
@@ -360,7 +381,7 @@ const generateItemData = useCallback(
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                     Contact no: <b> 94172-81252,98150-37755       </b> <br />
                 Email id: <b> panviklighting@gmail.com      </b> <br />
-              Salesperson: {quotationInfo && <b>{quotationInfo.salesperson } </b>}  <b>{userDetails ? userDetails.name : ""} </b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
+              Salesperson: <b>{quotationInfo?.Salesperson === "" ? userDetails.name : quotationInfo?.Salesperson}</b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
             <div

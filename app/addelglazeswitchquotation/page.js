@@ -1,14 +1,15 @@
 "use client";
 import QuotationInfo from "../components/QuotaionInfo";
 import CustomerModal from "../components/customerModal";
-import GetSwitchQuotationTables from "../components/GetVeniaSwitchesquotationTables";
+import GetSwitchQuotationTables from "../components/GetEnglazeSwitchesquotationTables";
+import GetEnglazeWoodPlates from "../components/GetEnglazeWoodPlatesesquotationTables";
 import GSTCalculator from "../components/GSTCalculator";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
-const VeniaQuotation = () => {
+const EnglazeQuotation = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
@@ -43,19 +44,8 @@ const VeniaQuotation = () => {
       }
     }
   }, []);
-    const generateItemData = useCallback(
-      (item, index) => {
-        const qty = parseInt(item.qty, 10) || 0;
-        const mrp = parseFloat(item.mrp) || 0;
-        const discount = parseFloat(item.discount) || 0;
-
-    // ✅ FIX: Respect manual net price
-    const netPrice = parseFloat(item.netPrice) || 0;
-
-    // ✅ Amount based on FINAL net price
-    const amount = netPrice * qty;
-
-    return {
+  const generateItemData = useCallback(
+    (item, index) => ({
       sr_no: index + 1,
       item_name: item.itemName || "N/A",
       description: item.customerDescription || "N/A",
@@ -64,21 +54,16 @@ const VeniaQuotation = () => {
       brand: item.brand || "N/A",
       itemcode: item.itemCode || "N/A",
       image: item.image || null,
-
-      quantity: qty,
-      mrp: mrp,
-
-      // ✅ FINAL VALUES (correct now)
-      net_price: netPrice,
-      amount: amount,
-
-      discount_percent: discount,
+      quantity: parseInt(item.qty, 10) || 0,
+      mrp: parseFloat(item.mrp) || null,
+      amount: parseFloat(item.amount) || null,
+      discount_percent: parseFloat(item.discount) || 0,
+      net_price: parseFloat(item.netPrice) || null,
       unit: item.unit || "pcs",
       remarks: item.comments || "N/A",
-    };
-  },
-  []
-);
+    }),
+    []
+  );
   // Memoized callbacks
   const handleQuotationConfirm = useCallback((data) => {
     setQuotationInfo(data);
@@ -527,4 +512,4 @@ const VeniaQuotation = () => {
     </div>
   );
 };
-export default VeniaQuotation;
+export default EnglazeQuotation;

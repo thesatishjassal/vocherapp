@@ -4,7 +4,7 @@ import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
 import EdiQuotatTable from "../../components/EditQuotatTable";
 import GSTCalculator from "../../components/GSTCalculator";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
@@ -25,8 +25,11 @@ const EditQuotation = () => {
     gstAmount: 0,
     totalWithGST: 0,
     withoutGST: 0,
-    gstPercentage: 0,
-    gstType: "include",
+    gst_percentage: 18,
+    gst_type: "include",
+    additional_discount_percentage: 0,
+    additional_discount_amount: 0,
+    amount_after_discount: 0,
   });
 
   const [remarks, setRemarks] = useState("");
@@ -36,7 +39,6 @@ const EditQuotation = () => {
 
   const { quote } = useParams();
   const [userDetails, setUserDetails] = useState(null);
-
   const [quotation, setQuotation] = useState(null);
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,6 @@ const EditQuotation = () => {
   }, []);
 
   /* -------------------- Load quotation + client -------------------- */
-
   useEffect(() => {
     if (!quote) return;
 
@@ -67,20 +68,24 @@ const EditQuotation = () => {
 
         if (response.data) {
           setQuotation(response.data);
-
           setRemarks(response.data.remarks || "");
-
           setWarrantyGuarantee(
             response.data.warranty_guarantee ||
               "1 year warranty against manufacturing defects"
           );
 
+          // ✅ Set gstDetails once from API — GSTCalculator takes over after this
           setGstDetails({
             gstAmount: response.data.gst_amount || 0,
             totalWithGST: response.data.amount_with_gst || 0,
             withoutGST: response.data.without_gst || 0,
-            gstPercentage: 0,
-            gstType: "include",
+            gst_percentage: response.data.gst_percentage ?? 18,
+            gst_type: response.data.gst_type ?? "include",
+            additional_discount_percentage:
+              response.data.additional_discount_percentage || 0,
+            additional_discount_amount:
+              response.data.additional_discount_amount || 0,
+            amount_after_discount: response.data.amount_after_discount || 0,
           });
 
           if (response.data.client_id) fetchClient(response.data.client_id);
@@ -102,9 +107,7 @@ const EditQuotation = () => {
       const response = await axios.get(`${API_URL}/clients/`, {
         withCredentials: true,
       });
-
       const filteredClient = response.data.find((c) => c.id === client_id);
-
       if (filteredClient) setClient(filteredClient);
       else toast.error("Client not found!");
     } catch {
@@ -112,102 +115,73 @@ const EditQuotation = () => {
     }
   };
 
-  /* -------------------- FIXED TOTAL CALCULATION -------------------- */
-
-  useEffect(() => {
-    if (!rowsData || rowsData.length === 0) return;
-
-    const total = rowsData.reduce((sum, row) => {
-      return sum + (parseFloat(row.amount) || 0);
-    }, 0);
-
-    setTotalAmount(total);
-
-    const gstPercent = gstDetails.gstPercentage || 0;
-
-    let gstAmount = 0;
-    let totalWithGST = total;
-
-    if (gstDetails.gstType === "add") {
-      gstAmount = total * (gstPercent / 100);
-      totalWithGST = total + gstAmount;
-    }
-
-    setGstDetails((prev) => ({
-      ...prev,
-      gstAmount,
-      totalWithGST,
-      withoutGST: total,
-    }));
-  }, [rowsData, gstDetails.gstPercentage, gstDetails.gstType]);
-
   /* -------------------- Handlers -------------------- */
 
-  const handleTotalAmountChange = (newTotalAmount) =>
+  // ✅ FIX 1: Wrap all handlers in useCallback — stable references
+  const handleTotalAmountChange = useCallback((newTotalAmount) => {
     setTotalAmount(newTotalAmount);
+  }, []);
 
-  const handleRowsChange = (rows) => {
+  const handleRowsChange = useCallback((rows) => {
     setRowsData(rows);
-  };
+  }, []);
 
-  const handleClientConfirm = (selectedClient) =>
+  const handleClientConfirm = useCallback((selectedClient) => {
     setSelectedCustomer(selectedClient);
+  }, []);
 
-  const handleGSTChange = (details) => {
-    setGstDetails(details);
-  };
+  // ✅ FIX 2: handleGSTChange — stable ref + guard against same value
+  //    This was the direct cause of the loop:
+  //    GSTCalculator calls onGSTChange → setGstDetails → re-render →
+  //    GSTCalculator re-renders → calls onGSTChange again → infinite
+  const lastGstRef = useRef(null);
+  const handleGSTChange = useCallback((details) => {
+    const next = JSON.stringify(details);
+    if (lastGstRef.current === next) return; // skip if nothing changed
+    lastGstRef.current = next;
+    setGstDetails((prev) => ({ ...prev, ...details }));
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModalClientDetails(false);
     setShowHideFilterModal(false);
-  };
+  }, []);
+
+  // ✅ FIX 3: REMOVE the circular useEffect that called setGstDetails based on
+  //    gstDetails fields as deps. That caused:
+  //    setGstDetails → deps change → effect re-runs → setGstDetails → loop
+  //    GSTCalculator already handles all GST calculation internally and
+  //    reports back via onGSTChange. No need to duplicate it here.
 
   /* -------------------- SAVE QUOTATION -------------------- */
-
   const handleSaveQuotation = async () => {
     try {
-      const totalWithoutGST = rowsData.reduce((sum, row) => {
-        return sum + (parseFloat(row.amount) || 0);
-      }, 0);
-
-      const gstPercent = gstDetails.gstPercentage || 0;
-
-      let gstAmount = 0;
-      let totalWithGST = totalWithoutGST;
-
-      if (gstDetails.gstType === "add") {
-        gstAmount = totalWithoutGST * (gstPercent / 100);
-        totalWithGST = totalWithoutGST + gstAmount;
-      }
-
       const quotationData = {
         quotation_no: quote,
-
+        gst_type: gstDetails.gst_type,
+        gst_percentage: gstDetails.gst_percentage,
         salesperson: quotationInfo?.salesperson || quotation?.salesperson,
-
         subject:
           quotationInfo?.Subject ||
           quotation?.subject ||
           "Quotation for Products/Services",
-
-        amount_including_gst: Math.round(totalWithGST),
-
-        without_gst: Math.round(totalWithoutGST),
-
-        gst_amount: Math.round(gstAmount),
-
-        amount_with_gst: Math.round(totalWithGST),
-
+        amount_including_gst: Math.round(gstDetails.totalWithGST),
+        without_gst: Math.round(gstDetails.withoutGST),
+        gst_amount: Math.round(gstDetails.gstAmount),
+        amount_with_gst: Math.round(gstDetails.totalWithGST),
+        additional_discount_percentage:
+          gstDetails.additional_discount_percentage || 0,
+        additional_discount_amount: Math.round(
+          gstDetails.additional_discount_amount || 0
+        ),
+        amount_after_discount: Math.round(
+          gstDetails.amount_after_discount || 0
+        ),
         warranty_guarantee: warrantyGuarantee,
-
         remarks,
-
         status: quotationInfo?.status || "active",
-
         client_id: selectedCustomer?.client_id || quotation?.client_id || 3,
-
         created_by: userDetails?.name || "System",
-
         created_at: new Date().toISOString(),
       };
 
@@ -219,31 +193,18 @@ const EditQuotation = () => {
       if (rowsData.length > 0) {
         const itemsData = rowsData.map((item) => ({
           quotation_id: quote,
-
           product_id: item.itemCode,
-
           customercode: item.customerCode || "N/A",
-
           customerdescription: item.customerDescription || "N/A",
-
           image: item.image || "https://example.com/default-image.jpg",
-
           itemcode: item.itemCode,
-
           brand: item.brand || "N/A",
-
           mrp: parseFloat(item.mrp) || 0,
-
           price: Math.round(parseFloat(item.price)) || 0,
-
           quantity: parseInt(item.qty, 10) || 0,
-
           discount: parseFloat(item.discount) || 0,
-
           amount: parseFloat(item.amount) || 0,
-
           item_name: item.itemName || "N/A",
-
           unit: item.unit || "pcs",
         }));
 
@@ -254,9 +215,7 @@ const EditQuotation = () => {
       }
 
       setQuotationId((p) => p + 1);
-
       toast.success("Quotation updated successfully!");
-
       window.location.href = "/getquotation";
     } catch (error) {
       toast.error(
@@ -268,20 +227,13 @@ const EditQuotation = () => {
   };
 
   /* -------------------- REVISION NUMBER -------------------- */
-
   const nextRevisionNo = useMemo(() => {
     if (!quote) return "";
-
     const base = quote.replace(/-([A-Z])$/, "");
-
     const match = quote.match(/-([A-Z])$/);
-
     if (!match) return `${base}-A`;
-
     const letter = match[1];
-
     const nextLetter = String.fromCharCode(letter.charCodeAt(0) + 1);
-
     return `${base}-${nextLetter}`;
   }, [quote]);
 
@@ -353,10 +305,10 @@ const EditQuotation = () => {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                Contact no: <b> 94172-81252,98150-37755 </b> <br />
-                Email id: <b> panviklighting@gmail.com </b> <br />
+                Contact no: <b>94172-81252, 98150-37755</b> <br />
+                Email id: <b>panviklighting@gmail.com</b> <br />
                 Salesperson: {quotation && <b>{quotation.salesperson}</b>} |
-                Mobile Number : <b>{userDetails.phone}</b>
+                Mobile Number: <b>{userDetails && userDetails.phone}</b>
                 <br />
               </div>
             </div>
@@ -378,14 +330,6 @@ const EditQuotation = () => {
             <div className="tm_table tm_style1 tm_mb30">
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
-                  {/* <EdiQuotatTable
-                    FiltercolModal={FiltercolModal}
-                    ShowHideFiltercolModal={ShowHideFiltercolModal}
-                    onClose={closeModal}
-                    onRowsChange={handleRowsChange}
-                    onTotalAmountChange={handleTotalAmountChange}
-                    qouteId={quote}
-                  /> */}
                   <EdiQuotatTable
                     FiltercolModal={FiltercolModal}
                     ShowHideFiltercolModal={ShowHideFiltercolModal}
@@ -415,10 +359,10 @@ const EditQuotation = () => {
                   ></textarea>
                 </div>
                 <div className="tm_right_footer">
-                  {/* <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} /> */}
                   <GSTCalculator
                     totalAmount={totalAmount}
                     onGSTChange={handleGSTChange}
+                    initialData={gstDetails}
                   />
                 </div>
               </div>
@@ -434,7 +378,6 @@ const EditQuotation = () => {
             </p>
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
-              {/* <p>GST: <b>Including in above prices as per applicable.</b></p> */}
               <p>
                 Payment Terms: <b>100% in advance with order.</b>
               </p>
@@ -541,13 +484,6 @@ const EditQuotation = () => {
             </span>
             <span className="tm_btn_text">Publish</span>
           </button>
-          {/* New Publish Revision button */}
-          {/* <button id="tm_publish_revision_btn" className="tm_invoice_btn tm_color3" onClick={handlePublishRevision}>
-            <span className="tm_btn_icon">
-              <i className="fa-solid fa-copy"></i>
-            </span>
-            <span className="tm_btn_text">Publish Revision</span>
-          </button> */}
         </div>
       </div>
     </div>

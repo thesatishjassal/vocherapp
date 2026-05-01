@@ -118,7 +118,7 @@ const handleSaveSalesOrder = async () => {
   try {
     const salesOrderData = {
       salesorder_no: generateSalesOrderNumber(),
-      salesperson: salesOrderInfo?.Salesperson || "Unknown Salesperson",
+      salesperson: salesOrderInfo?.Salesperson ,
       subject: salesOrderInfo?.Subject || "Sales Order for Products/Services",
       amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
       without_gst: Math.round(gstDetails.withoutGST) || 0,

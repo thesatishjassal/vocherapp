@@ -258,7 +258,7 @@ const mapItemToRow = useCallback((item) => {
         </button>
 
         <div className="table-responsive">
-          <table className="table">
+          <table className="tm_round_border table align-items-center justify-content-center mb-0">
             <thead>
               <tr>
                 <th>SR</th>

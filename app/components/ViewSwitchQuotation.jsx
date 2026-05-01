@@ -186,7 +186,7 @@ const isGstExcluded = useMemo(() => {
                 GST: <b>03ADWPG0246P1Z8</b> <br />
                 Contact no: <b> 94172-81252,98150-37755 </b> <br />
                 Email id: <b> panviklighting@gmail.com </b> <br />
-                Salesperson: {quotation && <b>{quotation.salesperson} </b>} |
+                Salesperson: {quotation && <b>{userDetails.name} </b>} |
                 Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
               </div>
             </div>
@@ -240,8 +240,8 @@ const isGstExcluded = useMemo(() => {
                           <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
                             <p className="m-0">
                               {isGstExcluded
-                                ? `Included GST (${gstPercentage}%)`
-                                : `Excluded GST (${gstPercentage}%)`}
+                                ? `Excluded GST (${gstPercentage}%)`
+                                : `Included GST (${gstPercentage}%)`}
                             </p>
                           </td>
                           <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">

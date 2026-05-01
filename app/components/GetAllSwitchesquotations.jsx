@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import SwitchQuotationHeader from "./SwitchQuotationHeader";
 
 // const API_URL = "https://api.panvic.in/switch-quotations/";
 // const CLIENTS_API_URL = "https://api.panvic.in/clients/";
@@ -158,21 +159,23 @@ const formatDateTime = (isoString) => {
 
   return (
     <div className="card">
-      <div className="card-header d-flex justify-content-between align-items-center pb-0">
-        <h6>Manage Switch Quotations</h6>
-        <Link href="/addswitchquotation" className="btn btn-primary btn-sm">
-          + Add Switch Quotation
+      <SwitchQuotationHeader />
+      {/* <div classNanage Switcswitchquotation" className="btn  mx-2 btn-primary btn-sm">
+          + Adame=h Quotations</h6>
+        <Link href="/add"card-header d-flex justify-content-between align-items-center pb-0">
+        <h6>Md Artisan Switch Quotation 
         </Link>
-        <Link href="/addveniaswitchquotation" className="btn btn-primary btn-sm">
+   
+        <Link href="/addveniaswitchquotation" className="btn  mx-2 btn-primary btn-sm no-shadow ">
           + Add Venia Switch Quotation
         </Link>
-         <Link href="/addnowaswitchquotation" className="btn btn-primary btn-sm">
+         <Link href="/addnowaswitchquotation" className="btn  mx-2 btn-primary btn-sm no-shadow">
           + Add Nowa Switch Quotation
         </Link>
-         {/* <Link href="/addelglazeswitchquotation" className="btn btn-primary btn-sm">
-          + Add Englze Switch Quotation
-        </Link> */}
-      </div>
+        <Link href="/addelglazeswitchquotation" className="btn  mx-2 btn-primary btn-sm no-shadow">
+        + Add Englaze Switch Quotation
+        </Link>
+      </div> */}
 
       <div className="card-body py-0 pt-0 pb-2">
         <div className="table-responsive">

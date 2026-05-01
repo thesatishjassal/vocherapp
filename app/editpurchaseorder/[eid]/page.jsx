@@ -6,6 +6,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
+import { console } from "inspector";
 
 const EditQuotation = () => {
   const [InfoModal, setInfoModal] = useState(false);
@@ -29,7 +30,7 @@ const EditQuotation = () => {
     "1 year warranty against manufacturing defects"
   );
   const { eid } = useParams();
-
+  console.log("Editing Purchase Order ID:", eid);
   // const PURCHASEORDER_API_URL = "https://api.panvic.in/purchaseorder";
   // const CLIENT_API_URL = "https://api.panvic.in/clients/";
   const [quotation, setQuotation] = useState(null);
@@ -99,7 +100,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
       const quotationData = {
         quotation_no: eid,
         salesperson:
-          quotationInfo?.salesperson || quotation?.salesperson || "Salesperson",
+          quotationInfo?.salesperson || quotation?.salesperson ,
         subject:
           quotationInfo?.Subject ||
           quotation?.subject ||

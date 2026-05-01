@@ -154,7 +154,8 @@ export default function EditClientModal({ client, onClose, onUpdated }) {
                         id="client_type"
                         name="client_type"
                         className={`form-select ${
-                          formik.touched.client_type && formik.errors.client_type
+                          formik.touched.client_type &&
+                          formik.errors.client_type
                             ? "is-invalid"
                             : ""
                         }`}
@@ -166,11 +167,12 @@ export default function EditClientModal({ client, onClose, onUpdated }) {
                         <option value="Customer">Customer</option>
                         <option value="Other">Other</option>
                       </select>
-                      {formik.touched.client_type && formik.errors.client_type && (
-                        <div className="invalid-feedback">
-                          {formik.errors.client_type}
-                        </div>
-                      )}
+                      {formik.touched.client_type &&
+                        formik.errors.client_type && (
+                          <div className="invalid-feedback">
+                            {formik.errors.client_type}
+                          </div>
+                        )}
                     </div>
                   </div>
                 </fieldset>
