@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie";
 
 const AddInvoice = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -22,7 +23,6 @@ const AddInvoice = () => {
   const [gstPercentage, setGstPercentage] = useState(0);
   const [remarks, setRemarks] = useState("");
   const [userDetails, setUserDetails] = useState(null);
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const closeModal = () => setShowModalClientDetails(false);
 
