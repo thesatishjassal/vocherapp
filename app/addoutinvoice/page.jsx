@@ -9,8 +9,9 @@ import CustomerModal from "../components/customerModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Cookies from "js-cookie";
- const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const Addoutinvoice = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [InfoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
