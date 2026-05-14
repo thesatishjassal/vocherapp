@@ -29,8 +29,8 @@ export default function GetNowaSwitchesquotationTables({
       .then((res) => res.json())
       .then((json) => {
         const allData = json.data || [];
-        const switchData = allData.filter((i) => i.category === "Switch");
-        setSwitches(switchData);
+        // const switchData = allData.filter((item) => item.category === "Switch");
+        setSwitches(allData);
         setLoading(false);
       })
       .catch(() => {
@@ -405,7 +405,7 @@ customItemsJson.forEach((it) => {
         <button className="btn btn-secondary" disabled={step === 1} onClick={() => setStep(step - 1)}>
           Back
         </button>
-        <button className="btn btn-primary" disabled={step === 5} onClick={() => setStep(step + 1)}>
+        <button className="btn btn-primary" disabled={step === 3} onClick={() => setStep(step + 1)}>
           Next
         </button>
       </div>
