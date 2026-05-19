@@ -484,6 +484,7 @@ export default function BrandQRForm() {
     font-size: 14px;
     transition: all .3s;
     background: #eeeeee;
+    color:#000;
 }
 
         .brandqr__input:focus {
