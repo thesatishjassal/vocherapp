@@ -527,7 +527,7 @@ export default function BrandQRForm() {
         .brandqr__table td {
           padding: 16px 14px;
           border-bottom: 1px solid #f8fafc;
-          font-size: 14px;
+          font-size: 14px;    color: #161616;
         }
 
         .brandqr__tableQR {
