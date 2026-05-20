@@ -181,7 +181,7 @@ export default function ClientViewQuotation({ quote }) {
                 </div>
                 <p className="tm_invoice_number">
                   Quotation No:{" "}
-                  <b className="tm_primary_color"> PLQOT-{quotation.quotation_no}</b>
+                  <b className="tm_primary_color"> {quotation.quotation_no}</b>
                 </p>
               </div>
             </div>
