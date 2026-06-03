@@ -221,6 +221,26 @@ export default function Home() {
         )}
         {(isAdmin || isSalesExecutiveOrArchitect) && (
           <div className="col-lg-3 col-md-4 col-6 mb-3">
+            <a href="/report">
+              <div className="card">
+                <span className="mask opacity-10 border-radius-lg"></span>
+                <div className="card-body p-3 position-relative text-center">
+                  <div className="icon_wrapper">
+                    <img
+                      src="/assets/img/report.png"
+                      alt=""
+                      className="client_img"
+                    />
+                  </div>
+                  <h5 className="font-weight-bolder mb-0 mt-3">Reports</h5>
+                  <span className="count text-sm">{quotationLength}</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
+        {(isAdmin || isSalesExecutiveOrArchitect) && (
+          <div className="col-lg-3 col-md-4 col-6 mb-3">
             <a href="/switchquotation">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
