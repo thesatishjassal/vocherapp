@@ -6,9 +6,10 @@
  
 }
 
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0a0a0a; 
     --foreground: #ededed;
   }
 }
@@ -398,7 +399,7 @@ p.bottom_lablel {
 .tm_round_border input[type="number"] {
     background: rgb(242, 242, 242);
     border: none;
-    width: 50px;
+    width: 100%;
     box-shadow: rgb(234, 234, 234) 1px 1px 1px;
     color: #191919;
     font-weight: 600;
@@ -1057,6 +1058,8 @@ label, .form-label {
           line-height: 1.7;
         }
 
+
+
         /* CONTAINER */
 
         .brandqr__container {
@@ -1255,4 +1258,4 @@ label, .form-label {
             padding: 22px;
             border-radius: 20px;
           }
-        }
+        }   
