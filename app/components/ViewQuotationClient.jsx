@@ -1,15 +1,166 @@
-// components/ClientViewQuotation.js (or appropriate location) - Client Component
+// components/ClientViewQuotation.js - Client Component
 "use client";
 import axios from "axios";
 import QuotationItemsTable from "./QuotationItemsTable"; // Adjust path as needed
-// import PrintButton from "../../components/PrintButton";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-
-// const QUOTATION_API_URL = "https://api.panvic.in/quotation";
-// const CLIENT_API_URL = "https://api.panvic.in/clients/";
 import Cookies from "js-cookie";
+
+/* ------------------------------------------------------------------ */
+/*  Company details (edit here)                                        */
+/* ------------------------------------------------------------------ */
+const COMPANY = {
+  name: "PANVIK LIGHTING",
+  addressLines: [
+    "Nakodar Road, Near Ravidass Chowk,",
+    "Jalandhar City-144003, Punjab",
+  ],
+  gst: "03ADWPG0246P1Z8",
+  phone: "+91 9417281252 / 9815037755",
+  email: "sales@panvik.com",
+  website: "www.panvik.com",
+  bank: "PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar.",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Embedded CSS – every class is prefixed with "pvq-"                 */
+/* ------------------------------------------------------------------ */
+const PVQ_CSS = `
+.pvq-root{
+  --pvq-maroon:#7a0a0a;
+  --pvq-red:#c0141b;
+  --pvq-gold:#d4a91c;
+  --pvq-ink:#1c1c1c;
+  --pvq-muted:#555;
+  --pvq-soft:#faf6f0;
+  font-family:"Segoe UI",Arial,Helvetica,sans-serif;
+  color:var(--pvq-ink);
+  max-width:900px;
+  margin:16px auto;
+  padding:0 8px;
+  box-sizing:border-box;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.pvq-root *,.pvq-root *::before,.pvq-root *::after{box-sizing:border-box}
+.pvq-root p {
+    margin: 0;
+    font-size: 12px;
+}
+.pvq-status{padding:32px 16px;text-align:center;font-size:15px}
+
+/* Sheet */
+.pvq-sheet{background:#fff;border:1px solid var(--pvq-ink);overflow:hidden}
+
+/* Header */
+.pvq-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:14px 16px 10px}
+.pvq-brand{flex:1 1 55%;min-width:0}
+
+.pvq-logo{display:block;width:100%;max-width:170px;height:auto}
+.pvq-brand-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px auto;
+}.pvq-brand-line::before,.pvq-brand-line::after{content:"";flex:1;height:2px;background:var(--pvq-gold)}
+// .pvq-brand-line::before{flex:0 0 40px}
+.pvq-brand-name{color:var(--pvq-gold);font-weight:700;font-size:clamp(15px,3.2vw,24px);letter-spacing:.18em;white-space:nowrap}
+.pvq-head-right{text-align:right}
+.pvq-title{margin:0;font-size:clamp(20px,4vw,27px);font-weight:400;letter-spacing:.08em;text-transform:uppercase}
+.pvq-meta{margin-top:6px;font-size:14px;line-height:1.6}
+.pvq-meta b{font-weight:700}
+.pvq-bar{height:14px;background:var(--pvq-maroon)}
+
+/* Client + company */
+.pvq-parties{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:12px 16px 6px}
+.pvq-client{flex:1 1 50%;min-width:0}
+.pvq-heading{margin:0 0 8px;font-size:18px;font-weight:700}
+.pvq-details{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:0;font-size:14px}
+.pvq-details dt{margin:0;font-weight:400}
+.pvq-details dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.pvq-company{flex:1 1 50%;min-width:0;text-align:right;font-size:14px;line-height:1.75}
+.pvq-company-name{font-weight:700;color:var(--pvq-maroon);font-size:15px}
+.pvq-company a{color:inherit;text-decoration:none}
+
+/* Subject row */
+.pvq-subject-row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px;padding:8px 16px 10px;font-size:14px}
+.pvq-subject-row b{font-weight:700}
+
+/* Items table (styles the QuotationItemsTable output) */
+.pvq-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pvq-table-scroll table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px;margin:0}
+.pvq-table-scroll thead th, .pvq-table-scroll thead td {
+    background: var(--pvq-maroon);
+    color: #fff!important;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 6px;
+    line-height: 1.2;
+    border: 0!important;
+    border-left: 1px solid #e3e3e7 !important;
+}
+.pvq-table-scroll thead th:first-child{border-left:0!important}
+.pvq-table-scroll tbody td{
+  padding:10px 6px;text-align:center;vertical-align:middle;border:1px solid var(--pvq-ink);background:#fff;
+}
+.pvq-table-scroll tbody td:first-child{border-left:0}
+.pvq-table-scroll tbody td:last-child{border-right:0;font-weight:700}
+.pvq-table-scroll img{max-width:70px;max-height:60px;height:auto;object-fit:contain}
+
+/* Totals */
+.pvq-footer{display:flex;justify-content:flex-end;padding:14px 16px}
+.pvq-totals{width:100%;max-width:340px;border-collapse:collapse;font-size:14px}
+.pvq-totals td{padding:6px 10px;font-weight:600}
+.pvq-totals td:last-child{text-align:right;white-space:nowrap}
+.pvq-totals tr + tr td{border-top:1px solid #e3d9c6}
+.pvq-total-row td{font-size:15px;font-weight:700;border-top:0!important}
+.pvq-discount td{color:var(--pvq-red)}
+
+/* Thank-you + terms */
+.pvq-thanks{padding:0 16px 12px;font-size:14px;font-style:italic;font-weight:700}
+.pvq-terms{margin:0 16px 16px;padding:12px 14px;font-size:13px;line-height:1.55}
+.pvq-terms-title{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--pvq-maroon)}
+.pvq-terms p + p{margin-top:6px}
+.pvq-terms hr{border:0;border-top:1px solid #dccfb4;margin:12px 0 8px}
+.pvq-sign{color:var(--pvq-muted)}
+
+/* Actions */
+.pvq-actions{display:flex;justify-content:center;padding:16px}
+.pvq-btn{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:0;border-radius:4px;
+  background:var(--pvq-maroon);color:#fff;font:600 14px/1 "Segoe UI",Arial,sans-serif;padding:12px 20px;
+}
+.pvq-btn:hover{background:var(--pvq-red)}
+.pvq-btn:focus-visible{outline:3px solid var(--pvq-gold);outline-offset:2px}
+.pvq-btn:disabled{opacity:.6;cursor:wait}
+
+/* Tablet & mobile */
+@media (max-width:768px){
+  .pvq-root{padding:0 6px;margin:8px auto}
+  .pvq-head,.pvq-parties{padding-left:12px;padding-right:12px}
+  .pvq-subject-row,.pvq-footer{padding-left:12px;padding-right:12px}
+  .pvq-thanks{padding-left:12px;padding-right:12px}
+  .pvq-terms{margin-left:12px;margin-right:12px}
+}
+@media (max-width:600px){
+  .pvq-head{flex-direction:column;gap:8px}
+  .pvq-head-right{text-align:left;width:100%}
+  .pvq-brand{width:100%;flex-basis:auto}
+  .pvq-parties{flex-direction:column;gap:14px}
+  .pvq-company{text-align:left;width:100%}
+  .pvq-subject-row{flex-direction:column;gap:4px}
+  .pvq-totals{max-width:none}
+  .pvq-btn{width:100%;justify-content:center}
+}
+
+/* Print */
+@media print{
+  .pvq-no-print{display:none!important}
+  .pvq-root{margin:0;padding:0;max-width:none}
+  .pvq-sheet{border:0}
+}
+`;
 
 export default function ClientViewQuotation({ quote }) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -18,21 +169,26 @@ export default function ClientViewQuotation({ quote }) {
   const [client, setClient] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  /* ---------------- PDF generate + upload ---------------- */
   const generateAndUploadPDF = async () => {
     try {
-      const invoiceElement = document.querySelector(".tm_invoice_wrap");
+      setIsGenerating(true);
+      const sheet = document.querySelector(".pvq-sheet");
 
-      if (!invoiceElement) {
-        alert("Invoice not found!");
+      if (!sheet) {
+        alert("Quotation not found!");
         return;
       }
 
-      // Capture screenshot (compressed)
-      const canvas = await html2canvas(invoiceElement, {
+      // windowWidth forces the desktop layout, so the PDF looks the same on phones
+      const canvas = await html2canvas(sheet, {
         scale: 1.2,
         useCORS: true,
         scrollX: 0,
         scrollY: -window.scrollY,
+        windowWidth: 1000,
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.7);
@@ -47,11 +203,9 @@ export default function ClientViewQuotation({ quote }) {
       let heightLeft = imgHeight;
       let position = 0;
 
-      // First page
       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // Additional pages if required
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -59,10 +213,8 @@ export default function ClientViewQuotation({ quote }) {
         heightLeft -= pageHeight;
       }
 
-      // Convert to Blob
       const pdfBlob = pdf.output("blob");
 
-      // Upload to Cloudinary
       const formData = new FormData();
       formData.append("file", pdfBlob);
       formData.append("upload_preset", "panvik_pdf");
@@ -78,52 +230,41 @@ export default function ClientViewQuotation({ quote }) {
       alert("PDF Uploaded Successfully!");
       navigator.clipboard.writeText(pdfUrl);
       console.log("PDF URL:", pdfUrl);
-    } catch (error) {
-      console.error("PDF ERROR:", error);
+    } catch (err) {
+      console.error("PDF ERROR:", err);
       alert("PDF generation failed!");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
+  /* ---------------- Salesperson from cookie ---------------- */
   useEffect(() => {
     const userDetailsCookie = Cookies.get("user_details");
     if (userDetailsCookie) {
       try {
         setUserDetails(JSON.parse(userDetailsCookie));
-        console.log("User details loaded from cookie:", userDetails);
       } catch (err) {
         console.error("Invalid cookie JSON:", err);
       }
     }
   }, []);
 
-  // ===== GST CALCULATION (DO NOT TOUCH UI) =====
-  // const gstPercentage = useMemo(() => {
-  //   if (!quotation?.without_gst || !quotation?.gst_amount) return "0.00";
-  //   return ((quotation.gst_amount / quotation.without_gst) * 100).toFixed(2);
-  // }, [quotation]);
-
-  // const isGstExcluded = useMemo(() => {
-  //   if (!quotation) return false;
-  //   return quotation.amount_including_gst === quotation.without_gst;
-  // }, [quotation]);
-  // ===========================================
-
+  /* ---------------- Fetch quotation + client ---------------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        // Fetch Quotation
+
         const quotationResponse = await axios.get(
           `${API_URL}/quotation/${quote}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
 
         if (quotationResponse.data) {
           setQuotation(quotationResponse.data);
-          // Fetch Client
+
           if (quotationResponse.data.client_id) {
             const clientResponse = await axios.get(`${API_URL}/clients/`, {
               withCredentials: true,
@@ -144,7 +285,7 @@ export default function ClientViewQuotation({ quote }) {
         console.error(err);
       } finally {
         setIsLoading(false);
-      } 
+      }
     };
 
     if (quote) {
@@ -152,303 +293,216 @@ export default function ClientViewQuotation({ quote }) {
     }
   }, [quote]);
 
-  if (isLoading) {
-    return <p>Loading...</p>;
+  /* ---------------- Guard states ---------------- */
+  if (isLoading || error || !quotation) {
+    return (
+      <div className="pvq-root">
+        <style>{PVQ_CSS}</style>
+        <p className="pvq-status">
+          {isLoading ? "Loading..." : error || "No quotation found!"}
+        </p>
+      </div>
+    );
   }
 
-  if (error) {
-    return <p>{error}</p>;
-  }
-
-  if (!quotation) {
-    return <p>No quotation found!</p>;
-  }
+  /* ---------------- Derived values ---------------- */
+  const baseAmount = Number(
+    quotation?.without_gst ?? quotation?.withoutGST ?? 0
+  );
+  const gstAmount = Number(quotation?.gst_amount ?? quotation?.gstAmount ?? 0);
+  const showGst = quotation?.gst_type === "exclude" && gstAmount > 0;
+  const discountPct = Number(quotation?.additional_discount_percentage ?? 0);
+  const discountAmt = Number(quotation?.additional_discount_amount ?? 0);
+  const totalAmount = Number(
+    quotation?.amount_with_gst ?? quotation?.amount_after_discount ?? 0
+  );
 
   return (
-    <div className="card tm_container my-4">
-      <div className="tm_invoice_wrap">
-        <div className="tm_invoice tm_style1">
-          <div className="tm_invoice_in">
-            <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
-              <div className="tm_invoice_left">
-                <div className="tm_logo">
-                  <img src="/assets/img/panviclogo.jpg" alt="Logo" />
-                </div>
-              </div>
-              <div className="tm_invoice_right tm_text_right">
-                <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  QUOTATION
-                </div>
-                <p className="tm_invoice_number">
-                  Quotation No:{" "}
-                  <b className="tm_primary_color"> {quotation.quotation_no}</b>
-                </p>
-              </div>
-            </div>
-            <div className="tm_invoice_info tm_mb20 m-0">
-              <div className="tm_invoice_seperator tm_gray_bg"></div>
-              <div className="tm_invoice_info_list">
-                <p className="tm_invoice_number">
-                  Date: <b>{new Date().toLocaleDateString("en-GB")}</b>
-                </p>
-              </div>
-            </div>
-            <div className="tm_invoice_head tm_mb10">
-              {client && (
-                <div
-                  className="tm_invoice_left mt-0"
-                  style={{ flex: 1, textAlign: "left" }}
-                >
-                  <p className="tm_mb2">
-                    <b className="tm_primary_color">Client Details:</b>
-                  </p>
-                  <p>
-                    {client.businessname && (
-                      <>
-                        Business Name: <b>{client.businessname}</b>
-                        <br />
-                      </>
-                    )}
+    <div className="pvq-root">
+      <style>{PVQ_CSS}</style>
 
-                    {client?.client_name && (
-                      <>
-                        Name: <b>{client.client_name}</b>
-                        <br />
-                      </>
-                    )}
-
-                    {client?.city && (
-                      <>
-                        City: <b>{client.city}</b>
-                        {client?.client_phone && " | "}
-                      </>
-                    )}
-
-                    {client?.client_phone && (
-                      <>
-                        Phone: <b>{client.client_phone}</b>
-                        <br />
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">PANVIK LIGHTING</b>
-                </p>
-                Address:
-                <b>
-                  Nakodar Road Beside Silver OAK Appartments <br /> Jalandhar
-                  City, Punjab-144003
-                </b>
-                <br />
-                GST: <b>03ADWPG0246P1Z8</b> <br />
-                Contact no: <b> 94172-81252,98150-37755 </b> <br />
-                Email id: <b> panviklighting@gmail.com </b> <br />
-                Salesperson: {userDetails && <b>{userDetails.name} </b>} |
-                Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
-              </div>
-            </div>
-            Subject:{" "}
-            <span className="tm_primary_color mb-3">
-              {quotation && <b>{quotation.subject}</b>}
-            </span>
-            <div className="tm_table tm_style1 tm_mb30">
-              <div className="tm_round_border">
-                <div className="tm_table_responsive">
-                  <QuotationItemsTable quotation_id={quotation.quotation_id} />
-                </div>
-              </div>
-            </div>
-            <div className="tm_invoice_footer my-2">
-              <div className="tm_left_footer px-0">
-                <textarea
-                  className="form-control tm_remarks_box no-print opacity-0"
-                  placeholder="Enter remarks here..."
-                  rows="1"
-                  cols="30"
-                  defaultValue={quotation.remarks || ""}
-                  readOnly
-                ></textarea>
-              </div>
-
-              <div className="tm_right_footer">
-                <table>
-                  <tbody>
-                    {/* Amount (Base) */}
-                    <tr>
-                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                        <p className="m-0">Amount:</p>
-                      </td>
-                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {Number(
-                          quotation?.without_gst ?? quotation?.withoutGST ?? 0
-                        ).toFixed(2)}
-                      </td>
-                    </tr>
-
-                    {/* GST Row (only if > 0) */}
-{(quotation?.gst_type === "exclude") &&
-  (quotation?.gst_amount ?? quotation?.gstAmount ?? 0) > 0 && (
-                      <tr>
-                        <td className="tm_width_3 tm_primary_color tm_border_none tm_bold pb-0 pt-1">
-                          <p className="m-0">
-                            {quotation?.gst_type === "exclude"
-                              ? "Exclude GST: (18%):"
-                              : "Include GST (18%):"}
-                          </p>
-                        </td>
-                        <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                          {Number(
-                            quotation?.gst_amount ?? quotation?.gstAmount ?? 0
-                          ).toFixed(2)}
-                        </td>
-                      </tr>
-                    )}
-                    {/* ✅ ADDITIONAL DISCOUNT ROW */}
-                    
-                    {(quotation?.additional_discount_percentage ?? 0) > 0 && (
-                      <>
-                        <tr>
-                          <td className="tm_width_3 tm_border_none tm_bold pb-0 pt-1">
-                            <p className="m-0">
-                              Additional Discount (
-                              {quotation.additional_discount_percentage}%):
-                            </p>
-                          </td>
-                          <td className="tm_width_2 tm_text_right tm_border_none tm_bold">
-                            -{" "}
-                            {Number(
-                              quotation?.additional_discount_amount ?? 0
-                            ).toFixed(2)}
-                          </td>
-                        </tr>
-
-                        {/* <tr>
-                          <td className="tm_width_3 tm_border_none tm_bold pb-0 pt-1">
-                            <p className="m-0">Amount After Discount:</p>
-                          </td>
-                          <td className="tm_width_2 tm_text_right tm_border_none tm_bold">
-                            {Number(
-                              quotation?.amount_after_discount ??
-                                quotation?.without_gst ??
-                                0
-                            ).toFixed(2)}
-                          </td>
-                        </tr> */}
-                      </>
-                    )}
-                    {/* TOTAL */}
-                    <tr>
-                      <td className="tm_width_3 tm_primary_color tm_border_none tm_bold">
-                        <p className="m-0">Total Amount:</p>
-                      </td>
-                      <td className="tm_width_2 tm_primary_color tm_text_right tm_border_none tm_bold">
-                        {Number(
-                          quotation?.amount_with_gst ??
-                            quotation?.amount_after_discount ??
-                            0
-                        ).toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <p>
-              <b>
-                <i>
-                  Thank You for considering us for your needs. Here is the
-                  purposal as you requested.
-                </i>
-              </b>
-            </p>
-            <div className="term_box">
-              <h6>Terms and Conditions:</h6>
-              {/* <p>
-                GST: <b>Including in above prices as per applicable.</b>
-              </p> */}
-              <p>
-                Payment Terms: <b>100% in advance with order.</b>
-              </p>
-              <p>
-                Validity: <b>15 days from the date of quotation.</b>
-              </p>
-              <p className="m-0">
-                Warranty/Guarantee:
-                <b>
-                  as per company norms &nbsp;
-                  {quotation && quotation.warranty_guarantee}
-                </b>
-              </p>
-              <p>
-                Responsibility:
-                <b>
-                  Our responsibility for material counting ceases immediately
-                  after delivery.
-                </b>
-              </p>
-              <p>
-                Installation & Fixing:
-                <b>
-                  If required, for any electrical job, we will arrange a
-                  technician at extra cost. Installation will take 4-5 days from
-                  the date of order.
-                </b>
-              </p>
-              <p>
-                {/* Installation & Fixing: */}
-                <b>Material will take 2 weeks from date of order.</b>
-              </p>
-
-              <p>
-                Freight Charges: <b>Extra as per actual.</b>
-              </p>
-              <p>
-                Bank Details:
-                <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC
-                  Code: ICIC0001510, Jalandhar.
-                  <br /> We hope you will find our offer in quotation and look
-                  forward to your positive response. Please feel free to contact
-                  us for any queries.
-                </b>
-              </p>
-              <hr />
-              <p>
-                For:- Panvik Lighting This is a computer-generated document,
-                hence signature is not required.
-              </p>
-            </div>
+      <div className="pvq-sheet">
+        {/* ===== Header ===== */}
+        <div className="pvq-head">
+          <div className="pvq-brand">
+            <img
+              className="pvq-logo"
+              src="/assets/img/panvik_colored_logo.png"
+              alt="Panvik logo"
+            />
           </div>
+
+          <div className="pvq-head-right">
+            <h1 className="pvq-title">Quotation</h1>
+            <p className="pvq-meta">
+              Quotation No: <b>{quotation.quotation_no}</b>
+            </p>
+            <p className="pvq-meta">
+              <b>Date:</b> {new Date().toLocaleDateString("en-GB")}
+            </p>
+          </div>
+        </div>
+        <div className="pvq-brand-line">
+          <span className="pvq-brand-name">{COMPANY.name}</span>
+        </div>
+        <div className="pvq-bar" />
+
+        {/* ===== Client + company ===== */}
+        <div className="pvq-parties">
+          {client && (
+            <div className="pvq-client">
+              <h2 className="pvq-heading">Client Details:</h2>
+              <dl className="pvq-details">
+                {client.businessname && (
+                  <>
+                    <dt>Business Name:</dt>
+                    <dd>{client.businessname}</dd>
+                  </>
+                )}
+                {client.client_name && (
+                  <>
+                    <dt>Name:</dt>
+                    <dd>{client.client_name}</dd>
+                  </>
+                )}
+                {client.city && (
+                  <>
+                    <dt>City:</dt>
+                    <dd>{client.city}</dd>
+                  </>
+                )}
+                {client.client_phone && (
+                  <>
+                    <dt>Phone:</dt>
+                    <dd>{client.client_phone}</dd>
+                  </>
+                )}
+              </dl>
+            </div>
+          )}
+
+          <div className="pvq-company">
+            {COMPANY.addressLines.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+            <div>GST: {COMPANY.gst}</div>
+            <div>{COMPANY.phone}</div>
+            <div>{COMPANY.email}</div>
+            <div>{COMPANY.website}</div>
+          </div>
+        </div>
+
+        {/* ===== Subject + salesperson ===== */}
+        <div className="pvq-subject-row">
+          <span>
+            <b>Subject:</b> {quotation.subject}
+          </span>
+          <span>
+            Salesperson: <b>{quotation?.salesperson || ""}</b> | Mobile Number:{" "}
+            <b>{userDetails?.phone || ""}</b>
+          </span>
+        </div>
+
+        {/* ===== Items table ===== */}
+        <div className="pvq-table-scroll">
+          <QuotationItemsTable quotation_id={quotation.quotation_id} />
+        </div>
+
+        {/* ===== Totals ===== */}
+        <div className="pvq-footer">
+          <table className="pvq-totals">
+            <tbody>
+              <tr>
+                <td>Amount:</td>
+                <td>{baseAmount.toFixed(2)}</td>
+              </tr>
+
+              {showGst && (
+                <tr>
+                  <td>Exclude GST (18%):</td>
+                  <td>{gstAmount.toFixed(2)}</td>
+                </tr>
+              )}
+
+              {discountPct > 0 && (
+                <tr className="pvq-discount">
+                  <td>Additional Discount ({discountPct}%):</td>
+                  <td>- {discountAmt.toFixed(2)}</td>
+                </tr>
+              )}
+
+              <tr className="pvq-total-row">
+                <td>Total Amount:</td>
+                <td>{totalAmount.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className="pvq-thanks">
+          Thank you for considering us for your needs. Here is the proposal as
+          you requested.
+        </p>
+
+        {/* ===== Terms ===== */}
+        <div className="pvq-terms">
+          <h6 className="pvq-terms-title">Terms and Conditions:</h6>
+          <p> <b>GST</b> :- Include in above prices as per applicable</p>{" "}
+          <p> <b>Payment Terms</b> :- 100% in advance with order</p>
+          <p>Validity:- 15 days from date of quotation.</p>
+          <p>
+            No warranty in case of any type of led burn directly connected with
+            ac current without driver or in case of any type of failure raise
+          </p>
+          <p>
+            Our responsibility of counting of material ceases immediately after
+            delivery of material.
+          </p>
+          <p>
+            Installation & fixing if any required of any kind of electrical job
+            . We will arrange technician at extra cost . As per actual.
+          </p>
+          <p>Material will take 2 Weeks from date of order</p>
+          <p>Freight charges extra as per actual</p>
+          <p>
+            Bank Details: <b>{COMPANY.bank}</b>
+          </p>
+          <p>
+            <b>
+              We hope you will find our offer in quotation & looking forward to
+              your positive response. Please feel free to contact us for any
+              queries.
+            </b>
+          </p>
+          <hr />
+          <p className="pvq-sign">
+           
+            <br />
+            
+          </p><span> Regards:{" "}
+           <br />
+            <b>Panvik Lighting</b>
+          </span>
+          <div className="spacer"></div>
+          <span>
+           <b>{userDetails?.name || ""}</b>    <br />Mob (0):{" "}
+            <b>{userDetails?.phone || ""}</b>
+          </span>
         </div>
       </div>
 
-      <div className="tm_invoice_btns no-print">
+      {/* ===== Actions ===== */}
+      {/* <div className="pvq-actions ]pvq-no-print">
         <button
+          type="button"
           onClick={generateAndUploadPDF}
-          className="tm_invoice_btn tm_color1 no-print"
+          disabled={isGenerating}
+          className="pvq-btn pvq-no-print"
         >
-          <span className="tm_btn_icon">
-            <i className="fa-solid fa-file-pdf"></i>
-          </span>
-          <span className="tm_btn_text">Generate PDF & Upload</span>
+          <i className="fa-solid fa-file-pdf" aria-hidden="true"></i>
+          <span>{isGenerating ? "Generating..." : "Generate PDF & Upload"}</span>
         </button>
-        {/* <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
-            <span className="tm_btn_icon">
-              <i className="fa-solid fa-print"></i>
-            </span>
-            <span className="tm_btn_text">Print</span>
-          </button> */}
-      </div>
+      </div> */}
     </div>
   );
 }
