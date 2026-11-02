@@ -1,529 +1,323 @@
 "use client";
-import React, { useState } from "react"; // Remove useEffect import
+import React, { useState, useMemo, useCallback, memo } from "react";
 import PropTypes from "prop-types";
 import FindProduct from "./FindProduct";
 
+/* ---------- Static helpers & styles (created once) ---------- */
+
+const GOLD = "#d3a01d";
+const GOLD_DARK = "#b98912";
+const LINE = "#e3e3e3";
+const MUTED = "#8a8a8a";
+const INK = "#292929";
+
+const EMPTY_ROW = {
+  customerCode: "", customerDescription: "", itemCode: "", itemName: "",
+  cus_itemcode: "", cus_itemname: "", brand: "", qty: "", unit: "", mrp: "",
+  discount: "", amount: "", netPrice: "", image: "", remarks: "",
+  cus_customercode: "", cus_customerdescription: "", cus_qty: "", cus_brand: "",
+  cus_unit: "", cus_mrp: "", cus_discount: "", cus_netprice: "", cus_image: "",
+  cus_remarks: "",
+};
+
+const inr = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  minimumFractionDigits: 2,
+});
+const formatINR = (v) => inr.format(Number.isFinite(v) ? v : 0);
+const toNum = (v) => parseFloat(v) || 0;
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const calcNetPrice = (mrp, d) => (toNum(mrp) * (1 - toNum(d) / 100)).toFixed(2);
+const calcDiscount = (mrp, net) => {
+  const m = toNum(mrp);
+  return m === 0 ? "0.00" : (((m - toNum(net)) / m) * 100).toFixed(2);
+};
+
+const S = {
+  overlay: {
+    position: "fixed", inset: 0, zIndex: 1050, display: "flex",
+    alignItems: "center", justifyContent: "center", padding: 12,
+    overflowY: "auto", background: "rgba(0,0,0,.45)", boxSizing: "border-box",
+  },
+  card: {
+    width: "100%", maxWidth: 420, padding: 16, background: "#fff",
+    borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.18)", color: INK,
+    fontFamily: "Arial, Helvetica, sans-serif", fontSize: 13, boxSizing: "border-box",
+  },
+  header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  title: { margin: 0, fontSize: 16, fontWeight: 700 },
+  brand: { color: GOLD, fontSize: 12, fontWeight: 700, marginLeft: 8 },
+  close: {
+    width: 28, height: 28, border: 0, background: "transparent",
+    color: MUTED, fontSize: 22, cursor: "pointer", lineHeight: 1,
+  },
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 },
+  grid3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 },
+  cell: { minWidth: 0 },
+  label: { display: "block", marginBottom: 3, color: MUTED, fontSize: 11, fontWeight: 600 },
+  input: {
+    width: "100%", minWidth: 0, height: 34, padding: "0 10px",
+    border: `1px solid ${LINE}`, borderRadius: 7, outline: "none",
+    background: "#fff", color: INK, font: "inherit", fontSize: 13, boxSizing: "border-box",
+  },
+  search: {
+    display: "flex", alignItems: "center", height: 34, marginBottom: 10,
+    padding: "0 4px 0 10px", border: `1px solid ${LINE}`, borderRadius: 7, cursor: "pointer",
+  },
+  searchInput: {
+    flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent",
+    fontSize: 13, cursor: "pointer",
+  },
+  browse: {
+    padding: "0 8px", height: 26, border: 0, background: "transparent",
+    color: GOLD_DARK, fontSize: 12, fontWeight: 700, cursor: "pointer",
+  },
+  product: { marginBottom: 10, padding: "8px 10px", background: "#f8f8f8", borderRadius: 7 },
+  productName: { fontSize: 13, fontWeight: 700, overflowWrap: "anywhere" },
+  productMeta: { marginTop: 2, color: MUTED, fontSize: 11 },
+  control: {
+    display: "flex", alignItems: "center", height: 34,
+    border: `1px solid ${LINE}`, borderRadius: 7, background: "#fff", overflow: "hidden",
+  },
+  controlInput: {
+    flex: 1, minWidth: 0, width: "100%", height: "100%", padding: 0, border: 0,
+    outline: "none", background: "transparent", color: INK, font: "inherit",
+    fontSize: 13, textAlign: "center", MozAppearance: "textfield",
+  },
+  stepper: {
+    alignSelf: "stretch", width: 22, flex: "0 0 22px", border: 0, padding: 0,
+    background: "#fff", color: "#777", fontSize: 15, cursor: "pointer",
+  },
+  total: {
+    display: "flex", alignItems: "baseline", justifyContent: "space-between",
+    margin: "4px 0 10px", padding: "8px 10px", borderRadius: 7, background: "#fbf5e9",
+  },
+  totalLabel: { color: "#666", fontSize: 12, fontWeight: 600 },
+  totalValue: { fontSize: 16, fontWeight: 700 },
+  textarea: {
+    width: "100%", height: 44, padding: "7px 10px", border: `1px solid ${LINE}`,
+    borderRadius: 7, outline: "none", resize: "none", font: "inherit",
+    fontSize: 13, boxSizing: "border-box",
+  },
+  actions: { display: "flex", gap: 8, marginTop: 12 },
+  cancel: {
+    flex: 1, height: 36, border: `1px solid ${LINE}`, borderRadius: 7,
+    background: "#fff", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer",
+  },
+  submit: {
+    flex: 2, height: 36, border: 0, borderRadius: 7, background: GOLD,
+    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+    transition: "background .15s",
+  },
+};
+
+// Pseudo-class effects done on the DOM node (no re-render)
+const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
+const focusOff = (e) => (e.currentTarget.style.borderColor = LINE);
+const hoverOn = (e) => (e.currentTarget.style.background = "#f2f2f2");
+const hoverOff = (e) => (e.currentTarget.style.background = "#fff");
+const submitOver = (e) => (e.currentTarget.style.background = GOLD_DARK);
+const submitOut = (e) => (e.currentTarget.style.background = GOLD);
+
+/* ---------- Sub-component ---------- */
+
+const StepperField = memo(({ id, label, value, min, max, step, onChange, onKeyDown, inputRef }) => {
+  const bump = (d) =>
+    onChange(String(clamp(Math.round((toNum(value) + d) * 100) / 100, min, max)));
+  return (
+    <div style={S.cell}>
+      <label style={S.label} htmlFor={id}>{label}</label>
+      <div style={S.control} onFocus={focusOn} onBlur={focusOff}>
+        <button type="button" style={S.stepper} aria-label={`Decrease ${label}`}
+          onClick={() => bump(-1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>−</button>
+        <input id={id} name={id} type="number" style={S.controlInput}
+          value={value ?? ""} min={min} max={max} step={step} ref={inputRef}
+          onChange={(e) => onChange(e.target.value)} onKeyDown={onKeyDown} />
+        <button type="button" style={S.stepper} aria-label={`Increase ${label}`}
+          onClick={() => bump(1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>+</button>
+      </div>
+    </div>
+  );
+});
+StepperField.displayName = "StepperField";
+
+/* ---------- Main component ---------- */
+
 const AddProductModal = ({
-  showAddModal,
-  setShowAddModal,
-  newRow,
-  setNewRow,
-  handleFieldChange,
-  handleKeyDown,
-  inputRefs,
-  editRowIndex,
-  handleAddRow,
+  showAddModal, setShowAddModal, newRow, setNewRow, handleFieldChange,
+  handleKeyDown, inputRefs, editRowIndex, handleAddRow,
 }) => {
-  const [showFindProductModal, setShowFindProductModal] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [isNetPriceManual, setIsNetPriceManual] = useState(false);
+  const [showFind, setShowFind] = useState(false);
 
-  // Calculate amount
-  const calculateAmount = (qty, netPrice) => {
-    const qtyValue = parseFloat(qty) || 0;
-    const netPriceValue = parseFloat(netPrice) || 0;
-    return (qtyValue * netPriceValue).toFixed(2);
-  };
+  const amount = useMemo(() => toNum(newRow.qty) * toNum(newRow.netPrice),
+    [newRow.qty, newRow.netPrice]);
 
-  // Calculate net price
-  const calculateNetPrice = (mrp, discount) => {
-    const mrpValue = parseFloat(mrp) || 0;
-    const discountValue = parseFloat(discount) || 0;
-    return (mrpValue * (1 - discountValue / 100)).toFixed(2);
-  };
+  const openFind = useCallback(() => setShowFind(true), []);
 
-  // Calculate discount
-  const calculateDiscount = (mrp, netPrice) => {
-    const mrpValue = parseFloat(mrp) || 0;
-    const netPriceValue = parseFloat(netPrice) || 0;
-    if (mrpValue === 0) return "0.00";
-    return (((mrpValue - netPriceValue) / mrpValue) * 100).toFixed(2);
-  };
-
-  // Handle image upload
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      alert("Please upload a valid image (JPEG, PNG, JPG)");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size exceeds 5MB limit");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => setPreviewImage(reader.result);
-    reader.readAsDataURL(file);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error("Upload failed");
-      const { filePath } = await response.json();
-      handleFieldChange("image", filePath);
-    } catch (error) {
-      alert("Failed to upload image");
-      setPreviewImage(null);
-      handleFieldChange("image", "");
-    }
-  };
-
-  // Handle modal close
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setShowAddModal(false);
-    setShowFindProductModal(false);
-    setPreviewImage(null);
-    setIsNetPriceManual(false);
-    setNewRow({
-      customerCode: "",
-      customerDescription: "",
-      itemCode: "",
-      itemName: "",
-      cus_itemcode: "",
-      cus_itemname: "",
-      brand: "",
-      qty: "",
-      unit: "",
-      mrp: "",
-      discount: "",
-      amount: "",
-      netPrice: "",
-      image: "",
-      remarks: "",
-      cus_customercode: "",
-      cus_customerdescription: "",
-      cus_qty: "",
-      cus_brand: "",
-      cus_unit: "",
-      cus_mrp: "",
-      cus_discount: "",
-      cus_netprice: "",
-      cus_image: "",
-      cus_remarks: "",
-    });
-  };
+    setShowFind(false);
+    setNewRow(EMPTY_ROW);
+  }, [setShowAddModal, setNewRow]);
 
-  // Handle form submission
-  const handleSubmit = () => {
+  const onQty = useCallback((v) => setNewRow((p) => ({ ...p, qty: v })), [setNewRow]);
+
+  const onDiscount = useCallback((v) =>
+    setNewRow((p) => {
+      const n = { ...p, discount: v };
+      if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.netPrice = calcNetPrice(p.mrp, clamp(toNum(v), 0, 100));
+      return n;
+    }), [setNewRow]);
+
+  const onNetPrice = useCallback((v) =>
+    setNewRow((p) => {
+      const n = { ...p, netPrice: v };
+      if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.discount = calcDiscount(p.mrp, v);
+      return n;
+    }), [setNewRow]);
+
+  const onText = useCallback((e) => handleFieldChange(e.target.name, e.target.value), [handleFieldChange]);
+
+  const onProductSelect = useCallback((product) => {
+    if (!product) return;
+    const price = product.price || "";
+    setNewRow((p) => ({
+      ...p,
+      itemCode: product.itemcode || "",
+      itemName: product.itemname || "",
+      unit: product.unit || "Piece",
+      mrp: price,
+      brand: product.brand || "",
+      image: product.thumbnail || "",
+      netPrice: price,
+      discount: "",
+    }));
+    setShowFind(false);
+    setTimeout(() => inputRefs?.qty?.current?.focus(), 100);
+  }, [setNewRow, inputRefs]);
+
+  const handleSubmit = useCallback(() => {
     if (!newRow.itemCode || !newRow.itemName || !newRow.qty || !newRow.netPrice) {
       alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
       return;
     }
-
-    const netPrice = isNetPriceManual
-      ? parseFloat(newRow.netPrice).toFixed(2)
-      : calculateNetPrice(newRow.mrp, newRow.discount);
-    const amount = calculateAmount(newRow.qty, netPrice);
-    const updatedRow = {
+    const netPrice = toNum(newRow.netPrice).toFixed(2);
+    handleAddRow({
       ...newRow,
       netPrice,
-      amount,
+      amount: (toNum(newRow.qty) * toNum(netPrice)).toFixed(2),
       unit: newRow.unit || "Piece",
       mrp: newRow.mrp || "",
       brand: newRow.brand || "",
       image: newRow.image || "",
       remarks: newRow.remarks || "",
       discount: newRow.discount || "",
-    };
-
-    handleAddRow(updatedRow, editRowIndex);
+    }, editRowIndex);
     handleClose();
-  };
+  }, [newRow, editRowIndex, handleAddRow, handleClose]);
 
-  // Handle field changes
-  const handleLocalFieldChange = (field, value) => {
-    // const sanitizedValue = field === "itemName" ? value.slice(0, 100) : value || "";
-    handleFieldChange(field, value);
+  const keyQty = useCallback((e) => handleKeyDown(e, "discount"), [handleKeyDown]);
+  const keyDiscount = useCallback((e) => handleKeyDown(e, "netPrice"), [handleKeyDown]);
 
-    // if (field === "itemName" && value.length > 100) {
-    //   alert("Item name truncated to 100 characters.");
-    // }
+  if (!showAddModal) return null;
 
-    if (field === "netPrice") {
-      setIsNetPriceManual(true);
-      handleFieldChange("netPrice", value);
-
-      // If MRP is available, calculate and update Discount
-      if (newRow.mrp && !isNaN(value)) {
-        const discount = calculateDiscount(newRow.mrp, value);
-        handleFieldChange("discount", discount);
-      }
-
-      // Update amount when netPrice changes
-      const amount = calculateAmount(newRow.qty, value);
-      handleFieldChange("amount", amount);
-    }
-
-    if (field === "discount") {
-      setIsNetPriceManual(false);
-      handleFieldChange("discount", value);
-
-      // If MRP is available, calculate and update Net Price
-      if (newRow.mrp && !isNaN(value)) {
-        const netPrice = calculateNetPrice(newRow.mrp, value);
-        handleFieldChange("netPrice", netPrice);
-        // Update amount when netPrice is recalculated
-        const amount = calculateAmount(newRow.qty, netPrice);
-        handleFieldChange("amount", amount);
-      }
-    }
-
-    if (field === "qty") {
-      handleFieldChange("qty", value);
-      // Update amount when qty changes
-      const amount = calculateAmount(value, newRow.netPrice);
-      handleFieldChange("amount", amount);
-    }
-  };
-
-  // Handle product selection
-  const handleLocalProductSelect = (product) => {
-    if (product) {
-      // const truncatedItemName = product.itemname?.substring(0, 100) || "";
-      // if (product.itemname?.length > 100) {
-      //   alert("Selected product name truncated to 100 characters.");
-      // }
-      const netPrice = product.price || "";
-      const qty = newRow.qty || "";
-      const amount = calculateAmount(qty, netPrice);
-      setNewRow((prev) => ({
-        ...prev,
-        itemCode: product.itemcode || "",
-        itemName:  product.itemname,
-        unit: product.unit || "Piece",
-        mrp: product.price || "",
-        brand: product.brand || "",
-        image: product.thumbnail || "",
-        netPrice,
-        amount,
-        discount: "", // Reset discount on product selection
-      }));
-      setIsNetPriceManual(false); // Allow recalculation after product selection
-      setShowFindProductModal(false);
-      setTimeout(() => inputRefs.qty.current?.focus(), 100);
-    }
-  };
+  const isEdit = editRowIndex !== null && editRowIndex !== undefined;
+  const hasItem = !!newRow.itemCode;
 
   return (
-    showAddModal && (
-      <div
-        className="modal fade show"
-        tabIndex={-1}
-        style={{
-          display: "block",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          zIndex: 1050,
-        }}
-        aria-modal="true"
-        role="dialog"
-      >
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content rounded-4 shadow-lg">
-            <div className="modal-header border-0 p-4">
-              <h1 className="modal-title fs-5 fw-bold">
-                {editRowIndex !== null ? "Edit Item" : "Add New Item"}
-              </h1>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={handleClose}
-                aria-label="Close"
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-            <div className="modal-body p-4">
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Customer Code</label>
-                  <input
-                    type="text"
-                    name="customerCode"
-                    value={newRow.customerCode || ""}
-                    onChange={(e) => handleLocalFieldChange("customerCode", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-                    placeholder="Enter unique customer code"
-                    className="form-control"
-                    ref={inputRefs.customerCode}
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Customer Description</label>
-                  <input
-                    type="text"
-                    name="customerDescription"
-                    value={newRow.customerDescription || ""}
-                    onChange={(e) => handleLocalFieldChange("customerDescription", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-                    placeholder="Full name or short description"
-                    className="form-control"
-                    ref={inputRefs.customerDescription}
-                    required
-                  />
-                </div>      <div className="col-12">
-                  <button
-                    type="button"
-                    className="btn btn-secondary w-100"
-                    onClick={() => setShowFindProductModal(true)}
-                    title="Find Product"
-                  >
-                    <i className="fa-solid fa-magnifying-glass me-2"></i>Search the Product
-                  </button>
-                </div>
-                <hr />
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Item Code</label>
-                  <input
-                    type="text"
-                    name="itemCode"
-                    value={newRow.itemCode || ""}
-                    onChange={(e) => handleLocalFieldChange("itemCode", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "itemName")}
-                    placeholder="Ex: ITEM00123"
-                    className="form-control"
-                    ref={inputRefs.itemCode}
-                    disabled
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Item Name</label>
-                  <input
-                    type="text"
-                    name="itemName"
-                    value={newRow.itemName || ""}
-                    onChange={(e) => handleLocalFieldChange("itemName", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "qty")}
-                    placeholder="Ex: Stainless Steel Bottle"
-                    className="form-control"
-                    ref={inputRefs.itemName}
-                    disabled
-                    required
-                  />
-                </div>
-          
-                
-                <div className="col-md-3">
-                  <label className="form-label small fw-medium">Brand</label>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={newRow.brand || ""}
-                    onChange={(e) => handleLocalFieldChange("brand", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "unit")}
-                    placeholder="Brand"
-                    className="form-control"
-                    ref={inputRefs.brand}
-                    disabled
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label small fw-medium">Unit</label>
-                  <input
-                    type="text"
-                    name="unit"
-                    value={newRow.unit || ""}
-                    onChange={(e) => handleLocalFieldChange("unit", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "mrp")}
-                    placeholder="Auto-filled unit"
-                    className="form-control"
-                    ref={inputRefs.unit}
-                    disabled
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label small fw-medium">MRP</label>
-                  <input
-                    type="number"
-                    name="mrp"
-                    value={newRow.mrp || ""}
-                    onChange={(e) => handleLocalFieldChange("mrp", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "discount")}
-                    placeholder="MRP"
-                    className="form-control"
-                    ref={inputRefs.mrp}
-                    min="0"
-                    step="0.01"
-                    disabled
-                  />
-                </div>
-                    <div className="col-md-3">
-                  <label className="form-label small fw-medium">Amount</label>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={newRow.amount || ""}
-                    onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "image")}
-                    placeholder="Auto-calculated (Qty * Net Price)"
-                    className="form-control"
-                    ref={inputRefs.amount}
-                    min="0"
-                    step="0.01"
-                    disabled
-                  />
-                </div><div className="col-md-3">
-                  <label className="form-label small fw-medium">Quantity</label>
-                  <input
-                    type="number"
-                    name="qty"
-                    value={newRow.qty || ""}
-                    onChange={(e) => handleLocalFieldChange("qty", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "brand")}
-                    placeholder="Enter quantity"
-                    className="form-control"
-                    ref={inputRefs.qty}
-                    min="1"
-                    required
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label small fw-medium">Discount (%)</label>
-                  <input
-                    type="number"
-                    name="discount"
-                    value={newRow.discount || ""}
-                    onChange={(e) => handleLocalFieldChange("discount", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "netPrice")}
-                    placeholder="E.g., 10 for 10% off"
-                    className="form-control"
-                    ref={inputRefs.discount}
-                    min="0"
-                    max="100"
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-medium">Net Price</label>
-                  <input
-                    type="number"
-                    name="netPrice"
-                    value={newRow.netPrice || ""}
-                    onChange={(e) => handleLocalFieldChange("netPrice", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, "amount")}
-                    placeholder="Final price after discount"
-                    className="form-control"
-                    ref={inputRefs.netPrice}
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-            
-                {/* <div className="col-md-12">
-                  <label className="form-label small fw-medium">Upload Image</label>
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/jpeg,image/png,image/jpg"
-                    onChange={handleImageUpload}
-                    onKeyDown={(e) => handleKeyDown(e, "remarks")}
-                    className="form-control"
-                    ref={inputRefs.image}
-                  />
-                </div>
-                {(previewImage || newRow.image) && (
-                  <div className="col-12">
-                    <label className="form-label small fw-medium">Image Preview</label>
-                    <img
-                      src={
-                        previewImage ||
-                        (newRow.image.startsWith("http")
-                          ? newRow.image
-                          : `/uploads/${newRow.image.split("/").pop()}`)
-                      }
-                      alt="Preview"
-                      className="img-fluid rounded"
-                      style={{ maxHeight: "150px", objectFit: "contain" }}
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  </div>
-                )} */}
-                <div className="col-12">
-                  <label className="form-label small fw-medium">Remarks</label>
-                  <textarea
-                    name="remarks"
-                    value={newRow.remarks || ""}
-                    onChange={(e) => handleLocalFieldChange("remarks", e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, null)}
-                    placeholder="Any additional notes or info"
-                    className="form-control"
-                    ref={inputRefs.remarks}
-                    rows="2"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer border-0 p-4">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleClose}
-                aria-label="Cancel"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={handleSubmit}
-                aria-label={editRowIndex !== null ? "Update Item" : "Add Item"}
-              >
-                {editRowIndex !== null ? "Update Item" : "Add Item"}
-              </button>
-            </div>
+    <div style={S.overlay} role="dialog" aria-modal="true">
+      <div style={S.card}>
+        <header style={S.header}>
+          <div style={{ display: "flex", alignItems: "baseline" }}>
+            <h1 style={S.title}>{isEdit ? "Edit Item" : "Add Item"}</h1>
+            <span style={S.brand}>Panvik Lighting</span>
+          </div>
+          <button type="button" style={S.close} onClick={handleClose} aria-label="Close">&times;</button>
+        </header>
+
+        <div style={S.grid2}>
+          <div style={S.cell}>
+            <label style={S.label} htmlFor="customerCode">Customer code</label>
+            <input id="customerCode" name="customerCode" type="text" style={S.input}
+              value={newRow.customerCode || ""} onChange={onText}
+              onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
+              onFocus={focusOn} onBlur={focusOff} placeholder="Unique code"
+              ref={inputRefs.customerCode} required />
+          </div>
+          <div style={S.cell}>
+            <label style={S.label} htmlFor="customerDescription">Description</label>
+            <input id="customerDescription" name="customerDescription" type="text" style={S.input}
+              value={newRow.customerDescription || ""} onChange={onText}
+              onKeyDown={(e) => handleKeyDown(e, "itemCode")}
+              onFocus={focusOn} onBlur={focusOff} placeholder="Name or note"
+              ref={inputRefs.customerDescription} required />
           </div>
         </div>
-        <FindProduct
-          showModal={showFindProductModal}
-          setShowModal={setShowFindProductModal}
-          handleProductSelect={handleLocalProductSelect}
-        />
+
+        <div style={S.search} onClick={openFind} role="search">
+          <input style={S.searchInput} type="text" readOnly value=""
+            placeholder="Search item name or code..." aria-label="Search item" onFocus={openFind} />
+          <button type="button" style={S.browse} onClick={openFind}>Browse</button>
+        </div>
+
+        <section style={S.product} aria-label="Selected item">
+          <div style={{ ...S.productName, color: hasItem ? INK : MUTED, fontWeight: hasItem ? 700 : 400 }}>
+            {newRow.itemName || "No item selected"}
+          </div>
+          {hasItem && (
+            <div style={S.productMeta}>
+              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`]
+                .filter(Boolean).join(" · ")}
+            </div>
+          )}
+        </section>
+
+        <section style={S.grid3}>
+          <StepperField id="qty" label="Qty" value={newRow.qty} min={1} max={Infinity}
+            step={1} onChange={onQty} onKeyDown={keyQty} inputRef={inputRefs.qty} />
+          <StepperField id="discount" label="Disc %" value={newRow.discount} min={0} max={100}
+            step={0.5} onChange={onDiscount} onKeyDown={keyDiscount} inputRef={inputRefs.discount} />
+          <div style={S.cell}>
+            <label style={S.label} htmlFor="netPrice">Net price</label>
+            <input id="netPrice" name="netPrice" type="number" style={{ ...S.input, fontWeight: 600 }}
+              value={newRow.netPrice ?? ""} min="0" step="0.01"
+              onChange={(e) => onNetPrice(e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, "remarks")}
+              onFocus={focusOn} onBlur={focusOff} ref={inputRefs.netPrice} />
+          </div>
+        </section>
+
+        <section style={S.total} aria-live="polite">
+          <span style={S.totalLabel}>Amount</span>
+          <strong style={S.totalValue}>{formatINR(amount)}</strong>
+        </section>
+
+        <textarea id="remarks" name="remarks" style={S.textarea}
+          value={newRow.remarks || ""} onChange={onText}
+          onKeyDown={(e) => handleKeyDown(e, null)}
+          onFocus={focusOn} onBlur={focusOff}
+          placeholder="Remarks (optional)" aria-label="Remarks" ref={inputRefs.remarks} />
+
+        <div style={S.actions}>
+          <button type="button" style={S.cancel} onClick={handleClose}>Cancel</button>
+          <button type="button" style={S.submit} onClick={handleSubmit}
+            onMouseOver={submitOver} onMouseOut={submitOut}>
+            {isEdit ? "Update item" : "Add item"}
+          </button>
+        </div>
       </div>
-    )
+
+      <FindProduct showModal={showFind} setShowModal={setShowFind}
+        handleProductSelect={onProductSelect} />
+    </div>
   );
 };
 
 AddProductModal.propTypes = {
   showAddModal: PropTypes.bool.isRequired,
   setShowAddModal: PropTypes.func.isRequired,
-  newRow: PropTypes.shape({
-    customerCode: PropTypes.string,
-    customerDescription: PropTypes.string,
-    itemCode: PropTypes.string,
-    itemName: PropTypes.string,
-    cus_itemcode: PropTypes.string,
-    cus_itemname: PropTypes.string,
-    brand: PropTypes.string,
-    qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    unit: PropTypes.string,
-    mrp: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    discount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    netPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    image: PropTypes.string,
-    remarks: PropTypes.string,
-    cus_customercode: PropTypes.string,
-    cus_customerdescription: PropTypes.string,
-    cus_qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    cus_brand: PropTypes.string,
-    cus_unit: PropTypes.string,
-    cus_mrp: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    cus_discount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    cus_netprice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    cus_image: PropTypes.string,
-    cus_remarks: PropTypes.string,
-  }).isRequired,
+  newRow: PropTypes.object.isRequired,
   setNewRow: PropTypes.func.isRequired,
   handleFieldChange: PropTypes.func.isRequired,
   handleKeyDown: PropTypes.func.isRequired,
@@ -532,4 +326,4 @@ AddProductModal.propTypes = {
   handleAddRow: PropTypes.func.isRequired,
 };
 
-export default AddProductModal;
+export default memo(AddProductModal);
