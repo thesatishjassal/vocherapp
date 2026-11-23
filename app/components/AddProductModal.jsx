@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback, memo } from "react";
 import PropTypes from "prop-types";
 import FindProduct from "./FindProduct";
+import CCT_MAP from "./cctMap";
 
 /* ---------- Static helpers & styles (created once) ---------- */
 
@@ -21,22 +22,20 @@ const EMPTY_ROW = {
 };
 
 /* ---------- CCT dropdown ----------
-   Shown only for item codes starting with one of these prefixes.
-   Set CCT_ITEMS = null to show it for EVERY item whose Excel CCT has more than one value.  */
-const CCT_ITEMS = ["LLF-312"];
+   Shown for every item whose CCT in the Excel sheet has more than one value
+   (768 items, listed in cctMap.js), except the codes in CCT_EXCLUDE.  */
+const CCT_EXCLUDE = new Set([
+  // "LLF-001", "LLS-105",   <- add item codes here to hide the dropdown for them
+]);
 const TUNABLE = "Tunable";
 
-/** "3000K / 4000K / 6000K" (from Excel) -> ["3000K", "4000K", "6000K", "Tunable"] */
-const parseCct = (text) => {
-  const nums = [...new Set(String(text || "").match(/\d{4}/g) || [])];
-  return nums.length ? [...nums.map((n) => `${n}K`), TUNABLE] : [];
+const cctOptionsFor = (itemCode) => {
+  const code = String(itemCode || "").trim().toUpperCase();
+  if (!code || CCT_EXCLUDE.has(code)) return [];
+  const list = CCT_MAP[code];
+  return list && list.length > 1 ? [...list, TUNABLE] : [];
 };
-
-const showCctFor = (itemCode, options) => {
-  if (options.length < 3) return false;              // needs 2+ CCTs + Tunable
-  if (!CCT_ITEMS) return true;
-  return CCT_ITEMS.some((prefix) => String(itemCode || "").toUpperCase().startsWith(prefix));
-};
+const showCctFor = (itemCode) => cctOptionsFor(itemCode).length > 0;
 
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -218,7 +217,7 @@ const AddProductModal = ({
       image: product.thumbnail || "",
       netPrice: price,
       discount: "",
-      cctOptions: product.cct || "",   // raw CCT text from the Excel sheet
+      cctOptions: product.cct || "",   // CCT text from the Excel sheet (may be empty)
       cct: "",
     }));
     setShowFind(false);
@@ -230,7 +229,7 @@ const AddProductModal = ({
       alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
       return;
     }
-    if (showCctFor(newRow.itemCode, parseCct(newRow.cctOptions)) && !newRow.cct) {
+    if (showCctFor(newRow.itemCode) && !newRow.cct) {
       alert("Please select a CCT for this item.");
       inputRefs?.cct?.current?.focus();
       return;
@@ -258,8 +257,8 @@ const AddProductModal = ({
 
   const isEdit = editRowIndex !== null && editRowIndex !== undefined;
   const hasItem = !!newRow.itemCode;
-  const cctOptions = parseCct(newRow.cctOptions);
-  const showCct = hasItem && showCctFor(newRow.itemCode, cctOptions);
+  const cctOptions = hasItem ? cctOptionsFor(newRow.itemCode) : [];
+  const showCct = cctOptions.length > 0;
 
   return (
     <div style={S.overlay} role="dialog" aria-modal="true">
