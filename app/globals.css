@@ -1261,4 +1261,46 @@ label, .form-label {
           }
         }   .spacer {
     margin: 30px 0;
+}.app-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.app-loading__spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid #e9e9e9;
+  border-top-color: #111111;
+  border-radius: 50%;
+  animation: app-loading-spin 0.75s linear infinite;
+}
+
+@keyframes app-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}.app-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.app-loading__spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid #eeeeee;
+  border-top-color: #c39a56;
+  border-radius: 50%;
+  animation: app-loading-spin 0.7s linear infinite;
+}
+
+@keyframes app-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -3,13 +3,37 @@ import QuotationInfo from "../components/QuotaionInfo";
 import CustomerModal from "../components/customerModal";
 import QuotationTable from "../components/QuotationTable";
 import GSTCalculator from "../components/GSTCalculator";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import AddProductModal from "../components/AddProductModal";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
+const EMPTY_ROW = {
+  customerCode: "",
+  customerDescription: "",
+  itemCode: "",
+  itemName: "",
+  brand: "",
+  qty: "",
+  unit: "",
+  mrp: "",
+  discount: "",
+  amount: "",
+  netPrice: "",
+  image: "",
+  remarks: "",
+};
+
+const roundRupee = (value) => {
+  const rupees = Math.floor(value);
+  const paise = value - rupees;
+  return paise >= 0.5 ? rupees + 1 : rupees;
+};
+
 const Quotation = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [infoModal, setInfoModal] = useState(false);
   const [showModalClientDetails, setShowModalClientDetails] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -18,44 +42,49 @@ const Quotation = () => {
   const [quotationId, setQuotationId] = useState(1);
   const [quotationSequence, setQuotationSequence] = useState(null);
   const [rowsData, setRowsData] = useState([]);
-const [gstDetails, setGstDetails] = useState({
-  gstAmount: 0,
-  totalWithGST: 0,
-  withoutGST: 0,
-
-  // ✅ MATCH CHILD + API
-  gst_percentage: 18,
-  gst_type: "include",
-
-  additional_discount_percentage: 0,
-  additional_discount_amount: 0,
-  amount_after_discount: 0,
-});
+  const [gstDetails, setGstDetails] = useState({
+    gstAmount: 0,
+    totalWithGST: 0,
+    withoutGST: 0,
+    gst_percentage: 18,
+    gst_type: "include",
+    additional_discount_percentage: 0,
+    additional_discount_amount: 0,
+    amount_after_discount: 0,
+  });
   const [remarks, setRemarks] = useState("");
   const [warrantyGuarantee, setWarrantyGuarantee] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
 
-useEffect(() => {
-  const userDetailsCookie = Cookies.get("user_details");
-  if (userDetailsCookie) {
-    try {
-      setUserDetails(JSON.parse(userDetailsCookie));
-    } catch (err) {
-      console.error("Invalid cookie JSON:", err);
+  // ---- Add Product modal state ----
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editRowIndex, setEditRowIndex] = useState(null);
+  const [newRow, setNewRow] = useState(EMPTY_ROW);
+
+  // Refs used by the modal for Enter-key navigation
+  const inputRefs = useRef({
+    customerCode: { current: null },
+    customerDescription: { current: null },
+    qty: { current: null },
+    discount: { current: null },
+    netPrice: { current: null },
+    remarks: { current: null },
+  }).current;
+
+  useEffect(() => {
+    const userDetailsCookie = Cookies.get("user_details");
+    if (userDetailsCookie) {
+      try {
+        setUserDetails(JSON.parse(userDetailsCookie));
+      } catch (err) {
+        console.error("Invalid cookie JSON:", err);
+      }
     }
-  }
-}, []);
+  }, []);
 
-const roundRupee = (value) => {
-  const rupees = Math.floor(value);
-  const paise = value - rupees;
-  return paise >= 0.5 ? rupees + 1 : rupees;
-};
-
-const generateItemData = useCallback(
-  ({ quotationId, item, warranty }) => {
+  const generateItemData = useCallback(({ quotationId, item, warranty }) => {
     const net = roundRupee(parseFloat(item.netPrice) || 0);
     const qty = parseInt(item.qty, 10) || 0;
     const amount = net * qty;
@@ -75,20 +104,45 @@ const generateItemData = useCallback(
       discount: parseFloat(item.discount) || 0,
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
-      amount: amount,
+      amount,
       warranty_guarantee: warranty || "As per company norms",
-      comments: item.comments || "N/A",
+      comments: item.comments || item.remarks || "N/A",
       status: "active",
     };
-  },
-  []
-);
+  }, []);
 
-  
-  // Memoized callbacks
+  // ---- Add Product handlers ----
+  const openAddModal = useCallback(() => {
+    setEditRowIndex(null);
+    setNewRow(EMPTY_ROW);
+    setShowAddModal(true);
+  }, []);
+
+  const handleFieldChange = useCallback((field, value) => {
+    setNewRow((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Enter moves to the next field (falls back to Qty if a field isn't in the modal)
+  const handleKeyDown = useCallback(
+    (e, next) => {
+      if (e.key !== "Enter" || !next) return;
+      e.preventDefault();
+      (inputRefs[next]?.current || inputRefs.qty.current)?.focus();
+    },
+    [inputRefs]
+  );
+
+  const handleAddRow = useCallback((row, index) => {
+    setRowsData((prev) =>
+      index !== null && index !== undefined
+        ? prev.map((r, i) => (i === index ? row : r))
+        : [...prev, row]
+    );
+  }, []);
+
+  // ---- Other callbacks ----
   const handleQuotationConfirm = useCallback((data) => {
     setQuotationInfo(data);
-    console.log("Quotation Info Received:", data);
   }, []);
 
   const closeModal = useCallback(() => {
@@ -104,22 +158,16 @@ const generateItemData = useCallback(
   }, []);
 
   const handleClientConfirm = useCallback((selectedClient) => {
-    console.log("Selected Client:", selectedClient);
     setSelectedCustomer(selectedClient);
   }, []);
 
-const handleGSTChange = useCallback((details) => {
-  setGstDetails((prev) => ({
-    ...prev,
-    ...details, // 🔥 merge correctly
-  }));
+  const handleGSTChange = useCallback((details) => {
+    setGstDetails((prev) => ({ ...prev, ...details }));
+  }, []);
 
-  console.log("GST Details Updated:", details);
-}, []);
   const generateQuotationNumber = useMemo(() => {
     if (quotationSequence === null) return "PLQOT-Loading...";
-    const sequenceStr = quotationSequence.toString().padStart(3, "0");
-    return `PLQOT-${sequenceStr}`;
+    return `PLQOT-${quotationSequence.toString().padStart(3, "0")}`;
   }, [quotationSequence]);
 
   // Fetch last quotation data
@@ -137,7 +185,6 @@ const handleGSTChange = useCallback((details) => {
         }
 
         const quotations = await response.json();
-        console.log("Fetched quotations:", quotations);
 
         if (quotations?.length > 0) {
           const lastSequence = quotations
@@ -147,10 +194,7 @@ const handleGSTChange = useCallback((details) => {
             })
             .reduce((max, num) => Math.max(max, num), 0);
 
-          console.log("Last sequence number:", lastSequence);
-
-          const nextSequence = lastSequence + 1;
-          setQuotationSequence(nextSequence);
+          setQuotationSequence(lastSequence + 1);
           setQuotationId(quotations.length + 1);
         } else {
           setQuotationId(1);
@@ -169,10 +213,7 @@ const handleGSTChange = useCallback((details) => {
     fetchLastQuotationData();
   }, []);
 
-  /**
-   * Saves the quotation and its items to the API.
-   * @async
-   */
+  /** Saves the quotation and its items to the API. */
   const handleSaveQuotation = useCallback(async () => {
     if (quotationSequence === null || isLoading || isSaving) {
       toast.warning("Please wait while the quotation is being processed.");
@@ -182,74 +223,58 @@ const handleGSTChange = useCallback((details) => {
     setIsSaving(true);
 
     try {
-      // Validate rowsData
       for (const item of rowsData) {
         if (!item.itemCode || !item.itemName || !item.amount || isNaN(item.amount)) {
           throw new Error(`Invalid item data: ${item.itemName || "Unknown item"}`);
         }
       }
 
-const quotationData = {
-  quotation_no: generateQuotationNumber,
-  // salesperson: quotationInfo?.Salesperson ,
-  salesperson: quotationInfo?.Salesperson || userDetails?.name || "System",
-  subject: quotationInfo?.Subject || "Quotation for Products/Services",
-  amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
-  without_gst: Math.round(gstDetails.withoutGST) || 0,
-  gst_amount: Math.round(gstDetails.gstAmount) || 0,
-  amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
+      const quotationData = {
+        quotation_no: generateQuotationNumber,
+        salesperson: quotationInfo?.Salesperson || userDetails?.name || "System",
+        subject: quotationInfo?.Subject || "Quotation for Products/Services",
+        amount_including_gst: Math.round(gstDetails.totalWithGST) || 0,
+        without_gst: Math.round(gstDetails.withoutGST) || 0,
+        gst_amount: Math.round(gstDetails.gstAmount) || 0,
+        amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
 
-  // ✅ ADD THIS BLOCK
-  gst_type: gstDetails.gst_type || "include",
-  gst_percentage: gstDetails.gst_percentage || 18,
-  final_amount: Math.round(gstDetails.totalWithGST) || 0,
+        gst_type: gstDetails.gst_type || "include",
+        gst_percentage: gstDetails.gst_percentage || 18,
+        final_amount: Math.round(gstDetails.totalWithGST) || 0,
 
-  warranty_guarantee: warrantyGuarantee || "As per company norms",
-  remarks: remarks || "N/A",
-  status: "active",
-  client_id: selectedCustomer?.id || 3,
+        warranty_guarantee: warrantyGuarantee || "As per company norms",
+        remarks: remarks || "N/A",
+        status: "active",
+        client_id: selectedCustomer?.id || 3,
 
-  created_by: userDetails?.name || "System",
-  created_at: new Date().toISOString(),
+        created_by: userDetails?.name || "System",
+        created_at: new Date().toISOString(),
 
-  additional_discount_percentage: gstDetails.additional_discount_percentage || 0,
-  additional_discount_amount: gstDetails.additional_discount_amount || 0,
-  amount_after_discount: gstDetails.amount_after_discount || 0,
-};
+        additional_discount_percentage: gstDetails.additional_discount_percentage || 0,
+        additional_discount_amount: gstDetails.additional_discount_amount || 0,
+        amount_after_discount: gstDetails.amount_after_discount || 0,
+      };
 
-      console.log("Sending quotationData:", quotationData);
-
-      const response = await axios.post(
-        `${API_URL}/quotation/`,
-        quotationData,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const response = await axios.post(`${API_URL}/quotation/`, quotationData, {
+        headers: { "Content-Type": "application/json" },
+      });
 
       const savedQuotationId = response.data.quotation_id;
 
       if (rowsData.length > 0) {
-        const itemPromises = rowsData.map(async (item) => {
-          const itemData = generateItemData({
-            quotationId: savedQuotationId,
-            item,
-            warranty: warrantyGuarantee,
-          });
-
-          console.log("Sending itemData:", itemData);
-
-          return axios.post(
-            `${API_URL}/quotation/${savedQuotationId}/items/`,
-            itemData,
-            { headers: { "Content-Type": "application/json" } }
-          );
-        });
-
-        await Promise.all(itemPromises);
-        console.log("Items saved successfully");
-      } else {
-        console.log("No items to save.");
+        await Promise.all(
+          rowsData.map((item) =>
+            axios.post(
+              `${API_URL}/quotation/${savedQuotationId}/items/`,
+              generateItemData({
+                quotationId: savedQuotationId,
+                item,
+                warranty: warrantyGuarantee,
+              }),
+              { headers: { "Content-Type": "application/json" } }
+            )
+          )
+        );
       }
 
       setQuotationSequence((prev) => prev + 1);
@@ -280,6 +305,7 @@ const quotationData = {
     isSaving,
     generateQuotationNumber,
     quotationInfo,
+    userDetails,
     gstDetails,
     warrantyGuarantee,
     remarks,
@@ -291,7 +317,7 @@ const quotationData = {
   return (
     <div className="card tm_container my-4">
       <div className="tm_invoice_wrap">
-        <div clas sName="tm_invoice tm_style1" id="tm_download_section">
+        <div className="tm_invoice tm_style1" id="tm_download_section">
           <div className="tm_invoice_in">
             <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
               <div className="tm_invoice_left">
@@ -313,6 +339,7 @@ const quotationData = {
                 </p>
               </div>
             </div>
+
             <div className="tm_invoice_info tm_mb20 m-0">
               <div className="tm_invoice_seperator tm_gray_bg"></div>
               <div className="tm_invoice_info_list">
@@ -324,17 +351,13 @@ const quotationData = {
                 </p>
               </div>
             </div>
+
             <div
               className="tm_invoice_head tm_mb10"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
+              style={{ display: "flex", justifyContent: "space-between" }}
             >
               <div
                 className="tm_invoice_left mt-0"
-        
-        
                 style={{ flex: 1, textAlign: "left" }}
               >
                 <p className="tm_mb2">
@@ -352,6 +375,7 @@ const quotationData = {
                   City: <b>{selectedCustomer?.city || "N/A"}</b> <br />
                 </p>
               </div>
+
               <div
                 className="tm_invoice_right tm_text_right"
                 style={{ flex: 1, textAlign: "right" }}
@@ -379,11 +403,14 @@ const quotationData = {
                 </b>
                 <br />
                 GST: <b>03ADWPG0246P1Z8</b> <br />
-                    Contact no: <b> 94172-81252,98150-37755       </b> <br />
-                Email id: <b> panviklighting@gmail.com      </b> <br />
-              Salesperson: <b>{quotationInfo?.Salesperson === "" ? userDetails.name : quotationInfo?.Salesperson}</b> | Mobile Number : <b>{userDetails ? userDetails.phone : ""}</b>
+                Contact no: <b>94172-81252,98150-37755</b> <br />
+                Email id: <b>panviklighting@gmail.com</b> <br />
+                Salesperson:{" "}
+                <b>{quotationInfo?.Salesperson || userDetails?.name || ""}</b> |
+                Mobile Number : <b>{userDetails?.phone || ""}</b>
               </div>
             </div>
+
             <div
               className="d-flex mb-2"
               style={{
@@ -399,7 +426,33 @@ const quotationData = {
                 </b>
               </p>
             </div>
+
             <div className="tm_table tm_style1 tm_mb30">
+              {/* Add Product button */}
+              <div
+                className="no-print"
+                style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}
+              >
+                <button
+                  type="button"
+                  onClick={openAddModal}
+                  style={{
+                    height: 34,
+                    padding: "0 14px",
+                    border: 0,
+                    borderRadius: 7,
+                    background: "#d3a01d",
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>
+                  Add Product
+                </button>
+              </div>
+
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
                   <QuotationTable
@@ -407,6 +460,7 @@ const quotationData = {
                     onRowsChange={handleRowsChange}
                     onTotalAmountChange={handleTotalAmountChange}
                   />
+
                   {showModalClientDetails && (
                     <CustomerModal
                       onClose={closeModal}
@@ -414,8 +468,21 @@ const quotationData = {
                       onConfirm={handleClientConfirm}
                     />
                   )}
+
+                  <AddProductModal
+                    showAddModal={showAddModal}
+                    setShowAddModal={setShowAddModal}
+                    newRow={newRow}
+                    setNewRow={setNewRow}
+                    handleFieldChange={handleFieldChange}
+                    handleKeyDown={handleKeyDown}
+                    inputRefs={inputRefs}
+                    editRowIndex={editRowIndex}
+                    handleAddRow={handleAddRow}
+                  />
                 </div>
               </div>
+
               <div className="tm_invoice_footer my-2">
                 <div className="tm_left_footer px-0">
                   <textarea
@@ -435,6 +502,7 @@ const quotationData = {
                 </div>
               </div>
             </div>
+
             <hr />
             <p>
               <b>
@@ -444,6 +512,7 @@ const quotationData = {
                 </i>
               </b>
             </p>
+
             <div className="term_box">
               <h6>Terms and Conditions:</h6>
               <p>
@@ -503,6 +572,7 @@ const quotationData = {
             </div>
           </div>
         </div>
+
         <div className="tm_invoice_btns tm_hide_print">
           <button
             type="button"
@@ -546,8 +616,10 @@ const quotationData = {
             </span>
             <span className="tm_btn_text">Print</span>
           </button>
+
           <button
             id="tm_download_btn"
+            type="button"
             className="tm_invoice_btn tm_color2"
             onClick={handleSaveQuotation}
             disabled={isSaving}

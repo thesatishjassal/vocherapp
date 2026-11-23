@@ -9,7 +9,7 @@ const InventoryActionForm = () => {
   const [holdReason, setHoldReason] = useState('');
   const [message, setMessage] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmlit = async (e) => {
     e.preventDefault();
 
     try {

@@ -7,7 +7,7 @@ const InvoucherTable = ({ items = [], onTotalAmountChange }) => {
     itemcode: "",
     itemname: "",
     quantity: "",
-    unit: "",
+    unit: "",     
     rackcode: "",
     rate: "",
     discount_percentage: "",

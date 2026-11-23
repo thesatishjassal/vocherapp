@@ -299,7 +299,10 @@ export default function ClientViewQuotation({ quote }) {
       <div className="pvq-root">
         <style>{PVQ_CSS}</style>
         <p className="pvq-status">
-          {isLoading ? "Loading..." : error || "No quotation found!"}
+          {isLoading ? <div className="app-loading">
+      <div className="app-loading__spinner" aria-label="Loading" />
+    </div> : error || "No quotation found!"}
+          
         </p>
       </div>
     );
@@ -448,7 +451,9 @@ export default function ClientViewQuotation({ quote }) {
         <div className="pvq-terms">
           <h6 className="pvq-terms-title">Terms and Conditions:</h6>
           <p> <b>GST</b> :- Include in above prices as per applicable</p>{" "}
-          <p> <b>Payment Terms</b> :- 100% in advance with order</p>
+          <p> <b>Payment Terms</b> :- 100% in adva
+          
+        nce with order</p>
           <p>Validity:- 15 days from date of quotation.</p>
           <p>
             No warranty in case of any type of led burn directly connected with
@@ -485,7 +490,7 @@ export default function ClientViewQuotation({ quote }) {
           </span>
           <div className="spacer"></div>
           <span>
-           <b>{userDetails?.name || ""}</b>    <br />Mob (0):{" "}
+           <b>{userDetails?.name || ""}</b>    <br />Mob:{" "}
             <b>{userDetails?.phone || ""}</b>
           </span>
         </div>

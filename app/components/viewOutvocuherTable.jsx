@@ -30,7 +30,13 @@ const OutvoucherTable = ({ voucher_id }) => {
     fetchItems();
   }, [voucher_id]);
   
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+  return (
+    <div className="app-loading">
+      <div className="app-loading__spinner" aria-label="Loading" />
+    </div>
+  );
+}
   if (!items.length) return <p>No items found for this voucher.</p>;
 
   return (

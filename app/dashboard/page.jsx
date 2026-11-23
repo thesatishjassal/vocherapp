@@ -91,7 +91,7 @@ export default function Home() {
 
         {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
           <div className="col-lg-3 col-md-4 col-6 mb-3">
-            <a href="/products">
+            <a href="/ledlum-products">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
@@ -103,7 +103,7 @@ export default function Home() {
                     />
                   </div>
                   <h5 className="font-weight-bolder mb-0 mt-3">Add Stocks</h5>
-                  <span className="count text-sm">{productsLength}</span>
+                  {/* <span className="count text-sm">{productsLength}</span> */}
                 </div>
               </div>
             </a>

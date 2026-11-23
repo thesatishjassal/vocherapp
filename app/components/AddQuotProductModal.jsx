@@ -235,25 +235,37 @@ const AddQuotProductModal = ({
         aria-modal="true"
         role="dialog"
       >
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content rounded-4 shadow-lg">
-            <div className="modal-header border-0 p-4">
-              <h1 className="modal-title fs-5 fw-bold">
+        {/*
+          - modal-fullscreen-sm-down: full-screen on phones, centered card on tablets/desktop
+          - modal-dialog-scrollable: keeps header/footer pinned, body scrolls independently
+          - modal-lg on md+ gives the multi-column grid room to breathe
+        */}
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down modal-lg">
+          <div
+            className="modal-content rounded-4 rounded-sm-0 shadow-lg"
+            style={{ maxHeight: "100dvh" }}
+          >
+            <div className="modal-header border-0 p-3 p-md-4">
+              <h1 className="modal-title fs-5 fw-bold text-truncate">
                 {editRowIndex !== null ? "Edit Item" : "Add New Item"}
               </h1>
               <button
                 type="button"
-                className="btn-close"
+                className="btn-close flex-shrink-0"
                 onClick={handleClose}
                 aria-label="Close"
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            <div className="modal-body p-4">
+            <div className="modal-body p-3 p-md-4">
               <div className="row g-3">
                 <div className="col-12">
-                  <div className="btn-group w-100" role="group" aria-label="Form mode">
+                  <div
+                    className="btn-group d-flex flex-column flex-sm-row w-100"
+                    role="group"
+                    aria-label="Form mode"
+                  >
                     <input
                       type="radio"
                       className="btn-check"
@@ -265,7 +277,10 @@ const AddQuotProductModal = ({
                         if (e.target.checked) setMode("auto");
                       }}
                     />
-                    <label className="btn btn-outline-primary" htmlFor="auto-mode">
+                    <label
+                      className="btn btn-outline-primary flex-fill"
+                      htmlFor="auto-mode"
+                    >
                       <i className="fa-solid fa-search me-1"></i>Quick Add
                     </label>
                     <input
@@ -279,7 +294,10 @@ const AddQuotProductModal = ({
                         if (e.target.checked) setMode("manual");
                       }}
                     />
-                    <label className="btn btn-outline-primary" htmlFor="manual-mode">
+                    <label
+                      className="btn btn-outline-primary flex-fill"
+                      htmlFor="manual-mode"
+                    >
                       <i className="fa-solid fa-edit me-1"></i>Manual Entry
                     </label>
                   </div>
@@ -303,7 +321,7 @@ const AddQuotProductModal = ({
                   </>
                 )}
 
-                <div className="col-md-6">
+                <div className="col-12 col-sm-6">
                   <label className="form-label small fw-medium">Customer Code</label>
                   <input
                     type="text"
@@ -317,7 +335,7 @@ const AddQuotProductModal = ({
                     required
                   />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12 col-sm-6">
                   <label className="form-label small fw-medium">Customer Description</label>
                   <input
                     type="text"
@@ -332,7 +350,7 @@ const AddQuotProductModal = ({
                   />
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-12 col-sm-6">
                   <label className="form-label small fw-medium">Item Code</label>
                   <input
                     type="text"
@@ -347,7 +365,7 @@ const AddQuotProductModal = ({
                     required
                   />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12 col-sm-6">
                   <label className="form-label small fw-medium">Item Name</label>
                   <input
                     type="text"
@@ -363,7 +381,7 @@ const AddQuotProductModal = ({
                   />
                 </div>
 
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">Brand</label>
                   <input
                     type="text"
@@ -377,7 +395,7 @@ const AddQuotProductModal = ({
                     disabled={isFieldDisabled("brand")}
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">Unit</label>
                   <input
                     type="text"
@@ -391,7 +409,7 @@ const AddQuotProductModal = ({
                     disabled={isFieldDisabled("unit")}
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">MRP</label>
                   <input
                     type="number"
@@ -407,7 +425,7 @@ const AddQuotProductModal = ({
                     disabled={isFieldDisabled("mrp")}
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">Amount</label>
                   <input
                     type="number"
@@ -415,7 +433,7 @@ const AddQuotProductModal = ({
                     value={newRow.amount || ""}
                     onChange={(e) => handleLocalFieldChange("amount", e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, "image")}
-                    placeholder="Auto-calculated (Qty * Net Price)"
+                    placeholder="Auto-calculated"
                     className="form-control"
                     ref={inputRefs.amount}
                     min="0"
@@ -423,7 +441,7 @@ const AddQuotProductModal = ({
                     disabled
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">Quantity</label>
                   <input
                     type="number"
@@ -438,7 +456,7 @@ const AddQuotProductModal = ({
                     required
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-3">
                   <label className="form-label small fw-medium">Discount (%)</label>
                   <input
                     type="number"
@@ -454,7 +472,7 @@ const AddQuotProductModal = ({
                     step="0.01"
                   />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12 col-md-6">
                   <label className="form-label small fw-medium">Net Price</label>
                   <input
                     type="number"
@@ -471,7 +489,7 @@ const AddQuotProductModal = ({
                   />
                 </div>
 
-                {/* <div className="col-md-12">
+                {/* <div className="col-12">
                   <label className="form-label small fw-medium">Upload Image</label>
                   <input
                     type="file"
@@ -515,10 +533,10 @@ const AddQuotProductModal = ({
                 </div>
               </div>
             </div>
-            <div className="modal-footer border-0 p-4">
+            <div className="modal-footer border-0 p-3 p-md-4 flex-column flex-sm-row gap-2">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary order-2 order-sm-1 w-100 w-sm-auto"
                 onClick={handleClose}
                 aria-label="Cancel"
               >
@@ -526,7 +544,7 @@ const AddQuotProductModal = ({
               </button>
               <button
                 type="button"
-                className="btn btn-success"
+                className="btn btn-success order-1 order-sm-2 w-100 w-sm-auto"
                 onClick={handleSubmit}
                 aria-label={editRowIndex !== null ? "Update Item" : "Add Item"}
               >

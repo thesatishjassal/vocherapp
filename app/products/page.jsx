@@ -4,6 +4,7 @@ import AddProductForm from "../components/AddProductForm";
 import CategoryTable from "../components/CategoryTable";
 import SubcategoryTable from "../components/SubcategoryTable";
 import ProductsTable from "../components/ProductsTable";
+import PriceUploadModal from "../components/PriceUploadModal";
 
 
 const Products = () => {
@@ -49,8 +50,9 @@ const Products = () => {
           </button>
         </li>
       </ul>
+      <PriceUploadModal onUpdated={() => window.location.reload()} />
 
-      {/* Tab Content */}
+      {/* Tab C'ontent */}
       <div className="tab-content">
         {activeTab === "products" && (
           <div className="tab-pane fade show active">
