@@ -3,98 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import AddProductModal from "./AddProductModal";
 import CustomAddModal from "./CustomAddModal";
-
-/* ---------- Styles (inline, created once) ---------- */
-
-const GOLD = "#d3a01d";
-const GOLD_SOFT = "#fbf5e9";
-const LINE = "#eeeeee";
-const MUTED = "#8a8a8a";
-const INK = "#222";
-const RED = "#d64545";
-
-const th = {
-  padding: "8px 10px", borderBottom: `1px solid ${LINE}`, color: MUTED, fontSize: 11,
-  fontWeight: 600, textAlign: "left", textTransform: "uppercase", letterSpacing: "0.04em",
-  whiteSpace: "nowrap",
-};
-const td = { padding: "12px 10px", borderBottom: `1px solid ${LINE}`, verticalAlign: "top" };
-const num = { textAlign: "right", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" };
-
-const S = {
-  root: { color: INK, fontSize: 13, lineHeight: 1.45 },
-  bar: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  count: { color: MUTED, fontSize: 12 },
-  wrap: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th,
-  thNum: { ...th, textAlign: "right" },
-  thSr: { ...th, width: 32 },
-  thName: { ...th, minWidth: 260 },
-  thActions: { ...th, width: 96 },
-  td,
-  tdMuted: { ...td, color: MUTED },
-  tdCode: { ...td, fontWeight: 600, whiteSpace: "nowrap" },
-  tdNum: { ...td, ...num },
-  tdStrong: { ...td, ...num, fontWeight: 600 },
-  name: { maxWidth: 460, textAlign: "left", textTransform: "none" },
-  remarks: { marginTop: 4, color: MUTED, fontSize: 12 },
-  img: { width: 40, height: 40, borderRadius: 6, objectFit: "cover" },
-  actions: { display: "flex", justifyContent: "flex-end", gap: 2 },
-  iconBtn: {
-    display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28,
-    padding: 0, border: 0, borderRadius: 6, background: "transparent", color: MUTED, cursor: "pointer",
-  },
-  empty: { padding: "36px 10px", color: MUTED, textAlign: "center" },
-  totalCell: { ...td, borderBottom: 0, color: MUTED, textAlign: "right" },
-  totalValue: { marginLeft: 16, color: INK, fontSize: 14, fontWeight: 700, fontVariantNumeric: "tabular-nums" },
-  add: { display: "flex", gap: 8, marginTop: 12 },
-  addBtn: {
-    display: "inline-flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px",
-    border: `1px solid ${GOLD}`, borderRadius: 8, background: GOLD, color: "#fff",
-    font: "inherit", fontWeight: 600, cursor: "pointer",
-  },
-  addGhost: {
-    display: "inline-flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px",
-    border: `1px solid ${LINE}`, borderRadius: 8, background: "#fff", color: INK,
-    font: "inherit", fontWeight: 600, cursor: "pointer",
-  },
-  srOnly: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" },
-  // column menu
-  colWrap: { position: "relative" },
-  colToggle: {
-    display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 10px",
-    border: `1px solid ${LINE}`, borderRadius: 8, background: "#fff", color: MUTED,
-    font: "inherit", fontSize: 12, cursor: "pointer",
-  },
-  colMenu: {
-    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 20, minWidth: 190, padding: 6,
-    border: `1px solid ${LINE}`, borderRadius: 10, background: "#fff",
-    boxShadow: "0 8px 24px rgba(0,0,0,.08)",
-  },
-  colItem: {
-    display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 6,
-    fontSize: 13, cursor: "pointer", background: "#fff",
-  },
-  colCheck: { accentColor: GOLD },
-};
-
-// Hover effects done on the DOM node (no re-render), same pattern as the modals
-const rowOn = (e) => (e.currentTarget.style.background = "#fafafa");
-const rowOff = (e) => (e.currentTarget.style.background = "transparent");
-const iconOn = (e) => {
-  const danger = e.currentTarget.dataset.danger;
-  e.currentTarget.style.background = danger ? "#fdecec" : GOLD_SOFT;
-  e.currentTarget.style.color = danger ? RED : GOLD;
-};
-const iconOff = (e) => {
-  e.currentTarget.style.background = "transparent";
-  e.currentTarget.style.color = MUTED;
-};
-const softOn = (e) => (e.currentTarget.style.background = "#fafafa");
-const softOff = (e) => (e.currentTarget.style.background = "#fff");
-const dimOn = (e) => (e.currentTarget.style.filter = "brightness(.95)");
-const dimOff = (e) => (e.currentTarget.style.filter = "none");
+import "./QuotationTable.css";
 
 /* ---------- Small helpers (UI only) ---------- */
 
@@ -142,17 +51,17 @@ const ColumnMenu = ({ columns, onChange }) => {
   }, [open]);
 
   return (
-    <div className="no-print" style={S.colWrap} ref={ref}>
-      <button type="button" style={{ ...S.colToggle, color: open ? INK : MUTED }} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+    <div className="qt-columns no-print" ref={ref}>
+      <button type="button" className="qt-columns__toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
         <Icon d={ICON.columns} /> Columns
       </button>
       {open && (
-        <div style={S.colMenu} role="menu">
+        <div className="qt-columns__menu" role="menu">
           {Object.keys(COLUMN_LABELS).map((key) => (
-            <label key={key} style={S.colItem} onMouseOver={softOn} onMouseOut={softOff}>
+            <label key={key} className="qt-columns__item">
               <input
                 type="checkbox"
-                style={S.colCheck}
+                className="qt-columns__check"
                 checked={!!columns[key]}
                 onChange={() => onChange({ ...columns, [key]: !columns[key] })}
               />
@@ -562,74 +471,74 @@ const QuotationTable = ({
 
   /* ---------- JSX ---------- */
   return (
-    <section style={S.root}>
-      <div className="no-print" style={S.bar}>
-        <span style={S.count}>
+    <section className="qt">
+      <div className="qt__bar no-print">
+        <span className="qt__count">
           {rows.length} {rows.length === 1 ? "item" : "items"}
         </span>
         <ColumnMenu columns={columns} onChange={handleColumnVisibilityChange} />
       </div>
 
-      <div style={S.wrap}>
-        <table style={S.table}>
+      <div className="qt__wrap">
+        <table className="qt__table">
           <thead>
             <tr>
-              <th style={S.thSr}>#</th>
-              {columns.Image && <th style={S.th}>Image</th>}
-              {columns.customerCode && <th style={S.th}>Cust code</th>}
-              {columns.customerDescription && <th style={S.th}>Cust desc</th>}
-              {columns.ItemCode && <th style={S.th}>Item code</th>}
-              <th style={S.thName}>Item name</th>
-              {columns.Brand && <th style={S.th}>Brand</th>}
-              <th style={S.th}>Unit</th>
-              {columns.MRP && <th style={S.thNum}>MRP</th>}
-              {columns.Qty && <th style={S.thNum}>Qty</th>}
-              {columns.Dist && <th style={S.thNum}>Disc %</th>}
-              {columns.NetPrice && <th style={S.thNum}>Net price</th>}
-              {columns.Amount && <th style={S.thNum}>Amount</th>}
-              <th className="no-print" style={S.thActions}><span style={S.srOnly}>Actions</span></th>
+              <th className="qt__th qt__th--sr">#</th>
+              {columns.Image && <th className="qt__th">Image</th>}
+              {columns.customerCode && <th className="qt__th">Cust code</th>}
+              {columns.customerDescription && <th className="qt__th">Cust desc</th>}
+              {columns.ItemCode && <th className="qt__th">Item code</th>}
+              <th className="qt__th qt__th--name">Item name</th>
+              {columns.Brand && <th className="qt__th">Brand</th>}
+              <th className="qt__th">Unit</th>
+              {columns.MRP && <th className="qt__th qt__th--num">MRP</th>}
+              {columns.Qty && <th className="qt__th qt__th--num">Qty</th>}
+              {columns.Dist && <th className="qt__th qt__th--num">Disc %</th>}
+              {columns.NetPrice && <th className="qt__th qt__th--num">Net price</th>}
+              {columns.Amount && <th className="qt__th qt__th--num">Amount</th>}
+              <th className="qt__th qt__th--actions no-print"><span className="qt__sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={row.id} onMouseOver={rowOn} onMouseOut={rowOff}>
-                <td style={S.tdMuted}>{index + 1}</td>
+              <tr key={row.id} className="qt__row">
+                <td className="qt__td qt__td--muted">{index + 1}</td>
                 {columns.Image && (
-                  <td style={S.td}>
+                  <td className="qt__td">
                     {row.image && (
                       <img
                         src={`${API_URL}${row.image}`}
                         alt=""
-                        style={S.img}
+                        className="qt__img"
                         onError={(e) => (e.target.style.display = "none")}
                       />
                     )}
                   </td>
                 )}
-                {columns.customerCode && <td style={S.td}>{row.customerCode}</td>}
-                {columns.customerDescription && <td style={S.td}>{row.customerDescription}</td>}
-                {columns.ItemCode && <td style={S.tdCode}>{row.itemCode}</td>}
-                <td style={S.td}>
-                  <div style={S.name}>{row.itemName}</div>
-                  {row.cct && <div style={S.remarks}>CCT: {row.cct}</div>}
-                  {hasRemarks(row.remarks) && <div style={S.remarks}>{row.remarks}</div>}
+                {columns.customerCode && <td className="qt__td">{row.customerCode}</td>}
+                {columns.customerDescription && <td className="qt__td">{row.customerDescription}</td>}
+                {columns.ItemCode && <td className="qt__td qt__td--code">{row.itemCode}</td>}
+                <td className="qt__td qt__td--name">
+                  <div className="qt__name">{row.itemName}</div>
+                  {row.cct && <div className="qt__remarks">CCT: {row.cct}</div>}
+                  {hasRemarks(row.remarks) && <div className="qt__remarks">{row.remarks}</div>}
                 </td>
-                {columns.Brand && <td style={S.tdMuted}>{row.brand}</td>}
-                <td style={S.tdMuted}>{row.unit}</td>
-                {columns.MRP && <td style={S.tdNum}>{plain(row.mrp)}</td>}
-                {columns.Qty && <td style={S.tdNum}>{row.qty}</td>}
-                {columns.Dist && <td style={S.tdNum}>{row.discount}</td>}
-                {columns.NetPrice && <td style={S.tdNum}>{money(row.netPrice)}</td>}
-                {columns.Amount && <td style={S.tdStrong}>{money(row.amount)}</td>}
-                <td className="no-print" style={S.td}>
-                  <div style={S.actions}>
-                    <button type="button" style={S.iconBtn} onMouseOver={iconOn} onMouseOut={iconOff} onClick={() => handleEditRow(index)} aria-label="Edit" title="Edit">
+                {columns.Brand && <td className="qt__td qt__td--muted">{row.brand}</td>}
+                <td className="qt__td qt__td--muted">{row.unit}</td>
+                {columns.MRP && <td className="qt__td qt__td--num">{plain(row.mrp)}</td>}
+                {columns.Qty && <td className="qt__td qt__td--num">{row.qty}</td>}
+                {columns.Dist && <td className="qt__td qt__td--num">{row.discount}</td>}
+                {columns.NetPrice && <td className="qt__td qt__td--num">{money(row.netPrice)}</td>}
+                {columns.Amount && <td className="qt__td qt__td--num qt__td--strong">{money(row.amount)}</td>}
+                <td className="qt__td qt__td--actions no-print">
+                  <div className="qt__actions">
+                    <button type="button" className="qt__icon-btn" onClick={() => handleEditRow(index)} aria-label="Edit" title="Edit">
                       <Icon d={ICON.edit} />
                     </button>
-                    <button type="button" style={S.iconBtn} onMouseOver={iconOn} onMouseOut={iconOff} onClick={() => handleEditCustomRow(index)} aria-label="Edit as custom" title="Edit as custom">
+                    <button type="button" className="qt__icon-btn" onClick={() => handleEditCustomRow(index)} aria-label="Edit as custom" title="Edit as custom">
                       <Icon d={ICON.custom} />
                     </button>
-                    <button type="button" style={S.iconBtn} data-danger="1" onMouseOver={iconOn} onMouseOut={iconOff} onClick={() => handleDeleteRow(index)} aria-label="Delete" title="Delete">
+                    <button type="button" className="qt__icon-btn qt__icon-btn--danger" onClick={() => handleDeleteRow(index)} aria-label="Delete" title="Delete">
                       <Icon d={ICON.trash} />
                     </button>
                   </div>
@@ -639,15 +548,15 @@ const QuotationTable = ({
 
             {rows.length === 0 && (
               <tr>
-                <td style={S.empty} colSpan={20}>No items yet — add your first product below.</td>
+                <td className="qt__empty" colSpan={20}>No items yet — add your first product below.</td>
               </tr>
             )}
           </tbody>
           {rows.length > 0 && columns.Amount && (
             <tfoot>
-              <tr>
-                <td style={S.totalCell} colSpan={20}>
-                  Subtotal <span style={S.totalValue}>₹{money(totalAmount)}</span>
+              <tr className="qt__total">
+                <td className="qt__td qt__total-label" colSpan={20}>
+                  Subtotal <span className="qt__total-value">₹{money(totalAmount)}</span>
                 </td>
               </tr>
             </tfoot>
@@ -655,11 +564,11 @@ const QuotationTable = ({
         </table>
       </div>
 
-      <div className="no-print" style={S.add}>
-        <button type="button" style={S.addBtn} onMouseOver={dimOn} onMouseOut={dimOff} onClick={() => setShowAddModal(true)}>
+      <div className="qt__add no-print">
+        <button type="button" className="qt__add-btn" onClick={() => setShowAddModal(true)}>
           <Icon d={ICON.plus} /> Add product
         </button>
-        <button type="button" style={S.addGhost} onMouseOver={softOn} onMouseOut={softOff} onClick={() => setShowCusAddModal(true)}>
+        <button type="button" className="qt__add-btn qt__add-btn--ghost" onClick={() => setShowCusAddModal(true)}>
           <Icon d={ICON.plus} /> Custom item
         </button>
       </div>

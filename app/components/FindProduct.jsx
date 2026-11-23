@@ -6,7 +6,7 @@ import React, {
 /* ---------- Fast product loading (LEDLUM Excel sheet) ----------
    Source: /public/ledlum-products.min.json  (2,205 items from the LEDLUM sheet,
    436 KB raw / ~49 KB gzipped). Each item is a small array:
-   [itemcode, itemname, brand, category, price, unit]
+   [itemcode, itemname, brand, category, price, unit, cct]
 
    1. Fetched ONCE per page load and shared (memory cache + in-flight promise).
    2. Saved in sessionStorage -> reopening the modal / refreshing shows items instantly.
@@ -15,7 +15,7 @@ import React, {
 */
 
 const DATA_URL = "/ledlum-products.min.json";
-const CACHE_KEY = "ledlum_products_v1";
+const CACHE_KEY = "ledlum_products_v2";
 const MAX_RESULTS = 50;
 
 let memoryCache = null;
@@ -24,7 +24,7 @@ let refreshed = false;
 
 const UNIT = { pcs: "Piece", mtr: "Meter" };
 
-const slim = ([itemcode, itemname, brand, category, price, unit]) => {
+const slim = ([itemcode, itemname, brand, category, price, unit, cct]) => {
   const dash = itemname.indexOf(" – ");
   return {
     itemcode,
@@ -34,6 +34,7 @@ const slim = ([itemcode, itemname, brand, category, price, unit]) => {
     category,
     unit: UNIT[unit] || unit,
     price: price ?? null,
+    cct: cct || "",          // CCT text from the Excel sheet, e.g. "3000K / 4000K / 6000K"
     _s: `${itemcode} ${itemname} ${brand} ${category}`.toLowerCase(),
   };
 };
@@ -223,7 +224,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
 
   const pick = useCallback(
     (item) => {
-      const { _s, title, ...product } = item;   // { itemcode, itemname, brand, category, unit, price }
+      const { _s, title, ...product } = item;   // { itemcode, itemname, brand, category, unit, price, cct }
       handleProductSelect(product);
     },
     [handleProductSelect]

@@ -17,7 +17,25 @@ const EMPTY_ROW = {
   discount: "", amount: "", netPrice: "", image: "", remarks: "",
   cus_customercode: "", cus_customerdescription: "", cus_qty: "", cus_brand: "",
   cus_unit: "", cus_mrp: "", cus_discount: "", cus_netprice: "", cus_image: "",
-  cus_remarks: "",
+  cus_remarks: "", cct: "", cctOptions: "",
+};
+
+/* ---------- CCT dropdown ----------
+   Shown only for item codes starting with one of these prefixes.
+   Set CCT_ITEMS = null to show it for EVERY item whose Excel CCT has more than one value.  */
+const CCT_ITEMS = ["LLF-312"];
+const TUNABLE = "Tunable";
+
+/** "3000K / 4000K / 6000K" (from Excel) -> ["3000K", "4000K", "6000K", "Tunable"] */
+const parseCct = (text) => {
+  const nums = [...new Set(String(text || "").match(/\d{4}/g) || [])];
+  return nums.length ? [...nums.map((n) => `${n}K`), TUNABLE] : [];
+};
+
+const showCctFor = (itemCode, options) => {
+  if (options.length < 3) return false;              // needs 2+ CCTs + Tunable
+  if (!CCT_ITEMS) return true;
+  return CCT_ITEMS.some((prefix) => String(itemCode || "").toUpperCase().startsWith(prefix));
 };
 
 const inr = new Intl.NumberFormat("en-IN", {
@@ -95,6 +113,14 @@ const S = {
   },
   totalLabel: { color: "#666", fontSize: 12, fontWeight: 600 },
   totalValue: { fontSize: 16, fontWeight: 700 },
+  select: {
+    width: "100%", height: 34, padding: "0 30px 0 10px", border: `1px solid ${LINE}`,
+    borderRadius: 7, outline: "none", font: "inherit", fontSize: 13, color: INK,
+    boxSizing: "border-box", cursor: "pointer", appearance: "none",
+    background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238a8a8a' stroke-width='1.5'%3E%3Cpath d='m1 1 4 4 4-4'/%3E%3C/svg%3E\") no-repeat right 10px center",
+  },
+  cctRow: { marginBottom: 10 },
+  required: { color: "#d64545", marginLeft: 2 },
   textarea: {
     width: "100%", height: 44, padding: "7px 10px", border: `1px solid ${LINE}`,
     borderRadius: 7, outline: "none", resize: "none", font: "inherit",
@@ -192,6 +218,8 @@ const AddProductModal = ({
       image: product.thumbnail || "",
       netPrice: price,
       discount: "",
+      cctOptions: product.cct || "",   // raw CCT text from the Excel sheet
+      cct: "",
     }));
     setShowFind(false);
     setTimeout(() => inputRefs?.qty?.current?.focus(), 100);
@@ -200,6 +228,11 @@ const AddProductModal = ({
   const handleSubmit = useCallback(() => {
     if (!newRow.itemCode || !newRow.itemName || !newRow.qty || !newRow.netPrice) {
       alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
+      return;
+    }
+    if (showCctFor(newRow.itemCode, parseCct(newRow.cctOptions)) && !newRow.cct) {
+      alert("Please select a CCT for this item.");
+      inputRefs?.cct?.current?.focus();
       return;
     }
     const netPrice = toNum(newRow.netPrice).toFixed(2);
@@ -213,9 +246,10 @@ const AddProductModal = ({
       image: newRow.image || "",
       remarks: newRow.remarks || "",
       discount: newRow.discount || "",
+      cct: newRow.cct || "",
     }, editRowIndex);
     handleClose();
-  }, [newRow, editRowIndex, handleAddRow, handleClose]);
+  }, [newRow, editRowIndex, handleAddRow, handleClose, inputRefs]);
 
   const keyQty = useCallback((e) => handleKeyDown(e, "discount"), [handleKeyDown]);
   const keyDiscount = useCallback((e) => handleKeyDown(e, "netPrice"), [handleKeyDown]);
@@ -224,6 +258,8 @@ const AddProductModal = ({
 
   const isEdit = editRowIndex !== null && editRowIndex !== undefined;
   const hasItem = !!newRow.itemCode;
+  const cctOptions = parseCct(newRow.cctOptions);
+  const showCct = hasItem && showCctFor(newRow.itemCode, cctOptions);
 
   return (
     <div style={S.overlay} role="dialog" aria-modal="true">
@@ -267,7 +303,7 @@ const AddProductModal = ({
           </div>
           {hasItem && (
             <div style={S.productMeta}>
-              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`]
+              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`, newRow.cct && `CCT ${newRow.cct}`]
                 .filter(Boolean).join(" · ")}
             </div>
           )}
@@ -283,10 +319,31 @@ const AddProductModal = ({
             <input id="netPrice" name="netPrice" type="number" style={{ ...S.input, fontWeight: 600 }}
               value={newRow.netPrice ?? ""} min="0" step="0.01"
               onChange={(e) => onNetPrice(e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, "remarks")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && showCct) { e.preventDefault(); inputRefs?.cct?.current?.focus(); }
+                else handleKeyDown(e, "remarks");
+              }}
               onFocus={focusOn} onBlur={focusOff} ref={inputRefs.netPrice} />
           </div>
         </section>
+
+        {showCct && (
+          <div style={S.cctRow}>
+            <label style={S.label} htmlFor="cct">
+              CCT (colour temperature)<span style={S.required}>*</span>
+            </label>
+            <select id="cct" name="cct" style={{ ...S.select, color: newRow.cct ? INK : MUTED }}
+              value={newRow.cct || ""} ref={inputRefs.cct}
+              onChange={(e) => setNewRow((p) => ({ ...p, cct: e.target.value }))}
+              onKeyDown={(e) => handleKeyDown(e, "remarks")}
+              onFocus={focusOn} onBlur={focusOff}>
+              <option value="" disabled>Select CCT…</option>
+              {cctOptions.map((o) => (
+                <option key={o} value={o}>{o === TUNABLE ? "Tunable (CCT changeable)" : o}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <section style={S.total} aria-live="polite">
           <span style={S.totalLabel}>Amount</span>
