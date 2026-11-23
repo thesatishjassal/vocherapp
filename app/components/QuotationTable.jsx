@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import AddProductModal from "./AddProductModal";
+import CCT_MAP from "./cctMap";
 import CustomAddModal from "./CustomAddModal";
 
 /* ---------- Styles (inline, created once) ---------- */
@@ -95,6 +96,40 @@ const softOn = (e) => (e.currentTarget.style.background = "#fafafa");
 const softOff = (e) => (e.currentTarget.style.background = "#fff");
 const dimOn = (e) => (e.currentTarget.style.filter = "brightness(.95)");
 const dimOff = (e) => (e.currentTarget.style.filter = "none");
+
+/* ---------- Specs from the item name -> DB columns (cct, beamangle, cri, cutoutdia, lumens) ---------- */
+
+/** Read CCT, beam angle, CRI, cut-out and lumens out of an item name like:
+ * "LEDLUM 7W concealed down light – white/black finish, available in 3000K / 4000K / 6000K,
+ *  100° beam, 80lm/w output, CRI >90, IP54 rated, size Ø80x72 mm, cut-out Ø75 mm"   */
+const specsFromName = (name) => {
+  const s = String(name || "");
+  const pick = (re) => (s.match(re)?.[1] || "").trim();
+  const cct =
+    pick(/(tunable\s+\d{4}K\s*[–-]\s*\d{4}K)/i) ||
+    pick(/available in\s+(\d{4}K(?:\s*\/\s*\d{4}K)+)/i) ||
+    pick(/\b(\d{4}K)\s+(?:warm|neutral|natural|cool)\s+white/i);
+  return {
+    cct,
+    beamangle: pick(/,\s*([^,]*?[°º][^,]*?)\s+beam\b/i),
+    cri: pick(/\bCRI\s*([>≥<]?\s*\d+)/i).replace(/\s+/g, ""),
+    cutoutdia: pick(/cut-out\s+([^,]+?)(?:\s*mm)?\s*(?:,|$)/i),
+    lumens: pick(/,\s*([^,]*?lm(?:\s*\/\s*w|\s*per\s*LED)?)\s+output/i),
+  };
+};
+
+/** Fill only the spec fields that are still empty on a row. */
+const withSpecs = (row) => {
+  const f = specsFromName(row.itemName);
+  return {
+    ...row,
+    cct: row.cct || f.cct,
+    beamangle: row.beamangle || f.beamangle,
+    cri: row.cri || f.cri,
+    cutoutdia: row.cutoutdia || f.cutoutdia,
+    lumens: row.lumens || f.lumens,
+  };
+};
 
 /* ---------- Small helpers (UI only) ---------- */
 
@@ -220,6 +255,10 @@ const QuotationTable = ({
     cus_remarks: "",
     cct: "",
     cctOptions: "",
+    beamangle: "",
+    cri: "",
+    cutoutdia: "",
+    lumens: "",
   });
 
   const inputRefs = {
@@ -303,8 +342,12 @@ const QuotationTable = ({
             remarks: item.remarks || "",
             cct: item.cct || "",
             cctOptions: item.cctOptions || "",
+            beamangle: item.beamangle || "",
+            cri: item.cri || "",
+            cutoutdia: item.cutoutdia || "",
+            lumens: item.lumens || "",
           };
-        })
+        }).map(withSpecs)
       );
     }
   }, [items, rows.length]);
@@ -379,6 +422,10 @@ const QuotationTable = ({
       cus_remarks: "",
       cct: "",
       cctOptions: "",
+      beamangle: "",
+      cri: "",
+      cutoutdia: "",
+      lumens: "",
     });
   };
 
@@ -406,7 +453,7 @@ const QuotationTable = ({
     });
   };
 
-  // The modal passes the finished row (with "CCT: …" already in remarks).
+  // The modal passes the finished row; withSpecs() fills cct/beam/cri/cut-out/lumens from the name.
   // Called with no argument (Enter key), it falls back to the current newRow.
   const handleAddRow = (rowFromModal) => {
     const src = rowFromModal && typeof rowFromModal === "object" && rowFromModal.itemCode ? rowFromModal : newRow;
@@ -421,7 +468,7 @@ const QuotationTable = ({
     const parsedDisc = discount === "" ? calculateDiscount(parsedMrp, parsedNet) : Number(discount);
     const amount = calculateAmount(Number(qty), parsedNet);
 
-    const payload = {
+    const payload = withSpecs({
       ...src,
       mrp: parsedMrp,
       netPrice: parsedNet,
@@ -429,7 +476,7 @@ const QuotationTable = ({
       amount,
       qty: Number(qty),
       unit: src.unit || "Piece",
-    };
+    });
 
     if (editRowIndex !== null) {
       setRows((prev) =>
@@ -484,6 +531,7 @@ const QuotationTable = ({
       image: rowData.cus_image || "",
       remarks: rowData.cus_remarks || "",
     };
+    Object.assign(newRowData, withSpecs(newRowData));
 
     if (editIndex !== null) {
       setRows((prev) =>
@@ -542,6 +590,10 @@ const QuotationTable = ({
     cus_remarks: row.remarks || "",
     cct: row.cct || "",
     cctOptions: row.cctOptions || "",
+    beamangle: row.beamangle || "",
+    cri: row.cri || "",
+    cutoutdia: row.cutoutdia || "",
+    lumens: row.lumens || "",
   });
 
   const handleEditRow = (index) => {
@@ -614,6 +666,9 @@ const QuotationTable = ({
                 {columns.ItemCode && <td style={S.tdCode}>{row.itemCode}</td>}
                 <td style={S.td}>
                   <div style={S.name}>{row.itemName}</div>
+                  {row.cct && CCT_MAP[String(row.itemCode).toUpperCase()] && (
+                    <div style={S.remarks}>CCT: {row.cct}</div>
+                  )}
                   {hasRemarks(row.remarks) && <div style={S.remarks}>{row.remarks}</div>}
                 </td>
                 {columns.Brand && <td style={S.tdMuted}>{row.brand}</td>}

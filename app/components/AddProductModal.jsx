@@ -19,7 +19,12 @@ const EMPTY_ROW = {
   cus_customercode: "", cus_customerdescription: "", cus_qty: "", cus_brand: "",
   cus_unit: "", cus_mrp: "", cus_discount: "", cus_netprice: "", cus_image: "",
   cus_remarks: "", cct: "", cctOptions: "",
+  beamangle: "", cri: "", cutoutdia: "", lumens: "",   // specs from the sheet -> DB columns
 };
+
+/* Old behaviour wrote "CCT: 4000K" into remarks. The CCT now has its own DB column,
+   so remarks stay as the user typed them. Set to true to also copy it into remarks. */
+const CCT_ALSO_IN_REMARKS = false;
 
 /* ---------- CCT dropdown ----------
    Shown for every item whose CCT in the Excel sheet has more than one value
@@ -37,7 +42,7 @@ const cctOptionsFor = (itemCode) => {
 };
 const showCctFor = (itemCode) => cctOptionsFor(itemCode).length > 0;
 
-/* CCT is saved inside remarks, e.g. "CCT: 4000K" or "CCT: 4000K, wall side" */
+/* Rows saved by the earlier version have "CCT: 4000K, note" in remarks — read them back */
 const CCT_IN_REMARKS = /^\s*CCT:\s*([^,]+?)\s*(?:,\s*|$)/i;
 
 /** "CCT: 4000K, wall side" -> { cct: "4000K", rest: "wall side" } */
@@ -243,7 +248,12 @@ const AddProductModal = ({
       netPrice: price,
       discount: "",
       cctOptions: product.cct || "",   // CCT text from the Excel sheet (may be empty)
-      cct: "",
+      // multi-CCT items: user picks from the dropdown; single-CCT items: keep the sheet value
+      cct: showCctFor(product.itemcode) ? "" : String(product.cct || "").replace(/^(\d{4})$/, "$1K"),
+      beamangle: product.beamangle || "",
+      cri: product.cri || "",
+      cutoutdia: product.cutoutdia || "",
+      lumens: product.lumens || "",
     }));
     setShowFind(false);
     setTimeout(() => inputRefs?.qty?.current?.focus(), 100);
@@ -260,8 +270,9 @@ const AddProductModal = ({
       return;
     }
     const netPrice = toNum(newRow.netPrice).toFixed(2);
-    const cct = showCctFor(newRow.itemCode) ? newRow.cct : "";
-    const remarks = joinRemarks(cct, splitRemarks(newRow.remarks).rest);   // saved to DB
+    const cct = newRow.cct || "";
+    const note = splitRemarks(newRow.remarks).rest;
+    const remarks = CCT_ALSO_IN_REMARKS && showCctFor(newRow.itemCode) ? joinRemarks(cct, note) : note;
     handleAddRow({
       ...newRow,
       netPrice,
@@ -273,6 +284,10 @@ const AddProductModal = ({
       remarks,
       discount: newRow.discount || "",
       cct,
+      beamangle: newRow.beamangle || "",
+      cri: newRow.cri || "",
+      cutoutdia: newRow.cutoutdia || "",
+      lumens: newRow.lumens || "",
     }, editRowIndex);
     handleClose();
   }, [newRow, editRowIndex, handleAddRow, handleClose, inputRefs]);
@@ -329,8 +344,15 @@ const AddProductModal = ({
           </div>
           {hasItem && (
             <div style={S.productMeta}>
-              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`, newRow.cct && `CCT ${newRow.cct}`]
+              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`]
                 .filter(Boolean).join(" · ")}
+            </div>
+          )}
+          {hasItem && (newRow.cct || newRow.beamangle || newRow.cri || newRow.cutoutdia || newRow.lumens) && (
+            <div style={S.productMeta}>
+              {[newRow.cct && `CCT ${newRow.cct}`, newRow.beamangle && `Beam ${newRow.beamangle}`,
+                newRow.cri && `CRI ${newRow.cri}`, newRow.cutoutdia && `Cut-out ${newRow.cutoutdia}`,
+                newRow.lumens && newRow.lumens].filter(Boolean).join(" · ")}
             </div>
           )}
         </section>
