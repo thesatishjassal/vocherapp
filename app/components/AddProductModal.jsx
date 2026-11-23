@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
 import PropTypes from "prop-types";
 import FindProduct from "./FindProduct";
 import CCT_MAP from "./cctMap";
@@ -36,6 +36,20 @@ const cctOptionsFor = (itemCode) => {
   return list && list.length > 1 ? [...list, TUNABLE] : [];
 };
 const showCctFor = (itemCode) => cctOptionsFor(itemCode).length > 0;
+
+/* CCT is saved inside remarks, e.g. "CCT: 4000K" or "CCT: 4000K, wall side" */
+const CCT_IN_REMARKS = /^\s*CCT:\s*([^,]+?)\s*(?:,\s*|$)/i;
+
+/** "CCT: 4000K, wall side" -> { cct: "4000K", rest: "wall side" } */
+const splitRemarks = (remarks) => {
+  const text = String(remarks ?? "");
+  const m = text.match(CCT_IN_REMARKS);
+  return m ? { cct: m[1], rest: text.slice(m[0].length).trim() } : { cct: "", rest: text };
+};
+
+/** ("4000K", "wall side") -> "CCT: 4000K, wall side" */
+const joinRemarks = (cct, rest) =>
+  [cct && `CCT: ${cct}`, String(rest ?? "").trim()].filter(Boolean).join(", ");
 
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -180,6 +194,17 @@ const AddProductModal = ({
 
   const openFind = useCallback(() => setShowFind(true), []);
 
+  // Editing a saved row: pull "CCT: …" out of remarks into the dropdown,
+  // so the remarks box only shows the user's own note.
+  useEffect(() => {
+    if (!showAddModal) return;
+    setNewRow((p) => {
+      const { cct, rest } = splitRemarks(p.remarks);
+      if (!cct) return p;
+      return { ...p, cct: p.cct || cct, remarks: rest };
+    });
+  }, [showAddModal, setNewRow]);
+
   const handleClose = useCallback(() => {
     setShowAddModal(false);
     setShowFind(false);
@@ -235,6 +260,8 @@ const AddProductModal = ({
       return;
     }
     const netPrice = toNum(newRow.netPrice).toFixed(2);
+    const cct = showCctFor(newRow.itemCode) ? newRow.cct : "";
+    const remarks = joinRemarks(cct, splitRemarks(newRow.remarks).rest);   // saved to DB
     handleAddRow({
       ...newRow,
       netPrice,
@@ -243,9 +270,9 @@ const AddProductModal = ({
       mrp: newRow.mrp || "",
       brand: newRow.brand || "",
       image: newRow.image || "",
-      remarks: newRow.remarks || "",
+      remarks,
       discount: newRow.discount || "",
-      cct: newRow.cct || "",
+      cct,
     }, editRowIndex);
     handleClose();
   }, [newRow, editRowIndex, handleAddRow, handleClose, inputRefs]);
