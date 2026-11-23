@@ -429,7 +429,7 @@ const Quotation = () => {
 
             <div className="tm_table tm_style1 tm_mb30">
               {/* Add Product button */}
-              <div
+              {/* <div
                 className="no-print"
                 style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}
               >
@@ -451,7 +451,7 @@ const Quotation = () => {
                   <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>
                   Add Product
                 </button>
-              </div>
+              </div> */}
 
               <div className="tm_round_border">
                 <div className="tm_table_responsive">
