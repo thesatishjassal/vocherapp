@@ -91,7 +91,7 @@ export default function Home() {
 
         {(isAdmin || isSalesExecutiveOrArchitect || isStockManager) && (
           <div className="col-lg-3 col-md-4 col-6 mb-3">
-            <a href="/ledlum-products">
+            <a href="/products">
               <div className="card">
                 <span className="mask opacity-10 border-radius-lg"></span>
                 <div className="card-body p-3 position-relative text-center">
