@@ -3,8 +3,8 @@ import React, {
   useState, useEffect, useMemo, useRef, useDeferredValue, useCallback, memo,
 } from "react";
 
-/* ---------- Fast product loading (LEDLUM + ASTARA sheets) ----------
-   Source: /public/ledlum-products.min.json  (LEDLUM + ASTARA items in one file).
+/* ---------- Fast product loading (LEDLUM + ASTARA + ARTIZAN sheets) ----------
+   Source: /public/ledlum-products.min.json  (LEDLUM + ASTARA + ARTIZAN items in one file).
    Each item is a small array:
    [itemcode, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]
 
@@ -16,7 +16,7 @@ import React, {
 
 // Bump DATA_VERSION every time you replace the JSON file, so browsers
 // drop the old copy (HTTP cache + sessionStorage) and load the new items.
-const DATA_VERSION = "4";
+const DATA_VERSION = "5";
 const DATA_URL = `/ledlum-products.min.json?v=${DATA_VERSION}`;
 const CACHE_KEY = `products_v${DATA_VERSION}`;
 const MAX_RESULTS = 50;
@@ -135,7 +135,7 @@ const S = {
   },
 };
 
-const BRANDS = ["", "LEDLUM", "ASTARA"];
+const BRANDS = ["", "LEDLUM", "ASTARA", "ARTIZAN"];
 const CATEGORIES = ["", "indoor", "outdoor", "accessories", "drivers", "profiles", "fans", "smart controls"];
 
 const hoverOn = (e) => (e.currentTarget.style.background = "#fbf5e9");
@@ -271,7 +271,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={(e) => (e.currentTarget.style.borderColor = GOLD)}
           onBlur={(e) => (e.currentTarget.style.borderColor = LINE)}
-          placeholder="Search code or name… e.g. LLO-005, ARL-2703, astara 12w"
+          placeholder="Search code or name… e.g. LLO-005, ARL-2703, LLA-214"
           aria-label="Search product"
         />
 
