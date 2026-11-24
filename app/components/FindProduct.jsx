@@ -3,9 +3,9 @@ import React, {
   useState, useEffect, useMemo, useRef, useDeferredValue, useCallback, memo,
 } from "react";
 
-/* ---------- Fast product loading (LEDLUM Excel sheet) ----------
-   Source: /public/ledlum-products.min.json  (2,205 items from the LEDLUM sheet,
-   436 KB raw / ~49 KB gzipped). Each item is a small array:
+/* ---------- Fast product loading (LEDLUM + ASTARA sheets) ----------
+   Source: /public/ledlum-products.min.json  (LEDLUM + ASTARA items in one file).
+   Each item is a small array:
    [itemcode, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]
 
    1. Fetched ONCE per page load and shared (memory cache + in-flight promise).
@@ -14,8 +14,11 @@ import React, {
    4. Only the first 50 matches are rendered.
 */
 
-const DATA_URL = "/ledlum-products.min.json";
-const CACHE_KEY = "ledlum_products_v3";
+// Bump DATA_VERSION every time you replace the JSON file, so browsers
+// drop the old copy (HTTP cache + sessionStorage) and load the new items.
+const DATA_VERSION = "4";
+const DATA_URL = `/ledlum-products.min.json?v=${DATA_VERSION}`;
+const CACHE_KEY = `products_v${DATA_VERSION}`;
 const MAX_RESULTS = 50;
 
 let memoryCache = null;
@@ -41,6 +44,7 @@ const slim = ([itemcode, itemname, brand, category, price, unit, cct, beamangle,
     cutoutdia: cutoutdia || "",
     lumens: lumens || "",
     _s: `${itemcode} ${itemname} ${brand} ${category}`.toLowerCase(),
+    _c: itemcode.toLowerCase().replace(/[^a-z0-9]/g, ""), // "arl2703movsrwhbk…" -> "arl2703" also matches
   };
 };
 
@@ -116,7 +120,7 @@ const S = {
     font: "inherit", color: "inherit",
   },
   code: {
-    flex: "0 0 80px", fontWeight: 700, fontSize: 12, overflow: "hidden",
+    flex: "0 0 110px", fontWeight: 700, fontSize: 12, overflow: "hidden",
     textOverflow: "ellipsis", whiteSpace: "nowrap",
   },
   rowText: { minWidth: 0, flex: 1 },
@@ -131,7 +135,8 @@ const S = {
   },
 };
 
-const CATEGORIES = ["", "indoor", "outdoor", "drivers", "profiles", "fans", "smart controls"];
+const BRANDS = ["", "LEDLUM", "ASTARA"];
+const CATEGORIES = ["", "indoor", "outdoor", "accessories", "drivers", "profiles", "fans", "smart controls"];
 
 const hoverOn = (e) => (e.currentTarget.style.background = "#fbf5e9");
 const hoverOff = (e) => (e.currentTarget.style.background = "#fff");
@@ -170,6 +175,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
   const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef(null);
 
@@ -216,20 +222,27 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
     };
   }, [showModal, load]);
 
-  // Filter: category chip + every typed word must appear in code / name / brand
+  // Filter: brand chip + category chip + every typed word must appear in code / name / brand.
+  // Codes also match without "-" or spaces: "arl2703", "llf312" work.
   const { results, total } = useMemo(() => {
     const words = deferredQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = items.filter(
-      (it) => (!category || it.category === category) && words.every((w) => it._s.includes(w))
-    );
+    const matches = items.filter((it) => {
+      if (brand && it.brand !== brand) return false;
+      if (category && it.category !== category) return false;
+      return words.every((w) => {
+        if (it._s.includes(w)) return true;
+        const c = w.replace(/[^a-z0-9]/g, "");
+        return c.length > 1 && it._c.includes(c);
+      });
+    });
     return { results: matches.slice(0, MAX_RESULTS), total: matches.length };
-  }, [items, deferredQuery, category]);
+  }, [items, deferredQuery, category, brand]);
 
   const close = useCallback(() => setShowModal(false), [setShowModal]);
 
   const pick = useCallback(
     (item) => {
-      const { _s, title, ...product } = item;   // { itemcode, itemname, brand, category, unit, price, cct, beamangle, cri, cutoutdia, lumens }
+      const { _s, _c, title, ...product } = item;   // { itemcode, itemname, brand, category, unit, price, cct, beamangle, cri, cutoutdia, lumens }
       handleProductSelect(product);
     },
     [handleProductSelect]
@@ -258,9 +271,23 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={(e) => (e.currentTarget.style.borderColor = GOLD)}
           onBlur={(e) => (e.currentTarget.style.borderColor = LINE)}
-          placeholder="Search item code or name… e.g. LLO-005, bollard 12w"
+          placeholder="Search code or name… e.g. LLO-005, ARL-2703, astara 12w"
           aria-label="Search product"
         />
+
+        <div style={S.chips} role="group" aria-label="Brand">
+          {BRANDS.map((b) => (
+            <button
+              key={b || "all-brands"}
+              type="button"
+              style={brand === b ? { ...S.chip, ...S.chipOn, textTransform: "none" } : { ...S.chip, textTransform: "none" }}
+              aria-pressed={brand === b}
+              onClick={() => setBrand(b)}
+            >
+              {b || "All brands"}
+            </button>
+          ))}
+        </div>
 
         <div style={S.chips} role="group" aria-label="Category">
           {CATEGORIES.map((c) => (
