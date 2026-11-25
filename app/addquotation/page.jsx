@@ -55,7 +55,7 @@ const TERMS = [
 
 const S = {
   page: {
-    minHeight: "100vh", padding: "24px 12px 96px", background: "#f5f5f4",
+    minHeight: "100vh", padding: "24px 12px", background: "#f5f5f4",
     fontFamily: "Arial, Helvetica, sans-serif", color: INK, fontSize: 13, lineHeight: 1.5,
     boxSizing: "border-box",
   },
@@ -114,11 +114,15 @@ const S = {
   termVal: { margin: 0, fontSize: 12 },
   closing: { marginTop: 14, color: "#555", fontSize: 12 },
   fineprint: { marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LINE}`, color: MUTED, fontSize: 11 },
+  // Sticky (not fixed): stays inside the page column, so it never covers the sidebar
+  // or spills off the screen on tablets; it sits at the bottom while you scroll.
   bar: {
-    position: "fixed", right: 16, bottom: 16, zIndex: 40, display: "flex", alignItems: "center", gap: 8,
-    padding: 6, background: "#fff", borderRadius: 12, boxShadow: "0 6px 24px rgba(0,0,0,.14)",
+    position: "sticky", bottom: 12, zIndex: 20, maxWidth: 1040, margin: "12px auto 0",
+    display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, padding: 8,
+    background: "#fff", border: `1px solid ${LINE}`, borderRadius: 12,
+    boxShadow: "0 6px 24px rgba(0,0,0,.10)", boxSizing: "border-box",
   },
-  barInfo: { padding: "0 8px", color: MUTED, fontSize: 12, whiteSpace: "nowrap" },
+  barInfo: { flex: "1 1 auto", minWidth: 0, padding: "0 6px", color: MUTED, fontSize: 12 },
   barTotal: { color: INK, fontWeight: 700 },
   btn: {
     display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 16px",
@@ -138,6 +142,12 @@ const PRINT_CSS = `
     .qt-party { border-style: solid !important; background: #fff !important; }
   }
   .print-only { display: none; }
+  @media (max-width: 640px) {
+    .qt-sheet { padding: 18px 14px !important; }
+    .qt-bar { bottom: 8px !important; }
+    .qt-bar-info { flex-basis: 100% !important; text-align: center; }
+    .qt-bar-btn { flex: 1 1 0 !important; justify-content: center; }
+  }
 `;
 
 const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
@@ -261,6 +271,8 @@ const Quotation = () => {
       cutoutdia: text(item.cutoutdia),
       lumens: text(item.lumens),
       warranty_guarantee: warranty || DEFAULT_WARRANTY,
+      // item note typed in the Add item modal — sent under both names the API might use
+      remarks: text(item.remarks),
       comments: item.comments || item.remarks || "N/A",
       status: "active",
     };
@@ -376,7 +388,8 @@ const Quotation = () => {
         gst_percentage: gstDetails.gst_percentage || 18,
         final_amount: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee || DEFAULT_WARRANTY,
-        remarks: remarks || "N/A",
+        remarks: remarks.trim() || "N/A",
+        date: new Date().toISOString().slice(0, 10),
         status: "active",
         client_id: selectedCustomer?.id || 3,
         created_by: userDetails?.name || "System",
@@ -591,14 +604,14 @@ const Quotation = () => {
       </div>
 
       {/* ---------- Floating actions ---------- */}
-      <div className="no-print" style={S.bar}>
-        <span style={S.barInfo}>
+      <div className="no-print qt-bar" style={S.bar}>
+        <span className="qt-bar-info" style={S.barInfo}>
           {rowsData.length} {rowsData.length === 1 ? "item" : "items"} · <span style={S.barTotal}>{money(grandTotal)}</span>
         </span>
-        <button type="button" style={S.btn} onClick={() => window.print()}>
+        <button type="button" className="qt-bar-btn" style={S.btn} onClick={() => window.print()}>
           <Icon d={ICON.print} /> Print
         </button>
-        <button type="button" id="tm_download_btn"
+        <button type="button" id="tm_download_btn" className="qt-bar-btn"
           style={{ ...S.btn, ...S.btnPrimary, opacity: isSaving || isLoading ? 0.7 : 1 }}
           onClick={handleSaveQuotation} disabled={isSaving || isLoading}
           onMouseOver={dimOn} onMouseOut={dimOff}>

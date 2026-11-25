@@ -32,7 +32,7 @@ const TERMS = [
 
 const S = {
   page: {
-    minHeight: "100vh", padding: "24px 12px 96px", background: "#f5f5f4",
+    minHeight: "100vh", padding: "24px 12px", background: "#f5f5f4",
     fontFamily: "Arial, Helvetica, sans-serif", color: INK, fontSize: 13, lineHeight: 1.5,
     boxSizing: "border-box",
   },
@@ -81,9 +81,12 @@ const S = {
   closing: { marginTop: 14, color: "#555", fontSize: 12 },
   fineprint: { marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LINE}`, color: MUTED, fontSize: 11 },
   // action bar
+  // Sticky (not fixed): stays inside the page column, so it never covers the sidebar
   bar: {
-    position: "fixed", right: 16, bottom: 16, zIndex: 40, display: "flex", gap: 8, padding: 6,
-    background: "#fff", borderRadius: 12, boxShadow: "0 6px 24px rgba(0,0,0,.14)",
+    position: "sticky", bottom: 12, zIndex: 20, maxWidth: 1040, margin: "12px auto 0",
+    display: "flex", justifyContent: "flex-end", flexWrap: "wrap", gap: 8, padding: 8,
+    background: "#fff", border: `1px solid ${LINE}`, borderRadius: 12,
+    boxShadow: "0 6px 24px rgba(0,0,0,.10)", boxSizing: "border-box",
   },
   btn: {
     display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 16px",
@@ -103,6 +106,10 @@ const PRINT_CSS = `
     .qt-sheet { max-width: none !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
   }
   .print-only { display: none; }
+  @media (max-width: 640px) {
+    .qt-sheet { padding: 18px 14px !important; }
+    .qt-bar-btn { flex: 1 1 0 !important; justify-content: center; }
+  }
 `;
 
 const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
@@ -436,11 +443,11 @@ const EditQuotation = () => {
       </div>
 
       {/* ---------- Floating actions ---------- */}
-      <div className="no-print" style={S.bar}>
-        <button type="button" style={S.btn} onClick={() => window.print()}>
+      <div className="no-print qt-bar" style={S.bar}>
+        <button type="button" className="qt-bar-btn" style={S.btn} onClick={() => window.print()}>
           <Icon d={PRINT_ICON} /> Print
         </button>
-        <button type="button" id="tm_publish_btn" style={{ ...S.btn, ...S.btnPrimary, opacity: saving ? 0.7 : 1 }}
+        <button type="button" id="tm_publish_btn" className="qt-bar-btn" style={{ ...S.btn, ...S.btnPrimary, opacity: saving ? 0.7 : 1 }}
           onClick={handleSaveQuotation} disabled={saving} onMouseOver={dimOn} onMouseOut={dimOff}>
           <Icon d={SAVE_ICON} /> {saving ? "Publishing…" : "Publish"}
         </button>
