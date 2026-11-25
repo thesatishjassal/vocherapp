@@ -389,14 +389,14 @@ const Quotation = () => {
         final_amount: Math.round(gstDetails.totalWithGST) || 0,
         warranty_guarantee: warrantyGuarantee || DEFAULT_WARRANTY,
         remarks: remarks.trim() || "N/A",
-        date: new Date().toISOString().slice(0, 10),
         status: "active",
         client_id: selectedCustomer?.id || 3,
         created_by: userDetails?.name || "System",
         created_at: new Date().toISOString(),
         additional_discount_percentage: gstDetails.additional_discount_percentage || 0,
-        additional_discount_amount: gstDetails.additional_discount_amount || 0,
-        amount_after_discount: gstDetails.amount_after_discount || 0,
+        // whole rupees — the API rejects decimals like 1905.7 here (422)
+        additional_discount_amount: Math.round(gstDetails.additional_discount_amount || 0),
+        amount_after_discount: Math.round(gstDetails.amount_after_discount || 0),
       };
 
       const response = await axios.post(`${API_URL}/quotation/`, quotationData, {
@@ -430,7 +430,12 @@ const Quotation = () => {
         toast.error(`Failed to save quotation: ${error.response.data.detail || "Server error. Please check the data and try again."}`);
       } else if (error.response?.status === 422) {
         const details = error.response.data.detail;
-        toast.error(`Failed to save quotation: ${details?.[0]?.msg || "Invalid data provided. Please check item details."}`);
+        const first = Array.isArray(details) ? details[0] : null;
+        const field = first?.loc ? first.loc.filter((x) => x !== "body").join(".") : "";
+        console.error("422 details:", details);
+        toast.error(
+          `Failed to save quotation: ${field ? `${field} — ` : ""}${first?.msg || (typeof details === "string" ? details : "Invalid data provided. Please check item details.")}`
+        );
       } else {
         toast.error(`Failed to save quotation: ${error.message || "Unknown error"}`);
       }
