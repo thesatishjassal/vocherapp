@@ -217,10 +217,21 @@ const Quotation = () => {
     }
   }, []);
 
-  const generateItemData = useCallback(({ quotationId, item, warranty }) => {
+  /** One quotation item -> API payload.
+   *  Line GST is worked out from the quotation's GST type / % so the per-item
+   *  amount_including_gst, without_gst, gst_amount and amount_with_gst are filled too. */
+  const generateItemData = useCallback(({ quotationId, item, warranty, position, gst }) => {
     const net = roundRupee(parseFloat(item.netPrice) || 0);
     const qty = parseInt(item.qty, 10) || 0;
     const amount = net * qty;
+
+    const pct = (Number(gst?.gst_percentage) || 0) / 100;
+    const included = (gst?.gst_type || "include") === "include";
+    const withoutGst = included ? amount / (1 + pct) : amount;
+    const gstAmount = included ? amount - withoutGst : amount * pct;
+    const withGst = withoutGst + gstAmount;
+
+    const text = (v) => (v === undefined || v === null || String(v).trim() === "" ? null : String(v).trim());
 
     return {
       quotation_id: quotationId,
@@ -233,11 +244,22 @@ const Quotation = () => {
       mrp: parseFloat(item.mrp) || 0,
       netPrice: net,
       price: net,
+      position,
       quantity: qty,
       discount: parseFloat(item.discount) || 0,
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
       amount,
+      amount_including_gst: Math.round(withGst),
+      without_gst: Math.round(withoutGst),
+      gst_amount: Math.round(gstAmount),
+      amount_with_gst: Math.round(withGst),
+      // specs (filled by AddProductModal / QuotationTable from the product sheet or item name)
+      cct: text(item.cct),
+      beamangle: text(item.beamangle),
+      cri: text(item.cri),
+      cutoutdia: text(item.cutoutdia),
+      lumens: text(item.lumens),
       warranty_guarantee: warranty || DEFAULT_WARRANTY,
       comments: item.comments || item.remarks || "N/A",
       status: "active",
@@ -370,10 +392,16 @@ const Quotation = () => {
       const savedQuotationId = response.data.quotation_id;
 
       await Promise.all(
-        rowsData.map((item) =>
+        rowsData.map((item, index) =>
           axios.post(
             `${API_URL}/quotation/${savedQuotationId}/items/`,
-            generateItemData({ quotationId: savedQuotationId, item, warranty: warrantyGuarantee }),
+            generateItemData({
+              quotationId: savedQuotationId,
+              item,
+              warranty: warrantyGuarantee,
+              position: index,
+              gst: gstDetails,
+            }),
             { headers: { "Content-Type": "application/json" } }
           )
         )

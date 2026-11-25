@@ -63,8 +63,8 @@ const PVQ_CSS = `
     align-items: center;
     gap: 10px;
     margin: 10px auto;
-}.pvq-brand-line::before,.pvq-brand-line::after{content:"";flex:1;height:2px;background:var(--pvq-gold)}
-// .pvq-brand-line::before{flex:0 0 40px}
+}
+.pvq-brand-line::before,.pvq-brand-line::after{content:"";flex:1;height:2px;background:var(--pvq-gold)}
 .pvq-brand-name{color:var(--pvq-gold);font-weight:700;font-size:clamp(15px,3.2vw,24px);letter-spacing:.18em;white-space:nowrap}
 .pvq-head-right{text-align:right}
 .pvq-title{margin:0;font-size:clamp(20px,4vw,27px);font-weight:400;letter-spacing:.08em;text-transform:uppercase}
@@ -123,7 +123,8 @@ const PVQ_CSS = `
 .pvq-terms-title{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--pvq-maroon)}
 .pvq-terms p + p{margin-top:6px}
 .pvq-terms hr{border:0;border-top:1px solid #dccfb4;margin:12px 0 8px}
-.pvq-sign{color:var(--pvq-muted)}
+.pvq-sign{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--pvq-ink)}
+.pvq-remarks{padding:0 16px 12px;font-size:13px;white-space:pre-wrap}
 
 /* Actions */
 .pvq-actions{display:flex;justify-content:center;padding:16px}
@@ -161,6 +162,10 @@ const PVQ_CSS = `
   .pvq-sheet{border:0}
 }
 `;
+
+const money = (v) =>
+  `₹${(Number(v) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const showText = (v) => v && String(v).trim() && !["0", "N/A", "NULL"].includes(String(v).trim().toUpperCase());
 
 export default function ClientViewQuotation({ quote }) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -298,12 +303,15 @@ export default function ClientViewQuotation({ quote }) {
     return (
       <div className="pvq-root">
         <style>{PVQ_CSS}</style>
-        <p className="pvq-status">
-          {isLoading ? <div className="app-loading">
-      <div className="app-loading__spinner" aria-label="Loading" />
-    </div> : error || "No quotation found!"}
-          
-        </p>
+        <div className="pvq-status">
+          {isLoading ? (
+            <div className="app-loading">
+              <div className="app-loading__spinner" aria-label="Loading" />
+            </div>
+          ) : (
+            error || "No quotation found!"
+          )}
+        </div>
       </div>
     );
   }
@@ -316,9 +324,14 @@ export default function ClientViewQuotation({ quote }) {
   const showGst = quotation?.gst_type === "exclude" && gstAmount > 0;
   const discountPct = Number(quotation?.additional_discount_percentage ?? 0);
   const discountAmt = Number(quotation?.additional_discount_amount ?? 0);
+  const gstPct = Number(quotation?.gst_percentage ?? 18);
+  // When an additional discount was given, the discounted amount is the real total
   const totalAmount = Number(
-    quotation?.amount_with_gst ?? quotation?.amount_after_discount ?? 0
+    (discountAmt > 0 && Number(quotation?.amount_after_discount) > 0
+      ? quotation.amount_after_discount
+      : quotation?.amount_with_gst ?? quotation?.amount_including_gst) ?? 0
   );
+  const quoteDate = quotation?.created_at ? new Date(quotation.created_at) : new Date();
 
   return (
     <div className="pvq-root">
@@ -341,7 +354,7 @@ export default function ClientViewQuotation({ quote }) {
               Quotation No: <b>{quotation.quotation_no}</b>
             </p>
             <p className="pvq-meta">
-              <b>Date:</b> {new Date().toLocaleDateString("en-GB")}
+              <b>Date:</b> {quoteDate.toLocaleDateString("en-GB")}
             </p>
           </div>
         </div>
@@ -401,14 +414,18 @@ export default function ClientViewQuotation({ quote }) {
             <b>Subject:</b> {quotation.subject}
           </span>
           <span>
-            Salesperson: <b>{quotation?.salesperson || ""}</b> | Mobile Number:{" "}
-            <b>{userDetails?.phone || ""}</b>
+            Salesperson: <b>{quotation?.salesperson || "—"}</b>
+            {userDetails?.phone && (
+              <>
+                {" "}| Mobile: <b>{userDetails.phone}</b>
+              </>
+            )}
           </span>
         </div>
 
         {/* ===== Items table ===== */}
         <div className="pvq-table-scroll">
-          <QuotationItemsTable quotation_id={quotation.quotation_id} />
+          <QuotationItemsTable quotation_id={quotation.quotation_id} readOnly />
         </div>
 
         {/* ===== Totals ===== */}
@@ -417,30 +434,36 @@ export default function ClientViewQuotation({ quote }) {
             <tbody>
               <tr>
                 <td>Amount:</td>
-                <td>{baseAmount.toFixed(2)}</td>
+                <td>{money(baseAmount)}</td>
               </tr>
 
               {showGst && (
                 <tr>
-                  <td>Exclude GST (18%):</td>
-                  <td>{gstAmount.toFixed(2)}</td>
+                  <td>GST ({gstPct}%):</td>
+                  <td>+ {money(gstAmount)}</td>
                 </tr>
               )}
 
               {discountPct > 0 && (
                 <tr className="pvq-discount">
                   <td>Additional Discount ({discountPct}%):</td>
-                  <td>- {discountAmt.toFixed(2)}</td>
+                  <td>- {money(discountAmt)}</td>
                 </tr>
               )}
 
               <tr className="pvq-total-row">
                 <td>Total Amount:</td>
-                <td>{totalAmount.toFixed(2)}</td>
+                <td>{money(totalAmount)}</td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        {showText(quotation.remarks) && (
+          <p className="pvq-remarks">
+            <b>Remarks:</b> {quotation.remarks}
+          </p>
+        )}
 
         <p className="pvq-thanks">
           Thank you for considering us for your needs. Here is the proposal as
@@ -450,11 +473,13 @@ export default function ClientViewQuotation({ quote }) {
         {/* ===== Terms ===== */}
         <div className="pvq-terms">
           <h6 className="pvq-terms-title">Terms and Conditions:</h6>
-          <p> <b>GST</b> :- Include in above prices as per applicable</p>{" "}
-          <p> <b>Payment Terms</b> :- 100% in adva
-          
-        nce with order</p>
-          <p>Validity:- 15 days from date of quotation.</p>
+          <p><b>GST:</b> Included in above prices as applicable.</p>
+          <p><b>Payment Terms:</b> 100% in advance with order.</p>
+          <p><b>Validity:</b> 15 days from date of quotation.</p>
+          <p>
+            <b>Warranty / Guarantee:</b>{" "}
+            {showText(quotation.warranty_guarantee) ? quotation.warranty_guarantee : "As per company norms."}
+          </p>
           <p>
             No warranty in case of any type of led burn directly connected with
             ac current without driver or in case of any type of failure raise
@@ -480,19 +505,24 @@ export default function ClientViewQuotation({ quote }) {
             </b>
           </p>
           <hr />
-          <p className="pvq-sign">
-           
-            <br />
-            
-          </p><span> Regards:{" "}
-           <br />
-            <b>Panvik Lighting</b>
-          </span>
-          <div className="spacer"></div>
-          <span>
-           <b>{userDetails?.name || ""}</b>    <br />Mob:{" "}
-            <b>{userDetails?.phone || ""}</b>
-          </span>
+          <div className="pvq-sign">
+            <span>
+              Regards,
+              <br />
+              <b>Panvik Lighting</b>
+            </span>
+            {(quotation?.salesperson || userDetails?.name) && (
+              <span style={{ textAlign: "right" }}>
+                <b>{quotation?.salesperson || userDetails?.name}</b>
+                {userDetails?.phone && (
+                  <>
+                    <br />
+                    Mob: <b>{userDetails.phone}</b>
+                  </>
+                )}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

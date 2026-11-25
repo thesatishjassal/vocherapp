@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FiPlusCircle } from "react-icons/fi";
@@ -20,30 +20,176 @@ const toImageUrl = (src, base = "") => {
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%23f3f3f3'/%3E%3Cpath d='M30 22v16M22 30h16' stroke='%23c4c4c4' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E";
 
-const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
+/* ---------- Spec line under the item name ----------
+   The value SAVED ON THE QUOTATION ITEM wins (e.g. the CCT the salesperson picked: "4000K").
+   The product catalogue is only a fallback — it holds the options ("3000K / 4000K / 6000K"). */
+const EMPTY = new Set(["", "0", "NULL", "NONE", "N/A", "UNDEFINED"]);
+const clean = (v) => {
+  const t = String(v ?? "").trim();
+  return EMPTY.has(t.toUpperCase()) ? "" : t;
+};
+const first = (...vals) => vals.map(clean).find(Boolean) || "";
+const withDegree = (v) => (v && /^\d+(\.\d+)?$/.test(v) ? `${v}°` : v); // "100" -> "100°", "100°" stays
+
+const specsFor = (item, product = {}) =>
+  [
+    ["CCT", first(item.cct, product.cct)],
+    ["Watt", first(item.watt, product.watt)],
+    ["Cut-out", first(item.cutoutdia, item.cutoutsize, product.cutoutdia, product.cutoutsize)],
+    ["Size", first(item.size, product.size)],
+    ["Beam", withDegree(first(item.beamangle, product.beamangle))],
+    ["CRI", first(item.cri, item.Cri, product.cri)],
+    ["Body colour", first(item.bodycolor, product.color)],
+    ["Light colour", first(item.lightcolor, product.lightcolor)],
+    ["Lumens", first(item.lumens, product.lumens)],
+  ].filter(([, v]) => v);
+
+/* ---------- "Columns" dropdown (hidden when printing) ---------- */
+const COLUMN_LABELS = {
+  srNo: "Sr no",
+  image: "Image",
+  customerCode: "Customer code",
+  customerDescription: "Customer description",
+  itemCode: "Item code",
+  itemName: "Item name",
+  specs: "Specs (CCT, beam, CRI…)",
+  brand: "Brand",
+  qty: "Qty",
+  unit: "Unit",
+  mrp: "MRP",
+  discount: "Discount",
+  netPrice: "Net price",
+  amount: "Amount",
+};
+const NO_PRINT = "no-print qit-no-print pvq-no-print";
+const T = {
+  bar: { display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 8 },
+  wrap: { position: "relative" },
+  btn: {
+    display: "inline-flex", alignItems: "center", gap: 6, height: 30, padding: "0 12px",
+    border: "1px solid #e3e3e3", borderRadius: 8, background: "#fff", color: "#555",
+    font: "inherit", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  },
+  count: { minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: "#fbf5e9", color: "#b98912", fontSize: 11, lineHeight: "18px" },
+  menu: {
+    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 30, minWidth: 220, padding: 6,
+    border: "1px solid #eee", borderRadius: 10, background: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,.10)",
+    textAlign: "left",
+  },
+  menuHead: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 8px 6px", color: "#8a8a8a", fontSize: 11, fontWeight: 600 },
+  link: { border: 0, padding: 0, background: "transparent", color: "#b98912", font: "inherit", fontSize: 11, fontWeight: 600, cursor: "pointer" },
+  item: { display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 6, fontSize: 13, color: "#222", cursor: "pointer" },
+  seg: { display: "inline-flex", padding: 2, border: "1px solid #e3e3e3", borderRadius: 8, background: "#f6f6f6" },
+  segBtn: {
+    display: "inline-flex", alignItems: "center", gap: 5, height: 24, padding: "0 10px", border: 0,
+    borderRadius: 6, background: "transparent", color: "#8a8a8a", font: "inherit", fontSize: 12,
+    fontWeight: 600, cursor: "pointer",
+  },
+  segOn: { background: "#fff", color: "#222", boxShadow: "0 1px 3px rgba(0,0,0,.1)" },
+  hint: { padding: "6px 8px 2px", borderTop: "1px solid #eee", marginTop: 4, color: "#8a8a8a", fontSize: 11 },
+};
+const Svg = ({ d }) => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+);
+
+const ColumnMenu = ({ columns, onChange, onReset }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const esc = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  const keys = Object.keys(COLUMN_LABELS);
+  const shown = keys.filter((k) => columns[k]).length;
+  return (
+    <div style={T.wrap} ref={ref}>
+      <button type="button" style={{ ...T.btn, ...(open ? { borderColor: "#d3a01d", color: "#222" } : null) }}
+        aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>
+        <Svg d="M4 5h16v14H4zM10 5v14M16 5v14" /> Columns <span style={T.count}>{shown}/{keys.length}</span>
+      </button>
+      {open && (
+        <div style={T.menu} role="menu">
+          <div style={T.menuHead}>
+            <span>Show in table &amp; print</span>
+            <button type="button" style={T.link} onClick={onReset}>Reset</button>
+          </div>
+          {keys.map((k) => (
+            <label key={k} style={T.item}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#fafafa")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}>
+              <input type="checkbox" style={{ accentColor: "#d3a01d" }} checked={!!columns[k]}
+                onChange={() => onChange({ ...columns, [k]: !columns[k] })} />
+              {COLUMN_LABELS[k]}
+            </label>
+          ))}
+          <div style={T.hint}>Hidden columns are left out of the print too.</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* Portrait / Landscape page toggle for printing (remembered in this browser) */
+const ORIENT_KEY = "quotation_print_orientation";
+const PAGE_ICON = {
+  portrait: "M7 3h10v18H7z",
+  landscape: "M3 7h18v10H3z",
+};
+const OrientationToggle = ({ value, onChange }) => (
+  <div style={T.seg} role="radiogroup" aria-label="Print orientation">
+    {[["portrait", "Portrait"], ["landscape", "Landscape"]].map(([v, label]) => (
+      <button key={v} type="button" role="radio" aria-checked={value === v}
+        style={value === v ? { ...T.segBtn, ...T.segOn } : T.segBtn}
+        onClick={() => onChange(v)} title={`Print in ${label.toLowerCase()}`}>
+        <Svg d={PAGE_ICON[v]} /> {label}
+      </button>
+    ))}
+  </div>
+);
+
+const DEFAULT_COLUMNS = {
+  srNo: true,
+  customerCode: false,
+  customerDescription: false,
+  itemCode: true,
+  itemName: true,
+  specs: true,
+  unit: true,
+  brand: true,
+  qty: true,
+  discount: false,
+  mrp: false,
+  netPrice: true,
+  amount: true,
+  image: true,
+};
+
+const QuotationItemsTable = ({ quotation_id, selectedRevision, readOnly = false }) => {
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  const [visibleColumns, setVisibleColumns] = useState({
-    srNo: true,
-    customerCode: false,
-    customerDescription: false,
-    itemCode: true,
-    Description: true,
-    itemName: true,
-    unit: true,
-    brand: true,
-    qty: true,
-    // price: true,
-    discount: false,
-    mrp: false,
-    netPrice: true,
-    amount: true,
-    image: true,
-  });
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_COLUMNS);
+  const [orientation, setOrientation] = useState("landscape");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(ORIENT_KEY);
+      if (saved === "portrait" || saved === "landscape") setOrientation(saved);
+    } catch (_) {}
+  }, []);
+
+  const changeOrientation = (v) => {
+    setOrientation(v);
+    try { localStorage.setItem(ORIENT_KEY, v); } catch (_) {}
+  };
 
   // ✅ Fetch products once and build lookup map
   useEffect(() => {
@@ -299,9 +445,6 @@ const getFinalPrice = (item) => {
     <div className="relative overflow-x-auto">
       <style jsx>{`
         @media print {
-          @page {
-            size: A4 Landscape;
-          }
           .no-print {
             display: none !important;
           }
@@ -312,26 +455,19 @@ const getFinalPrice = (item) => {
         }
       `}</style>
 
-      <div className="absolute top-0 right-0 flex flex-col gap-2 no-print">
-        <button
-          onClick={handlePrint}
-          className="px-3 py-2 bg-gray-200 rounded-md shadow hover:bg-gray-300"
-        >
-          🖨 Print
+      <style>{`@media print {
+        .qit-no-print { display: none !important; }
+        @page { size: A4 ${orientation}; margin: ${orientation === "portrait" ? "8mm" : "10mm"}; }
+        #quotation-table { width: 100% !important; font-size: ${orientation === "portrait" ? 10 : 12}px !important; }
+        #quotation-table img { max-width: ${orientation === "portrait" ? 44 : 60}px !important; max-height: ${orientation === "portrait" ? 44 : 60}px !important; }
+      }`}</style>
+      <div className={NO_PRINT} style={T.bar}>
+        <OrientationToggle value={orientation} onChange={changeOrientation} />
+        <ColumnMenu columns={visibleColumns} onChange={setVisibleColumns}
+          onReset={() => setVisibleColumns(DEFAULT_COLUMNS)} />
+        <button type="button" style={T.btn} onClick={handlePrint}>
+          <Svg d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z" /> Print
         </button>
-      </div>
-
-      <div className="mb-4 flex flex-wrap gap-4 no-print checkbox-list">
-        {Object.entries(visibleColumns).map(([key, value]) => (
-          <label key={key}>
-            <input
-              type="checkbox"
-              checked={value}
-              onChange={() => handleCheckboxChange(key)}
-            />
-            {key.toUpperCase()}
-          </label>
-        ))}
       </div>
 
       <table
@@ -412,7 +548,7 @@ const getFinalPrice = (item) => {
         <tbody>
           {items.map((item, index) => {
             const product = products[item.itemcode] || {};
-            const isDraggable = !selectedRevision;
+            const isDraggable = !selectedRevision && !readOnly;
             return (
               <tr
                 key={item.id || index}
@@ -478,83 +614,14 @@ const getFinalPrice = (item) => {
                 {visibleColumns.itemName && (
                   <td>
                     <div>{item.item_name}</div>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "bold",
-                        color: "#6b7280",
-                      }}
-                    >
-                      {/* CCT */}
-                      {(product?.cct &&
-                        product.cct !== "NULL" &&
-                        product.cct !== "0") ||
-                      (item?.cct && item.cct !== "0")
-                        ? `CCT: ${product?.cct ?? item?.cct} | `
-                        : null}
-
-                      {/* Watt */}
-                      {(product?.watt &&
-                        product.watt !== "NULL" &&
-                        product.watt !== "0") ||
-                      (item?.watt && item.watt !== "0")
-                        ? `Watt: ${product?.watt ?? item?.watt} | `
-                        : null}
-
-                      {/* Cutout Size */}
-                      {(product?.cutoutsize && product.cutoutsize !== "0") ||
-                      (product?.cutoutdia && product.cutoutdia !== "0")
-                        ? `Cutout Size: ${
-                            product.cutoutsize ?? product.cutoutdia
-                          } | `
-                        : null}
-                      {/*  Size */}
-                      {(product?.size && product.size !== "0") ||
-                      (product?.size && product.size !== "0")
-                        ? `Size: ${product.size ?? product.size} | `
-                        : null}
-                      {/* Beam Angle */}
-                      {(product?.beamangle &&
-                        product.beamangle !== "NULL" &&
-                        product.beamangle !== "0") ||
-                      (item?.beamangle && item.beamangle !== "0")
-                        ? `Beam Angle: ${
-                            product?.beamangle ?? item?.beamangle
-                          }° | `
-                        : null}
-
-                      {/* CRI */}
-                      {(product?.cri &&
-                        product.cri !== "NONE" &&
-                        product.cri !== "0") ||
-                      (item?.Cri && item.Cri !== "0")
-                        ? `CRI: ${product?.cri ?? item?.Cri} | `
-                        : null}
-
-                      {/* Body Color */}
-                      {(product?.color && product.color !== "0") ||
-                      (item?.bodycolor && item.bodycolor !== "0")
-                        ? `Body Color: ${product?.color ?? item?.bodycolor} | `
-                        : null}
-
-                      {/* Light Color */}
-                      {(product?.lightcolor &&
-                        product.lightcolor !== "NULL" &&
-                        product.lightcolor !== "0") ||
-                      (item?.lightcolor && item.lightcolor !== "0")
-                        ? `Light Color: ${
-                            product?.lightcolor ?? item?.lightcolor
-                          } | `
-                        : null}
-
-                      {/* Lumens */}
-                      {(product?.lumens &&
-                        product.lumens !== "NONE" &&
-                        product.lumens !== "0") ||
-                      (item?.lumens && item.lumens !== "0")
-                        ? `Lumens: ${product?.lumens ?? item?.lumens}`
-                        : null}
-                    </span>
+                    {(() => {
+                      const specs = specsFor(item, product);
+                      return visibleColumns.specs && specs.length ? (
+                        <div style={{ marginTop: 2, fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
+                          {specs.map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                        </div>
+                      ) : null;
+                    })()}
                   </td>
                 )}
                 {/* {visibleColumns.itemCode && <td>{item.itemcode}</td>} */}
@@ -569,10 +636,7 @@ const getFinalPrice = (item) => {
 
                 {visibleColumns.netPrice && (
                   <td>
-                    {roundToRupee(
-                      Number(item.mrp) *
-                        (1 - (Number(item.discount) || 0) / 100)
-                    )}
+                    {roundToRupee(getFinalPrice(item))}
                   </td>
                 )}
 
