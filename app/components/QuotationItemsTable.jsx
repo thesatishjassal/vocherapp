@@ -7,6 +7,19 @@ import { FiPlusCircle } from "react-icons/fi";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+/** Full URLs (https://api.panvic.in/uploads/...) are used as-is;
+ *  old relative paths (/uploads/...) get the API base URL in front. */
+const toImageUrl = (src, base = "") => {
+  const v = String(src || "").trim();
+  if (!v || v === "0" || v.toUpperCase() === "NULL") return null;
+  if (/^(https?:)?\/\//i.test(v) || v.startsWith("data:") || v.startsWith("blob:")) return v;
+  return `${base || ""}${v.startsWith("/") ? "" : "/"}${v}`;
+};
+
+// Light grey box with a "+" — shown when an item has no image (no external placeholder service)
+const PLACEHOLDER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%23f3f3f3'/%3E%3Cpath d='M30 22v16M22 30h16' stroke='%23c4c4c4' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E";
+
 const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState({});
@@ -78,7 +91,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           );
           mappedItems = filteredItems.map((item) => ({
             ...item,
-            preview: item.image ? `${API_URL}${item.image}` : null,
+            preview: toImageUrl(item.image, API_URL),
           }));
         } else {
           response = await axios.get(
@@ -87,7 +100,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
           );
           mappedItems = response.data.map((item) => ({
             ...item,
-            preview: item.image ? `${API_URL}${item.image}` : null,
+            preview: toImageUrl(item.image, API_URL),
           }));
         }
         // Sort by position if available
@@ -138,7 +151,7 @@ const QuotationItemsTable = ({ quotation_id, selectedRevision }) => {
 
       updatedItems[index] = {
         ...updatedItems[index],
-        preview: `${API_URL}${response.data.image_url}`,
+        preview: toImageUrl(response.data.image_url, API_URL) || previewUrl,
       };
       setItems(updatedItems);
 
@@ -429,10 +442,10 @@ const getFinalPrice = (item) => {
                       }}
                     >
                       <img
-                        src={
-                          item.preview ||
-                          "https://via.placeholder.com/60x60?text=+"
-                        }
+                        src={item.preview || PLACEHOLDER}
+                        onError={(e) => {
+                          if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
+                        }}
                         alt="Preview"
                         style={{
                           width: "100%",

@@ -1,434 +1,516 @@
 "use client";
-import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
-import PropTypes from "prop-types";
-import FindProduct from "./FindProduct";
-import CCT_MAP from "./cctMap";
+  import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
+  import PropTypes from "prop-types";
+  import FindProduct from "./FindProduct";
+  import CCT_MAP from "./cctMap";
 
-/* ---------- Static helpers & styles (created once) ---------- */
+  /* ---------- Static helpers & styles (created once) ---------- */
 
-const GOLD = "#d3a01d";
-const GOLD_DARK = "#b98912";
-const LINE = "#e3e3e3";
-const MUTED = "#8a8a8a";
-const INK = "#292929";
+  const GOLD = "#d3a01d";
+  const GOLD_DARK = "#b98912";
+  const LINE = "#e3e3e3";
+  const MUTED = "#8a8a8a";
+  const INK = "#292929";
 
-const EMPTY_ROW = {
-  customerCode: "", customerDescription: "", itemCode: "", itemName: "",
-  cus_itemcode: "", cus_itemname: "", brand: "", qty: "", unit: "", mrp: "",
-  discount: "", amount: "", netPrice: "", image: "", remarks: "",
-  cus_customercode: "", cus_customerdescription: "", cus_qty: "", cus_brand: "",
-  cus_unit: "", cus_mrp: "", cus_discount: "", cus_netprice: "", cus_image: "",
-  cus_remarks: "", cct: "", cctOptions: "",
-  beamangle: "", cri: "", cutoutdia: "", lumens: "",   // specs from the sheet -> DB columns
-};
+  const EMPTY_ROW = {
+    customerCode: "", customerDescription: "", itemCode: "", itemName: "",
+    cus_itemcode: "", cus_itemname: "", brand: "", qty: "", unit: "", mrp: "",
+    discount: "", amount: "", netPrice: "", image: "", remarks: "",
+    cus_customercode: "", cus_customerdescription: "", cus_qty: "", cus_brand: "",
+    cus_unit: "", cus_mrp: "", cus_discount: "", cus_netprice: "", cus_image: "",
+    cus_remarks: "", cct: "", cctOptions: "",
+    beamangle: "", cri: "", cutoutdia: "", lumens: "",   // specs from the sheet -> DB columns
+  };
 
-/* Old behaviour wrote "CCT: 4000K" into remarks. The CCT now has its own DB column,
-   so remarks stay as the user typed them. Set to true to also copy it into remarks. */
-const CCT_ALSO_IN_REMARKS = false;
+  /* Old behaviour wrote "CCT: 4000K" into remarks. The CCT now has its own DB column,
+    so remarks stay as the user typed them. Set to true to also copy it into remarks. */
+  const CCT_ALSO_IN_REMARKS = false;
 
-/* ---------- CCT dropdown ----------
-   Shown for every item whose CCT in the Excel sheet has more than one value
-   (768 items, listed in cctMap.js), except the codes in CCT_EXCLUDE.  */
-const CCT_EXCLUDE = new Set([
-  // "LLF-001", "LLS-105",   <- add item codes here to hide the dropdown for them
-]);
-const TUNABLE = "Tunable";
+  /* ---------- CCT dropdown ----------
+    Shown for every item whose CCT in the Excel sheet has more than one value
+    (768 items, listed in cctMap.js), except the codes in CCT_EXCLUDE.  */
+  const CCT_EXCLUDE = new Set([
+    // "LLF-001", "LLS-105",   <- add item codes here to hide the dropdown for them
+  ]);
+  const TUNABLE = "Tunable";
 
-const cctOptionsFor = (itemCode) => {
-  const code = String(itemCode || "").trim().toUpperCase();
-  if (!code || CCT_EXCLUDE.has(code)) return [];
-  const list = CCT_MAP[code];
-  return list && list.length > 1 ? [...list, TUNABLE] : [];
-};
-const showCctFor = (itemCode) => cctOptionsFor(itemCode).length > 0;
+  /* ---------- Customer code / description ----------
+    Both start as "0" and are locked. The pencil icon unlocks them for editing;
+    the tick (or Enter on Description) locks them again. A cleared field goes back to "0". */
+  const CUSTOMER_DEFAULT = "0";
+  const orDefault = (v) => (String(v ?? "").trim() === "" ? CUSTOMER_DEFAULT : v);
 
-/* Rows saved by the earlier version have "CCT: 4000K, note" in remarks — read them back */
-const CCT_IN_REMARKS = /^\s*CCT:\s*([^,]+?)\s*(?:,\s*|$)/i;
+  const cctOptionsFor = (itemCode) => {
+    const code = String(itemCode || "").trim().toUpperCase();
+    if (!code || CCT_EXCLUDE.has(code)) return [];
+    const list = CCT_MAP[code];
+    return list && list.length > 1 ? [...list, TUNABLE] : [];
+  };
+  const showCctFor = (itemCode) => cctOptionsFor(itemCode).length > 0;
 
-/** "CCT: 4000K, wall side" -> { cct: "4000K", rest: "wall side" } */
-const splitRemarks = (remarks) => {
-  const text = String(remarks ?? "");
-  const m = text.match(CCT_IN_REMARKS);
-  return m ? { cct: m[1], rest: text.slice(m[0].length).trim() } : { cct: "", rest: text };
-};
+  /* Rows saved by the earlier version have "CCT: 4000K, note" in remarks — read them back */
+  const CCT_IN_REMARKS = /^\s*CCT:\s*([^,]+?)\s*(?:,\s*|$)/i;
 
-/** ("4000K", "wall side") -> "CCT: 4000K, wall side" */
-const joinRemarks = (cct, rest) =>
-  [cct && `CCT: ${cct}`, String(rest ?? "").trim()].filter(Boolean).join(", ");
+  /** "CCT: 4000K, wall side" -> { cct: "4000K", rest: "wall side" } */
+  const splitRemarks = (remarks) => {
+    const text = String(remarks ?? "");
+    const m = text.match(CCT_IN_REMARKS);
+    return m ? { cct: m[1], rest: text.slice(m[0].length).trim() } : { cct: "", rest: text };
+  };
 
-const inr = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  minimumFractionDigits: 2,
-});
-const formatINR = (v) => inr.format(Number.isFinite(v) ? v : 0);
-const toNum = (v) => parseFloat(v) || 0;
-const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-const calcNetPrice = (mrp, d) => (toNum(mrp) * (1 - toNum(d) / 100)).toFixed(2);
-const calcDiscount = (mrp, net) => {
-  const m = toNum(mrp);
-  return m === 0 ? "0.00" : (((m - toNum(net)) / m) * 100).toFixed(2);
-};
+  /** ("4000K", "wall side") -> "CCT: 4000K, wall side" */
+  const joinRemarks = (cct, rest) =>
+    [cct && `CCT: ${cct}`, String(rest ?? "").trim()].filter(Boolean).join(", ");
 
-const S = {
-  overlay: {
-    position: "fixed", inset: 0, zIndex: 1050, display: "flex",
-    alignItems: "center", justifyContent: "center", padding: 12,
-    overflowY: "auto", background: "rgba(0,0,0,.45)", boxSizing: "border-box",
-  },
-  card: {
-    width: "100%", maxWidth: 420, padding: 16, background: "#fff",
-    borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.18)", color: INK,
-    fontFamily: "Arial, Helvetica, sans-serif", fontSize: 13, boxSizing: "border-box",
-  },
-  header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  title: { margin: 0, fontSize: 16, fontWeight: 700 },
-  brand: { color: GOLD, fontSize: 12, fontWeight: 700, marginLeft: 8 },
-  close: {
-    width: 28, height: 28, border: 0, background: "transparent",
-    color: MUTED, fontSize: 22, cursor: "pointer", lineHeight: 1,
-  },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 },
-  grid3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 },
-  cell: { minWidth: 0 },
-  label: { display: "block", marginBottom: 3, color: MUTED, fontSize: 11, fontWeight: 600 },
-  input: {
-    width: "100%", minWidth: 0, height: 34, padding: "0 10px",
-    border: `1px solid ${LINE}`, borderRadius: 7, outline: "none",
-    background: "#fff", color: INK, font: "inherit", fontSize: 13, boxSizing: "border-box",
-  },
-  search: {
-    display: "flex", alignItems: "center", height: 34, marginBottom: 10,
-    padding: "0 4px 0 10px", border: `1px solid ${LINE}`, borderRadius: 7, cursor: "pointer",
-  },
-  searchInput: {
-    flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent",
-    fontSize: 13, cursor: "pointer",
-  },
-  browse: {
-    padding: "0 8px", height: 26, border: 0, background: "transparent",
-    color: GOLD_DARK, fontSize: 12, fontWeight: 700, cursor: "pointer",
-  },
-  product: { marginBottom: 10, padding: "8px 10px", background: "#f8f8f8", borderRadius: 7 },
-  productName: { fontSize: 13, fontWeight: 700, overflowWrap: "anywhere" },
-  productMeta: { marginTop: 2, color: MUTED, fontSize: 11 },
-  control: {
-    display: "flex", alignItems: "center", height: 34,
-    border: `1px solid ${LINE}`, borderRadius: 7, background: "#fff", overflow: "hidden",
-  },
-  controlInput: {
-    flex: 1, minWidth: 0, width: "100%", height: "100%", padding: 0, border: 0,
-    outline: "none", background: "transparent", color: INK, font: "inherit",
-    fontSize: 13, textAlign: "center", MozAppearance: "textfield",
-  },
-  stepper: {
-    alignSelf: "stretch", width: 22, flex: "0 0 22px", border: 0, padding: 0,
-    background: "#fff", color: "#777", fontSize: 15, cursor: "pointer",
-  },
-  total: {
-    display: "flex", alignItems: "baseline", justifyContent: "space-between",
-    margin: "4px 0 10px", padding: "8px 10px", borderRadius: 7, background: "#fbf5e9",
-  },
-  totalLabel: { color: "#666", fontSize: 12, fontWeight: 600 },
-  totalValue: { fontSize: 16, fontWeight: 700 },
-  select: {
-    width: "100%", height: 34, padding: "0 30px 0 10px", border: `1px solid ${LINE}`,
-    borderRadius: 7, outline: "none", font: "inherit", fontSize: 13, color: INK,
-    boxSizing: "border-box", cursor: "pointer", appearance: "none",
-    background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238a8a8a' stroke-width='1.5'%3E%3Cpath d='m1 1 4 4 4-4'/%3E%3C/svg%3E\") no-repeat right 10px center",
-  },
-  cctRow: { marginBottom: 10 },
-  required: { color: "#d64545", marginLeft: 2 },
-  textarea: {
-    width: "100%", height: 44, padding: "7px 10px", border: `1px solid ${LINE}`,
-    borderRadius: 7, outline: "none", resize: "none", font: "inherit",
-    fontSize: 13, boxSizing: "border-box",
-  },
-  actions: { display: "flex", gap: 8, marginTop: 12 },
-  cancel: {
-    flex: 1, height: 36, border: `1px solid ${LINE}`, borderRadius: 7,
-    background: "#fff", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer",
-  },
-  submit: {
-    flex: 2, height: 36, border: 0, borderRadius: 7, background: GOLD,
-    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-    transition: "background .15s",
-  },
-};
+  const inr = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+  });
+  const formatINR = (v) => inr.format(Number.isFinite(v) ? v : 0);
+  const toNum = (v) => parseFloat(v) || 0;
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  const calcNetPrice = (mrp, d) => (toNum(mrp) * (1 - toNum(d) / 100)).toFixed(2);
+  const calcDiscount = (mrp, net) => {
+    const m = toNum(mrp);
+    return m === 0 ? "0.00" : (((m - toNum(net)) / m) * 100).toFixed(2);
+  };
 
-// Pseudo-class effects done on the DOM node (no re-render)
-const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
-const focusOff = (e) => (e.currentTarget.style.borderColor = LINE);
-const hoverOn = (e) => (e.currentTarget.style.background = "#f2f2f2");
-const hoverOff = (e) => (e.currentTarget.style.background = "#fff");
-const submitOver = (e) => (e.currentTarget.style.background = GOLD_DARK);
-const submitOut = (e) => (e.currentTarget.style.background = GOLD);
+  const S = {
+    overlay: {
+      position: "fixed", inset: 0, zIndex: 1050, display: "flex",
+      alignItems: "center", justifyContent: "center", padding: 12,
+      overflowY: "auto", background: "rgba(0,0,0,.45)", boxSizing: "border-box",
+    },
+    card: {
+      width: "100%", maxWidth: 420, padding: 16, background: "#fff",
+      borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.18)", color: INK,
+      fontFamily: "Arial, Helvetica, sans-serif", fontSize: 13, boxSizing: "border-box",
+    },
+    header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+    title: { margin: 0, fontSize: 16, fontWeight: 700 },
+    brand: { color: GOLD, fontSize: 12, fontWeight: 700, marginLeft: 8 },
+    close: {
+      width: 28, height: 28, border: 0, background: "transparent",
+      color: MUTED, fontSize: 22, cursor: "pointer", lineHeight: 1,
+    },
+    grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 },
+    lockWrap: {
+      display: "flex", alignItems: "center", height: 34, border: `1px solid ${LINE}`,
+      borderRadius: 7, background: "#fff", overflow: "hidden", boxSizing: "border-box",
+      transition: "border-color .15s, background .15s",
+    },
+    lockWrapLocked: { background: "#f6f6f6", borderColor: "#ececec" },
+    lockInput: {
+      flex: 1, minWidth: 0, height: "100%", padding: "0 0 0 10px", border: 0, outline: "none",
+      background: "transparent", color: INK, font: "inherit", fontSize: 13,
+    },
+    lockInputLocked: { color: MUTED, cursor: "default" },
+    lockBtn: {
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      width: 30, height: "100%", flex: "0 0 30px", padding: 0, border: 0,
+      background: "transparent", color: MUTED, cursor: "pointer", transition: "color .15s",
+    },
+    grid3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 },
+    cell: { minWidth: 0 },
+    label: { display: "block", marginBottom: 3, color: MUTED, fontSize: 11, fontWeight: 600 },
+    input: {
+      width: "100%", minWidth: 0, height: 34, padding: "0 10px",
+      border: `1px solid ${LINE}`, borderRadius: 7, outline: "none",
+      background: "#fff", color: INK, font: "inherit", fontSize: 13, boxSizing: "border-box",
+    },
+    search: {
+      display: "flex", alignItems: "center", height: 34, marginBottom: 10,
+      padding: "0 4px 0 10px", border: `1px solid ${LINE}`, borderRadius: 7, cursor: "pointer",
+    },
+    searchInput: {
+      flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent",
+      fontSize: 13, cursor: "pointer",
+    },
+    browse: {
+      padding: "0 8px", height: 26, border: 0, background: "transparent",
+      color: GOLD_DARK, fontSize: 12, fontWeight: 700, cursor: "pointer",
+    },
+    product: { marginBottom: 10, padding: "8px 10px", background: "#f8f8f8", borderRadius: 7 },
+    productName: { fontSize: 13, fontWeight: 700, overflowWrap: "anywhere" },
+    productMeta: { marginTop: 2, color: MUTED, fontSize: 11 },
+    control: {
+      display: "flex", alignItems: "center", height: 34,
+      border: `1px solid ${LINE}`, borderRadius: 7, background: "#fff", overflow: "hidden",
+    },
+    controlInput: {
+      flex: 1, minWidth: 0, width: "100%", height: "100%", padding: 0, border: 0,
+      outline: "none", background: "transparent", color: INK, font: "inherit",
+      fontSize: 13, textAlign: "center", MozAppearance: "textfield",
+    },
+    stepper: {
+      alignSelf: "stretch", width: 22, flex: "0 0 22px", border: 0, padding: 0,
+      background: "#fff", color: "#777", fontSize: 15, cursor: "pointer",
+    },
+    total: {
+      display: "flex", alignItems: "baseline", justifyContent: "space-between",
+      margin: "4px 0 10px", padding: "8px 10px", borderRadius: 7, background: "#fbf5e9",
+    },
+    totalLabel: { color: "#666", fontSize: 12, fontWeight: 600 },
+    totalValue: { fontSize: 16, fontWeight: 700 },
+    select: {
+      width: "100%", height: 34, padding: "0 30px 0 10px", border: `1px solid ${LINE}`,
+      borderRadius: 7, outline: "none", font: "inherit", fontSize: 13, color: INK,
+      boxSizing: "border-box", cursor: "pointer", appearance: "none",
+      background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238a8a8a' stroke-width='1.5'%3E%3Cpath d='m1 1 4 4 4-4'/%3E%3C/svg%3E\") no-repeat right 10px center",
+    },
+    cctRow: { marginBottom: 10 },
+    required: { color: "#d64545", marginLeft: 2 },
+    textarea: {
+      width: "100%", height: 44, padding: "7px 10px", border: `1px solid ${LINE}`,
+      borderRadius: 7, outline: "none", resize: "none", font: "inherit",
+      fontSize: 13, boxSizing: "border-box",
+    },
+    actions: { display: "flex", gap: 8, marginTop: 12 },
+    cancel: {
+      flex: 1, height: 36, border: `1px solid ${LINE}`, borderRadius: 7,
+      background: "#fff", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer",
+    },
+    submit: {
+      flex: 2, height: 36, border: 0, borderRadius: 7, background: GOLD,
+      color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+      transition: "background .15s",
+    },
+  };
 
-/* ---------- Sub-component ---------- */
+  // Pseudo-class effects done on the DOM node (no re-render)
+  const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
+  const focusOff = (e) => (e.currentTarget.style.borderColor = LINE);
+  const hoverOn = (e) => (e.currentTarget.style.background = "#f2f2f2");
+  const hoverOff = (e) => (e.currentTarget.style.background = "#fff");
+  const submitOver = (e) => (e.currentTarget.style.background = GOLD_DARK);
+  const submitOut = (e) => (e.currentTarget.style.background = GOLD);
 
-const StepperField = memo(({ id, label, value, min, max, step, onChange, onKeyDown, inputRef }) => {
-  const bump = (d) =>
-    onChange(String(clamp(Math.round((toNum(value) + d) * 100) / 100, min, max)));
-  return (
+  /* ---------- Sub-components ---------- */
+
+  const PENCIL = "M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4";
+  const TICK = "M5 12.5l4.5 4.5L19 7";
+
+  /** Input that is read-only until its pencil icon is clicked. */
+  const LockedField = memo(({ id, label, value, placeholder, unlocked, onToggle, onChange, onKeyDown, inputRef }) => (
     <div style={S.cell}>
       <label style={S.label} htmlFor={id}>{label}</label>
-      <div style={S.control} onFocus={focusOn} onBlur={focusOff}>
-        <button type="button" style={S.stepper} aria-label={`Decrease ${label}`}
-          onClick={() => bump(-1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>−</button>
-        <input id={id} name={id} type="number" style={S.controlInput}
-          value={value ?? ""} min={min} max={max} step={step} ref={inputRef}
-          onChange={(e) => onChange(e.target.value)} onKeyDown={onKeyDown} />
-        <button type="button" style={S.stepper} aria-label={`Increase ${label}`}
-          onClick={() => bump(1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>+</button>
+      <div
+        style={{ ...S.lockWrap, ...(unlocked ? null : S.lockWrapLocked) }}
+        onFocus={unlocked ? focusOn : undefined}
+        onBlur={unlocked ? focusOff : undefined}
+        onDoubleClick={unlocked ? undefined : () => onToggle(id)}
+        title={unlocked ? undefined : "Click the pencil to edit"}
+      >
+        <input
+          id={id} name={id} type="text" ref={inputRef}
+          style={{ ...S.lockInput, ...(unlocked ? null : S.lockInputLocked) }}
+          value={value ?? ""} placeholder={placeholder}
+          readOnly={!unlocked} aria-readonly={!unlocked} tabIndex={unlocked ? 0 : -1}
+          onChange={onChange}
+          onFocus={(e) => unlocked && e.target.value === CUSTOMER_DEFAULT && e.target.select()}
+          onKeyDown={onKeyDown}
+        />
+        <button
+          type="button" style={{ ...S.lockBtn, color: unlocked ? GOLD_DARK : MUTED }}
+          onClick={() => onToggle(id)}
+          onMouseOver={(e) => (e.currentTarget.style.color = GOLD_DARK)}
+          onMouseOut={(e) => (e.currentTarget.style.color = unlocked ? GOLD_DARK : MUTED)}
+          aria-label={unlocked ? `Done editing ${label}` : `Edit ${label}`}
+          aria-pressed={unlocked}
+          title={unlocked ? "Done" : `Edit ${label.toLowerCase()}`}
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+            strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={unlocked ? TICK : PENCIL} />
+          </svg>
+        </button>
       </div>
     </div>
-  );
-});
-StepperField.displayName = "StepperField";
+  ));
+  LockedField.displayName = "LockedField";
 
-/* ---------- Main component ---------- */
-
-const AddProductModal = ({
-  showAddModal, setShowAddModal, newRow, setNewRow, handleFieldChange,
-  handleKeyDown, inputRefs, editRowIndex, handleAddRow,
-}) => {
-  const [showFind, setShowFind] = useState(false);
-
-  const amount = useMemo(() => toNum(newRow.qty) * toNum(newRow.netPrice),
-    [newRow.qty, newRow.netPrice]);
-
-  const openFind = useCallback(() => setShowFind(true), []);
-
-  // Editing a saved row: pull "CCT: …" out of remarks into the dropdown,
-  // so the remarks box only shows the user's own note.
-  useEffect(() => {
-    if (!showAddModal) return;
-    setNewRow((p) => {
-      const { cct, rest } = splitRemarks(p.remarks);
-      if (!cct) return p;
-      return { ...p, cct: p.cct || cct, remarks: rest };
-    });
-  }, [showAddModal, setNewRow]);
-
-  const handleClose = useCallback(() => {
-    setShowAddModal(false);
-    setShowFind(false);
-    setNewRow(EMPTY_ROW);
-  }, [setShowAddModal, setNewRow]);
-
-  const onQty = useCallback((v) => setNewRow((p) => ({ ...p, qty: v })), [setNewRow]);
-
-  const onDiscount = useCallback((v) =>
-    setNewRow((p) => {
-      const n = { ...p, discount: v };
-      if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.netPrice = calcNetPrice(p.mrp, clamp(toNum(v), 0, 100));
-      return n;
-    }), [setNewRow]);
-
-  const onNetPrice = useCallback((v) =>
-    setNewRow((p) => {
-      const n = { ...p, netPrice: v };
-      if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.discount = calcDiscount(p.mrp, v);
-      return n;
-    }), [setNewRow]);
-
-  const onText = useCallback((e) => handleFieldChange(e.target.name, e.target.value), [handleFieldChange]);
-
-  const onProductSelect = useCallback((product) => {
-    if (!product) return;
-    const price = product.price || "";
-    setNewRow((p) => ({
-      ...p,
-      itemCode: product.itemcode || "",
-      itemName: product.itemname || "",
-      unit: product.unit || "Piece",
-      mrp: price,
-      brand: product.brand || "",
-      image: product.thumbnail || "",
-      netPrice: price,
-      discount: "",
-      cctOptions: product.cct || "",   // CCT text from the Excel sheet (may be empty)
-      // multi-CCT items: user picks from the dropdown; single-CCT items: keep the sheet value
-      cct: showCctFor(product.itemcode) ? "" : String(product.cct || "").replace(/^(\d{4})$/, "$1K"),
-      beamangle: product.beamangle || "",
-      cri: product.cri || "",
-      cutoutdia: product.cutoutdia || "",
-      lumens: product.lumens || "",
-    }));
-    setShowFind(false);
-    setTimeout(() => inputRefs?.qty?.current?.focus(), 100);
-  }, [setNewRow, inputRefs]);
-
-  const handleSubmit = useCallback(() => {
-    if (!newRow.itemCode || !newRow.itemName || !newRow.qty || !newRow.netPrice) {
-      alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
-      return;
-    }
-    if (showCctFor(newRow.itemCode) && !newRow.cct) {
-      alert("Please select a CCT for this item.");
-      inputRefs?.cct?.current?.focus();
-      return;
-    }
-    const netPrice = toNum(newRow.netPrice).toFixed(2);
-    const cct = newRow.cct || "";
-    const note = splitRemarks(newRow.remarks).rest;
-    const remarks = CCT_ALSO_IN_REMARKS && showCctFor(newRow.itemCode) ? joinRemarks(cct, note) : note;
-    handleAddRow({
-      ...newRow,
-      netPrice,
-      amount: (toNum(newRow.qty) * toNum(netPrice)).toFixed(2),
-      unit: newRow.unit || "Piece",
-      mrp: newRow.mrp || "",
-      brand: newRow.brand || "",
-      image: newRow.image || "",
-      remarks,
-      discount: newRow.discount || "",
-      cct,
-      beamangle: newRow.beamangle || "",
-      cri: newRow.cri || "",
-      cutoutdia: newRow.cutoutdia || "",
-      lumens: newRow.lumens || "",
-    }, editRowIndex);
-    handleClose();
-  }, [newRow, editRowIndex, handleAddRow, handleClose, inputRefs]);
-
-  const keyQty = useCallback((e) => handleKeyDown(e, "discount"), [handleKeyDown]);
-  const keyDiscount = useCallback((e) => handleKeyDown(e, "netPrice"), [handleKeyDown]);
-
-  if (!showAddModal) return null;
-
-  const isEdit = editRowIndex !== null && editRowIndex !== undefined;
-  const hasItem = !!newRow.itemCode;
-  const cctOptions = hasItem ? cctOptionsFor(newRow.itemCode) : [];
-  const showCct = cctOptions.length > 0;
-
-  return (
-    <div style={S.overlay} role="dialog" aria-modal="true">
-      <div style={S.card}>
-        <header style={S.header}>
-          <div style={{ display: "flex", alignItems: "baseline" }}>
-            <h1 style={S.title}>{isEdit ? "Edit Item" : "Add Item"}</h1>
-            <span style={S.brand}>Panvik Lighting</span>
-          </div>
-          <button type="button" style={S.close} onClick={handleClose} aria-label="Close">&times;</button>
-        </header>
-
-        <div style={S.grid2}>
-          <div style={S.cell}>
-            <label style={S.label} htmlFor="customerCode">Customer code</label>
-            <input id="customerCode" name="customerCode" type="text" style={S.input}
-              value={newRow.customerCode || ""} onChange={onText}
-              onKeyDown={(e) => handleKeyDown(e, "customerDescription")}
-              onFocus={focusOn} onBlur={focusOff} placeholder="Unique code"
-              ref={inputRefs.customerCode} required />
-          </div>
-          <div style={S.cell}>
-            <label style={S.label} htmlFor="customerDescription">Description</label>
-            <input id="customerDescription" name="customerDescription" type="text" style={S.input}
-              value={newRow.customerDescription || ""} onChange={onText}
-              onKeyDown={(e) => handleKeyDown(e, "itemCode")}
-              onFocus={focusOn} onBlur={focusOff} placeholder="Name or note"
-              ref={inputRefs.customerDescription} required />
-          </div>
-        </div>
-
-        <div style={S.search} onClick={openFind} role="search">
-          <input style={S.searchInput} type="text" readOnly value=""
-            placeholder="Search item name or code..." aria-label="Search item" onFocus={openFind} />
-          <button type="button" style={S.browse} onClick={openFind}>Browse</button>
-        </div>
-
-        <section style={S.product} aria-label="Selected item">
-          <div style={{ ...S.productName, color: hasItem ? INK : MUTED, fontWeight: hasItem ? 700 : 400 }}>
-            {newRow.itemName || "No item selected"}
-          </div>
-          {hasItem && (
-            <div style={S.productMeta}>
-              {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`]
-                .filter(Boolean).join(" · ")}
-            </div>
-          )}
-          {hasItem && (newRow.cct || newRow.beamangle || newRow.cri || newRow.cutoutdia || newRow.lumens) && (
-            <div style={S.productMeta}>
-              {[newRow.cct && `CCT ${newRow.cct}`, newRow.beamangle && `Beam ${newRow.beamangle}`,
-                newRow.cri && `CRI ${newRow.cri}`, newRow.cutoutdia && `Cut-out ${newRow.cutoutdia}`,
-                newRow.lumens && newRow.lumens].filter(Boolean).join(" · ")}
-            </div>
-          )}
-        </section>
-
-        <section style={S.grid3}>
-          <StepperField id="qty" label="Qty" value={newRow.qty} min={1} max={Infinity}
-            step={1} onChange={onQty} onKeyDown={keyQty} inputRef={inputRefs.qty} />
-          <StepperField id="discount" label="Disc %" value={newRow.discount} min={0} max={100}
-            step={0.5} onChange={onDiscount} onKeyDown={keyDiscount} inputRef={inputRefs.discount} />
-          <div style={S.cell}>
-            <label style={S.label} htmlFor="netPrice">Net price</label>
-            <input id="netPrice" name="netPrice" type="number" style={{ ...S.input, fontWeight: 600 }}
-              value={newRow.netPrice ?? ""} min="0" step="0.01"
-              onChange={(e) => onNetPrice(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && showCct) { e.preventDefault(); inputRefs?.cct?.current?.focus(); }
-                else handleKeyDown(e, "remarks");
-              }}
-              onFocus={focusOn} onBlur={focusOff} ref={inputRefs.netPrice} />
-          </div>
-        </section>
-
-        {showCct && (
-          <div style={S.cctRow}>
-            <label style={S.label} htmlFor="cct">
-              CCT (colour temperature)<span style={S.required}>*</span>
-            </label>
-            <select id="cct" name="cct" style={{ ...S.select, color: newRow.cct ? INK : MUTED }}
-              value={newRow.cct || ""} ref={inputRefs.cct}
-              onChange={(e) => setNewRow((p) => ({ ...p, cct: e.target.value }))}
-              onKeyDown={(e) => handleKeyDown(e, "remarks")}
-              onFocus={focusOn} onBlur={focusOff}>
-              <option value="" disabled>Select CCT…</option>
-              {cctOptions.map((o) => (
-                <option key={o} value={o}>{o === TUNABLE ? "Tunable (CCT changeable)" : o}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <section style={S.total} aria-live="polite">
-          <span style={S.totalLabel}>Amount</span>
-          <strong style={S.totalValue}>{formatINR(amount)}</strong>
-        </section>
-
-        <textarea id="remarks" name="remarks" style={S.textarea}
-          value={newRow.remarks || ""} onChange={onText}
-          onKeyDown={(e) => handleKeyDown(e, null)}
-          onFocus={focusOn} onBlur={focusOff}
-          placeholder="Remarks (optional)" aria-label="Remarks" ref={inputRefs.remarks} />
-
-        <div style={S.actions}>
-          <button type="button" style={S.cancel} onClick={handleClose}>Cancel</button>
-          <button type="button" style={S.submit} onClick={handleSubmit}
-            onMouseOver={submitOver} onMouseOut={submitOut}>
-            {isEdit ? "Update item" : "Add item"}
-          </button>
+  const StepperField = memo(({ id, label, value, min, max, step, onChange, onKeyDown, inputRef }) => {
+    const bump = (d) =>
+      onChange(String(clamp(Math.round((toNum(value) + d) * 100) / 100, min, max)));
+    return (
+      <div style={S.cell}>
+        <label style={S.label} htmlFor={id}>{label}</label>
+        <div style={S.control} onFocus={focusOn} onBlur={focusOff}>
+          <button type="button" style={S.stepper} aria-label={`Decrease ${label}`}
+            onClick={() => bump(-1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>−</button>
+          <input id={id} name={id} type="number" style={S.controlInput}
+            value={value ?? ""} min={min} max={max} step={step} ref={inputRef}
+            onChange={(e) => onChange(e.target.value)} onKeyDown={onKeyDown} />
+          <button type="button" style={S.stepper} aria-label={`Increase ${label}`}
+            onClick={() => bump(1)} onMouseOver={hoverOn} onMouseOut={hoverOff}>+</button>
         </div>
       </div>
+    );
+  });
+  StepperField.displayName = "StepperField";
 
-      <FindProduct showModal={showFind} setShowModal={setShowFind}
-        handleProductSelect={onProductSelect} />
-    </div>
-  );
-};
+  /* ---------- Main component ---------- */
 
-AddProductModal.propTypes = {
-  showAddModal: PropTypes.bool.isRequired,
-  setShowAddModal: PropTypes.func.isRequired,
-  newRow: PropTypes.object.isRequired,
-  setNewRow: PropTypes.func.isRequired,
-  handleFieldChange: PropTypes.func.isRequired,
-  handleKeyDown: PropTypes.func.isRequired,
-  inputRefs: PropTypes.objectOf(PropTypes.shape({ current: PropTypes.any })).isRequired,
-  editRowIndex: PropTypes.number,
-  handleAddRow: PropTypes.func.isRequired,
-};
+  const AddProductModal = ({
+    showAddModal, setShowAddModal, newRow, setNewRow, handleFieldChange,
+    handleKeyDown, inputRefs, editRowIndex, handleAddRow,
+  }) => {
+    const [showFind, setShowFind] = useState(false);
+    const [custUnlocked, setCustUnlocked] = useState(false);
 
-export default memo(AddProductModal);
+    // Every time the modal opens: lock the customer fields and fill empty ones with "0"
+    useEffect(() => {
+      if (!showAddModal) return;
+      setCustUnlocked(false);
+      setNewRow((p) =>
+        p.customerCode === orDefault(p.customerCode) && p.customerDescription === orDefault(p.customerDescription)
+          ? p
+          : { ...p, customerCode: orDefault(p.customerCode), customerDescription: orDefault(p.customerDescription) }
+      );
+    }, [showAddModal, setNewRow]);
+
+    // Pencil -> unlock both fields and focus the one clicked. Tick -> lock again, blanks back to "0".
+    const toggleCust = useCallback((id) => {
+      if (custUnlocked) {
+        setNewRow((p) => ({ ...p, customerCode: orDefault(p.customerCode), customerDescription: orDefault(p.customerDescription) }));
+        setCustUnlocked(false);
+      } else {
+        setCustUnlocked(true);
+        setTimeout(() => inputRefs?.[id]?.current?.focus(), 0);
+      }
+    }, [custUnlocked, setNewRow, inputRefs]);
+
+    const amount = useMemo(() => toNum(newRow.qty) * toNum(newRow.netPrice),
+      [newRow.qty, newRow.netPrice]);
+
+    const openFind = useCallback(() => setShowFind(true), []);
+
+    // Editing a saved row: pull "CCT: …" out of remarks into the dropdown,
+    // so the remarks box only shows the user's own note.
+    useEffect(() => {
+      if (!showAddModal) return;
+      setNewRow((p) => {
+        const { cct, rest } = splitRemarks(p.remarks);
+        if (!cct) return p;
+        return { ...p, cct: p.cct || cct, remarks: rest };
+      });
+    }, [showAddModal, setNewRow]);
+
+    const handleClose = useCallback(() => {
+      setShowAddModal(false);
+      setShowFind(false);
+      setCustUnlocked(false);
+      setNewRow(EMPTY_ROW);
+    }, [setShowAddModal, setNewRow]);
+
+    const onQty = useCallback((v) => setNewRow((p) => ({ ...p, qty: v })), [setNewRow]);
+
+    const onDiscount = useCallback((v) =>
+      setNewRow((p) => {
+        const n = { ...p, discount: v };
+        if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.netPrice = calcNetPrice(p.mrp, clamp(toNum(v), 0, 100));
+        return n;
+      }), [setNewRow]);
+
+    const onNetPrice = useCallback((v) =>
+      setNewRow((p) => {
+        const n = { ...p, netPrice: v };
+        if (toNum(p.mrp) > 0 && v !== "" && !isNaN(v)) n.discount = calcDiscount(p.mrp, v);
+        return n;
+      }), [setNewRow]);
+
+    const onText = useCallback((e) => handleFieldChange(e.target.name, e.target.value), [handleFieldChange]);
+
+    const onProductSelect = useCallback((product) => {
+      if (!product) return;
+      const price = product.price || "";
+      setNewRow((p) => ({
+        ...p,
+        itemCode: product.itemcode || "",
+        itemName: product.itemname || "",
+        unit: product.unit || "Piece",
+        mrp: price,
+        brand: product.brand || "",
+        image: product.image || product.thumbnail || "",
+        netPrice: price,
+        discount: "",
+        cctOptions: product.cct || "",   // CCT text from the Excel sheet (may be empty)
+        // multi-CCT items: user picks from the dropdown; single-CCT items: keep the sheet value
+        cct: showCctFor(product.itemcode) ? "" : String(product.cct || "").replace(/^(\d{4})$/, "$1K"),
+        beamangle: product.beamangle || "",
+        cri: product.cri || "",
+        cutoutdia: product.cutoutdia || "",
+        lumens: product.lumens || "",
+      }));
+      setShowFind(false);
+      setTimeout(() => inputRefs?.qty?.current?.focus(), 100);
+    }, [setNewRow, inputRefs]);
+
+    const handleSubmit = useCallback(() => {
+      if (!newRow.itemCode || !newRow.itemName || !newRow.qty || !newRow.netPrice) {
+        alert("Please fill all required fields (Item Code, Item Name, Quantity, Net Price).");
+        return;
+      }
+      if (showCctFor(newRow.itemCode) && !newRow.cct) {
+        alert("Please select a CCT for this item.");
+        inputRefs?.cct?.current?.focus();
+        return;
+      }
+      const netPrice = toNum(newRow.netPrice).toFixed(2);
+      const cct = newRow.cct || "";
+      const note = splitRemarks(newRow.remarks).rest;
+      const remarks = CCT_ALSO_IN_REMARKS && showCctFor(newRow.itemCode) ? joinRemarks(cct, note) : note;
+      handleAddRow({
+        ...newRow,
+        customerCode: orDefault(newRow.customerCode),
+        customerDescription: orDefault(newRow.customerDescription),
+        netPrice,
+        amount: (toNum(newRow.qty) * toNum(netPrice)).toFixed(2),
+        unit: newRow.unit || "Piece",
+        mrp: newRow.mrp || "",
+        brand: newRow.brand || "",
+        image: newRow.image || "",
+        remarks,
+        discount: newRow.discount || "",
+        cct,
+        beamangle: newRow.beamangle || "",
+        cri: newRow.cri || "",
+        cutoutdia: newRow.cutoutdia || "",
+        lumens: newRow.lumens || "",
+      }, editRowIndex);
+      handleClose();
+    }, [newRow, editRowIndex, handleAddRow, handleClose, inputRefs]);
+
+    const keyQty = useCallback((e) => handleKeyDown(e, "discount"), [handleKeyDown]);
+    const keyDiscount = useCallback((e) => handleKeyDown(e, "netPrice"), [handleKeyDown]);
+
+    if (!showAddModal) return null;
+
+    const isEdit = editRowIndex !== null && editRowIndex !== undefined;
+    const hasItem = !!newRow.itemCode;
+    const cctOptions = hasItem ? cctOptionsFor(newRow.itemCode) : [];
+    const showCct = cctOptions.length > 0;
+
+    return (
+      <div style={S.overlay} role="dialog" aria-modal="true">
+        <div style={S.card}>
+          <header style={S.header}>
+            <div style={{ display: "flex", alignItems: "baseline" }}>
+              <h1 style={S.title}>{isEdit ? "Edit Item" : "Add Item"}</h1>
+              <span style={S.brand}>Panvik Lighting</span>
+            </div>
+            <button type="button" style={S.close} onClick={handleClose} aria-label="Close">&times;</button>
+          </header>
+
+          <div style={S.grid2}>
+            <LockedField id="customerCode" label="Customer code" placeholder="Unique code"
+              value={newRow.customerCode} unlocked={custUnlocked} onToggle={toggleCust}
+              onChange={onText} inputRef={inputRefs.customerCode}
+              onKeyDown={(e) => handleKeyDown(e, "customerDescription")} />
+            <LockedField id="customerDescription" label="Description" placeholder="Name or note"
+              value={newRow.customerDescription} unlocked={custUnlocked} onToggle={toggleCust}
+              onChange={onText} inputRef={inputRefs.customerDescription}
+              onKeyDown={(e) => handleKeyDown(e, "itemCode")} />
+          </div>
+
+          <div style={S.search} onClick={openFind} role="search">
+            <input style={S.searchInput} type="text" readOnly value=""
+              placeholder="Search item name or code..." aria-label="Search item" onFocus={openFind} />
+            <button type="button" style={S.browse} onClick={openFind}>Browse</button>
+          </div>
+
+          <section style={S.product} aria-label="Selected item">
+            <div style={{ ...S.productName, color: hasItem ? INK : MUTED, fontWeight: hasItem ? 700 : 400 }}>
+              {newRow.itemName || "No item selected"}
+            </div>
+            {hasItem && (
+              <div style={S.productMeta}>
+                {[newRow.itemCode, newRow.brand, newRow.mrp && `MRP ${formatINR(toNum(newRow.mrp))}`]
+                  .filter(Boolean).join(" · ")}
+              </div>
+            )}
+            {hasItem && (newRow.cct || newRow.beamangle || newRow.cri || newRow.cutoutdia || newRow.lumens) && (
+              <div style={S.productMeta}>
+                {[newRow.cct && `CCT ${newRow.cct}`, newRow.beamangle && `Beam ${newRow.beamangle}`,
+                  newRow.cri && `CRI ${newRow.cri}`, newRow.cutoutdia && `Cut-out ${newRow.cutoutdia}`,
+                  newRow.lumens && newRow.lumens].filter(Boolean).join(" · ")}
+              </div>
+            )}
+          </section>
+
+          <section style={S.grid3}>
+            <StepperField id="qty" label="Qty" value={newRow.qty} min={1} max={Infinity}
+              step={1} onChange={onQty} onKeyDown={keyQty} inputRef={inputRefs.qty} />
+            <StepperField id="discount" label="Disc %" value={newRow.discount} min={0} max={100}
+              step={0.5} onChange={onDiscount} onKeyDown={keyDiscount} inputRef={inputRefs.discount} />
+            <div style={S.cell}>
+              <label style={S.label} htmlFor="netPrice">Net price</label>
+              <input id="netPrice" name="netPrice" type="number" style={{ ...S.input, fontWeight: 600 }}
+                value={newRow.netPrice ?? ""} min="0" step="0.01"
+                onChange={(e) => onNetPrice(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && showCct) { e.preventDefault(); inputRefs?.cct?.current?.focus(); }
+                  else handleKeyDown(e, "remarks");
+                }}
+                onFocus={focusOn} onBlur={focusOff} ref={inputRefs.netPrice} />
+            </div>
+          </section>
+
+          {showCct && (
+            <div style={S.cctRow}>
+              <label style={S.label} htmlFor="cct">
+                CCT (colour temperature)<span style={S.required}>*</span>
+              </label>
+              <select id="cct" name="cct" style={{ ...S.select, color: newRow.cct ? INK : MUTED }}
+                value={newRow.cct || ""} ref={inputRefs.cct}
+                onChange={(e) => setNewRow((p) => ({ ...p, cct: e.target.value }))}
+                onKeyDown={(e) => handleKeyDown(e, "remarks")}
+                onFocus={focusOn} onBlur={focusOff}>
+                <option value="" disabled>Select CCT…</option>
+                {cctOptions.map((o) => (
+                  <option key={o} value={o}>{o === TUNABLE ? "Tunable (CCT changeable)" : o}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <section style={S.total} aria-live="polite">
+            <span style={S.totalLabel}>Amount</span>
+            <strong style={S.totalValue}>{formatINR(amount)}</strong>
+          </section>
+
+          <textarea id="remarks" name="remarks" style={S.textarea}
+            value={newRow.remarks || ""} onChange={onText}
+            onKeyDown={(e) => handleKeyDown(e, null)}
+            onFocus={focusOn} onBlur={focusOff}
+            placeholder="Remarks (optional)" aria-label="Remarks" ref={inputRefs.remarks} />
+
+          <div style={S.actions}>
+            <button type="button" style={S.cancel} onClick={handleClose}>Cancel</button>
+            <button type="button" style={S.submit} onClick={handleSubmit}
+              onMouseOver={submitOver} onMouseOut={submitOut}>
+              {isEdit ? "Update item" : "Add item"}
+            </button>
+          </div>
+        </div>
+
+        <FindProduct showModal={showFind} setShowModal={setShowFind}
+          handleProductSelect={onProductSelect} />
+      </div>
+    );
+  };
+
+  AddProductModal.propTypes = {
+    showAddModal: PropTypes.bool.isRequired,
+    setShowAddModal: PropTypes.func.isRequired,
+    newRow: PropTypes.object.isRequired,
+    setNewRow: PropTypes.func.isRequired,
+    handleFieldChange: PropTypes.func.isRequired,
+    handleKeyDown: PropTypes.func.isRequired,
+    inputRefs: PropTypes.objectOf(PropTypes.shape({ current: PropTypes.any })).isRequired,
+    editRowIndex: PropTypes.number,
+    handleAddRow: PropTypes.func.isRequired,
+  };
+
+  export default memo(AddProductModal);

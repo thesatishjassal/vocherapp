@@ -135,6 +135,14 @@ const withSpecs = (row) => {
 
 const money = (v) =>
   (Number(v) || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/** Image paths: full URLs (https://api.panvic.in/uploads/...) are used as-is,
+ *  old relative paths (/uploads/...) get the API base URL in front. */
+const imgSrc = (src, base = "") => {
+  const v = String(src || "").trim();
+  if (!v) return "";
+  if (/^(https?:)?\/\//i.test(v) || v.startsWith("data:") || v.startsWith("blob:")) return v;
+  return `${base || ""}${v.startsWith("/") ? "" : "/"}${v}`;
+};
 const plain = (v) => (Number(v) || 0).toLocaleString("en-IN");
 
 const COLUMN_LABELS = {
@@ -215,7 +223,7 @@ const QuotationTable = ({
   const [columns, setColumns] = useState({
     customerCode: false,
     customerDescription: false,
-    Image: false,
+    Image: true,
     ItemCode: true,
     Brand: true,
     MRP: true,
@@ -653,10 +661,11 @@ const QuotationTable = ({
                   <td style={S.td}>
                     {row.image && (
                       <img
-                        src={`${API_URL}${row.image}`}
+                        src={imgSrc(row.image, API_URL)}
                         alt=""
+                        loading="lazy"
                         style={S.img}
-                        onError={(e) => (e.target.style.display = "none")}
+                        onError={(e) => (e.currentTarget.style.display = "none")}
                       />
                     )}
                   </td>

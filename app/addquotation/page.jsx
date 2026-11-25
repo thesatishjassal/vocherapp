@@ -25,11 +25,144 @@ const EMPTY_ROW = {
   remarks: "",
 };
 
+const DEFAULT_WARRANTY = "As per company norms";
+
 const roundRupee = (value) => {
   const rupees = Math.floor(value);
   const paise = value - rupees;
   return paise >= 0.5 ? rupees + 1 : rupees;
 };
+
+/* ---------- Styles (inline, created once — same look as the Edit Quotation page) ---------- */
+
+const GOLD = "#d3a01d";
+const GOLD_DARK = "#b98912";
+const GOLD_SOFT = "#fbf5e9";
+const LINE = "#eeeeee";
+const MUTED = "#8a8a8a";
+const INK = "#222";
+
+const TERMS = [
+  ["GST", "Included in above prices as applicable."],
+  ["Payment terms", "100% in advance with order."],
+  ["Validity", "15 days from the date of quotation."],
+  // Warranty goes here (editable, see below)
+  ["Responsibility", "Our responsibility for material counting ceases immediately after delivery."],
+  ["Installation & fixing", "If required, for any electrical job, we will arrange a technician at extra cost. Installation will take 4-5 days from the date of order."],
+  ["Freight charges", "Extra as per actual."],
+  ["Bank details", "PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code: ICIC0001510, Jalandhar."],
+];
+
+const S = {
+  page: {
+    minHeight: "100vh", padding: "24px 12px 96px", background: "#f5f5f4",
+    fontFamily: "Arial, Helvetica, sans-serif", color: INK, fontSize: 13, lineHeight: 1.5,
+    boxSizing: "border-box",
+  },
+  sheet: {
+    maxWidth: 1040, margin: "0 auto", padding: "28px 28px 24px", background: "#fff",
+    borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04)",
+    boxSizing: "border-box",
+  },
+  head: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" },
+  logo: { height: 52, width: "auto", display: "block" },
+  docTitle: { margin: 0, color: GOLD, fontSize: 26, fontWeight: 700, letterSpacing: "0.08em", textAlign: "right" },
+  metaList: { display: "flex", justifyContent: "flex-end", flexWrap: "wrap", gap: 6, marginTop: 6 },
+  chip: {
+    display: "inline-flex", alignItems: "center", gap: 4, height: 24, padding: "0 10px",
+    borderRadius: 999, background: "#f6f6f6", color: MUTED, fontSize: 11, whiteSpace: "nowrap",
+  },
+  chipValue: { color: INK, fontWeight: 700 },
+  rule: { height: 1, margin: "20px 0", border: 0, background: LINE },
+  parties: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 },
+  party: { position: "relative", padding: "12px 14px", border: `1px solid ${LINE}`, borderRadius: 10 },
+  partyEmpty: { borderStyle: "dashed", borderColor: "#e0d2a8", background: "#fffdf7" },
+  partyTop: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
+  partyLabel: { color: MUTED, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" },
+  partyName: { marginBottom: 2, fontSize: 14, fontWeight: 700 },
+  partyLine: { color: "#555", fontSize: 12 },
+  partyKey: { color: MUTED },
+  editBtn: {
+    display: "inline-flex", alignItems: "center", gap: 5, height: 26, padding: "0 10px",
+    border: `1px solid #e3e3e3`, borderRadius: 7, background: "#fff", color: MUTED,
+    font: "inherit", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  },
+  pickBtn: {
+    display: "inline-flex", alignItems: "center", gap: 6, height: 32, marginTop: 4, padding: "0 14px",
+    border: 0, borderRadius: 8, background: GOLD, color: "#fff",
+    font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer",
+  },
+  subject: { display: "flex", alignItems: "center", gap: 6, margin: "16px 0 12px", fontSize: 13 },
+  subjectKey: { color: MUTED },
+  subjectValue: { fontWeight: 700 },
+  linkBtn: {
+    border: 0, padding: 0, background: "transparent", color: GOLD_DARK,
+    font: "inherit", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  },
+  tableWrap: { marginBottom: 16 },
+  footer: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, alignItems: "start" },
+  label: { display: "block", marginBottom: 4, color: MUTED, fontSize: 11, fontWeight: 600 },
+  textarea: {
+    width: "100%", minHeight: 64, padding: "8px 10px", border: `1px solid #e3e3e3`, borderRadius: 8,
+    outline: "none", resize: "vertical", font: "inherit", fontSize: 13, color: INK, boxSizing: "border-box",
+  },
+  printText: { whiteSpace: "pre-wrap", color: "#555" },
+  thanks: { margin: "4px 0 14px", color: "#555", fontStyle: "italic" },
+  termsTitle: { margin: "0 0 8px", fontSize: 13, fontWeight: 700 },
+  terms: { display: "grid", gridTemplateColumns: "160px 1fr", columnGap: 16, rowGap: 6, margin: 0 },
+  termKey: { color: MUTED, fontSize: 12 },
+  termVal: { margin: 0, fontSize: 12 },
+  closing: { marginTop: 14, color: "#555", fontSize: 12 },
+  fineprint: { marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LINE}`, color: MUTED, fontSize: 11 },
+  bar: {
+    position: "fixed", right: 16, bottom: 16, zIndex: 40, display: "flex", alignItems: "center", gap: 8,
+    padding: 6, background: "#fff", borderRadius: 12, boxShadow: "0 6px 24px rgba(0,0,0,.14)",
+  },
+  barInfo: { padding: "0 8px", color: MUTED, fontSize: 12, whiteSpace: "nowrap" },
+  barTotal: { color: INK, fontWeight: 700 },
+  btn: {
+    display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 16px",
+    border: `1px solid #e3e3e3`, borderRadius: 8, background: "#fff", color: INK,
+    font: "inherit", fontWeight: 600, cursor: "pointer",
+  },
+  btnPrimary: { borderColor: GOLD, background: GOLD, color: "#fff" },
+};
+
+const PRINT_CSS = `
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    .qt-page { padding: 0 !important; background: #fff !important; }
+    .qt-sheet { max-width: none !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+    .qt-party { border-style: solid !important; background: #fff !important; }
+  }
+  .print-only { display: none; }
+`;
+
+const focusOn = (e) => (e.currentTarget.style.borderColor = GOLD);
+const focusOff = (e) => (e.currentTarget.style.borderColor = "#e3e3e3");
+const softOn = (e) => { e.currentTarget.style.background = GOLD_SOFT; e.currentTarget.style.color = GOLD_DARK; };
+const softOff = (e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = MUTED; };
+const dimOn = (e) => (e.currentTarget.style.filter = "brightness(.95)");
+const dimOff = (e) => (e.currentTarget.style.filter = "none");
+
+const Icon = ({ d, size = 15 }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor"
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={d} />
+  </svg>
+);
+const ICON = {
+  edit: "M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0",
+  print: "M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z",
+  save: "M12 16V4M7 9l5-5 5 5M5 20h14",
+};
+
+const money = (v) => `₹${(Number(v) || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+
+/* ================================================================== */
 
 const Quotation = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -92,9 +225,9 @@ const Quotation = () => {
     return {
       quotation_id: quotationId,
       product_id: item.itemCode,
-      customercode: item.customerCode || "N/A",
-      customerdescription: item.customerDescription || "N/A",
-      image: item.image,
+      customercode: item.customerCode || "0",
+      customerdescription: item.customerDescription || "0",
+      image: item.image || "",
       itemcode: item.itemCode,
       brand: item.brand || "N/A",
       mrp: parseFloat(item.mrp) || 0,
@@ -105,19 +238,13 @@ const Quotation = () => {
       item_name: item.itemName || "N/A",
       unit: item.unit || "pcs",
       amount,
-      warranty_guarantee: warranty || "As per company norms",
+      warranty_guarantee: warranty || DEFAULT_WARRANTY,
       comments: item.comments || item.remarks || "N/A",
       status: "active",
     };
   }, []);
 
   // ---- Add Product handlers ----
-  const openAddModal = useCallback(() => {
-    setEditRowIndex(null);
-    setNewRow(EMPTY_ROW);
-    setShowAddModal(true);
-  }, []);
-
   const handleFieldChange = useCallback((field, value) => {
     setNewRow((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -134,43 +261,32 @@ const Quotation = () => {
 
   const handleAddRow = useCallback((row, index) => {
     setRowsData((prev) =>
-      index !== null && index !== undefined
-        ? prev.map((r, i) => (i === index ? row : r))
-        : [...prev, row]
+      index !== null && index !== undefined ? prev.map((r, i) => (i === index ? row : r)) : [...prev, row]
     );
   }, []);
 
   // ---- Other callbacks ----
-  const handleQuotationConfirm = useCallback((data) => {
-    setQuotationInfo(data);
-  }, []);
+  const handleQuotationConfirm = useCallback((data) => setQuotationInfo(data), []);
+  const closeModal = useCallback(() => setShowModalClientDetails(false), []);
+  const handleTotalAmountChange = useCallback((v) => setTotalAmount(v), []);
+  const handleRowsChange = useCallback((rows) => setRowsData(rows), []);
+  const handleClientConfirm = useCallback((c) => setSelectedCustomer(c), []);
 
-  const closeModal = useCallback(() => {
-    setShowModalClientDetails(false);
-  }, []);
-
-  const handleTotalAmountChange = useCallback((newTotalAmount) => {
-    setTotalAmount(newTotalAmount);
-  }, []);
-
-  const handleRowsChange = useCallback((rows) => {
-    setRowsData(rows);
-  }, []);
-
-  const handleClientConfirm = useCallback((selectedClient) => {
-    setSelectedCustomer(selectedClient);
-  }, []);
-
+  // Guard against GSTCalculator reporting the same values again (prevents a render loop)
+  const lastGstRef = useRef(null);
   const handleGSTChange = useCallback((details) => {
+    const next = JSON.stringify(details);
+    if (lastGstRef.current === next) return;
+    lastGstRef.current = next;
     setGstDetails((prev) => ({ ...prev, ...details }));
   }, []);
 
   const generateQuotationNumber = useMemo(() => {
-    if (quotationSequence === null) return "PLQOT-Loading...";
+    if (quotationSequence === null) return "PLQOT-…";
     return `PLQOT-${quotationSequence.toString().padStart(3, "0")}`;
   }, [quotationSequence]);
 
-  // Fetch last quotation data
+  // Fetch last quotation data -> next PLQOT number
   useEffect(() => {
     const fetchLastQuotationData = async () => {
       try {
@@ -179,21 +295,16 @@ const Quotation = () => {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const quotations = await response.json();
-
         if (quotations?.length > 0) {
           const lastSequence = quotations
-            .map((voucher) => {
-              const match = voucher.quotation_no?.match(/^PLQOT-(\d+)$/);
+            .map((v) => {
+              const match = v.quotation_no?.match(/^PLQOT-(\d+)$/);
               return match ? parseInt(match[1], 10) : 0;
             })
             .reduce((max, num) => Math.max(max, num), 0);
-
           setQuotationSequence(lastSequence + 1);
           setQuotationId(quotations.length + 1);
         } else {
@@ -209,7 +320,6 @@ const Quotation = () => {
         setIsLoading(false);
       }
     };
-
     fetchLastQuotationData();
   }, []);
 
@@ -219,9 +329,12 @@ const Quotation = () => {
       toast.warning("Please wait while the quotation is being processed.");
       return;
     }
+    if (rowsData.length === 0) {
+      toast.warning("Add at least one product before publishing.");
+      return;
+    }
 
     setIsSaving(true);
-
     try {
       for (const item of rowsData) {
         if (!item.itemCode || !item.itemName || !item.amount || isNaN(item.amount)) {
@@ -237,19 +350,15 @@ const Quotation = () => {
         without_gst: Math.round(gstDetails.withoutGST) || 0,
         gst_amount: Math.round(gstDetails.gstAmount) || 0,
         amount_with_gst: Math.round(gstDetails.totalWithGST) || 0,
-
         gst_type: gstDetails.gst_type || "include",
         gst_percentage: gstDetails.gst_percentage || 18,
         final_amount: Math.round(gstDetails.totalWithGST) || 0,
-
-        warranty_guarantee: warrantyGuarantee || "As per company norms",
+        warranty_guarantee: warrantyGuarantee || DEFAULT_WARRANTY,
         remarks: remarks || "N/A",
         status: "active",
         client_id: selectedCustomer?.id || 3,
-
         created_by: userDetails?.name || "System",
         created_at: new Date().toISOString(),
-
         additional_discount_percentage: gstDetails.additional_discount_percentage || 0,
         additional_discount_amount: gstDetails.additional_discount_amount || 0,
         amount_after_discount: gstDetails.amount_after_discount || 0,
@@ -258,24 +367,17 @@ const Quotation = () => {
       const response = await axios.post(`${API_URL}/quotation/`, quotationData, {
         headers: { "Content-Type": "application/json" },
       });
-
       const savedQuotationId = response.data.quotation_id;
 
-      if (rowsData.length > 0) {
-        await Promise.all(
-          rowsData.map((item) =>
-            axios.post(
-              `${API_URL}/quotation/${savedQuotationId}/items/`,
-              generateItemData({
-                quotationId: savedQuotationId,
-                item,
-                warranty: warrantyGuarantee,
-              }),
-              { headers: { "Content-Type": "application/json" } }
-            )
+      await Promise.all(
+        rowsData.map((item) =>
+          axios.post(
+            `${API_URL}/quotation/${savedQuotationId}/items/`,
+            generateItemData({ quotationId: savedQuotationId, item, warranty: warrantyGuarantee }),
+            { headers: { "Content-Type": "application/json" } }
           )
-        );
-      }
+        )
+      );
 
       setQuotationSequence((prev) => prev + 1);
       setQuotationId((prev) => prev + 1);
@@ -284,15 +386,10 @@ const Quotation = () => {
     } catch (error) {
       console.error("Error saving quotation:", error);
       if (error.response?.status === 500) {
-        const errorMessage =
-          error.response.data.detail ||
-          "Server error. Please check the data and try again.";
-        toast.error(`Failed to save quotation: ${errorMessage}`);
+        toast.error(`Failed to save quotation: ${error.response.data.detail || "Server error. Please check the data and try again."}`);
       } else if (error.response?.status === 422) {
         const details = error.response.data.detail;
-        const errorMessage =
-          details?.[0]?.msg || "Invalid data provided. Please check item details.";
-        toast.error(`Failed to save quotation: ${errorMessage}`);
+        toast.error(`Failed to save quotation: ${details?.[0]?.msg || "Invalid data provided. Please check item details."}`);
       } else {
         toast.error(`Failed to save quotation: ${error.message || "Unknown error"}`);
       }
@@ -300,338 +397,185 @@ const Quotation = () => {
       setIsSaving(false);
     }
   }, [
-    quotationSequence,
-    isLoading,
-    isSaving,
-    generateQuotationNumber,
-    quotationInfo,
-    userDetails,
-    gstDetails,
-    warrantyGuarantee,
-    remarks,
-    selectedCustomer,
-    rowsData,
-    generateItemData,
+    quotationSequence, isLoading, isSaving, generateQuotationNumber, quotationInfo, userDetails,
+    gstDetails, warrantyGuarantee, remarks, selectedCustomer, rowsData, generateItemData, API_URL,
   ]);
 
+  const today = useMemo(() => new Date().toLocaleDateString("en-GB"), []);
+  const salesperson = quotationInfo?.Salesperson || userDetails?.name || "";
+  const grandTotal = gstDetails.totalWithGST || totalAmount;
+
   return (
-    <div className="card tm_container my-4">
-      <div className="tm_invoice_wrap">
-        <div className="tm_invoice tm_style1" id="tm_download_section">
-          <div className="tm_invoice_in">
-            <div className="tm_invoice_head tm_align_center tm_mb20 mb-1">
-              <div className="tm_invoice_left">
-                <div className="tm_logo">
-                  <img
-                    src="/assets/img/panviclogo.jpg"
-                    alt="Panvik Lighting Logo"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              <div className="tm_invoice_right tm_text_right">
-                <div className="tm_primary_color tm_f50 tm_text_uppercase">
-                  QUOTATION
-                </div>
-                <p className="tm_invoice_number tm_m0">
-                  Quotation No:{" "}
-                  <b className="tm_primary_color">{generateQuotationNumber}</b>
-                </p>
-              </div>
-            </div>
+    <div className="qt-page" style={S.page}>
+      <style>{PRINT_CSS}</style>
 
-            <div className="tm_invoice_info tm_mb20 m-0">
-              <div className="tm_invoice_seperator tm_gray_bg"></div>
-              <div className="tm_invoice_info_list">
-                <p className="tm_invoice_date tm_m0">
-                  Date:{" "}
-                  <b className="tm_primary_color">
-                    {new Date().toLocaleDateString("en-GB")}
-                  </b>
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="tm_invoice_head tm_mb10"
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <div
-                className="tm_invoice_left mt-0"
-                style={{ flex: 1, textAlign: "left" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">Customer Details:</b>{" "}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setShowModalClientDetails(true)}
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                </p>
-                <p style={{ textAlign: "justify" }}>
-                  Name: <b>{selectedCustomer?.client_name || "N/A"}</b> <br />
-                  City: <b>{selectedCustomer?.city || "N/A"}</b> <br />
-                </p>
-              </div>
-
-              <div
-                className="tm_invoice_right tm_text_right"
-                style={{ flex: 1, textAlign: "right" }}
-              >
-                <p className="tm_mb2">
-                  <b className="tm_primary_color">PANVIK LIGHTING</b>
-                  {infoModal && (
-                    <QuotationInfo
-                      setInfoModal={setInfoModal}
-                      onConfirm={handleQuotationConfirm}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className="btn modalaction_btn no-print"
-                    onClick={() => setInfoModal(true)}
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                </p>
-                Address:{" "}
-                <b>
-                  Nakodar Road Beside Silver OAK Appartments Jalandhar City,
-                  Punjab-144003
-                </b>
-                <br />
-                GST: <b>03ADWPG0246P1Z8</b> <br />
-                Contact no: <b>94172-81252,98150-37755</b> <br />
-                Email id: <b>panviklighting@gmail.com</b> <br />
-                Salesperson:{" "}
-                <b>{quotationInfo?.Salesperson || userDetails?.name || ""}</b> |
-                Mobile Number : <b>{userDetails?.phone || ""}</b>
-              </div>
-            </div>
-
-            <div
-              className="d-flex mb-2"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <p className="tm_mb2">
-                Subject:{" "}
-                <b className="tm_primary_color">
-                  {quotationInfo?.Subject || "N/A"}
-                </b>
-              </p>
-            </div>
-
-            <div className="tm_table tm_style1 tm_mb30">
-              {/* Add Product button */}
-              {/* <div
-                className="no-print"
-                style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}
-              >
-                <button
-                  type="button"
-                  onClick={openAddModal}
-                  style={{
-                    height: 34,
-                    padding: "0 14px",
-                    border: 0,
-                    borderRadius: 7,
-                    background: "#d3a01d",
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>
-                  Add Product
-                </button>
-              </div> */}
-
-              <div className="tm_round_border">
-                <div className="tm_table_responsive">
-                  <QuotationTable
-                    items={rowsData}
-                    onRowsChange={handleRowsChange}
-                    onTotalAmountChange={handleTotalAmountChange}
-                  />
-
-                  {showModalClientDetails && (
-                    <CustomerModal
-                      onClose={closeModal}
-                      client={showModalClientDetails}
-                      onConfirm={handleClientConfirm}
-                    />
-                  )}
-
-                  <AddProductModal
-                    showAddModal={showAddModal}
-                    setShowAddModal={setShowAddModal}
-                    newRow={newRow}
-                    setNewRow={setNewRow}
-                    handleFieldChange={handleFieldChange}
-                    handleKeyDown={handleKeyDown}
-                    inputRefs={inputRefs}
-                    editRowIndex={editRowIndex}
-                    handleAddRow={handleAddRow}
-                  />
-                </div>
-              </div>
-
-              <div className="tm_invoice_footer my-2">
-                <div className="tm_left_footer px-0">
-                  <textarea
-                    className="form-control tm_remarks_box no-print"
-                    placeholder="Enter remarks here..."
-                    rows="1"
-                    cols="30"
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                  ></textarea>
-                </div>
-                <div className="tm_right_footer">
-                  <GSTCalculator
-                    totalAmount={totalAmount}
-                    onGSTChange={handleGSTChange}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <hr />
-            <p>
-              <b>
-                <i>
-                  Thank You for considering us for your needs. Here is the
-                  purposal as you requested.
-                </i>
-              </b>
-            </p>
-
-            <div className="term_box">
-              <h6>Terms and Conditions:</h6>
-              <p>
-                GST: <b>Including in above prices as per applicable.</b>
-              </p>
-              <p>
-                Payment Terms: <b>100% in advance with order.</b>
-              </p>
-              <p>
-                Validity: <b>15 days from the date of quotation.</b>
-              </p>
-              <p className="m-0">
-                Warranty/Guarantee: <b>as per company norms.</b>
-                <textarea
-                  className="form-control tm_remarks_box no-print"
-                  placeholder="Enter warranty/guarantee details..."
-                  rows="1"
-                  cols="30"
-                  value={warrantyGuarantee}
-                  onChange={(e) => setWarrantyGuarantee(e.target.value)}
-                ></textarea>
-              </p>
-              <p>
-                Responsibility:{" "}
-                <b>
-                  Our responsibility for material counting ceases immediately
-                  after delivery.
-                </b>
-              </p>
-              <p>
-                Installation & Fixing:{" "}
-                <b>
-                  If required, for any electrical job, we will arrange a
-                  technician at extra cost. Installation will take 4-5 days from
-                  the date of order.
-                </b>
-              </p>
-              <p>
-                Freight Charges: <b>Extra as per actual.</b>
-              </p>
-              <p>
-                Bank Details:{" "}
-                <b>
-                  PANVIK LIGHTING, ICICI BANK, A/C No. 7777-0535-3121, IFSC Code:
-                  ICIC0001510, Jalandhar.
-                  <br />
-                  We hope you will find our offer in quotation and look forward to
-                  your positive response. Please feel free to contact us for any
-                  queries.
-                </b>
-              </p>
-              <hr />
-              <p>
-                For:- Panvik Lighting This is a computer generated document, hence
-                signature is not required.
-              </p>
+      <div className="qt-sheet" style={S.sheet} id="tm_download_section">
+        {/* ---------- Header ---------- */}
+        <header style={S.head}>
+          <img src="/assets/img/panviclogo.jpg" alt="Panvik Lighting" style={S.logo} loading="lazy" />
+          <div>
+            <h1 style={S.docTitle}>QUOTATION</h1>
+            <div style={S.metaList}>
+              <span style={S.chip}>No. <span style={S.chipValue}>{generateQuotationNumber}</span></span>
+              <span style={S.chip}>Date <span style={S.chipValue}>{today}</span></span>
             </div>
           </div>
+        </header>
+
+        <hr style={S.rule} />
+
+        {/* ---------- Customer / Company ---------- */}
+        <section style={S.parties}>
+          <div className="qt-party" style={{ ...S.party, ...(selectedCustomer ? null : S.partyEmpty) }}>
+            <div style={S.partyTop}>
+              <span style={S.partyLabel}>Quotation for</span>
+              {selectedCustomer && (
+                <button type="button" className="no-print" style={S.editBtn}
+                  onMouseOver={softOn} onMouseOut={softOff}
+                  onClick={() => setShowModalClientDetails(true)} aria-label="Change customer">
+                  <Icon d={ICON.edit} size={13} /> Change
+                </button>
+              )}
+            </div>
+            {selectedCustomer ? (
+              <>
+                <div style={S.partyName}>{selectedCustomer.client_name || "—"}</div>
+                <div style={S.partyLine}><span style={S.partyKey}>City: </span>{selectedCustomer.city || "—"}</div>
+              </>
+            ) : (
+              <>
+                <div style={{ ...S.partyLine, color: MUTED, marginBottom: 6 }}>No customer selected yet</div>
+                <button type="button" className="no-print" style={S.pickBtn}
+                  onMouseOver={dimOn} onMouseOut={dimOff}
+                  onClick={() => setShowModalClientDetails(true)}>
+                  <Icon d={ICON.user} size={14} /> Select customer
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="qt-party" style={S.party}>
+            <div style={S.partyTop}>
+              <span style={S.partyLabel}>From</span>
+              <button type="button" className="no-print" style={S.editBtn}
+                onMouseOver={softOn} onMouseOut={softOff}
+                onClick={() => setInfoModal(true)} aria-label="Edit salesperson and subject">
+                <Icon d={ICON.edit} size={13} /> Edit
+              </button>
+            </div>
+            <div style={S.partyName}>PANVIK LIGHTING</div>
+            <div style={S.partyLine}>Nakodar Road, beside Silver Oak Apartments, Jalandhar City, Punjab-144003</div>
+            <div style={S.partyLine}><span style={S.partyKey}>GST: </span>03ADWPG0246P1Z8</div>
+            <div style={S.partyLine}><span style={S.partyKey}>Phone: </span>94172-81252, 98150-37755</div>
+            <div style={S.partyLine}><span style={S.partyKey}>Email: </span>panviklighting@gmail.com</div>
+            <div style={S.partyLine}>
+              <span style={S.partyKey}>Salesperson: </span>{salesperson || "—"}
+              {userDetails?.phone && <> · {userDetails.phone}</>}
+            </div>
+          </div>
+        </section>
+
+        {infoModal && <QuotationInfo setInfoModal={setInfoModal} onConfirm={handleQuotationConfirm} />}
+        {showModalClientDetails && (
+          <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
+        )}
+
+        {/* ---------- Subject ---------- */}
+        <p style={S.subject}>
+          <span style={S.subjectKey}>Subject</span>
+          {quotationInfo?.Subject ? (
+            <span style={S.subjectValue}>{quotationInfo.Subject}</span>
+          ) : (
+            <>
+              <span style={{ color: MUTED }}>Quotation for Products/Services</span>
+              <button type="button" className="no-print" style={S.linkBtn} onClick={() => setInfoModal(true)}>
+                · Add subject
+              </button>
+            </>
+          )}
+        </p>
+
+        {/* ---------- Items ---------- */}
+        <div style={S.tableWrap}>
+          <QuotationTable items={rowsData} onRowsChange={handleRowsChange} onTotalAmountChange={handleTotalAmountChange} />
+
+          {/* Kept for compatibility — QuotationTable opens its own Add product modal */}
+          <AddProductModal
+            showAddModal={showAddModal}
+            setShowAddModal={setShowAddModal}
+            newRow={newRow}
+            setNewRow={setNewRow}
+            handleFieldChange={handleFieldChange}
+            handleKeyDown={handleKeyDown}
+            inputRefs={inputRefs}
+            editRowIndex={editRowIndex}
+            handleAddRow={handleAddRow}
+          />
         </div>
 
-        <div className="tm_invoice_btns tm_hide_print">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="tm_invoice_btn tm_color1"
-          >
-            <span className="tm_btn_icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="ionicon"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <rect
-                  x="128"
-                  y="240"
-                  width="256"
-                  height="208"
-                  rx="24.32"
-                  ry="24.32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></rect>
-                <path
-                  d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                ></path>
-                <circle cx="392" cy="184" r="24" fill="currentColor"></circle>
-              </svg>
-            </span>
-            <span className="tm_btn_text">Print</span>
-          </button>
+        {/* ---------- Remarks + GST ---------- */}
+        <section style={S.footer}>
+          <div>
+            <label style={S.label} htmlFor="qt-remarks">Remarks</label>
+            <textarea id="qt-remarks" className="no-print" style={S.textarea}
+              placeholder="Add a note for the client (optional)"
+              value={remarks} onChange={(e) => setRemarks(e.target.value)}
+              onFocus={focusOn} onBlur={focusOff} />
+            {remarks && <div className="print-only" style={S.printText}>{remarks}</div>}
+          </div>
+          <div>
+            <GSTCalculator totalAmount={totalAmount} onGSTChange={handleGSTChange} />
+          </div>
+        </section>
 
-          <button
-            id="tm_download_btn"
-            type="button"
-            className="tm_invoice_btn tm_color2"
-            onClick={handleSaveQuotation}
-            disabled={isSaving}
-          >
-            <span className="tm_btn_icon">
-              <i className="fa-solid fa-upload"></i>
-            </span>
-            <span className="tm_btn_text">
-              {isSaving ? "Publishing..." : "Publish"}
-            </span>
-          </button>
-        </div>
+        <hr style={S.rule} />
+
+        {/* ---------- Terms ---------- */}
+        <p style={S.thanks}>Thank you for considering us for your needs. Here is the proposal as you requested.</p>
+
+        <h2 style={S.termsTitle}>Terms and conditions</h2>
+        <dl style={S.terms}>
+          {TERMS.slice(0, 3).map(([k, v]) => (
+            <React.Fragment key={k}><dt style={S.termKey}>{k}</dt><dd style={S.termVal}>{v}</dd></React.Fragment>
+          ))}
+
+          <dt style={S.termKey}>Warranty / guarantee</dt>
+          <dd style={S.termVal}>
+            <textarea className="no-print" style={{ ...S.textarea, minHeight: 36 }}
+              placeholder="As per company norms (type to change)"
+              value={warrantyGuarantee} onChange={(e) => setWarrantyGuarantee(e.target.value)}
+              onFocus={focusOn} onBlur={focusOff} />
+            <span className="print-only">{warrantyGuarantee || `${DEFAULT_WARRANTY}.`}</span>
+          </dd>
+
+          {TERMS.slice(3).map(([k, v]) => (
+            <React.Fragment key={k}><dt style={S.termKey}>{k}</dt><dd style={S.termVal}>{v}</dd></React.Fragment>
+          ))}
+        </dl>
+
+        <p style={S.closing}>
+          We hope you will find our offer suitable and look forward to your positive response.
+          Please feel free to contact us for any queries.
+        </p>
+        <p style={S.fineprint}>
+          For: Panvik Lighting. This is a computer-generated document, hence signature is not required.
+        </p>
+      </div>
+
+      {/* ---------- Floating actions ---------- */}
+      <div className="no-print" style={S.bar}>
+        <span style={S.barInfo}>
+          {rowsData.length} {rowsData.length === 1 ? "item" : "items"} · <span style={S.barTotal}>{money(grandTotal)}</span>
+        </span>
+        <button type="button" style={S.btn} onClick={() => window.print()}>
+          <Icon d={ICON.print} /> Print
+        </button>
+        <button type="button" id="tm_download_btn"
+          style={{ ...S.btn, ...S.btnPrimary, opacity: isSaving || isLoading ? 0.7 : 1 }}
+          onClick={handleSaveQuotation} disabled={isSaving || isLoading}
+          onMouseOver={dimOn} onMouseOut={dimOff}>
+          <Icon d={ICON.save} /> {isSaving ? "Publishing…" : "Publish"}
+        </button>
       </div>
     </div>
   );

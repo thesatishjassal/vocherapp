@@ -6,7 +6,8 @@ import React, {
 /* ---------- Fast product loading (LEDLUM + ASTARA + ARTIZAN sheets) ----------
    Source: /public/ledlum-products.min.json  (LEDLUM + ASTARA + ARTIZAN items in one file).
    Each item is a small array:
-   [itemcode, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]
+   [itemcode, image, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]
+   (image = full URL, or "" when the product has no photo)
 
    1. Fetched ONCE per page load and shared (memory cache + in-flight promise).
    2. Saved in sessionStorage -> reopening the modal / refreshing shows items instantly.
@@ -16,7 +17,7 @@ import React, {
 
 // Bump DATA_VERSION every time you replace the JSON file, so browsers
 // drop the old copy (HTTP cache + sessionStorage) and load the new items.
-const DATA_VERSION = "5";
+const DATA_VERSION = "6";
 const DATA_URL = `/ledlum-products.min.json?v=${DATA_VERSION}`;
 const CACHE_KEY = `products_v${DATA_VERSION}`;
 const MAX_RESULTS = 50;
@@ -27,10 +28,11 @@ let refreshed = false;
 
 const UNIT = { pcs: "Piece", mtr: "Meter" };
 
-const slim = ([itemcode, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]) => {
+const slim = ([itemcode, image, itemname, brand, category, price, unit, cct, beamangle, cri, cutoutdia, lumens]) => {
   const dash = itemname.indexOf(" – ");
   return {
     itemcode,
+    image: image || "",
     itemname,
     title: dash > 0 ? itemname.slice(0, dash) : itemname, // "LEDLUM 12W bollard light"
     brand,
@@ -119,6 +121,10 @@ const S = {
     border: 0, borderRadius: 7, background: "#fff", textAlign: "left", cursor: "pointer",
     font: "inherit", color: "inherit",
   },
+  thumb: {
+    flex: "0 0 40px", width: 40, height: 40, borderRadius: 6, objectFit: "cover",
+    background: "#f4f4f4", border: `1px solid ${LINE}`,
+  },
   code: {
     flex: "0 0 110px", fontWeight: 700, fontSize: 12, overflow: "hidden",
     textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -154,6 +160,12 @@ const Row = memo(({ item, onPick }) => (
     onMouseOut={hoverOff}
     title={item.itemname}
   >
+    {item.image ? (
+      <img src={item.image} alt="" loading="lazy" decoding="async" style={S.thumb}
+        onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
+    ) : (
+      <div style={S.thumb} aria-hidden="true" />
+    )}
     <div style={S.code}>{item.itemcode}</div>
     <div style={S.rowText}>
       <div style={S.rowName}>{item.title}</div>
@@ -242,7 +254,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
 
   const pick = useCallback(
     (item) => {
-      const { _s, _c, title, ...product } = item;   // { itemcode, itemname, brand, category, unit, price, cct, beamangle, cri, cutoutdia, lumens }
+      const { _s, _c, title, ...product } = item;   // { itemcode, image, itemname, brand, category, unit, price, cct, beamangle, cri, cutoutdia, lumens }
       handleProductSelect(product);
     },
     [handleProductSelect]
@@ -320,7 +332,7 @@ const FindProduct = ({ showModal, setShowModal, handleProductSelect }) => {
           )}
 
           {results.map((item) => (
-            <Row key={item.itemcode} item={item} onPick={pick} />
+            <Row key={item.itemcode + item.itemname} item={item} onPick={pick} />
           ))}
         </div>
 
