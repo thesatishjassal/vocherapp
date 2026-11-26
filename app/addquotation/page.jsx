@@ -27,6 +27,33 @@ const EMPTY_ROW = {
 
 const DEFAULT_WARRANTY = "As per company norms";
 
+/* ---------- Draft autosave ----------
+   Everything typed on this page (items, customer, subject, remarks, warranty) is saved in
+   the browser as you work, so a refresh, a closed tab or a crash doesn't lose it.
+   The draft is cleared only after a successful Publish or when you press "Discard". */
+const DRAFT_KEY = "panvik_quotation_draft_v1";
+const readDraft = () => {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    return d && Array.isArray(d.rows) ? d : null;
+  } catch (_) {
+    return null;
+  }
+};
+const writeDraft = (d) => {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); return true; } catch (_) { return false; }
+};
+const clearDraft = () => {
+  try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
+};
+const timeAgo = (iso) => {
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+  return new Date(iso).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+};
+
 const roundRupee = (value) => {
   const rupees = Math.floor(value);
   const paise = value - rupees;
@@ -130,6 +157,16 @@ const S = {
     font: "inherit", fontWeight: 600, cursor: "pointer",
   },
   btnPrimary: { borderColor: GOLD, background: GOLD, color: "#fff" },
+  draftBanner: {
+    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+    maxWidth: 1040, margin: "0 auto 12px", padding: "10px 14px", borderRadius: 10,
+    background: GOLD_SOFT, border: "1px solid #ecd9a6", color: "#5c4a14", fontSize: 13, boxSizing: "border-box",
+  },
+  draftBtn: {
+    height: 28, padding: "0 12px", border: "1px solid #e0c98a", borderRadius: 7, background: "#fff",
+    color: "#5c4a14", font: "inherit", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  },
+  saved: { marginLeft: 6, color: "#1f8a4c", fontSize: 11, fontWeight: 600 },
 };
 
 const PRINT_CSS = `
@@ -200,6 +237,65 @@ const Quotation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
+
+  // ---- Draft autosave state ----
+  const [restoredDraft, setRestoredDraft] = useState(null); // { count, savedAt } after a restore
+  const [savedAt, setSavedAt] = useState(null);
+  const draftReady = useRef(false); // don't save until the old draft has been restored
+  const publishing = useRef(false);
+
+  // 1. On page load: bring back the last unsaved quotation
+  useEffect(() => {
+    const d = readDraft();
+    if (d && (d.rows.length || d.remarks || d.selectedCustomer || d.quotationInfo)) {
+      setRowsData(d.rows);
+      setRemarks(d.remarks || "");
+      setWarrantyGuarantee(d.warrantyGuarantee || "");
+      setSelectedCustomer(d.selectedCustomer || null);
+      setQuotationInfo(d.quotationInfo || null);
+      setRestoredDraft({ count: d.rows.length, savedAt: d.savedAt });
+      setSavedAt(d.savedAt);
+    }
+    // start saving on the next tick, so the first empty render can't overwrite the draft
+    const t = setTimeout(() => { draftReady.current = true; }, 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  // 2. Save as you work (small delay so typing stays smooth)
+  useEffect(() => {
+    if (!draftReady.current || publishing.current) return;
+    const t = setTimeout(() => {
+      const empty = !rowsData.length && !remarks && !warrantyGuarantee && !selectedCustomer && !quotationInfo;
+      if (empty) {
+        clearDraft();
+        setSavedAt(null);
+        return;
+      }
+      const at = new Date().toISOString();
+      if (writeDraft({ rows: rowsData, remarks, warrantyGuarantee, selectedCustomer, quotationInfo, savedAt: at })) {
+        setSavedAt(at);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [rowsData, remarks, warrantyGuarantee, selectedCustomer, quotationInfo]);
+
+  // 3. Ask before leaving the page with unpublished items
+  useEffect(() => {
+    const warn = (e) => {
+      if (publishing.current || !rowsData.length) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [rowsData.length]);
+
+  const discardDraft = useCallback(() => {
+    if (!confirm("Discard this draft and start a new quotation?")) return;
+    clearDraft();
+    publishing.current = true; // skip the beforeunload prompt
+    window.location.reload();
+  }, []);
 
   // ---- Add Product modal state ----
   const [showAddModal, setShowAddModal] = useState(false);
@@ -423,6 +519,8 @@ const Quotation = () => {
       setQuotationSequence((prev) => prev + 1);
       setQuotationId((prev) => prev + 1);
       toast.success("Quotation saved successfully!");
+      publishing.current = true;
+      clearDraft();
       window.location.href = "/getquotation";
     } catch (error) {
       console.error("Error saving quotation:", error);
@@ -454,6 +552,19 @@ const Quotation = () => {
   return (
     <div className="qt-page" style={S.page}>
       <style>{PRINT_CSS}</style>
+
+      {restoredDraft && (
+        <div className="no-print" style={S.draftBanner} role="status">
+          <span>
+            <b>Draft restored</b> — {restoredDraft.count} {restoredDraft.count === 1 ? "item" : "items"} from{" "}
+            {restoredDraft.savedAt ? timeAgo(restoredDraft.savedAt) : "your last visit"}. Nothing was lost.
+          </span>
+          <span style={{ display: "flex", gap: 6 }}>
+            <button type="button" style={S.draftBtn} onClick={() => setRestoredDraft(null)}>OK</button>
+            <button type="button" style={{ ...S.draftBtn, color: "#b42318" }} onClick={discardDraft}>Discard &amp; start new</button>
+          </span>
+        </div>
+      )}
 
       <div className="qt-sheet" style={S.sheet} id="tm_download_section">
         {/* ---------- Header ---------- */}
@@ -612,6 +723,7 @@ const Quotation = () => {
       <div className="no-print qt-bar" style={S.bar}>
         <span className="qt-bar-info" style={S.barInfo}>
           {rowsData.length} {rowsData.length === 1 ? "item" : "items"} · <span style={S.barTotal}>{money(grandTotal)}</span>
+          {savedAt && <span style={S.saved}>· Draft saved</span>}
         </span>
         <button type="button" className="qt-bar-btn" style={S.btn} onClick={() => window.print()}>
           <Icon d={ICON.print} /> Print

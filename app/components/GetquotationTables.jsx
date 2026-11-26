@@ -259,7 +259,9 @@ const GetQuotationTables = () => {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState(""); // "" = all
+  const [statusFilter, setStatusFilter] = useState(""); // "" = all, "drafts" = unpublished drafts
+  const [drafts, setDrafts] = useState([]);
+  const [draftsLoading, setDraftsLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("latest");
   const [userDetails, setUserDetails] = useState(null);
   const [page, setPage] = useState(1);
@@ -307,6 +309,13 @@ const GetQuotationTables = () => {
       }
     };
     fetchQuotations();
+
+    // Unpublished drafts saved from the New quotation page
+    axios
+      .get(`${API_URL}/quotation-drafts/`)
+      .then((res) => setDrafts(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => console.error("Drafts fetch error:", err))
+      .finally(() => setDraftsLoading(false));
   }, []);
 
   const handleDelete = async (quotationId) => {
@@ -390,11 +399,31 @@ const GetQuotationTables = () => {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filteredQuotations.slice(start, start + pageSize);
 
+  const handleDeleteDraft = async (id) => {
+    if (!confirm("Delete this draft? This can't be undone.")) return;
+    try {
+      await axios.delete(`${API_URL}/quotation-drafts/${id}`);
+      setDrafts((prev) => prev.filter((d) => d.id !== id));
+      toast.success("Draft deleted");
+    } catch (error) {
+      toast.error(`Failed to delete draft: ${error.message}`);
+    }
+  };
+
+  const shownDrafts = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return drafts;
+    return drafts.filter((d) =>
+      [d.id, d.title, d.client_name, d.created_by].some((v) => String(v ?? "").toLowerCase().includes(term))
+    );
+  }, [drafts, searchQuery]);
+
   const tabs = [
     ["", "All", quotations.length],
     ["active", "Active", statusCounts.active],
     ["mature", "Mature", statusCounts.mature],
     ["lost", "Lost", statusCounts.lost],
+    ["drafts", "Drafts", drafts.length],
   ];
 
   return (
@@ -443,7 +472,65 @@ const GetQuotationTables = () => {
         </select>
       </div>
 
+      {/* ---------- Drafts ---------- */}
+      {statusFilter === "drafts" && (
+        <div style={S.wrap}>
+          <table style={S.table}>
+            <thead>
+              <tr>
+                <th style={S.th}>Draft</th>
+                <th style={S.th}>Client</th>
+                <th style={S.thNum}>Items</th>
+                <th style={S.thNum}>Total</th>
+                <th style={S.th}>Last saved</th>
+                <th style={{ ...S.th, textAlign: "right" }}><span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {shownDrafts.map((d) => (
+                <tr key={d.id} onMouseOver={rowOn} onMouseOut={rowOff}>
+                  <td style={S.td}>
+                    <Link href={`/addquotation?draft=${d.id}`} style={{ ...S.strong, color: INK, textDecoration: "none" }}>
+                      {d.title || "Untitled draft"}
+                    </Link>
+                    <div style={S.small}>Draft #{d.id}{d.created_by ? ` · by ${d.created_by}` : ""}</div>
+                  </td>
+                  <td style={S.td}><div style={S.ellipsis}>{d.client_name || "—"}</div></td>
+                  <td style={S.tdNum}>{d.item_count}</td>
+                  <td style={S.tdNum}><span style={S.strong}>{money(d.total)}</span></td>
+                  <td style={{ ...S.td, whiteSpace: "nowrap" }}>
+                    {formatDate(d.updated_at || d.created_at)}
+                    <div style={S.small}>{formatTime(d.updated_at || d.created_at)}</div>
+                  </td>
+                  <td style={S.td}>
+                    <div style={S.actions}>
+                      <RowMenu
+                        label={`Actions for draft ${d.id}`}
+                        items={[
+                          { label: "Continue editing", icon: ICON.edit, onClick: () => router.push(`/addquotation?draft=${d.id}`) },
+                          "sep",
+                          { label: "Delete draft", icon: ICON.trash, danger: true, onClick: () => handleDeleteDraft(d.id) },
+                        ]}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {!draftsLoading && shownDrafts.length === 0 && (
+                <tr>
+                  <td style={S.empty} colSpan={6}>
+                    {drafts.length ? "No drafts match your search." : "No drafts. On a new quotation, press “Save draft” to keep it here."}
+                  </td>
+                </tr>
+              )}
+              {draftsLoading && <tr><td style={S.empty} colSpan={6}>Loading drafts…</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {/* ---------- Table ---------- */}
+      {statusFilter !== "drafts" && (<>
       <div style={S.wrap}>
         <table style={S.table}>
           <thead>
@@ -571,6 +658,7 @@ const GetQuotationTables = () => {
           )}
         </nav>
       )}
+      </>)}
     </section>
   );
 };
