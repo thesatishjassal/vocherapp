@@ -2,7 +2,7 @@
 import InvoucherTable from "../../components/InvoucherTable";
 import QuotaionInfo from "../../components/QuotaionInfo";
 import CustomerModal from "../../components/customerModal";
-import EdiQuotatTable from "../../components/EditQuotatTable";
+import QuotationTable from "../../components/QuotationTable";
 import GSTCalculator from "../../components/GSTCalculator";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import axios from "axios";
@@ -19,6 +19,32 @@ const MUTED = "#8a8a8a";
 const INK = "#222";
 
 const DEFAULT_WARRANTY = "1 year warranty against manufacturing defects";
+
+/** API item (snake_case) -> table row (the shape QuotationTable and the modals use) */
+const clean = (v) => {
+  const t = String(v ?? "").trim();
+  return ["", "0", "NULL", "NONE", "N/A"].includes(t.toUpperCase()) ? "" : t;
+};
+const toRow = (it) => ({
+  itemId: it.item_id ?? it.id,
+  itemCode: it.itemcode || it.product_id || "",
+  itemName: it.item_name || "",
+  brand: clean(it.brand),
+  qty: Number(it.quantity) || 0,
+  unit: it.unit || "Piece",
+  mrp: Number(it.mrp) || 0,
+  discount: Number(it.discount) || 0,
+  netPrice: Number(it.netPrice) || Number(it.price) || 0,
+  image: clean(it.image),
+  customerCode: clean(it.customercode),
+  customerDescription: clean(it.customerdescription),
+  remarks: clean(it.remarks),
+  cct: clean(it.cct),
+  beamangle: clean(it.beamangle),
+  cri: clean(it.cri),
+  cutoutdia: clean(it.cutoutdia),
+  lumens: clean(it.lumens),
+});
 
 const TERMS = [
   ["Payment terms", "100% in advance with order."],
@@ -138,6 +164,8 @@ const EditQuotation = () => {
   const [quotationInfo, setQuotationInfo] = useState(null);
   const [quotationId, setQuotationId] = useState(1);
   const [rowsData, setRowsData] = useState([]);
+  const [initialItems, setInitialItems] = useState([]); // the saved items, handed to the table once
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [gstDetails, setGstDetails] = useState({
@@ -210,6 +238,17 @@ const EditQuotation = () => {
     };
 
     fetchQuotation();
+
+    // Items of this quotation -> the editable table
+    axios
+      .get(`${API_URL}/quotation/${quote}/items/`, { withCredentials: true })
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        list.sort((a, b) => (a.position ?? 1e9) - (b.position ?? 1e9) || (a.item_id ?? a.id ?? 0) - (b.item_id ?? b.id ?? 0));
+        setInitialItems(list.map(toRow));
+      })
+      .catch(() => toast.error("Failed to load quotation items!"))
+      .finally(() => setItemsLoading(false));
   }, [quote]);
 
   const fetchClient = async (client_id) => {
@@ -246,6 +285,14 @@ const EditQuotation = () => {
   /* -------------------- SAVE QUOTATION -------------------- */
   const handleSaveQuotation = async () => {
     if (saving) return;
+    if (itemsLoading) {
+      toast.warning("Items are still loading — please wait a moment.");
+      return;
+    }
+    if (!rowsData.length) {
+      toast.warning("This quotation has no items. Add at least one before publishing.");
+      return;
+    }
     setSaving(true);
     try {
       const quotationData = {
@@ -275,22 +322,43 @@ const EditQuotation = () => {
       });
 
       if (rowsData.length > 0) {
-        const itemsData = rowsData.map((item) => ({
-          quotation_id: quote,
-          product_id: item.itemCode,
-          customercode: item.customerCode || "0",
-          customerdescription: item.customerDescription || "0",
-          image: item.image || "",
-          itemcode: item.itemCode,
-          brand: item.brand || "N/A",
-          mrp: parseFloat(item.mrp) || 0,
-          price: Math.round(parseFloat(item.price ?? item.netPrice)) || 0,
-          quantity: parseInt(item.qty, 10) || 0,
-          discount: parseFloat(item.discount) || 0,
-          amount: parseFloat(item.amount) || 0,
-          item_name: item.itemName || "N/A",
-          unit: item.unit || "pcs",
-        }));
+        const pct = (Number(gstDetails.gst_percentage) || 0) / 100;
+        const included = (gstDetails.gst_type || "include") === "include";
+        const text = (v) => (String(v ?? "").trim() ? String(v).trim() : null);
+        const itemsData = rowsData.map((item, index) => {
+          const net = Math.round(parseFloat(item.netPrice ?? item.price) || 0);
+          const qty = parseInt(item.qty, 10) || 0;
+          const amount = net * qty;
+          const withoutGst = included ? amount / (1 + pct) : amount;
+          const gstAmt = included ? amount - withoutGst : amount * pct;
+          return {
+            quotation_id: Number(quote),
+            product_id: item.itemCode,
+            customercode: item.customerCode || "0",
+            customerdescription: item.customerDescription || "0",
+            image: item.image || "",
+            itemcode: item.itemCode,
+            brand: item.brand || "N/A",
+            mrp: parseFloat(item.mrp) || 0,
+            netPrice: net,
+            price: net,
+            position: index,
+            quantity: qty,
+            discount: Math.max(0, parseFloat(item.discount) || 0),
+            amount,
+            amount_including_gst: Math.round(withoutGst + gstAmt),
+            without_gst: Math.round(withoutGst),
+            gst_amount: Math.round(gstAmt),
+            amount_with_gst: Math.round(withoutGst + gstAmt),
+            item_name: item.itemName || "N/A",
+            unit: item.unit || "pcs",
+            cct: text(item.cct),
+            beamangle: text(item.beamangle),
+            cri: text(item.cri),
+            cutoutdia: text(item.cutoutdia),
+            lumens: text(item.lumens),
+          };
+        });
 
         await axios.put(`${API_URL}/quotation/${quote}/items/`, itemsData, {
           headers: { "Content-Type": "application/json" },
@@ -380,14 +448,16 @@ const EditQuotation = () => {
 
         {/* ---------- Items ---------- */}
         <div style={S.tableWrap}>
-          <EdiQuotatTable
-            FiltercolModal={FiltercolModal}
-            ShowHideFiltercolModal={ShowHideFiltercolModal}
-            onClose={closeModal}
-            onRowsChange={handleRowsChange}
-            onTotalAmountChange={handleTotalAmountChange}
-            qouteId={quote}
-          />
+          {itemsLoading ? (
+            <p style={S.loading}>Loading items…</p>
+          ) : (
+            <QuotationTable
+              items={initialItems}
+              onClose={closeModal}
+              onRowsChange={handleRowsChange}
+              onTotalAmountChange={handleTotalAmountChange}
+            />
+          )}
           {showModalClientDetails && (
             <CustomerModal onClose={closeModal} client={showModalClientDetails} onConfirm={handleClientConfirm} />
           )}
