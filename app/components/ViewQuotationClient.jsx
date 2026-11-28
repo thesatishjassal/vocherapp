@@ -393,6 +393,12 @@ export default function ClientViewQuotation({ quote }) {
                     <dd>{client.client_phone}</dd>
                   </>
                 )}
+                 {client.gst_number && (
+                  <>
+                    <dt>GST:</dt>
+                    <dd>{client.gst_number}</dd>
+                  </>
+                )}
               </dl>
             </div>
           )}
