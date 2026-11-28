@@ -1303,4 +1303,6 @@ label, .form-label {
   to {
     transform: rotate(360deg);
   }
+}input {
+    background: #ebe9e9 !important;
 }
